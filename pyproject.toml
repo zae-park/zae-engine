@@ -22,7 +22,7 @@ requires = [
  "psutil>=5.9.4",
  "rich>=12.5.1",
  "torch>=1.10.0",
- "tensorflow-gpu"
+ "tensorflow-gpu",
  "tqdm>=4.64.1",
  "typeguard>=2.13.3"
  ]

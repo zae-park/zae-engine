@@ -10,7 +10,7 @@ setup(
     version=__version__,
     author='zae-park',
     url='https://github.com/zae-park/zae-engine',
-    description='Providing scripts for deep learning frameworks',
+    description='Engine for deep learning frameworks',
     long_description='',
     package_data={
         'zae-engine': ['models/resource/.env', 'data/resource/sample_data.*'],
