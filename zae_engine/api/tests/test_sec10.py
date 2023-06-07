@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from zae-engine.api.sec10 import Sec10Collate
+from zae_engine.api.sec10 import Sec10Collate
 
 
 # class TestCollate(unittest.TestCase):

@@ -4,7 +4,7 @@ import unittest
 import torch
 import numpy as np
 
-from zae-engine.data import load_example
+from zae_engine.data import load_example
 from .._layer import Inv1d
 
 

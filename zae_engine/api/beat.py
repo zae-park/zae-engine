@@ -5,9 +5,9 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from zae-engine import models, trainer
-from zae-engine.data.collate import BeatCollateSeq as Col
-from zae-engine.operation import label_to_onoff, sanity_check, onoff_to_label
+from zae_engine import models, trainer
+from zae_engine.data.collate import BeatCollateSeq as Col
+from zae_engine.operation import label_to_onoff, sanity_check, onoff_to_label
 
 
 def core(x: Union[np.ndarray, torch.Tensor]):

@@ -90,6 +90,6 @@ class Walk:
 
 
 if __name__ == '__main__':
-    Walk.print_tree('./zae-engine')
+    Walk.print_tree('./zae_engine')
 
 

@@ -7,9 +7,9 @@ import numpy as np
 from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
 
-from zae-engine.models.benchmark import sec10_classification
-from zae-engine.trainer import Trainer
-from zae-engine.trainer.utils import CallbackInterface, EpochStepChecker
+from zae_engine.models.benchmark import sec10_classification
+from zae_engine.trainer import Trainer
+from zae_engine.trainer.utils import CallbackInterface, EpochStepChecker
 
 
 class DummySet(Dataset):
