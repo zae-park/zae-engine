@@ -2,8 +2,8 @@ import unittest
 
 import numpy as np
 
-from zae-engine.api import beat
-from zae-engine.data import load_example
+from zae_engine.api import beat
+from zae_engine.data import load_example
 
 
 # class Test_loader(unittest.TestCase):

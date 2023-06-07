@@ -5,8 +5,8 @@ import torch
 import torch.nn.functional as F
 from torch.utils import data
 
-from zae-engine.data import load_example
-from zae-engine import trainer, models, measure, operation
+from zae_engine.data import load_example
+from zae_engine import trainer, models, measure, operation
 
 
 class ExDataset(data.Dataset):

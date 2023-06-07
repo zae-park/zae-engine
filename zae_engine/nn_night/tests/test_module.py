@@ -1,6 +1,6 @@
 import unittest
 
-from zae-engine.data import load_example
+from zae_engine.data import load_example
 from .._module import *
 
 

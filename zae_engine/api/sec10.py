@@ -7,9 +7,9 @@ from scipy import signal as sig
 from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import Dataset, DataLoader
 
-import zae-engine
-from zae-engine.data.collate import Collate_seq
-from zae-engine.models.benchmark import sec10_classification
+import zae_engine
+from zae_engine.data.collate import Collate_seq
+from zae_engine.models.benchmark import sec10_classification
 
 
 def core(x: np.ndarray, batch_size: int):
@@ -50,7 +50,7 @@ def scale_signal(x: np.ndarray):
     return x
 
 
-class Sec10Trainer(zae-engine.trainer.Trainer):
+class Sec10Trainer(zae_engine.trainer.Trainer):
     def __init__(self, model, device, mode):
         super(Sec10Trainer, self).__init__(model, device, mode)
         self.mini_batch_size = 32

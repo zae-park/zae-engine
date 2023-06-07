@@ -7,9 +7,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils import data
 
-from zae-engine.data import load_example
-from zae-engine import trainer, models, measure
-from zae-engine.trainer import mpu_utils
+from zae_engine.data import load_example
+from zae_engine import trainer, models, measure
+from zae_engine.trainer import mpu_utils
 
 
 num_data = 10000
