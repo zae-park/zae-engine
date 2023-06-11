@@ -8,12 +8,10 @@ authors = ["zae-park <tom941105@gmail.com>"]
 python = "^3.9"
 numpy = "^1.23.2"
 tqdm = "^4.65.0"
-torch = { url = "https://download.pytorch.org/libtorch/cu118/libtorch-win-shared-with-deps-2.0.1%2Bcu118.zip" }
-
 
 
 [tool.poetry.dev-dependencies]
-python = "^3.8"
+python = "^3.9"
 pytest = "^5.2"
 
 [build-system]
@@ -35,4 +33,4 @@ build-backend = "poetry.masonry.api"
 
 [tool.black]
 line-length = 88
-target-version = ['py37', 'py38', 'py39']
+target-version = ['py39']

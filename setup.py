@@ -9,7 +9,7 @@ setup(
     name='zae-engine',
     version=__version__,
     author='zae-park',
-    url='https://github.com/zae-park/zae-engine',
+    url='https://github.com/zae-park/zae-engine.git',
     description='Engine for deep learning frameworks',
     long_description='',
     package_data={
