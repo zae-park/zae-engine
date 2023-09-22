@@ -1,72 +1,114 @@
 import sys
-from typing import Optional
+from typing import Optional, Union, Tuple, List, Iterable
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .. import nn_night as nnn
-from ..models.utility import transformer_option
+from zae_engine import nn_night as nnn
+from zae_engine.models.utility import transformer_option
 
 
-class BeatBase(nn.Module):
+class CNNBase(nn.Module):
     """
-    The interface class for BeatSegment and RPeakRegress.
+    The interface class using Convolutional Layers.
     """
+
     def __init__(self):
-        super(BeatBase, self).__init__()
+        super(CNNBase, self).__init__()
+        self.conv_api = None
 
-    def gen_block(self, ch_in, ch_out, kernel_size, order, dilation=1, se_bias=False):
+    def gen_block(
+        self,
+        ch_in: int,
+        ch_out: int,
+        kernel_size: Union[Iterable, int],
+        order: int,
+        dilation: int = 1,
+        se_bias: bool = False,
+    ):
         """
         Return block, accumulated layers in-stage. Stack CBR 'order' times.
-        :param ch_in:
-        :param ch_out:
-        :param kernel_size:
-        :param order:
-        :param dilation:
-        :param se_bias:
-        :return:
+        :param ch_in: [Int] input channels of block
+        :param ch_out: [Int] output channels of block
+        :param kernel_size: [Int, Iterable] convolution kernel size.
+            If type of argument is int, assume that model will receive 1-D input tensor.
+            Else, the type of argument is iterable, assume that model will receive len(argument)-D input tensor.
+        :param order: [Int] the number of blocks in stage.
+            The stage means same resolution. e.g. from after previous pooling (or stem) to before next pooling.
+        :param dilation: [Int, Iterable] Default is 1. If argument more than 1, dilated convolution will performed.
+        :param se_bias: [Bool] for SE module option. This argument will be deprecated.
+        :return: [nn.Module]
         """
 
-        class Res(nn.Sequential):
+        if isinstance(kernel_size, int):
+            self.conv_api = nn.Conv1d
+        elif isinstance(kernel_size, Iterable):
+            dim = len(kernel_size)
+            self.conv_api = nn.Conv2d if dim == 2 else nn.Conv3d if dim == 3 else None
+        else:
+            raise IndexError('Unexpected shape error.')
+
+        class ResBlock(nn.Sequential):
+            """
+            Residual Block which inherit 'Sequential' class in torch.nn
+            """
+
             def __init__(self, *args):
-                super(Res, self).__init__(*args)
+                super(ResBlock, self).__init__(*args)
 
             def forward(self, x):
-                xx = x
+                """
+                The 'module' is sequence of arguments in __init__.
+                :param x: Input tensor
+                :return: Sum of input tensor and output of sequence.
+                """
+                residual = x
                 for module in self:
                     x = module(x)
-                return x + xx
+                return x + residual
 
-        blk = []
-        for o in range(order):
-            sequence = Res(self.unit_layer(ch_in, ch_out, kernel_size, dilation=dilation),
-                           self.unit_layer(ch_out, ch_out, kernel_size, dilation=dilation),
-                           nnn.SE(ch_out, reduction=8, bias=se_bias))
+        blk = []    # List of blocks
+        for o in range(order):  # stack blocks 'order' times
+            sequence = ResBlock(
+                self.unit_layer(ch_in, ch_out, kernel_size, dilation=dilation),
+                self.unit_layer(ch_out, ch_out, kernel_size, dilation=dilation),
+                nnn.SE(ch_out, reduction=8, bias=se_bias),
+            )
             blk.append(sequence)
         return nn.Sequential(*blk)
 
     def gen_head(self, c_in, kernel=None):
-        if kernel is None: kernel = self.kernel_size
-        return nn.Conv1d(c_in, self.ch_out, kernel_size=kernel, padding=(kernel - 1) // 2)
+        if kernel is None:
+            kernel = self.kernel_size
+        return self.conv_api(
+            c_in, self.ch_out, kernel_size=kernel, padding=(kernel - 1) // 2
+        )
 
-    def unit_layer(self, ch_in, ch_out, kernel_size, stride=1, dilation=1):
+    def unit_layer(self, ch_in: int, ch_out: int, kernel_size: Union[Iterable, int], stride: int = 1, dilation: int = 1):
         """
-        Return unit layer. Equal to CBR
-        :param ch_in:
-        :param ch_out:
-        :param kernel_size:
-        :param stride:
-        :param dilation:
+        Return unit layer. The unit layer consists of {convolution} - {batch norm} - {activation}.
+        :param ch_in: [Int]
+        :param ch_out: [Int]
+        :param kernel_size: [Int, Iterable]
+        :param stride: [Int]
+        :param dilation: [Int]
         :return:
         """
-        conv1 = nn.Conv1d(ch_in, ch_out, kernel_size=kernel_size, stride=(stride,), dilation=(dilation,),
-                          padding=dilation * (kernel_size - 1) // 2, bias=True)
+        conv1 = self.conv_api(
+            ch_in,
+            ch_out,
+            kernel_size=kernel_size,
+            stride=stride,
+            dilation=dilation,
+            padding=dilation * (kernel_size - 1) // 2,
+            bias=True,
+        )
         return nn.Sequential(*[conv1, nn.BatchNorm1d(ch_out), nn.ReLU()])
 
 
-class BeatSegment(BeatBase):
+class BeatSegment(CNNBase):
     """
     Builder class for beat_segmentation which has U-Net-like structure.
     :param ch_in: int
@@ -93,16 +135,19 @@ class BeatSegment(BeatBase):
         Optional.
         If True, SE modules have extra weights (bias).
     """
-    def __init__(self,
-                 ch_in: int,
-                 ch_out: int,
-                 width: int,
-                 kernel_size: int or tuple,
-                 depth: int,
-                 order: int,
-                 stride: list or tuple,
-                 decoding: bool,
-                 **kwargs):
+
+    def __init__(
+        self,
+        ch_in: int,
+        ch_out: int,
+        width: int,
+        kernel_size: int or tuple,
+        depth: int,
+        order: int,
+        stride: list or tuple,
+        decoding: bool,
+        **kwargs,
+    ):
         super(BeatSegment, self).__init__()
 
         self.ch_in = ch_in
@@ -115,55 +160,79 @@ class BeatSegment(BeatBase):
         self.decoding = decoding
         self.kwargs = kwargs
 
-        self.expanding = kwargs['expanding'] if 'expanding' in kwargs.keys() else False
-        self.se_bias = kwargs['se_bias'] if 'se_bias' in kwargs.keys() else False
+        self.expanding = kwargs["expanding"] if "expanding" in kwargs.keys() else False
+        self.se_bias = kwargs["se_bias"] if "se_bias" in kwargs.keys() else False
 
         # Encoder (down-stream)
         self.pools = nn.ModuleList()
         self.enc = nn.ModuleList()
         for d in range(depth):
             if d == 0:
-                self.enc.append(nn.Sequential(self.unit_layer(ch_in, width, kernel_size),
-                                              self.gen_block(width, width, kernel_size, order, se_bias=self.se_bias)))
+                self.enc.append(
+                    nn.Sequential(
+                        self.unit_layer(ch_in, width, kernel_size),
+                        self.gen_block(
+                            width, width, kernel_size, order, se_bias=self.se_bias
+                        ),
+                    )
+                )
             else:
                 if d == 1:
                     c_in, c_out, s = width * d, width * (d + 1), stride[d - 1]
                 else:
                     c_in, c_out, s = ch_in + width * d, width * (d + 1), stride[d - 1]
-                self.pools.append(nn.AvgPool1d(np.prod(stride[:d]), np.prod(stride[:d])))
-                self.enc.append(nn.Sequential(self.unit_layer(c_in, c_out, kernel_size, stride=s),
-                                              self.gen_block(c_out, c_out, kernel_size, order, se_bias=self.se_bias)))
+                self.pools.append(
+                    nn.AvgPool1d(np.prod(stride[:d]), np.prod(stride[:d]))
+                )
+                self.enc.append(
+                    nn.Sequential(
+                        self.unit_layer(c_in, c_out, kernel_size, stride=s),
+                        self.gen_block(
+                            c_out, c_out, kernel_size, order, se_bias=self.se_bias
+                        ),
+                    )
+                )
 
         self.un_pools = nn.ModuleList()
         for s in stride[::-1]:
-            self.un_pools.append(nn.Upsample(scale_factor=s, mode='linear', align_corners=True))
+            self.un_pools.append(
+                nn.Upsample(scale_factor=s, mode="linear", align_corners=True)
+            )
 
         # Decoder (up-stream)
         if self.decoding:
             self.dec = nn.ModuleList()
             for d in reversed(range(1, depth)):
-                c_in, c_out = (2*d+1) * width, d * width
-                self.dec.append(nn.Sequential(self.unit_layer(c_in, c_out, kernel_size),
-                                              self.gen_block(c_out, c_out, kernel_size, order, se_bias=self.se_bias)))
+                c_in, c_out = (2 * d + 1) * width, d * width
+                self.dec.append(
+                    nn.Sequential(
+                        self.unit_layer(c_in, c_out, kernel_size),
+                        self.gen_block(
+                            c_out, c_out, kernel_size, order, se_bias=self.se_bias
+                        ),
+                    )
+                )
 
-        self.head = self.gen_head(width if decoding else width * depth, kernel=kernel_size)
+        self.head = self.gen_head(
+            width if decoding else width * depth, kernel=kernel_size
+        )
 
     def forward(self, x):
         if self.expanding:
-            x = F.pad(x, (30, 30), mode='constant', value=0)
+            x = F.pad(x, (30, 30), mode="constant", value=0)
 
         for_skip, for_feat = [], []
 
         # -------------Encoder#------------- #
-        for d in range(self.depth):        # 0, 1, 2, 3
+        for d in range(self.depth):  # 0, 1, 2, 3
             if d == 0:
                 for_skip.append(self.enc[d](x))
             elif d == 1:
                 for_skip.append(self.enc[d](for_skip[-1]))
             else:
-                for_skip.append(self.enc[d](torch.cat([for_skip[-1], self.pools[d - 2](x)], 1)))
-
-
+                for_skip.append(
+                    self.enc[d](torch.cat([for_skip[-1], self.pools[d - 2](x)], 1))
+                )
 
         # -------------Decoder#------------- #
         if not self.decoding:
@@ -173,16 +242,20 @@ class BeatSegment(BeatBase):
         else:
             for_feat.append(for_skip.pop(-1))
             for_skip.reverse()
-            for d in range(self.depth - 1):     # 0, 1, 2
+            for d in range(self.depth - 1):  # 0, 1, 2
                 concat = torch.cat((for_skip[d], self.un_pools[d](for_feat[d])), dim=1)
                 for_feat.append(self.dec[d](concat))
             out = self.head(for_feat[-1])
         if self.expanding:
-            out = tuple([o[:, :, 30:-30] for o in out]) if isinstance(out, tuple) else out[:, :, 30:-30]
+            out = (
+                tuple([o[:, :, 30:-30] for o in out])
+                if isinstance(out, tuple)
+                else out[:, :, 30:-30]
+            )
         return out
 
 
-class RPeakRegress(BeatBase):
+class RPeakRegress(CNNBase):
     """
     Builder class for rpeak_regression which has cascade CNN structure.
     :param dim_in: int
@@ -207,17 +280,19 @@ class RPeakRegress(BeatBase):
         If True, SE modules have extra weights (bias).
     """
 
-    def __init__(self,
-                 dim_in: int,
-                 ch_in: int,
-                 width: int,
-                 kernel_size: int or tuple,
-                 order: int,
-                 depth: int,
-                 stride: int,
-                 head_depth: int,
-                 embedding_dims: int,
-                 **kwargs):
+    def __init__(
+        self,
+        dim_in: int,
+        ch_in: int,
+        width: int,
+        kernel_size: int or tuple,
+        order: int,
+        depth: int,
+        stride: int,
+        head_depth: int,
+        embedding_dims: int,
+        **kwargs,
+    ):
         super(RPeakRegress, self).__init__()
 
         self.width = width
@@ -230,14 +305,24 @@ class RPeakRegress(BeatBase):
         self.embedding_dims = embedding_dims
         self.kwargs = kwargs
 
-        self.se_bias = kwargs['se_bias'] if 'se_bias' in kwargs.keys() else False
+        self.se_bias = kwargs["se_bias"] if "se_bias" in kwargs.keys() else False
 
         # Encoder (down-stream)
         enc = []
         for d in range(depth):
             c_in = ch_in if d == 0 else width * d
-            enc.append(self.unit_layer(c_in, width * (d + 1), self.kernel_size, self.stride))
-            enc.append(self.gen_block(width * (d + 1), width * (d + 1), kernel_size, order=order, se_bias=self.se_bias))
+            enc.append(
+                self.unit_layer(c_in, width * (d + 1), self.kernel_size, self.stride)
+            )
+            enc.append(
+                self.gen_block(
+                    width * (d + 1),
+                    width * (d + 1),
+                    kernel_size,
+                    order=order,
+                    se_bias=self.se_bias,
+                )
+            )
         self.enc = nn.Sequential(*enc)
 
         self.update_dimension()
@@ -247,20 +332,33 @@ class RPeakRegress(BeatBase):
 
     def update_dimension(self):
         for _ in range(self.depth):
-            self.dim = (self.dim+(self.kernel_size-1)//2*2-(self.kernel_size-1)-1)//self.stride+1
+            self.dim = (
+                self.dim + (self.kernel_size - 1) // 2 * 2 - (self.kernel_size - 1) - 1
+            ) // self.stride + 1
             # self.dim = 1 + (self.dim + 2*(self.kernel_size//2) - self.kernel_size) // self.stride
 
     def gen_embedding(self):
         block = []
         for h in range(self.head_depth):
-            d_in = self.dim * self.width * self.depth if h == 0 else int(self.dim // 2 ** (self.head_depth - h))
+            d_in = (
+                self.dim * self.width * self.depth
+                if h == 0
+                else int(self.dim // 2 ** (self.head_depth - h))
+            )
             block.append(nn.Linear(d_in, self.embedding_dims))
             block.append(nn.ReLU())
         return nn.Sequential(*block)
 
     def unit_layer(self, ch_in, ch_out, kernel_size, stride=1, dilation=1):
-        conv1 = nn.Conv1d(ch_in, ch_out, kernel_size=kernel_size, stride=(stride,), dilation=(dilation,),
-                          padding=dilation * (kernel_size - 1) // 2, bias=True)
+        conv1 = nn.Conv1d(
+            ch_in,
+            ch_out,
+            kernel_size=kernel_size,
+            stride=(stride,),
+            dilation=(dilation,),
+            padding=dilation * (kernel_size - 1) // 2,
+            bias=True,
+        )
         return nn.Sequential(*[conv1, nn.ReLU()])
 
     def forward(self, x):
@@ -303,18 +401,20 @@ class Sec10(nn.Module):
         If True, the feature map is recalibrated using a transformer manner.
     """
 
-    def __init__(self,
-                 num_layers: int,
-                 num_classes: int,
-                 num_channels: int,
-                 kernel_size: int,
-                 dropout_rate: float,
-                 width_factor: int,
-                 stride: int,
-                 reduction: int,
-                 bias: bool = False,
-                 contrastive: Optional[bool] = False,
-                 **kwargs):
+    def __init__(
+        self,
+        num_layers: int,
+        num_classes: int,
+        num_channels: int,
+        kernel_size: int,
+        dropout_rate: float,
+        width_factor: int,
+        stride: int,
+        reduction: int,
+        bias: bool = False,
+        contrastive: Optional[bool] = False,
+        **kwargs,
+    ):
         super(Sec10, self).__init__()
         num_layers = num_layers
         num_classes = num_classes
@@ -327,13 +427,14 @@ class Sec10(nn.Module):
         self.bias = bias
         self.stride = stride
 
-        if 'first_block' in kwargs.keys():
-            self.first_block = kwargs['first_block']
-        if 'use_transformer' in kwargs.keys():
-            self.use_transformer = kwargs['use_transformer']
+        if "first_block" in kwargs.keys():
+            self.first_block = kwargs["first_block"]
+        if "use_transformer" in kwargs.keys():
+            self.use_transformer = kwargs["use_transformer"]
 
         supported_num_layers = [10, 14, 18, 34, 50, 101, 152]
-        if num_layers not in supported_num_layers:                   num_layers = supported_num_layers[0]
+        if num_layers not in supported_num_layers:
+            num_layers = supported_num_layers[0]
         self.block_type = "basic" if num_layers < 50 else "bottleneck"
 
         if num_layers == 10:
@@ -354,7 +455,9 @@ class Sec10(nn.Module):
             num_block_list = []
         self.num_block_list = num_block_list
 
-        self.stem = self.make_stem(num_channels, nGroups[0], 7, stride=2, bias=self.bias)
+        self.stem = self.make_stem(
+            num_channels, nGroups[0], 7, stride=2, bias=self.bias
+        )
 
         stages = [
             self.stack_layers(
@@ -366,8 +469,9 @@ class Sec10(nn.Module):
                 stride=1 if i == 0 else stride,
                 first_block=self.first_block if i == 0 else False,
                 bias=self.bias,
-                reduction=self.reduction
-            ) for i in range(4)
+                reduction=self.reduction,
+            )
+            for i in range(4)
         ]
 
         self.stage_1, self.stage_2, self.stage_3, self.stage_4 = stages
@@ -385,73 +489,58 @@ class Sec10(nn.Module):
             self.linear = nn.Sequential(
                 nn.AdaptiveAvgPool1d(1),
                 nn.Flatten(),
-                nn.Linear(last_channel, num_classes)
+                nn.Linear(last_channel, num_classes),
             )
         if contrastive:
             # projection MLP
-            self.projection = self.make_mlp(last_channel, last_channel, last_channel, mode='projection')
+            self.projection = self.make_mlp(
+                last_channel, last_channel, last_channel, mode="projection"
+            )
             # prediction MLP
-            self.prediction = self.make_mlp(last_channel, last_channel // 4, last_channel, mode='prediction')
-
+            self.prediction = self.make_mlp(
+                last_channel, last_channel // 4, last_channel, mode="prediction"
+            )
 
     @staticmethod
-    def make_mlp(in_dim: int,
-                 latent_dim: int,
-                 out_dim: Optional[int] = None,
-                 mode='projection'):
+    def make_mlp(
+        in_dim: int, latent_dim: int, out_dim: Optional[int] = None, mode="projection"
+    ):
         linear1 = nn.Linear(in_dim, latent_dim)
         bn1 = nn.BatchNorm1d(latent_dim)
         act = nn.ReLU(inplace=True)
 
-        if mode == 'projection':
+        if mode == "projection":
             linear2 = nn.Linear(in_dim, latent_dim)
             bn2 = nn.BatchNorm1d(latent_dim)
 
             linear3 = nn.Linear(in_dim, latent_dim)
             bn3 = nn.BatchNorm1d(latent_dim)
-            return nn.Sequential(
-                linear1,
-                bn1,
-                act,
-                linear2,
-                bn2,
-                act,
-                linear3,
-                bn3
-            )
-        elif mode == 'prediction':
+            return nn.Sequential(linear1, bn1, act, linear2, bn2, act, linear3, bn3)
+        elif mode == "prediction":
             linear2 = nn.Linear(latent_dim, out_dim)
-            return nn.Sequential(
-                linear1,
-                bn1,
-                act,
-                linear2
-            )
+            return nn.Sequential(linear1, bn1, act, linear2)
 
     @staticmethod
-    def make_stem(channel_in: int,
-                  channel_out: int,
-                  kernel_size: int,
-                  stride: int,
-                  bias: bool):
-
+    def make_stem(
+        channel_in: int, channel_out: int, kernel_size: int, stride: int, bias: bool
+    ):
         return nn.Sequential(
             nn.Conv1d(channel_in, channel_out, (kernel_size,), (stride,), bias=bias),
-            nn.MaxPool1d(3, padding=1, stride=stride)
+            nn.MaxPool1d(3, padding=1, stride=stride),
         )
 
-    def stack_layers(self,
-                     channel_in: int,
-                     channel_out: int,
-                     dropout_rate: float,
-                     kernel_size: int,
-                     stride: int,
-                     num_blocks: int,
-                     first_block=False,
-                     bias: bool = False,
-                     reduction: int = 4,
-                     ):
-
+    def stack_layers(
+        self,
+        channel_in: int,
+        channel_out: int,
+        dropout_rate: float,
+        kernel_size: int,
+        stride: int,
+        num_blocks: int,
+        first_block=False,
+        bias: bool = False,
+        reduction: int = 4,
+    ):
         class ResnetBasicBlock(nn.Module):
             """
             ResNet Basic Block
@@ -461,11 +550,12 @@ class Sec10(nn.Module):
             -- MaxPool-Conv_1x1
             """
 
-            def __init__(self,
-                         fe_block: nn.ModuleList,
-                         shortcut: nn.Sequential,
-                         first_block: bool,
-                         ):
+            def __init__(
+                self,
+                fe_block: nn.ModuleList,
+                shortcut: nn.Sequential,
+                first_block: bool,
+            ):
                 super(ResnetBasicBlock, self).__init__()
                 self.module_list = fe_block
                 self.first_block = first_block
@@ -494,7 +584,6 @@ class Sec10(nn.Module):
 
                 return out
 
-
         layers = []
 
         for b in range(num_blocks):
@@ -506,7 +595,8 @@ class Sec10(nn.Module):
                     kernel_size=kernel_size,
                     bias=bias,
                     dropout_rate=dropout_rate,
-                    reduction=reduction)
+                    reduction=reduction,
+                )
                 layers.append(ResnetBasicBlock(fe, shortcut, first_block=first_block))
             else:
                 fe, shortcut = self.make_fe_se_block(
@@ -516,59 +606,78 @@ class Sec10(nn.Module):
                     kernel_size=kernel_size,
                     bias=bias,
                     dropout_rate=dropout_rate,
-                    reduction=reduction)
+                    reduction=reduction,
+                )
                 layers.append(ResnetBasicBlock(fe, shortcut, first_block=False))
 
         return nn.Sequential(*layers)
 
-    def make_fe_se_block(self,
-                      channel_in: int,
-                      channel_out: int,
-                      stride: int,
-                      kernel_size: int,
-                      bias: bool,
-                      dropout_rate: float,
-                      reduction: int
-                      ):
-
+    def make_fe_se_block(
+        self,
+        channel_in: int,
+        channel_out: int,
+        stride: int,
+        kernel_size: int,
+        bias: bool,
+        dropout_rate: float,
+        reduction: int,
+    ):
         relu = nn.ReLU()
         dropout = nn.Dropout(dropout_rate)
 
-
-        fe_block = nn.ModuleList([
-            nn.BatchNorm1d(channel_in),
-            relu,
-            nn.Conv1d(channel_in, channel_out, kernel_size=(kernel_size,), stride=stride, bias=bias) \
-                if stride != 1 else nn.Conv1d(channel_in, channel_out, (kernel_size,), padding='same', bias=bias),
-            nn.BatchNorm1d(channel_out),
-            relu,
-            nn.Dropout(dropout_rate),
-            nn.Conv1d(channel_out, channel_out, (kernel_size,), padding='same', bias=bias),
-            nnn.SE(channel_out, reduction=reduction, bias=bias),  # TODO: make as an option
-        ])
+        fe_block = nn.ModuleList(
+            [
+                nn.BatchNorm1d(channel_in),
+                relu,
+                nn.Conv1d(
+                    channel_in,
+                    channel_out,
+                    kernel_size=(kernel_size,),
+                    stride=stride,
+                    bias=bias,
+                )
+                if stride != 1
+                else nn.Conv1d(
+                    channel_in, channel_out, (kernel_size,), padding="same", bias=bias
+                ),
+                nn.BatchNorm1d(channel_out),
+                relu,
+                nn.Dropout(dropout_rate),
+                nn.Conv1d(
+                    channel_out, channel_out, (kernel_size,), padding="same", bias=bias
+                ),
+                nnn.SE(
+                    channel_out, reduction=reduction, bias=bias
+                ),  # TODO: make as an option
+            ]
+        )
 
         shortcut = nn.Sequential(
             nn.MaxPool1d(stride) if stride != 1 else nn.Identity(),
-            nn.Conv1d(channel_in, channel_out, kernel_size=(1,), bias=bias) \
-                if channel_in != channel_out and self.block_type == 'conv' else nn.Identity()
+            nn.Conv1d(channel_in, channel_out, kernel_size=(1,), bias=bias)
+            if channel_in != channel_out and self.block_type == "conv"
+            else nn.Identity(),
         )
 
         return fe_block, shortcut
 
-
     @staticmethod
     def get_vit_head(in_ch, num_class):
-
-
         # image_size, patch_size, num_classes, dim, depth, heads, mlp_dim
-        linear = nnn.TransformerLayer(image_size=66, patch_size=1, num_classes=num_class, depth=3, heads=4,
-                                      mlp_dim=256,
-                                      tmp_ch=in_ch)
+        linear = nnn.TransformerLayer(
+            image_size=66,
+            patch_size=1,
+            num_classes=num_class,
+            depth=3,
+            heads=4,
+            mlp_dim=256,
+            tmp_ch=in_ch,
+        )
         linear.apply(transformer_option)
 
         return linear
 
-    def forward(self, x, model_type='classifier'):
+    def forward(self, x, model_type="classifier"):
         out = self.stem(x)
         out = self.stage_1(out)
         out = self.stage_2(out)
@@ -578,8 +687,7 @@ class Sec10(nn.Module):
         out = self.relu(self.bn1(out))
         out = self.dropout(out)
 
-
-        if model_type == 'classifier':
+        if model_type == "classifier":
             out = self.linear(out)
             return out
         else:
