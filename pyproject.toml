@@ -26,7 +26,10 @@ future = "^0.18.3"
 psutil = "^5.9.5"
 requests = "^2.31.0"
 rich = "^13.5.2"
-typeguard = "^4.1.2" # tensorflow dependency?
+typeguard = "^4.1.2"
+
+image-ocr = "^0.0.4"
+tensorflow-intel = "^2.14.0"
 
 #minio
 #neptune-client
@@ -37,10 +40,9 @@ typeguard = "^4.1.2" # tensorflow dependency?
 #wandb
 
 
-
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 python = "^3.10"
-pytest = "^5.2"
+pytest = "^7.4.2"
 
 [build-system]
 requires = [
