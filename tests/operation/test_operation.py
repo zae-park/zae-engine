@@ -3,9 +3,9 @@ import unittest
 import torch
 import numpy as np
 
-from .._operation import draw_confusion_matrix
-from .._operation import print_confusion_matrix
-from .._operation import MorphologicalLayer
+from zae_engine.operation import draw_confusion_matrix
+from zae_engine.operation import print_confusion_matrix
+from zae_engine.operation import MorphologicalLayer
 
 
 class TestMorphology(unittest.TestCase):
@@ -42,7 +42,7 @@ class TestDrawConfusion(unittest.TestCase):
     def test_zero_num_classes(self):
         with self.assertRaises(Exception):
             draw_confusion_matrix(self.y_ex, self.yhat_ex, num_classes=0)
-            draw_confusion_matrix(no_ele_np, no_ele_np, num_classes=0)
+            # draw_confusion_matrix(no_ele_np, no_ele_np, num_classes=0)
 
 
 class TestPrintConfusion(unittest.TestCase):

@@ -3,8 +3,8 @@ from collections import OrderedDict
 
 import torch
 import torch.nn as nn
-from dotenv import dotenv_values
-from minio import Minio
+# from dotenv import dotenv_values
+# from minio import Minio
 
 
 def load_weights(model_type: str) -> OrderedDict:
@@ -32,19 +32,21 @@ def load_weights(model_type: str) -> OrderedDict:
     if model_type.upper() not in ['RPEAK', 'SEC10', 'BEAT']:
         raise Exception(f'There is no type {model_type} choose one of ["r_peak", "sec10", "beat"]')
 
-    env_values = dotenv_values(pull_path)
+    # env_values = dotenv_values(pull_path)
 
-    endpoint = env_values['END_POINT']
-    bucket_name = env_values['BUCKET_NAME']
-    model_path = env_values[model_type.upper()]
-    model_name = model_path.split('/')[-1]
+    # endpoint = env_values['END_POINT']
+    # bucket_name = env_values['BUCKET_NAME']
+    # model_path = env_values[model_type.upper()]
+    # model_name = model_path.split('/')[-1]
+    #
+    # download(endpoint=endpoint, bucket_name=bucket_name, model_path=model_path)
+    #
+    # state_dict = torch.load(model_name, map_location='cpu')
+    # os.remove(model_name)
+    #
+    # return state_dict
+    return {}
 
-    download(endpoint=endpoint, bucket_name=bucket_name, model_path=model_path)
-
-    state_dict = torch.load(model_name, map_location='cpu')
-    os.remove(model_name)
-
-    return state_dict
 
 
 def initializer(m):

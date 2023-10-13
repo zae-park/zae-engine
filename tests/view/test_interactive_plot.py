@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from .._interactive_plot import seg_plot
+from zae_engine.view import seg_plot
 
 
 class TestSegPlot(unittest.TestCase):

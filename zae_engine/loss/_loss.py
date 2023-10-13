@@ -70,7 +70,7 @@ def GIoU(true_onoff: Union[np.ndarray, torch.Tensor],
 
 
 @typechecked
-def cross_entropy(logit: torch.Tensor, y_hot: torch.Tensor, class_weights: torch.Tensor = None):
+def cross_entropy(logit: torch.Tensor, y_hot: torch.Tensor, class_weights: Union[torch.Tensor, None] = None):
     loss = F.binary_cross_entropy_with_logits(logit, y_hot.float(), weight=class_weights)
     return loss
 

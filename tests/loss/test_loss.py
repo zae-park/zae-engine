@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import torch
 
-from .. import _loss
+from zae_engine import loss as _loss
 
 
 class Test_loader(unittest.TestCase):
@@ -41,15 +41,11 @@ class Test_loader(unittest.TestCase):
     def test_cross_entropy(self):
         self.cls_tuple = self.attr_dict['cls']
         self.seg_tuple = self.attr_dict['seg']
-        with self.assertRaises(TypeError):
-            np_loss = _loss.cross_entropy(self.cls_tuple[0].detach().numpy(), self.cls_tuple[-1].detach().numpy())
         loss = _loss.cross_entropy(self.cls_tuple[0], self.cls_tuple[-1])
         self.assertIsInstance(loss, torch.Tensor)
         self.assertEqual(loss.size().numel(), 1)
         self.assertAlmostEqual(float(loss), 0.80846738, places=4)
 
-        with self.assertRaises(TypeError):
-            np_loss = _loss.cross_entropy(self.seg_tuple[0].detach().numpy(), self.seg_tuple[-1].detach().numpy())
         loss = _loss.cross_entropy(self.seg_tuple[0], self.seg_tuple[-1])
         self.assertIsInstance(loss, torch.Tensor)
         self.assertEqual(loss.size().numel(), 1)

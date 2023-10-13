@@ -1,6 +1,6 @@
 import unittest
 
-from .. import _fileio
+from zae_engine.data import load_example
 
 
 class Test_loader(unittest.TestCase):
@@ -9,8 +9,8 @@ class Test_loader(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.EX_10sec = _fileio.load_example()
-        cls.EX_beat = _fileio.load_example(0)
+        cls.EX_10sec = load_example()
+        cls.EX_beat = load_example(0)
 
     @classmethod
     def get_attribute(cls):
@@ -27,12 +27,12 @@ class Test_loader(unittest.TestCase):
 
     def test_load_example(self):
         # test for 10 sec example
-        ex_10sec = _fileio.load_example()
+        ex_10sec = load_example()
         self.assertEqual(len(ex_10sec), 2)                  # of returned elements check
         self.assertEqual(ex_10sec[0].shape, (2500, ))       # dimension check
         self.assertEqual(ex_10sec[1].shape, (2500, ))       # dimension check
         # test for 0'th beat example
-        ex_beat = _fileio.load_example(0)
+        ex_beat = load_example(0)
         self.assertEqual(len(ex_beat), 3)                   # of returned elements check
         self.assertEqual(ex_beat[0].shape, (117,))          # dimension check
         self.assertEqual(type(ex_beat[1]), int)             # type check

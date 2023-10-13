@@ -1,7 +1,7 @@
 import unittest
 
 from zae_engine.data import load_example
-from .._module import *
+from zae_engine.nn_night import *
 
 
 class TestSEModule(unittest.TestCase):

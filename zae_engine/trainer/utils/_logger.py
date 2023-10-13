@@ -3,7 +3,6 @@ from functools import partial
 import neptune.new as nep
 from neptune.common.exceptions import NeptuneInvalidApiTokenException as InvalidTkn
 
-
 class NeptuneLogger:
     def __init__(self, project_name: str, api_tkn: str = '', **kwargs):
         """
