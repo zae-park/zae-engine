@@ -5,7 +5,7 @@ import torch
 import wfdb
 from typeguard import typechecked
 
-from ..operation import label_to_onoff, onoff_to_label, find_nearest, sanity_check,\
+from zae_engine.operation import label_to_onoff, onoff_to_label, find_nearest, sanity_check,\
     draw_confusion_matrix, print_confusion_matrix
 
 

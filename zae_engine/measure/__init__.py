@@ -7,3 +7,5 @@ from ._measure import peak_signal_to_noise
 from ._measure import miou
 from ._measure import giou
 from ._measure import fbeta
+from ._measure import cpsc2021
+from ._measure import iec_60601

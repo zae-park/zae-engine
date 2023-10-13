@@ -5,7 +5,7 @@ import torch
 import numpy as np
 
 from zae_engine.data import load_example
-from .._layer import Inv1d
+from zae_engine.nn_night import Inv1d
 
 
 class TestInv1d(unittest.TestCase):
