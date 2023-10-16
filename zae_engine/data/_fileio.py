@@ -7,10 +7,12 @@ import numpy as np
 
 def load_example(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
     """
-    Load example 10 second data from LUDB.
+    Load 10 second ecg recording & annotation from example data.
+    The example data from LUDB(https://www.physionet.org/content/ludb/1.0.1/).
+    The '*.zea' file includes QRS complex information.
     If argument 'beat_idx' is None(default), return the 10 second recording and label sequence.
     If not, return the recording, r-peak index, and beat type for beat_idx'th beat.
-    :param beat_idx: str, optional
+    :param beat_idx: int, optional
         The index of beat in data.
         Note that the value cannot be more than maximum index of beats in data (12).
         If this parameter is not specified, run for 10 second data.
@@ -18,34 +20,41 @@ def load_example(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
         If beat_idx was given, return recording, r-peak index, and beat type for beat_idx'th beat.
         If not, return recording, label sequence for 10 sec data.
     """
-    resource_path = os.path.join(os.path.dirname(__file__), 'resource/sample_data')
-    recording = wfdb.rdsamp(resource_path, return_res=32)[0].squeeze()     # nd-array, [2500, ]
-    anno = wfdb.rdann(resource_path, 'common')
-    samples, symbols = anno.sample.tolist(), anno.symbol
-    if symbols[0] != '*':
-        samples.insert(0, 0)
-        symbols.insert(0, '*')
-    if symbols[-1] != '*':
-        samples.append(2499)
-        symbols.append('*')
+    lookup = {'N': 1, 'A': 2}
 
-    assert len(symbols) == len(samples)
-    assert len(symbols) % 3 == 0
-    n_peak = len(symbols) // 3
+    ex_path = os.path.join(os.path.dirname(__file__), 'resource/sample_data')
+    recording = wfdb.rdsamp(ex_path, return_res=32)[0].squeeze()     # nd-array, [2500, ]
+    anno = wfdb.rdann(ex_path, 'zae')
+    samp, sym = anno.sample.tolist(), anno.symbol
+    if sym[0] != '*':
+        samp.insert(0, 0)
+        sym.insert(0, '*')
+    if sym[-1] != '*':
+        samp.append(2499)
+        sym.append('*')
 
+    assert len(sym) == len(samp), 'The length of samples and symbols is not matched. The annotation file is insane.'
+    assert len(sym) % 3 == 0, 'Invalid symbol. Please check out the first & last symbol of annotation.'
+
+    n_qrs = len(sym) // 3      # The number of QRS complexes.
     if beat_idx is None:
         label = np.zeros_like(recording, dtype=np.int32)
-        for i_peak in range(n_peak):
-            if symbols[3*i_peak+1] == 'N':
-                label[samples[3*i_peak]:samples[3*i_peak+2]] = 1
-            elif symbols[3*i_peak+1] == 'A':
-                label[samples[3*i_peak]:samples[3*i_peak+2]] = 2
-            else:
-                label[samples[3*i_peak]:samples[3*i_peak+2]] = 3
+        for i_qrs in np.arange(len(sym))[1::3]:
+            label[samp[i_qrs - 1]: samp[i_qrs + 1]] = lookup[s] if (s := sym[i_qrs]) in lookup.keys() else 3
         return recording, label
+
+        # for i_qrs in range(n_qrs):
+        #
+        #     if sym[3*i_peak+1] == 'N':
+        #         label[samp[3*i_peak]:samp[3*i_peak+2]] = 1
+        #     elif sym[3*i_peak+1] == 'A':
+        #         label[samp[3*i_peak]:samp[3*i_peak+2]] = 2
+        #     else:
+        #         label[samp[3*i_peak]:samp[3*i_peak+2]] = 3
+        # return recording, label
     else:
-        assert beat_idx < n_peak
-        chunk = recording[samples[3*beat_idx]:samples[3*beat_idx+2]]
-        sym = symbols[3*beat_idx+1]
-        peak_loc = samples[3*beat_idx+1] - samples[3*beat_idx]
-        return chunk, peak_loc, sym
+        assert beat_idx < n_qrs, f'The maximum value os beat_idx is {n_qrs}. But {beat_idx} was provided.'
+        qrs_chunk = recording[samp[3*beat_idx]:samp[3*beat_idx+2]]
+        sym = sym[3*beat_idx+1]
+        qrs_loc = samp[3*beat_idx+1] - samp[3*beat_idx]
+        return qrs_chunk, qrs_loc, sym
