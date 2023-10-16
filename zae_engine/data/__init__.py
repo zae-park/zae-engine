@@ -1,1 +1,1 @@
-from ._fileio import load_example
+from ._fileio import example_ecg

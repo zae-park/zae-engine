@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils import data
 
-from zae_engine.data import load_example
+from zae_engine.data import example_ecg
 from zae_engine import trainer, models, measure, operation
 
 
@@ -67,7 +67,7 @@ class ExTrainer(trainer.Trainer):
 #         self.device = torch.device(f'cuda:{0}' if torch.cuda.is_available() else 'cpu')
 #
 #     def test_template(self):
-#         x, y = load_example()
+#         x, y = example_ecg()
 #         loader = data.DataLoader(dataset=ExDataset(x=[x] * self.num_data, y=[y] * self.num_data), batch_size=8)
 #
 #         model = models.beat_segmentation(pretrained=True)
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     num_class = 4
     device = torch.device(f'cuda:{0}' if torch.cuda.is_available() else 'cpu')
 
-    ex_x, ex_y = load_example()
+    ex_x, ex_y = example_ecg()
     dataset1 = ExDataset(x=[ex_x] * num_data, y=[ex_y] * num_data)
     dataset2 = ExDataset(x=[ex_x] * num_data, y=[ex_y] * num_data, _type='dict')
     ex_loader1 = data.DataLoader(dataset=dataset1, batch_size=num_batch)

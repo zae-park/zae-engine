@@ -4,7 +4,7 @@ import unittest
 import torch
 import numpy as np
 
-from zae_engine.data import load_example
+from zae_engine.data import example_ecg
 from zae_engine.nn_night import Inv1d
 
 
@@ -21,7 +21,7 @@ class TestInv1d(unittest.TestCase):
         cls.random_channel_size = int(candidate_channels[choice])
 
         cls.EX_10sec = torch.randn(1, cls.random_channel_size, cls.dim)
-        cls.EX_beat = load_example(0)
+        cls.EX_beat = example_ecg(0)
 
     @classmethod
     def get_attribute(cls):

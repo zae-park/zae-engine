@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils import data
 
-from zae_engine.data import load_example
+from zae_engine.data import example_ecg
 from zae_engine import trainer, models, measure
 from zae_engine.trainer import mpu_utils
 
@@ -107,7 +107,7 @@ def core0():
     # MPU without DataParallel
     device = torch.device(f'cuda:{0}' if torch.cuda.is_available() else 'cpu')
 
-    ex_x, ex_y = load_example()
+    ex_x, ex_y = example_ecg()
     dataset1 = ExDataset(x=[ex_x] * num_data, y=[ex_y] * num_data)
     ex_loader1 = data.DataLoader(dataset=dataset1, batch_size=num_batch)
 
@@ -135,7 +135,7 @@ def core1():
     # MPU with DataParallel
     device = torch.device(f'cuda:{0}' if torch.cuda.is_available() else 'cpu')
 
-    ex_x, ex_y = load_example()
+    ex_x, ex_y = example_ecg()
     dataset1 = ExDataset(x=[ex_x] * num_data, y=[ex_y] * num_data)
     ex_loader1 = data.DataLoader(dataset=dataset1, batch_size=num_batch)
 
@@ -162,7 +162,7 @@ def core2():
     # MPU with CustomParallel - Modelparallel & Dataparallel
     device = torch.device(f'cuda:{0}' if torch.cuda.is_available() else 'cpu')
 
-    ex_x, ex_y = load_example()
+    ex_x, ex_y = example_ecg()
     dataset1 = ExDataset(x=[ex_x] * num_data, y=[ex_y] * num_data)
     ex_loader1 = data.DataLoader(dataset=dataset1, batch_size=num_batch)
 
