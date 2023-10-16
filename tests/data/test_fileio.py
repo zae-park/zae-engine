@@ -1,6 +1,6 @@
 import unittest
 
-from zae_engine.data import load_example
+from zae_engine.data import example_ecg
 
 
 class Test_loader(unittest.TestCase):
@@ -9,8 +9,8 @@ class Test_loader(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.EX_10sec = load_example()
-        cls.EX_beat = load_example(0)
+        cls.EX_10sec = example_ecg()
+        cls.EX_beat = example_ecg(0)
 
     @classmethod
     def get_attribute(cls):
@@ -25,14 +25,14 @@ class Test_loader(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_load_example(self):
+    def test_example_ecg(self):
         # test for 10 sec example
-        ex_10sec = load_example()
+        ex_10sec = example_ecg()
         self.assertEqual(len(ex_10sec), 2)                  # of returned elements check
         self.assertEqual(ex_10sec[0].shape, (2500, ))       # dimension check
         self.assertEqual(ex_10sec[1].shape, (2500, ))       # dimension check
         # test for 0'th beat example
-        ex_beat = load_example(0)
+        ex_beat = example_ecg(0)
         self.assertEqual(len(ex_beat), 3)                   # of returned elements check
         self.assertEqual(ex_beat[0].shape, (117,))          # dimension check
         self.assertEqual(type(ex_beat[1]), int)             # type check

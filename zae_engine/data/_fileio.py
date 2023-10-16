@@ -5,9 +5,9 @@ import wfdb
 import numpy as np
 
 
-def load_example(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
+def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
     """
-    Load 10 second ecg recording & annotation from example data.
+    Load 10 second ecg recording & annotation from example data with sampling frequency 250Hz.
     The example data from LUDB(https://www.physionet.org/content/ludb/1.0.1/).
     The '*.zea' file includes QRS complex information.
     If argument 'beat_idx' is None(default), return the 10 second recording and label sequence.
