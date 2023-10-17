@@ -2,6 +2,8 @@ import os
 from typing import Tuple
 
 import wfdb
+import nibabel as nib
+from nibabel.testing import data_path
 import numpy as np
 
 
@@ -58,3 +60,22 @@ def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
         sym = sym[3*beat_idx+1]
         qrs_loc = samp[3*beat_idx+1] - samp[3*beat_idx]
         return qrs_chunk, qrs_loc, sym
+
+
+def example_mri() -> Tuple[np.ndarray, ...]:
+    example_path = os.path.join(data_path, 'example4d.nii.gz')
+
+    proxy = nib.load(example_path)
+
+    if 'get_fdata' in proxy.__dir__():
+
+        header = proxy.header
+        arr = proxy.get_fdata()
+
+        # 3. 원하는 Image Array 영역만 불러오기
+        sub_arr = proxy.dataobj[..., 0:5]
+    return ()
+
+
+if __name__ == "__main__":
+    res = example_mri()
