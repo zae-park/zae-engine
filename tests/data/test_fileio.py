@@ -1,6 +1,6 @@
 import unittest
 
-from zae_engine.data import example_ecg
+from zae_engine.data import example_ecg, example_mri
 
 
 class Test_loader(unittest.TestCase):
@@ -40,6 +40,9 @@ class Test_loader(unittest.TestCase):
         self.assertLessEqual(0, ex_beat[1])                     # check is r-peak in beat
         self.assertEqual(type(ex_beat[2]), str)             # check type of beat-type
         self.assertIn(ex_beat[2], ['N', 'A', 'V'])    # check beat-type is valid.
+
+    def test_example_mri(self):
+        res = example_mri()
 
 
 if __name__ == '__main__':
