@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 import torch
 import torch.nn as nn
+
 # from dotenv import dotenv_values
 # from minio import Minio
 
@@ -15,7 +16,7 @@ def load_weights(model_type: str) -> OrderedDict:
 
     """
 
-    def find_file(filename, path='.'):
+    def find_file(filename, path="."):
         bag = os.listdir(path)
         if filename in bag:
             return os.path.join(path, filename)
@@ -23,14 +24,17 @@ def load_weights(model_type: str) -> OrderedDict:
             for b in bag:
                 if os.path.isdir(os.path.join(path, b)):
                     result = find_file(filename, os.path.join(path, b))
-                    if result: return result
+                    if result:
+                        return result
 
-    pull_path = find_file(filename='.env', path=os.path.dirname(__file__))
+    pull_path = find_file(filename=".env", path=os.path.dirname(__file__))
     if not pull_path:
-        raise Exception('Must be .env file at the same location with utility.py')
+        raise Exception("Must be .env file at the same location with utility.py")
 
-    if model_type.upper() not in ['RPEAK', 'SEC10', 'BEAT']:
-        raise Exception(f'There is no type {model_type} choose one of ["r_peak", "sec10", "beat"]')
+    if model_type.upper() not in ["RPEAK", "SEC10", "BEAT"]:
+        raise Exception(
+            f'There is no type {model_type} choose one of ["r_peak", "sec10", "beat"]'
+        )
 
     # env_values = dotenv_values(pull_path)
 
@@ -48,7 +52,6 @@ def load_weights(model_type: str) -> OrderedDict:
     return {}
 
 
-
 def initializer(m):
     """
     Initialize the parameters in model.
@@ -61,7 +64,7 @@ def initializer(m):
     :param m:
         The member of model.
     """
-    if 'weight' in dir(m):
+    if "weight" in dir(m):
         if type(m) == nn.Linear:
             nn.init.normal_(m.weight)
         elif type(m) == nn.BatchNorm1d:
@@ -69,7 +72,7 @@ def initializer(m):
         elif type(m) == nn.LayerNorm:
             pass
         else:
-            nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
+            nn.init.kaiming_normal_(m.weight, nonlinearity="relu")
 
 
 def transformer_option(m):
@@ -82,11 +85,11 @@ def transformer_option(m):
 
 
 def download(
-        endpoint: str,
-        bucket_name: str,
-        model_path: str,
-        access_key: str = 'a-key',
-        secret_key: str = 's-key'
+    endpoint: str,
+    bucket_name: str,
+    model_path: str,
+    access_key: str = "a-key",
+    secret_key: str = "s-key",
 ):
     """
     Download the weight from the given URL.
@@ -98,19 +101,22 @@ def download(
     :param secret_key :str
     """
     client = Minio(
-        endpoint=endpoint,
-        access_key=access_key,
-        secret_key=secret_key,
-        secure=False
+        endpoint=endpoint, access_key=access_key, secret_key=secret_key, secure=False
     )
 
-    model_name = model_path.split('/')[-1]
+    model_name = model_path.split("/")[-1]
 
-    client.fget_object(bucket_name=bucket_name, object_name=model_path, file_path=model_name)
+    client.fget_object(
+        bucket_name=bucket_name, object_name=model_path, file_path=model_name
+    )
 
 
 class WeightLoader:
-    state_dict = {'beat': None, 'rpeak': None, 'sec10': None}
+    state_dict = {
+        "beat_segmentation": None,
+        "peak_regression": None,
+        "arrhythmia_classification": None,
+    }
 
     def __init__(self, model_type: str):
         w_dict = load_weights(model_type)
