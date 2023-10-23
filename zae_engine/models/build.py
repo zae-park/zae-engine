@@ -48,28 +48,9 @@ class CNNBase(nn.Module):
         else:
             raise IndexError("Unexpected shape error.")
 
-        class ResBlock(nn.Sequential):
-            """
-            Residual Block which inherit 'Sequential' class in torch.nn
-            """
-
-            def __init__(self, *args):
-                super(ResBlock, self).__init__(*args)
-
-            def forward(self, x):
-                """
-                The 'module' is sequence of arguments in __init__.
-                :param x: Input tensor
-                :return: Sum of input tensor and output of sequence.
-                """
-                residual = x
-                for module in self:
-                    x = module(x)
-                return x + residual
-
         blk = []  # List of blocks
         for o in range(order):  # stack blocks 'order' times
-            sequence = ResBlock(
+            sequence = nnn.Residual(
                 self.unit_layer(ch_in, ch_out, kernel_size, dilation=dilation),
                 self.unit_layer(ch_out, ch_out, kernel_size, dilation=dilation),
                 nnn.SE(ch_out, reduction=8),
@@ -356,7 +337,7 @@ class Regressor1D(CNNBase):
         return self.head(emb)
 
 
-class Sec10(nn.Module):
+class Classifier1D(nn.Module):
     """
     Builder class for 10 sec classification model which has Residual Network structure.
     :param num_layers: int
@@ -402,7 +383,7 @@ class Sec10(nn.Module):
         contrastive: Optional[bool] = False,
         **kwargs,
     ):
-        super(Sec10, self).__init__()
+        super(Classifier1D, self).__init__()
         num_layers = num_layers
         num_classes = num_classes
         num_channels = num_channels

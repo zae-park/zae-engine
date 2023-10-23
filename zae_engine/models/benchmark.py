@@ -2,7 +2,7 @@ from typing import Optional
 
 import torch.nn as nn
 
-from .build import Segmentor1D, Regressor1D, Sec10
+from .build import Segmentor1D, Regressor1D, Classifier1D
 from .utility import load_weights, initializer, WeightLoader
 
 
@@ -72,7 +72,7 @@ def sec10_classification(pretrained: Optional[bool] = False) -> nn.Module:
         If not, weights are initialized randomly.
     :return: nn.Module
     """
-    model = Sec10(
+    model = Classifier1D(
         num_layers=34,
         num_classes=7,
         num_channels=1,
