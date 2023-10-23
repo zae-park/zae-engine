@@ -26,7 +26,6 @@ class CNNBase(nn.Module):
         kernel_size: Union[Iterable, int],
         order: int,
         dilation: int = 1,
-        se_bias: bool = False,
     ):
         """
         Return block, accumulated layers in-stage. Stack CBR 'order' times.
@@ -38,7 +37,6 @@ class CNNBase(nn.Module):
         :param order: [Int] the number of blocks in stage.
             The stage means same resolution. e.g. from after previous pooling (or stem) to before next pooling.
         :param dilation: [Int, Iterable] Default is 1. If argument more than 1, dilated convolution will performed.
-        :param se_bias: [Bool] for SE module option. This argument will be deprecated.
         :return: [nn.Module]
         """
 
@@ -48,7 +46,7 @@ class CNNBase(nn.Module):
             dim = len(kernel_size)
             self.conv_api = nn.Conv2d if dim == 2 else nn.Conv3d if dim == 3 else None
         else:
-            raise IndexError('Unexpected shape error.')
+            raise IndexError("Unexpected shape error.")
 
         class ResBlock(nn.Sequential):
             """
@@ -69,12 +67,12 @@ class CNNBase(nn.Module):
                     x = module(x)
                 return x + residual
 
-        blk = []    # List of blocks
+        blk = []  # List of blocks
         for o in range(order):  # stack blocks 'order' times
             sequence = ResBlock(
                 self.unit_layer(ch_in, ch_out, kernel_size, dilation=dilation),
                 self.unit_layer(ch_out, ch_out, kernel_size, dilation=dilation),
-                nnn.SE(ch_out, reduction=8, bias=se_bias),
+                nnn.SE(ch_out, reduction=8),
             )
             blk.append(sequence)
         return nn.Sequential(*blk)
@@ -86,7 +84,14 @@ class CNNBase(nn.Module):
             c_in, self.ch_out, kernel_size=kernel, padding=(kernel - 1) // 2
         )
 
-    def unit_layer(self, ch_in: int, ch_out: int, kernel_size: Union[Iterable, int], stride: int = 1, dilation: int = 1):
+    def unit_layer(
+        self,
+        ch_in: int,
+        ch_out: int,
+        kernel_size: Union[Iterable, int],
+        stride: int = 1,
+        dilation: int = 1,
+    ):
         """
         Return unit layer. The unit layer consists of {convolution} - {batch norm} - {activation}.
         :param ch_in: [Int]
@@ -108,7 +113,7 @@ class CNNBase(nn.Module):
         return nn.Sequential(*[conv1, nn.BatchNorm1d(ch_out), nn.ReLU()])
 
 
-class BeatSegment(CNNBase):
+class Segmentor1D(CNNBase):
     """
     Builder class for beat_segmentation which has U-Net-like structure.
     :param ch_in: int
@@ -131,9 +136,6 @@ class BeatSegment(CNNBase):
     :param expanding: bool, optional
         Optional.
         If True, input tensor padded 30 samples bi-side along the spatial axis to match the shape and product of stride.
-    :param se_bias: bool, optional
-        Optional.
-        If True, SE modules have extra weights (bias).
     """
 
     def __init__(
@@ -148,7 +150,7 @@ class BeatSegment(CNNBase):
         decoding: bool,
         **kwargs,
     ):
-        super(BeatSegment, self).__init__()
+        super(Segmentor1D, self).__init__()
 
         self.ch_in = ch_in
         self.ch_out = ch_out
@@ -161,7 +163,6 @@ class BeatSegment(CNNBase):
         self.kwargs = kwargs
 
         self.expanding = kwargs["expanding"] if "expanding" in kwargs.keys() else False
-        self.se_bias = kwargs["se_bias"] if "se_bias" in kwargs.keys() else False
 
         # Encoder (down-stream)
         self.pools = nn.ModuleList()
@@ -171,9 +172,7 @@ class BeatSegment(CNNBase):
                 self.enc.append(
                     nn.Sequential(
                         self.unit_layer(ch_in, width, kernel_size),
-                        self.gen_block(
-                            width, width, kernel_size, order, se_bias=self.se_bias
-                        ),
+                        self.gen_block(width, width, kernel_size, order),
                     )
                 )
             else:
@@ -187,9 +186,7 @@ class BeatSegment(CNNBase):
                 self.enc.append(
                     nn.Sequential(
                         self.unit_layer(c_in, c_out, kernel_size, stride=s),
-                        self.gen_block(
-                            c_out, c_out, kernel_size, order, se_bias=self.se_bias
-                        ),
+                        self.gen_block(c_out, c_out, kernel_size, order),
                     )
                 )
 
@@ -207,9 +204,7 @@ class BeatSegment(CNNBase):
                 self.dec.append(
                     nn.Sequential(
                         self.unit_layer(c_in, c_out, kernel_size),
-                        self.gen_block(
-                            c_out, c_out, kernel_size, order, se_bias=self.se_bias
-                        ),
+                        self.gen_block(c_out, c_out, kernel_size, order),
                     )
                 )
 
@@ -255,7 +250,7 @@ class BeatSegment(CNNBase):
         return out
 
 
-class RPeakRegress(CNNBase):
+class Regressor1D(CNNBase):
     """
     Builder class for rpeak_regression which has cascade CNN structure.
     :param dim_in: int
@@ -275,9 +270,7 @@ class RPeakRegress(CNNBase):
         The number of layers in head.
     :param embedding_dims: int
         The spatial-wise dimension of feature vector (or latent space).
-    :param se_bias: bool, optional
-        Optional.
-        If True, SE modules have extra weights (bias).
+
     """
 
     def __init__(
@@ -305,8 +298,6 @@ class RPeakRegress(CNNBase):
         self.embedding_dims = embedding_dims
         self.kwargs = kwargs
 
-        self.se_bias = kwargs["se_bias"] if "se_bias" in kwargs.keys() else False
-
         # Encoder (down-stream)
         enc = []
         for d in range(depth):
@@ -316,11 +307,7 @@ class RPeakRegress(CNNBase):
             )
             enc.append(
                 self.gen_block(
-                    width * (d + 1),
-                    width * (d + 1),
-                    kernel_size,
-                    order=order,
-                    se_bias=self.se_bias,
+                    width * (d + 1), width * (d + 1), kernel_size, order=order
                 )
             )
         self.enc = nn.Sequential(*enc)
