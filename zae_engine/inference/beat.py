@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 from zae_engine import models, trainer
-from zae_engine.data.collate import BeatCollateSeq as Col
+from zae_engine.data_pipeline.collate import BeatCollateSeq as Col
 from zae_engine.operation import label_to_onoff, sanity_check, onoff_to_label
 
 
@@ -16,72 +16,76 @@ def core(x: Union[np.ndarray, torch.Tensor]):
     :param x: List of waveforms.
     :return: Onoff matrix consists of [[on, off, cls, rpeak] x beats] for each x.
     """
-    assert len(x.shape) == 1, f'Expect 1-D array, but receive {len(x.shape)}-D array.'
-    device = torch.device(f'cuda:0' if torch.cuda.is_available() else 'cpu')
+    assert len(x.shape) == 1, f"Expect 1-D array, but receive {len(x.shape)}-D array."
+    device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
     inference_dataset = ECG_dataset(x=x.reshape(1, -1))
-    inference_loader = DataLoader(inference_dataset, batch_size=1, shuffle=False,
-                                  collate_fn=Col(sequence=['split']).wrap())
+    inference_loader = DataLoader(
+        inference_dataset, batch_size=1, shuffle=False, collate_fn=Col(sequence=["split"]).wrap()
+    )
 
     # --------------------------------- Inference & Postprocess @ stage 1 --------------------------------- #
     model = models.beat_segmentation(True)
-    trainer1 = Trainer_stg1(model=model, device=device, mode='test')
+    trainer1 = Trainer_stg1(model=model, device=device, mode="test")
     prediction_stg1 = np.concatenate(trainer1.inference(inference_loader)).argmax(1)
 
     # postprocessing
     cursor, fin_dict = 0, defaultdict(list)
     for col in inference_loader.__iter__():
-        n = col['x'].__len__()
-        fin_dict['x'].append(col['raw'])
-        pred_onoff = label_to_onoff(prediction_stg1[cursor:cursor + n], sense=5)
+        n = col["x"].__len__()
+        fin_dict["x"].append(col["raw"])
+        pred_onoff = label_to_onoff(prediction_stg1[cursor : cursor + n], sense=5)
         pred_onoff = [sanity_check(oo) for oo in pred_onoff]
         pred_onoff = recursive_peak_merge(pred_onoff, len(pred_onoff) // 2, 250, 2)[0]
         try:
             if not pred_onoff:
                 raise np.AxisError(0)
-            fin_dict['onoff'].append(pred_onoff[pred_onoff.max(1) < len(col['raw'])])
+            fin_dict["onoff"].append(pred_onoff[pred_onoff.max(1) < len(col["raw"])])
         except np.AxisError:
-            fin_dict['onoff'].append(None)
+            fin_dict["onoff"].append(None)
         except ValueError:
-            fin_dict['onoff'].append(pred_onoff[pred_onoff.max(1) < len(col['raw'])])
-        fin_dict['y'].append(onoff_to_label(np.array(pred_onoff), length=len(col['raw'])).tolist())
-        fin_dict['fn'].append(col['fn'])
+            fin_dict["onoff"].append(pred_onoff[pred_onoff.max(1) < len(col["raw"])])
+        fin_dict["y"].append(onoff_to_label(np.array(pred_onoff), length=len(col["raw"])).tolist())
+        fin_dict["fn"].append(col["fn"])
         cursor += n
 
-    # --------------------------------- Load data @ stage 2 --------------------------------- #
-    inference_dataset2 = ECG_dataset(x=np.stack(fin_dict['x']), y=np.stack(fin_dict['y']),
-                                     fn=fin_dict['fn'], onoff=fin_dict['onoff'])
-    inference_loader2 = DataLoader(inference_dataset2, batch_size=1, shuffle=False,
-                                   collate_fn=Col(sequence=['r_reg'], zit=False, resamp=64).wrap())
+    # --------------------------------- Load data_pipeline @ stage 2 --------------------------------- #
+    inference_dataset2 = ECG_dataset(
+        x=np.stack(fin_dict["x"]), y=np.stack(fin_dict["y"]), fn=fin_dict["fn"], onoff=fin_dict["onoff"]
+    )
+    inference_loader2 = DataLoader(
+        inference_dataset2, batch_size=1, shuffle=False, collate_fn=Col(sequence=["r_reg"], zit=False, resamp=64).wrap()
+    )
 
     # --------------------------------- Inference & Postprocess @ stage 2 --------------------------------- #
     model = models.rpeak_regression(True)
-    trainer2 = Trainer_stg2(model=model, device=device, mode='test')
+    trainer2 = Trainer_stg2(model=model, device=device, mode="test")
     prediction_stg2 = torch.cat(trainer2.inference(inference_loader2)).squeeze().numpy()
 
     # postprocessing
     cursor = 0
     for i, onoff in enumerate(inference_dataset2.onoff):
-        if onoff is None: continue
+        if onoff is None:
+            continue
         n = onoff.__len__()
-        r_loc = prediction_stg2[cursor:cursor + n]
+        r_loc = prediction_stg2[cursor : cursor + n]
         r_idx = onoff[:, 0] + (onoff[:, 1] - onoff[:, 0]) * r_loc
         fin_onoff = np.concatenate((onoff, r_idx.reshape(-1, 1)), axis=1).astype(int)
-        fin_dict['fin_onoff'].append(fin_onoff[fin_onoff[:, -1] < len(fin_dict['x'][i])])
+        fin_dict["fin_onoff"].append(fin_onoff[fin_onoff[:, -1] < len(fin_dict["x"][i])])
         cursor += n
 
-    if fin_dict['fin_onoff']:
-        return [onoff.tolist() for onoff in fin_dict['fin_onoff']][0]
+    if fin_dict["fin_onoff"]:
+        return [onoff.tolist() for onoff in fin_dict["fin_onoff"]][0]
     else:
         return []
 
 
 def recursive_peak_merge(qrs_indexes, half_index, sampling_rate, overlapped_sec):
-    """ merge overlapped 10sec data.
+    """merge overlapped 10sec data_pipeline.
     Args:
-         qrs_indexes: qrs info, N x B x (on off rp cls). N is # of 10 sec data, B is # of beats in a data.
-         half_index: half # of 10 sec data.
+         qrs_indexes: qrs info, N x B x (on off rp cls). N is # of 10 sec data_pipeline, B is # of beats in a data_pipeline.
+         half_index: half # of 10 sec data_pipeline.
          sampling_rate: # of pnts in a second.
-         overlapped_sec: data is merged according to this param.
+         overlapped_sec: data_pipeline is merged according to this param.
     """
 
     n_overlapped_samples = sampling_rate * overlapped_sec  # 500
@@ -96,7 +100,7 @@ def recursive_peak_merge(qrs_indexes, half_index, sampling_rate, overlapped_sec)
             return np.expand_dims(merged_qrs_indexes, axis=0)  # 2번째 data가 빈 경우 땡큐
 
         shift = int(half_index * (sampling_rate * 10 - n_overlapped_samples))  # half_index는 아마 1?
-        shifted_peak_indexes = np.array(qrs_indexes[1])  # 2번째 data
+        shifted_peak_indexes = np.array(qrs_indexes[1])  # 2번째 data_pipeline
         shifted_peak_indexes[:, 0:2] = shifted_peak_indexes[:, 0:2] + shift
 
         # 누적된 신호에서 오버랩 후보 영역을 찾는다
@@ -127,14 +131,18 @@ def recursive_peak_merge(qrs_indexes, half_index, sampling_rate, overlapped_sec)
                         break
             # overlap 구간에서 중복되지 않는 모든 qrs 붙이기
             overlapped = np.concatenate(
-                (overlapped_indexes, shifted_overlapped_indexes[np.where(np.array(duplicated) == False)]), axis=0)
+                (overlapped_indexes, shifted_overlapped_indexes[np.where(np.array(duplicated) == False)]), axis=0
+            )
             overlapped = sorted(overlapped, key=lambda x: x[0])
 
             merged_qrs_indexes = np.concatenate(
-                (merged_qrs_indexes[:overlapped_pos[0]],
-                 overlapped,
-                 shifted_peak_indexes[shifted_overlapped_pos[-1] + 1:]),
-                axis=0)
+                (
+                    merged_qrs_indexes[: overlapped_pos[0]],
+                    overlapped,
+                    shifted_peak_indexes[shifted_overlapped_pos[-1] + 1 :],
+                ),
+                axis=0,
+            )
 
         return np.expand_dims(merged_qrs_indexes, axis=0)
     else:
@@ -152,14 +160,14 @@ def recursive_peak_merge(qrs_indexes, half_index, sampling_rate, overlapped_sec)
 class ECG_dataset(Dataset):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
-        self.x = torch.tensor(kwargs['x'], dtype=torch.float32)
-        self.y = torch.tensor(kwargs['y'], dtype=torch.long) if self.attr('y') is not None else None
-        self.fn = kwargs['fn'] if self.attr('fn') is not None else None
-        self.rp = kwargs['rp'] if self.attr('rp') is not None else None
-        self.onoff = kwargs['onoff'] if self.attr('onoff') is not None else None
+        self.x = torch.tensor(kwargs["x"], dtype=torch.float32)
+        self.y = torch.tensor(kwargs["y"], dtype=torch.long) if self.attr("y") is not None else None
+        self.fn = kwargs["fn"] if self.attr("fn") is not None else None
+        self.rp = kwargs["rp"] if self.attr("rp") is not None else None
+        self.onoff = kwargs["onoff"] if self.attr("onoff") is not None else None
 
-        self.mode = kwargs['mode'] if 'mode' in kwargs.keys() else ''
-        print(f'\t # of {self.mode} data: %d' % len(self.x))
+        self.mode = kwargs["mode"] if "mode" in kwargs.keys() else ""
+        print(f"\t # of {self.mode} data_pipeline: %d" % len(self.x))
 
     def __len__(self):
         return len(self.x)
@@ -170,13 +178,13 @@ class ECG_dataset(Dataset):
 
     def __getitem__(self, idx):
         batch_dict = defaultdict(None)
-        batch_dict['x'] = self.x[idx].unsqueeze(0)
-        batch_dict['y'] = self.y[idx].unsqueeze(0) if self.y is not None else None
-        batch_dict['fn'] = self.fn[idx] if self.fn is not None else None
+        batch_dict["x"] = self.x[idx].unsqueeze(0)
+        batch_dict["y"] = self.y[idx].unsqueeze(0) if self.y is not None else None
+        batch_dict["fn"] = self.fn[idx] if self.fn is not None else None
         if self.rp is not None:
-            batch_dict['rp'] = torch.tensor(self.rp[idx], dtype=torch.long)
+            batch_dict["rp"] = torch.tensor(self.rp[idx], dtype=torch.long)
         if self.onoff:
-            batch_dict['onoff'] = self.onoff[idx] if self.onoff is not None else None
+            batch_dict["onoff"] = self.onoff[idx] if self.onoff is not None else None
         return batch_dict
 
 
@@ -192,7 +200,7 @@ class Trainer_stg1(trainer.Trainer):
         x = batch["x"]
         mini_x = x.split(self.mini_batch_size, dim=0)
         out = torch.cat([self.model(m_x) for m_x in mini_x])
-        return {'loss': 0, 'output': out}
+        return {"loss": 0, "output": out}
 
 
 class Trainer_stg2(trainer.Trainer):
@@ -204,10 +212,11 @@ class Trainer_stg2(trainer.Trainer):
         pass
 
     def test_step(self, batch: dict):
-        if batch is None: return {'loss': 0, 'output': torch.Tensor([]), 'output_onoff': np.array([])}
-        if isinstance((w := batch['w']), torch.Tensor) and isinstance((onoff := batch['onoff']), list):
+        if batch is None:
+            return {"loss": 0, "output": torch.Tensor([]), "output_onoff": np.array([])}
+        if isinstance((w := batch["w"]), torch.Tensor) and isinstance((onoff := batch["onoff"]), list):
             mini_w = w.split(self.mini_batch_size, dim=0)
             pred = torch.cat([self.model(m_w) for m_w in mini_w])
-            return {'loss': 0, 'output': self.model.clipper(pred), 'output_onoff': onoff}
+            return {"loss": 0, "output": self.model.clipper(pred), "output_onoff": onoff}
         else:
-            return {'loss': 0, 'output': torch.Tensor([]), 'output_onoff': np.array([])}
+            return {"loss": 0, "output": torch.Tensor([]), "output_onoff": np.array([])}

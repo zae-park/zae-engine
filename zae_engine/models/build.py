@@ -55,23 +55,9 @@ class CNNBase(nn.Module):
             self._dim = len(self.kernel_size)
             if self._dim > 3:
                 raise IndexError("Unexpected shape error.")
-            self._conv = (
-                nn.Conv2d if self._dim == 2 else nn.Conv3d if self._dim == 3 else None
-            )
-            self._bn = (
-                nn.BatchNorm2d
-                if self._dim == 2
-                else nn.BatchNorm3d
-                if self._dim == 3
-                else None
-            )
-            self._pool = (
-                nn.AvgPool2d
-                if self._dim == 2
-                else nn.AvgPool3d
-                if self._dim == 3
-                else None
-            )
+            self._conv = nn.Conv2d if self._dim == 2 else nn.Conv3d if self._dim == 3 else None
+            self._bn = nn.BatchNorm2d if self._dim == 2 else nn.BatchNorm3d if self._dim == 3 else None
+            self._pool = nn.AvgPool2d if self._dim == 2 else nn.AvgPool3d if self._dim == 3 else None
 
     def calc_padding(self, dilation, kernels):
         if isinstance(kernels, int):
@@ -137,9 +123,7 @@ class CNNBase(nn.Module):
             blk.append(sequence)
         return nn.Sequential(*blk)
 
-    def gen_body(
-        self, ch_in, width, kernel_size, depth, order, stride
-    ) -> Tuple[ModuleList, ModuleList]:
+    def gen_body(self, ch_in, width, kernel_size, depth, order, stride) -> Tuple[ModuleList, ModuleList]:
         # Feature extraction
         pools = nn.ModuleList()
         body = nn.ModuleList()
@@ -196,18 +180,16 @@ class Segmentor(CNNBase):
 
     def __init__(
         self,
-        ch_in: int,
-        ch_out: int,
-        width: int,
-        kernel_size: int or tuple,
-        depth: int,
-        order: int,
-        stride: list or tuple,
-        decoding: bool,
+        ch_in: int = 1,
+        ch_out: int = 2,
+        width: int = 16,
+        kernel_size: int or tuple = 3,
+        depth: int = 5,
+        order: int = 2,
+        stride: list or tuple = (2, 2, 2, 2),
+        decoding: bool = False,
     ):
-        super(Segmentor, self).__init__(
-            ch_in, ch_out, width, kernel_size, depth, order, stride
-        )
+        super(Segmentor, self).__init__(ch_in, ch_out, width, kernel_size, depth, order, stride)
         self.enc = self.body
         self.decoding = decoding
 
@@ -233,9 +215,7 @@ class Segmentor(CNNBase):
                     )
                 )
 
-        self.head = self.gen_head(
-            width if decoding else width * depth, ch_out, kernel=kernel_size
-        )
+        self.head = self.gen_head(width if decoding else width * depth, ch_out, kernel=kernel_size)
 
     def forward(self, x):
         for_skip, for_feat = [], []
@@ -247,9 +227,7 @@ class Segmentor(CNNBase):
             elif d == 1:
                 for_skip.append(self.enc[d](for_skip[-1]))
             else:
-                for_skip.append(
-                    self.enc[d](torch.cat([for_skip[-1], self.pools[d - 2](x)], 1))
-                )
+                for_skip.append(self.enc[d](torch.cat([for_skip[-1], self.pools[d - 2](x)], 1)))
 
         # -------------Decoder#------------- #
         if not self.decoding:
@@ -318,14 +296,8 @@ class Regressor1D(CNNBase):
         enc = []
         for d in range(depth):
             c_in = ch_in if d == 0 else width * d
-            enc.append(
-                self.unit_layer(c_in, width * (d + 1), self.kernel_size, self.stride)
-            )
-            enc.append(
-                self.gen_block(
-                    width * (d + 1), width * (d + 1), kernel_size, order=order
-                )
-            )
+            enc.append(self.unit_layer(c_in, width * (d + 1), self.kernel_size, self.stride))
+            enc.append(self.gen_block(width * (d + 1), width * (d + 1), kernel_size, order=order))
         self.enc = nn.Sequential(*enc)
 
         self.update_dimension()
@@ -335,19 +307,13 @@ class Regressor1D(CNNBase):
 
     def update_dimension(self):
         for _ in range(self.depth):
-            self.dim = (
-                self.dim + (self.kernel_size - 1) // 2 * 2 - (self.kernel_size - 1) - 1
-            ) // self.stride + 1
+            self.dim = (self.dim + (self.kernel_size - 1) // 2 * 2 - (self.kernel_size - 1) - 1) // self.stride + 1
             # self.dim = 1 + (self.dim + 2*(self.kernel_size//2) - self.kernel_size) // self.stride
 
     def gen_embedding(self):
         block = []
         for h in range(self.head_depth):
-            d_in = (
-                self.dim * self.width * self.depth
-                if h == 0
-                else int(self.dim // 2 ** (self.head_depth - h))
-            )
+            d_in = self.dim * self.width * self.depth if h == 0 else int(self.dim // 2 ** (self.head_depth - h))
             block.append(nn.Linear(d_in, self.embedding_dims))
             block.append(nn.ReLU())
         return nn.Sequential(*block)
