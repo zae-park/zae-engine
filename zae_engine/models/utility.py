@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 
 # from dotenv import dotenv_values
-# from minio import Minio
+from minio import Minio
 
 
 def load_weights(model_type: str) -> OrderedDict:
