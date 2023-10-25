@@ -5,7 +5,7 @@ description = 'Deep learning engine powered by zae-park.'
 authors = ["zae-park <tom941105@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "3.10.0"
+python = "^3.10.0"
 matplotlib = "^3.7.2"
 tensorflow-io-gcs-filesystem = "0.31.0"
 torchvision = {url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-win_amd64.whl"}
