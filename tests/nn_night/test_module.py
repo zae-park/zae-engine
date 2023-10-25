@@ -1,6 +1,6 @@
 import unittest
 
-from zae_engine.data import example_ecg
+from zae_engine.data_pipeline import example_ecg
 from zae_engine.nn_night import *
 
 
@@ -64,5 +64,5 @@ class TestSEModule(unittest.TestCase):
             se_module(ex_10sec)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

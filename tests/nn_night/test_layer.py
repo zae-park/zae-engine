@@ -4,7 +4,7 @@ import unittest
 import torch
 import numpy as np
 
-from zae_engine.data import example_ecg
+from zae_engine.data_pipeline import example_ecg
 from zae_engine.nn_night import Inv1d
 
 
@@ -52,8 +52,9 @@ class TestInv1d(unittest.TestCase):
             mismatch_stride += 1
 
         with self.assertRaises(AssertionError):
-            inv_layer = Inv1d(ex_10sec.size()[1], num_groups=2, kernel_size=3, stride=mismatch_stride,
-                              reduction_ratio=3)
+            inv_layer = Inv1d(
+                ex_10sec.size()[1], num_groups=2, kernel_size=3, stride=mismatch_stride, reduction_ratio=3
+            )
             inv_layer(ex_10sec)
 
     def test_num_groups(self):
@@ -67,5 +68,5 @@ class TestInv1d(unittest.TestCase):
             inv_layer(ex_10sec)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

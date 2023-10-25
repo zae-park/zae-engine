@@ -26,15 +26,15 @@ class Trainer(ABC):
     """
 
     def __init__(
-            self,
-            model,
-            device: torch.device,
-            mode: str,
-            optimizer: Optional[torch.optim.Optimizer] = None,
-            scheduler: Optional = None,
-            callbacks: Iterable = ()
+        self,
+        model,
+        device: torch.device,
+        mode: str,
+        optimizer: Optional[torch.optim.Optimizer] = None,
+        scheduler: Optional = None,
+        callbacks: Iterable = (),
     ):
-        if 'cuda' in device.type:
+        if "cuda" in device.type:
             torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
         self.device = device
         self.loader, self.n_data, self.batch_size = None, None, None
@@ -59,13 +59,15 @@ class Trainer(ABC):
         if len(args) == 1:
             a = args[0]
             if isinstance(a, torch.Tensor):
-                return a.detach().cpu() if 'detach' in a.__dir__() else a.item() if 'item' in a.__dir__() else a
+                return a.detach().cpu() if "detach" in a.__dir__() else a.item() if "item" in a.__dir__() else a
             else:
                 return a
         else:
             return tuple([self._to_cpu(a) for a in args])
 
-    def _to_device(self, *args, **kwargs) -> Tuple[Union[torch.Tensor, torch.nn.Module]] or Union[torch.Tensor, torch.nn.Module]:
+    def _to_device(
+        self, *args, **kwargs
+    ) -> Tuple[Union[torch.Tensor, torch.nn.Module]] or Union[torch.Tensor, torch.nn.Module]:
         """
         Cast given arguments to device.
         :param args: Single argument or variable-length sequence of arguments.
@@ -73,11 +75,11 @@ class Trainer(ABC):
         """
         if args:
             if len(args) == 1:
-                return args[0].to(self.device) if 'to' in args[0].__dir__() else args[0]
+                return args[0].to(self.device) if "to" in args[0].__dir__() else args[0]
             else:
-                return tuple([a.to(self.device) if 'to' in a.__dir__() else a for a in args])
+                return tuple([a.to(self.device) if "to" in a.__dir__() else a for a in args])
         elif kwargs:
-            return {k: v.to(self.device) if 'to' in v.__dir__() else v for k, v in kwargs.items()}
+            return {k: v.to(self.device) if "to" in v.__dir__() else v for k, v in kwargs.items()}
 
     def _data_count(self, initial=False) -> None:
         """
@@ -87,7 +89,7 @@ class Trainer(ABC):
             self.n_data = self.loader.dataset.__len__() if self.loader is not None else 0
             self.n_valid_data = self.valid_loader.dataset.__len__() if self.valid_loader is not None else 0
         else:
-            if self.mode == 'test' and self.valid_loader is not None:
+            if self.mode == "test" and self.valid_loader is not None:
                 self.n_valid_data -= self.valid_batch_size
             else:
                 self.n_data -= self.batch_size
@@ -111,15 +113,16 @@ class Trainer(ABC):
         self.loader, self.valid_loader = loader, valid_loader
         self._check_batch_size()
         for e in range(n_epoch):
-            if e: print('Epoch %d' % (e + 1))
+            if e:
+                print("Epoch %d" % (e + 1))
             self._data_count(initial=True)
             self.run_epoch(loader)
             if valid_loader:
                 self.toggle()
                 self.run_epoch(valid_loader)
                 self.toggle()
-            if self.mode == 'train':
-                cur_loss = np.mean(self.log_test['loss'] if valid_loader else self.log_train['loss']).item()
+            if self.mode == "train":
+                cur_loss = np.mean(self.log_test["loss"] if valid_loader else self.log_train["loss"]).item()
                 self.check_better(cur_epoch=e + 1, cur_loss=cur_loss)
                 self.scheduler.step(**kwargs)
                 self.progress_checker.update_epoch()
@@ -141,24 +144,23 @@ class Trainer(ABC):
         Run for a batch (not epoch)
         """
         batch = self._to_device(**batch) if isinstance(batch, dict) else self._to_device(*batch)
-        if self.mode == 'train':
+        if self.mode == "train":
             self.model.train()
             self.optimizer.zero_grad()
             step_dict = self.train_step(batch)
-            step_dict['loss'].backward()
+            step_dict["loss"].backward()
             self.optimizer.step()
 
-        elif self.mode == 'test':
+        elif self.mode == "test":
             self.model.eval()
             with torch.no_grad():
                 step_dict = self.test_step(batch)
         else:
-            raise ValueError(f'Unexpected mode {self.mode}.')
+            raise ValueError(f"Unexpected mode {self.mode}.")
 
         self.logging(step_dict)
         self.progress_checker.update_step()
         self.run_callback()
-
 
     @abstractmethod
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
@@ -171,7 +173,7 @@ class Trainer(ABC):
         x, y, fn = batch  # or x, y, fn = batch['x'], batch['y'] batch['fn']
         outputs = self.model(x)
         loss = [0.0] * len(x)
-        return {'loss': loss, 'mean': torch.mean(outputs)}
+        return {"loss": loss, "mean": torch.mean(outputs)}
 
     @abstractmethod
     def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
@@ -184,16 +186,16 @@ class Trainer(ABC):
         x, y, fn = batch  # or x, y, fn = batch['x'], batch['y'] batch['fn']
         outputs = self.model(x)
         loss = [0.0] * len(x)
-        return {'loss': loss, 'mean': torch.mean(outputs)}
+        return {"loss": loss, "mean": torch.mean(outputs)}
 
     def logging(self, step_dict: Dict[str, torch.Tensor]) -> None:
         for k, v in step_dict.items():
-            if self.mode == 'train':
+            if self.mode == "train":
                 self.log_train[k].append(self._to_cpu(v))
-            elif self.mode == 'test':
+            elif self.mode == "test":
                 self.log_test[k].append(self._to_cpu(v))
             else:
-                raise ValueError(f'Unexpected mode {self.mode}.')
+                raise ValueError(f"Unexpected mode {self.mode}.")
 
     def toggle(self, mode: str = None) -> None:
         """
@@ -203,7 +205,7 @@ class Trainer(ABC):
         if mode:
             self.mode = mode
         else:
-            self.mode = 'test' if self.mode == 'train' else 'train'
+            self.mode = "test" if self.mode == "train" else "train"
 
     def check_better(self, cur_epoch: int, cur_loss: float) -> None:
         """
@@ -212,9 +214,10 @@ class Trainer(ABC):
         :param cur_epoch: int
         :param cur_loss: float
         """
-        if cur_loss > self.loss_buffer: return
-        self.weight_buffer['epoch'].append(cur_epoch)
-        self.weight_buffer['weight'].append(self.model.state_dict())
+        if cur_loss > self.loss_buffer:
+            return
+        self.weight_buffer["epoch"].append(cur_epoch)
+        self.weight_buffer["weight"].append(self.model.state_dict())
 
     def log_reset(self) -> None:
         """
@@ -224,17 +227,18 @@ class Trainer(ABC):
         self.log_test.clear()
 
     def print_log(self, cur_batch: int, num_batch: int) -> None:
-        log = self.log_train if self.mode == 'train' else self.log_test
-        LR = self.optimizer.param_groups[0]['lr'] if self.optimizer else 0
+        log = self.log_train if self.mode == "train" else self.log_test
+        LR = self.optimizer.param_groups[0]["lr"] if self.optimizer else 0
         is_end = cur_batch == num_batch
         disp = None if is_end else sys.stderr
-        end = '\n' if is_end else ''
+        end = "\n" if is_end else ""
 
-        log_str = f'\r\t\tBatch: {cur_batch}/{num_batch}'
+        log_str = f"\r\t\tBatch: {cur_batch}/{num_batch}"
         for k, v in log.items():
-            if 'output' in k: continue
-            log_str += f'\t{k}: {np.mean(v):.6f}'
-        log_str += f'\tLR: {LR:.3e}'
+            if "output" in k:
+                continue
+            log_str += f"\t{k}: {np.mean(v):.6f}"
+        log_str += f"\tLR: {LR:.3e}"
         print(log_str, end=end, file=disp)
 
     def save_model(self, filename: str) -> None:
@@ -252,14 +256,14 @@ class Trainer(ABC):
             if filename:
                 weights = torch.load(filename, map_location=torch.device("cpu"))
             else:
-                weights = self.weight_buffer['weight'][-1]
+                weights = self.weight_buffer["weight"][-1]
             self.model.load_state_dict(weights, strict=strict)
         except FileNotFoundError as e:
-            print(f'Cannot find file {filename}', e)
+            print(f"Cannot find file {filename}", e)
         except IndexError as e:
-            print(f'There is no weight in buffer of trainer.', e)
+            print(f"There is no weight in buffer of trainer.", e)
 
-    def init_tkn(self, project_name: str, api_tkn: str = '', **kwargs) -> None:
+    def init_tkn(self, project_name: str, api_tkn: str = "", **kwargs) -> None:
         """
         Initialize neptune logger with given project name and token.
         Usage:
@@ -274,9 +278,9 @@ class Trainer(ABC):
     def inference(self, loader):
         if self.web_logger:
             self.web_logger.eliminate()
-        self.toggle('test')
+        self.toggle("test")
         self.run(n_epoch=1, loader=loader)
-        return self.log_test['output']
+        return self.log_test["output"]
 
 
 class ProgressChecker:
