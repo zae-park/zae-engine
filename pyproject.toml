@@ -35,8 +35,8 @@ rich = "^13.5.2"
 typeguard = "^4.1.2"
 
 image-ocr = "^0.0.4"
-tensorflow-intel = {platform = "win64", version = "^2.14.0"}
-tensorflow = {platform = "linux", version = "^2.14.0"}
+tensorflow-intel = [{platform = "win64", version = "^2.14.0"}]
+tensorflow = [{platform = "linux", version = "^2.14.0"}]
 
 #minio
 #neptune-client
