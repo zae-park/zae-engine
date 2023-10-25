@@ -8,8 +8,14 @@ authors = ["zae-park <tom941105@gmail.com>"]
 python = "^3.10.0"
 matplotlib = "^3.7.2"
 tensorflow-io-gcs-filesystem = "0.31.0"
-torchvision = {url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-win_amd64.whl"}
-torch = {url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-win_amd64.whl"}
+torchvision = [
+    { platform = "win64", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-win_amd64.whl" },
+    { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-linux_x86_64.whl" },
+]
+torch = [
+    { platform = "win64", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-win_amd64.whl" },
+    { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-linux_x86_64.whl" },
+]
 segment-anything = "^1.0"
 pandas = "^2.0.3"
 termcolor = "2.2.0"
