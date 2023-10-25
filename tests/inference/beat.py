@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 from zae_engine import models, trainer
-from zae_engine.data.collate import BeatCollateSeq as Col
+from zae_engine.data_pipeline.collate import BeatCollateSeq as Col
 from zae_engine.operation import label_to_onoff, sanity_check, onoff_to_label
 
 
@@ -57,7 +57,7 @@ def core(x: Union[np.ndarray, torch.Tensor]):
     )
 
     # --------------------------------- Inference & Postprocess @ stage 2 --------------------------------- #
-    model = models.rpeak_regression(True)
+    model = models.peak_regression(True)
     trainer2 = Trainer_stg2(model=model, device=device, mode="test")
     prediction_stg2 = torch.cat(trainer2.inference(inference_loader2)).squeeze().numpy()
 

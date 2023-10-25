@@ -1,2 +1,2 @@
-from .beat import core as r_peak_detection
-from .sec10 import core as sec10_classification
+from .beat import core as peak_segmentation
+from .sec10 import core as ecg_classification
