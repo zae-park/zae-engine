@@ -7,7 +7,7 @@ import numpy as np
 from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
 
-from zae_engine.models.benchmark import sec10_classification
+from zae_engine.models.benchmark import beat_segmentation
 from zae_engine.trainer import Trainer
 from zae_engine.trainer.utils import CallbackInterface, EpochStepChecker
 
@@ -24,31 +24,18 @@ class DummySet(Dataset):
 
 
 class DummyTrainer(Trainer):
-    def __init__(
-            self,
-            model,
-            optimizer=None,
-            scheduler=None,
-            mode='train',
-            callbacks=None
-    ):
-        super(DummyTrainer, self).__init__(model,
-                                           torch.device('cpu'),
-                                           mode,
-                                           optimizer,
-                                           scheduler,
-                                           callbacks=callbacks
-                                           )
+    def __init__(self, model, optimizer=None, scheduler=None, mode="train", callbacks=None):
+        super(DummyTrainer, self).__init__(model, torch.device("cpu"), mode, optimizer, scheduler, callbacks=callbacks)
 
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         x = torch.concat(batch).unsqueeze(1)
         logit = self.model(x)
-        return {'loss': logit.sum(), 'acc': 0.99}
+        return {"loss": logit.sum(), "acc": 0.99}
 
     def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         x = torch.concat(batch).unsqueeze(1)
         logit = self.model(x)
-        return {'loss': logit.sum(), 'acc': 0.99}
+        return {"loss": logit.sum(), "acc": 0.99}
 
 
 class TestLogger(unittest.TestCase):
@@ -64,22 +51,16 @@ class TestLogger(unittest.TestCase):
         train_set = DummySet(dummy)
         valid_set = DummySet(dummy)
 
-        cls.model = sec10_classification(False)
+        cls.model = beat_segmentation(False)
         cls.train_loader = DataLoader(
             train_set,
             batch_size=2,
             shuffle=True,
         )
 
-        cls.valid_loader = DataLoader(
-            valid_set,
-            batch_size=2,
-            shuffle=False
-        )
+        cls.valid_loader = DataLoader(valid_set, batch_size=2, shuffle=False)
         cls.optimizer = Adam(cls.model.parameters(), lr=1e-6)
-        cls.scheduler = torch.optim.lr_scheduler.LambdaLR(
-                    cls.optimizer, lr_lambda=lambda epoch: 0.95 ** epoch
-                    )
+        cls.scheduler = torch.optim.lr_scheduler.LambdaLR(cls.optimizer, lr_lambda=lambda epoch: 0.95**epoch)
 
     @classmethod
     def get_attribute(cls):
@@ -92,12 +73,13 @@ class TestLogger(unittest.TestCase):
         self.step_check = np.random.randint(1, 10)
         self.epoch_check = np.random.randint(1, 3)
         self.model, self.optimizer, self.scheduler, self.train_loader, self.valid_loader = self.get_attribute()
-        self.test_time_point = str(now.timestamp()).split('.')[0][:9]
+        self.test_time_point = str(now.timestamp()).split(".")[0][:9]
 
     def tearDown(self) -> None:
         self.step_check = None
         self.epoch_check = None
         self.test_time_point = None
+
     # ------------------------------------- Legacy ------------------------------------- #
     # def test_result(self):
     #     result_saver = ResultSaver(keys=['loss', 'acc'],
@@ -145,7 +127,7 @@ class TestLogger(unittest.TestCase):
             CallbackInterface()
 
     def test_not_given(self):
-        trainer = DummyTrainer(model=self.model, optimizer=self.optimizer, scheduler=self.scheduler, mode='train')
+        trainer = DummyTrainer(model=self.model, optimizer=self.optimizer, scheduler=self.scheduler, mode="train")
         trainer.run(3, self.train_loader, self.valid_loader)
 
     # def test_NeptuneCallback(self):
@@ -169,11 +151,7 @@ class TestLogger(unittest.TestCase):
     def test_progress_checker(self):
         checker = EpochStepChecker(callback_step=self.step_check, callback_epoch=self.epoch_check)
         trainer = DummyTrainer(
-            model=self.model,
-            optimizer=self.optimizer,
-            scheduler=self.scheduler,
-            mode='train',
-            callbacks=[checker]
+            model=self.model, optimizer=self.optimizer, scheduler=self.scheduler, mode="train", callbacks=[checker]
         )
         trainer.run(3, self.train_loader, self.valid_loader)
 
@@ -192,5 +170,5 @@ class TestLogger(unittest.TestCase):
     #     trainer.inference(self.valid_loader)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

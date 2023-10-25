@@ -64,32 +64,6 @@ def peak_regression(pretrained: Optional[bool] = False) -> nn.Module:
     return model
 
 
-def sec10_classification(pretrained: Optional[bool] = False) -> nn.Module:
-    """
-    Build model which has a same structure with the latest released model.
-    :param pretrained: bool
-        If True, load weight from the server.
-        If not, weights are initialized randomly.
-    :return: nn.Module
-    """
-    model = ResNet1D(
-        num_layers=34,
-        num_classes=7,
-        num_channels=1,
-        kernel_size=15,
-        dropout_rate=0.3,
-        width_factor=2,
-        stride=2,
-        reduction=4,
-    )
-
-    if pretrained:
-        weights = WeightLoader.get("arrhythmia_classification")
-        model.load_state_dict(weights, strict=True)
-
-    return model
-
-
 def u_net(pretrained: Optional[bool] = False) -> nn.Module:
     model = Segmentor(
         ch_in=1,
