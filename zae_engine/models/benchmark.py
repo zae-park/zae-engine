@@ -1,9 +1,10 @@
 from typing import Optional
 
+import torch
 import torch.nn as nn
 
-from .build import Segmentor1D, Regressor1D, ResNet1D
-from .utility import load_weights, initializer, WeightLoader
+from zae_engine.models.build import Segmentor, Regressor1D, ResNet1D
+from zae_engine.models.utility import load_weights, initializer, WeightLoader
 
 
 def beat_segmentation(pretrained: Optional[bool] = False) -> nn.Module:
@@ -14,7 +15,7 @@ def beat_segmentation(pretrained: Optional[bool] = False) -> nn.Module:
         If not, weights are initialized with 'initializer' method in utils.py
     :return: nn.Module
     """
-    model = Segmentor1D(
+    model = Segmentor(
         ch_in=1,
         ch_out=4,
         width=16,
@@ -22,7 +23,6 @@ def beat_segmentation(pretrained: Optional[bool] = False) -> nn.Module:
         depth=5,
         order=4,
         stride=(2, 2, 2, 2),
-        expanding=True,
         decoding=False,
     )
 
@@ -88,3 +88,39 @@ def sec10_classification(pretrained: Optional[bool] = False) -> nn.Module:
         model.load_state_dict(weights, strict=True)
 
     return model
+
+
+def u_net(pretrained: Optional[bool] = False) -> nn.Module:
+    model = Segmentor(
+        ch_in=1,
+        ch_out=2,
+        width=64,
+        kernel_size=[3, 3],
+        depth=5,
+        order=2,
+        stride=(2, 2, 2, 2),
+        decoding=True,
+    )
+    if pretrained:
+        weights = WeightLoader.get("u_net")
+        model.load_state_dict(weights, strict=True)
+
+    return model
+
+
+# if __name__ == "__main__":
+#     import numpy as np
+#
+#     m = u_net()
+#     tmp = np.zeros((10, 1, 256, 256), dtype=np.float32)
+#     tmp = torch.Tensor(tmp)
+#     p = m(tmp)
+#     print(m)
+#     print(p)
+#
+#     m = u_net1()
+#     tmp = np.zeros((10, 1, 256), dtype=np.float32)
+#     tmp = torch.Tensor(tmp)
+#     p = m(tmp)
+#     print(m)
+#     print(p)
