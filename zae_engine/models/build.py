@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn import ModuleList
 
 from zae_engine import nn_night as nnn
 from zae_engine.models.utility import transformer_option
@@ -15,54 +16,68 @@ class CNNBase(nn.Module):
     The interface class using Convolutional Layers.
     """
 
-    def __init__(self):
-        super(CNNBase, self).__init__()
-        self._conv = None
-
-    def gen_block(
+    def __init__(
         self,
         ch_in: int,
         ch_out: int,
-        kernel_size: Union[int, list, tuple],
+        width: int,
+        kernel_size: int or tuple,
+        depth: int,
         order: int,
-        dilation: int = 1,
+        stride: list or tuple,
     ):
-        """
-        Return block, accumulated layers in-stage. Stack CBR 'order' times.
-        :param ch_in: [Int] input channels of block
-        :param ch_out: [Int] output channels of block
-        :param kernel_size: [Int, Iterable] convolution kernel size.
-            If type of argument is int, assume that model will receive 1-D input tensor.
-            Else, the type of argument is iterable, assume that model will receive len(argument)-D input tensor.
-        :param order: [Int] the number of blocks in stage.
-            The stage means same resolution. e.g. from after previous pooling (or stem) to before next pooling.
-        :param dilation: [Int, Iterable] Default is 1. If argument more than 1, dilated convolution will performed.
-        :return: [nn.Module]
-        """
+        super(CNNBase, self).__init__()
+        self.ch_in = ch_in
+        self.ch_out = ch_out
+        self.width = width
+        self.kernel_size = kernel_size
+        self.depth = depth
+        self.order = order
+        self.stride = stride
 
-        if isinstance(kernel_size, int):
-            self._conv = nn.Conv1d
-        else:
-            dim = len(kernel_size)
-            self._conv = nn.Conv2d if dim == 2 else nn.Conv3d if dim == 3 else None
-            if dim > 3:
-                raise IndexError("Unexpected shape error.")
-
-        blk = []  # List of blocks
-        for o in range(order):  # stack blocks 'order' times
-            sequence = nnn.Residual(
-                self.unit_layer(ch_in, ch_out, kernel_size, dilation=dilation),
-                self.unit_layer(ch_out, ch_out, kernel_size, dilation=dilation),
-            )
-            blk.append(sequence)
-        return nn.Sequential(*blk)
-
-    def gen_head(self, c_in, kernel=None):
-        if kernel is None:
-            kernel = self.kernel_size
-        return self._conv(
-            c_in, self.ch_out, kernel_size=kernel, padding=(kernel - 1) // 2
+        self.set_dimension()
+        self.body, self.pools = self.gen_body(
+            ch_in=self.ch_in,
+            width=self.width,
+            kernel_size=self.kernel_size,
+            depth=self.depth,
+            order=self.order,
+            stride=self.stride,
         )
+
+    def set_dimension(self):
+        if isinstance(self.kernel_size, int):
+            self._dim = 1
+            self._conv = nn.Conv1d
+            self._bn = nn.BatchNorm1d
+            self._pool = nn.AvgPool1d
+        else:
+            self._dim = len(self.kernel_size)
+            if self._dim > 3:
+                raise IndexError("Unexpected shape error.")
+            self._conv = (
+                nn.Conv2d if self._dim == 2 else nn.Conv3d if self._dim == 3 else None
+            )
+            self._bn = (
+                nn.BatchNorm2d
+                if self._dim == 2
+                else nn.BatchNorm3d
+                if self._dim == 3
+                else None
+            )
+            self._pool = (
+                nn.AvgPool2d
+                if self._dim == 2
+                else nn.AvgPool3d
+                if self._dim == 3
+                else None
+            )
+
+    def calc_padding(self, dilation, kernels):
+        if isinstance(kernels, int):
+            return dilation * (kernels - 1) // 2
+        else:
+            return [dilation * (k - 1) // 2 for k in kernels]
 
     def unit_layer(
         self,
@@ -87,13 +102,77 @@ class CNNBase(nn.Module):
             kernel_size=kernel_size,
             stride=stride,
             dilation=dilation,
-            padding=dilation * (kernel_size - 1) // 2,
+            padding=self.calc_padding(dilation, kernel_size),
             bias=True,
         )
-        return nn.Sequential(*[conv1, nn.BatchNorm1d(ch_out), nn.ReLU()])
+        return nn.Sequential(*[conv1, self._bn(ch_out), nn.ReLU()])
+
+    def gen_block(
+        self,
+        ch_in: int,
+        ch_out: int,
+        kernel_size: Union[int, list, tuple],
+        order: int,
+        dilation: int = 1,
+    ):
+        """
+        Return block, accumulated layers in-stage. Stack CBR 'order' times.
+        :param ch_in: [Int] input channels of block
+        :param ch_out: [Int] output channels of block
+        :param kernel_size: [Int, Iterable] convolution kernel size.
+            If type of argument is int, assume that model will receive 1-D input tensor.
+            Else, the type of argument is iterable, assume that model will receive len(argument)-D input tensor.
+        :param order: [Int] the number of blocks in stage.
+            The stage means same resolution. e.g. from after previous pooling (or stem) to before next pooling.
+        :param dilation: [Int, Iterable] Default is 1. If argument more than 1, dilated convolution will performed.
+        :return: [nn.Module]
+        """
+
+        blk = []  # List of blocks
+        for o in range(order):  # stack blocks 'order' times
+            sequence = nnn.Residual(
+                self.unit_layer(ch_in, ch_out, kernel_size, dilation=dilation),
+                self.unit_layer(ch_out, ch_out, kernel_size, dilation=dilation),
+            )
+            blk.append(sequence)
+        return nn.Sequential(*blk)
+
+    def gen_body(
+        self, ch_in, width, kernel_size, depth, order, stride
+    ) -> Tuple[ModuleList, ModuleList]:
+        # Feature extraction
+        pools = nn.ModuleList()
+        body = nn.ModuleList()
+
+        for d in range(depth):
+            if d == 0:
+                body.append(
+                    nn.Sequential(
+                        self.unit_layer(ch_in, width, kernel_size),
+                        self.gen_block(width, width, kernel_size, order),
+                    )
+                )
+            else:
+                if d == 1:
+                    c_in, c_out, s = width * d, width * (d + 1), stride[d - 1]
+                else:
+                    c_in, c_out, s = ch_in + width * d, width * (d + 1), stride[d - 1]
+                pools.append(self._pool(p := (int(np.prod(stride[:d]))), p))
+                body.append(
+                    nn.Sequential(
+                        self.unit_layer(c_in, c_out, kernel_size, stride=s),
+                        self.gen_block(c_out, c_out, kernel_size, order),
+                    )
+                )
+        return body, pools
+
+    def gen_head(self, ch_in, ch_out, kernel=None):
+        if kernel is None:
+            kernel = self.kernel_size
+        return self._conv(ch_in, ch_out, kernel_size=kernel, padding="same")
 
 
-class Segmentor1D(CNNBase):
+class Segmentor(CNNBase):
     """
     Builder class for beat_segmentation which has U-Net-like structure.
     :param ch_in: int
@@ -113,9 +192,6 @@ class Segmentor1D(CNNBase):
         Optional.
         If True, build the decoding part of U-Net.
         If not, replace the decoding part of U-Net to up-sampling.
-    :param expanding: bool, optional
-        Optional.
-        If True, input tensor padded 30 samples bi-side along the spatial axis to match the shape and product of stride.
     """
 
     def __init__(
@@ -128,54 +204,25 @@ class Segmentor1D(CNNBase):
         order: int,
         stride: list or tuple,
         decoding: bool,
-        **kwargs,
     ):
-        super(Segmentor1D, self).__init__()
-
-        self.ch_in = ch_in
-        self.ch_out = ch_out
-        self.width = width
-        self.kernel_size = kernel_size
-        self.depth = depth
-        self.order = order
-        self.stride = stride
+        super(Segmentor, self).__init__(
+            ch_in, ch_out, width, kernel_size, depth, order, stride
+        )
+        self.enc = self.body
         self.decoding = decoding
-        self.kwargs = kwargs
-
-        self.expanding = kwargs["expanding"] if "expanding" in kwargs.keys() else False
-
-        # Encoder (down-stream)
-        self.pools = nn.ModuleList()
-        self.enc = nn.ModuleList()
-        for d in range(depth):
-            if d == 0:
-                self.enc.append(
-                    nn.Sequential(
-                        self.unit_layer(ch_in, width, kernel_size),
-                        self.gen_block(width, width, kernel_size, order),
-                    )
-                )
-            else:
-                if d == 1:
-                    c_in, c_out, s = width * d, width * (d + 1), stride[d - 1]
-                else:
-                    c_in, c_out, s = ch_in + width * d, width * (d + 1), stride[d - 1]
-                self.pools.append(nn.AvgPool1d(p := (int(np.prod(stride[:d]))), p))
-                self.enc.append(
-                    nn.Sequential(
-                        self.unit_layer(c_in, c_out, kernel_size, stride=s),
-                        self.gen_block(c_out, c_out, kernel_size, order),
-                    )
-                )
 
         self.un_pools = nn.ModuleList()
         for s in stride[::-1]:
             self.un_pools.append(
-                nn.Upsample(scale_factor=s, mode="linear", align_corners=True)
+                nn.Upsample(
+                    scale_factor=tuple([s] * self._dim),
+                    mode="linear" if self._dim == 1 else "bilinear",
+                    align_corners=True,
+                )
             )
 
         # Decoder (up-stream)
-        if self.decoding:
+        if decoding:
             self.dec = nn.ModuleList()
             for d in reversed(range(1, depth)):
                 c_in, c_out = (2 * d + 1) * width, d * width
@@ -187,13 +234,10 @@ class Segmentor1D(CNNBase):
                 )
 
         self.head = self.gen_head(
-            width if decoding else width * depth, kernel=kernel_size
+            width if decoding else width * depth, ch_out, kernel=kernel_size
         )
 
     def forward(self, x):
-        if self.expanding:
-            x = F.pad(x, (30, 30), mode="constant", value=0)
-
         for_skip, for_feat = [], []
 
         # -------------Encoder#------------- #
@@ -219,12 +263,6 @@ class Segmentor1D(CNNBase):
                 concat = torch.cat((for_skip[d], self.un_pools[d](for_feat[d])), dim=1)
                 for_feat.append(self.dec[d](concat))
             out = self.head(for_feat[-1])
-        if self.expanding:
-            out = (
-                tuple([o[:, :, 30:-30] for o in out])
-                if isinstance(out, tuple)
-                else out[:, :, 30:-30]
-            )
         return out
 
 
