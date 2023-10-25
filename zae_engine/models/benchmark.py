@@ -2,7 +2,7 @@ from typing import Optional
 
 import torch.nn as nn
 
-from .build import Segmentor1D, Regressor1D, Classifier1D
+from .build import Segmentor1D, Regressor1D, ResNet1D
 from .utility import load_weights, initializer, WeightLoader
 
 
@@ -35,7 +35,7 @@ def beat_segmentation(pretrained: Optional[bool] = False) -> nn.Module:
     return model
 
 
-def rpeak_regression(pretrained: Optional[bool] = False) -> nn.Module:
+def peak_regression(pretrained: Optional[bool] = False) -> nn.Module:
     """
     Build model which has a same structure with the latest released model.
     :param pretrained: bool
@@ -72,7 +72,7 @@ def sec10_classification(pretrained: Optional[bool] = False) -> nn.Module:
         If not, weights are initialized randomly.
     :return: nn.Module
     """
-    model = Classifier1D(
+    model = ResNet1D(
         num_layers=34,
         num_classes=7,
         num_channels=1,
@@ -81,10 +81,6 @@ def sec10_classification(pretrained: Optional[bool] = False) -> nn.Module:
         width_factor=2,
         stride=2,
         reduction=4,
-        bias=False,
-        contrastive=False,
-        first_block=False,
-        use_transformer=True,
     )
 
     if pretrained:

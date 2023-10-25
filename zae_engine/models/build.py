@@ -17,13 +17,13 @@ class CNNBase(nn.Module):
 
     def __init__(self):
         super(CNNBase, self).__init__()
-        self.conv_api = None
+        self._conv = None
 
     def gen_block(
         self,
         ch_in: int,
         ch_out: int,
-        kernel_size: Union[Iterable, int],
+        kernel_size: Union[int, list, tuple],
         order: int,
         dilation: int = 1,
     ):
@@ -41,19 +41,18 @@ class CNNBase(nn.Module):
         """
 
         if isinstance(kernel_size, int):
-            self.conv_api = nn.Conv1d
-        elif isinstance(kernel_size, Iterable):
-            dim = len(kernel_size)
-            self.conv_api = nn.Conv2d if dim == 2 else nn.Conv3d if dim == 3 else None
+            self._conv = nn.Conv1d
         else:
-            raise IndexError("Unexpected shape error.")
+            dim = len(kernel_size)
+            self._conv = nn.Conv2d if dim == 2 else nn.Conv3d if dim == 3 else None
+            if dim > 3:
+                raise IndexError("Unexpected shape error.")
 
         blk = []  # List of blocks
         for o in range(order):  # stack blocks 'order' times
             sequence = nnn.Residual(
                 self.unit_layer(ch_in, ch_out, kernel_size, dilation=dilation),
                 self.unit_layer(ch_out, ch_out, kernel_size, dilation=dilation),
-                nnn.SE(ch_out, reduction=8),
             )
             blk.append(sequence)
         return nn.Sequential(*blk)
@@ -61,7 +60,7 @@ class CNNBase(nn.Module):
     def gen_head(self, c_in, kernel=None):
         if kernel is None:
             kernel = self.kernel_size
-        return self.conv_api(
+        return self._conv(
             c_in, self.ch_out, kernel_size=kernel, padding=(kernel - 1) // 2
         )
 
@@ -82,7 +81,7 @@ class CNNBase(nn.Module):
         :param dilation: [Int]
         :return:
         """
-        conv1 = self.conv_api(
+        conv1 = self._conv(
             ch_in,
             ch_out,
             kernel_size=kernel_size,
@@ -161,9 +160,7 @@ class Segmentor1D(CNNBase):
                     c_in, c_out, s = width * d, width * (d + 1), stride[d - 1]
                 else:
                     c_in, c_out, s = ch_in + width * d, width * (d + 1), stride[d - 1]
-                self.pools.append(
-                    nn.AvgPool1d(np.prod(stride[:d]), np.prod(stride[:d]))
-                )
+                self.pools.append(nn.AvgPool1d(p := (int(np.prod(stride[:d]))), p))
                 self.enc.append(
                     nn.Sequential(
                         self.unit_layer(c_in, c_out, kernel_size, stride=s),
@@ -267,7 +264,7 @@ class Regressor1D(CNNBase):
         embedding_dims: int,
         **kwargs,
     ):
-        super(RPeakRegress, self).__init__()
+        super(Regressor1D, self).__init__()
 
         self.width = width
         self.kernel_size = kernel_size
@@ -337,9 +334,9 @@ class Regressor1D(CNNBase):
         return self.head(emb)
 
 
-class Classifier1D(nn.Module):
+class ResNet1D(nn.Module):
     """
-    Builder class for 10 sec classification model which has Residual Network structure.
+    Builder class for resnet model.
     :param num_layers: int
         The number of entire layers. Support the value in [10, 14, 18, 34, 50, 101, 152].
     :param num_classes: int
@@ -352,21 +349,6 @@ class Classifier1D(nn.Module):
         The channel expand factor.
     :param stride: list or tuple
         The scaling ratio for pooling layers.
-    :param reduction: int
-        The Squeeze and Excitation ratio. Note that it must be a divisor of appropriate num_channels.
-    :param bias: bool
-        (사용되지 않지만 일단 설명 추가함.)
-        If True, layers in model have extra weights (bias).
-    :param contrastive: bool
-        Only for training.
-        During training process, use extra head for representation learning.
-    :param first_block: bool, optional
-        Optional.
-        If True, the input tensor is normalized before passing into skip-connection in the first block of every stage.
-        Otherwise, the input tensor is passed as-is to skip-connection.
-    :param use_transformer: bool, optional
-        Optional.
-        If True, the feature map is recalibrated using a transformer manner.
     """
 
     def __init__(
@@ -378,12 +360,9 @@ class Classifier1D(nn.Module):
         dropout_rate: float,
         width_factor: int,
         stride: int,
-        reduction: int,
-        bias: bool = False,
-        contrastive: Optional[bool] = False,
         **kwargs,
     ):
-        super(Classifier1D, self).__init__()
+        super(ResNet1D, self).__init__()
         num_layers = num_layers
         num_classes = num_classes
         num_channels = num_channels
@@ -391,14 +370,7 @@ class Classifier1D(nn.Module):
         k = width_factor
         nGroups = [16 * k, 16 * k, 32 * k, 64 * k, 128 * k]
         self.tmp_ch = nGroups[0]
-        self.reduction = reduction
-        self.bias = bias
         self.stride = stride
-
-        if "first_block" in kwargs.keys():
-            self.first_block = kwargs["first_block"]
-        if "use_transformer" in kwargs.keys():
-            self.use_transformer = kwargs["use_transformer"]
 
         supported_num_layers = [10, 14, 18, 34, 50, 101, 152]
         if num_layers not in supported_num_layers:
@@ -423,9 +395,7 @@ class Classifier1D(nn.Module):
             num_block_list = []
         self.num_block_list = num_block_list
 
-        self.stem = self.make_stem(
-            num_channels, nGroups[0], 7, stride=2, bias=self.bias
-        )
+        self.stem = self.make_stem(num_channels, nGroups[0], 7, stride=2)
 
         stages = [
             self.stack_layers(
@@ -435,9 +405,6 @@ class Classifier1D(nn.Module):
                 kernel_size=kernel_size,
                 num_blocks=num_block_list[i],
                 stride=1 if i == 0 else stride,
-                first_block=self.first_block if i == 0 else False,
-                bias=self.bias,
-                reduction=self.reduction,
             )
             for i in range(4)
         ]
@@ -451,49 +418,16 @@ class Classifier1D(nn.Module):
         self.dropout = nn.Dropout(p=dropout_rate if dropout_rate is not None else 0)
         self.avgpool = nn.AdaptiveAvgPool1d(1)
 
-        if self.use_transformer:
-            self.linear = self.get_vit_head(last_channel, num_classes)
-        else:
-            self.linear = nn.Sequential(
-                nn.AdaptiveAvgPool1d(1),
-                nn.Flatten(),
-                nn.Linear(last_channel, num_classes),
-            )
-        if contrastive:
-            # projection MLP
-            self.projection = self.make_mlp(
-                last_channel, last_channel, last_channel, mode="projection"
-            )
-            # prediction MLP
-            self.prediction = self.make_mlp(
-                last_channel, last_channel // 4, last_channel, mode="prediction"
-            )
+        self.linear = nn.Sequential(
+            nn.AdaptiveAvgPool1d(1),
+            nn.Flatten(),
+            nn.Linear(last_channel, num_classes),
+        )
 
     @staticmethod
-    def make_mlp(
-        in_dim: int, latent_dim: int, out_dim: Optional[int] = None, mode="projection"
-    ):
-        linear1 = nn.Linear(in_dim, latent_dim)
-        bn1 = nn.BatchNorm1d(latent_dim)
-        act = nn.ReLU(inplace=True)
-
-        if mode == "projection":
-            linear2 = nn.Linear(in_dim, latent_dim)
-            bn2 = nn.BatchNorm1d(latent_dim)
-
-            linear3 = nn.Linear(in_dim, latent_dim)
-            bn3 = nn.BatchNorm1d(latent_dim)
-            return nn.Sequential(linear1, bn1, act, linear2, bn2, act, linear3, bn3)
-        elif mode == "prediction":
-            linear2 = nn.Linear(latent_dim, out_dim)
-            return nn.Sequential(linear1, bn1, act, linear2)
-
-    @staticmethod
-    def make_stem(
-        channel_in: int, channel_out: int, kernel_size: int, stride: int, bias: bool
-    ):
+    def make_stem(channel_in: int, channel_out: int, kernel_size: int, stride: int):
         return nn.Sequential(
-            nn.Conv1d(channel_in, channel_out, (kernel_size,), (stride,), bias=bias),
+            nn.Conv1d(channel_in, channel_out, (kernel_size,), (stride,)),
             nn.MaxPool1d(3, padding=1, stride=stride),
         )
 
@@ -505,9 +439,6 @@ class Classifier1D(nn.Module):
         kernel_size: int,
         stride: int,
         num_blocks: int,
-        first_block=False,
-        bias: bool = False,
-        reduction: int = 4,
     ):
         class ResnetBasicBlock(nn.Module):
             """
@@ -518,26 +449,14 @@ class Classifier1D(nn.Module):
             -- MaxPool-Conv_1x1
             """
 
-            def __init__(
-                self,
-                fe_block: nn.ModuleList,
-                shortcut: nn.Sequential,
-                first_block: bool,
-            ):
+            def __init__(self, fe_block: nn.ModuleList, shortcut: nn.Sequential):
                 super(ResnetBasicBlock, self).__init__()
                 self.module_list = fe_block
-                self.first_block = first_block
                 self.shortcut = shortcut
 
             def forward(self, x):
                 for i, module in enumerate(self.module_list):
-                    if self.first_block and i <= 2:
-                        x = module(x)
-                    if i == 0:
-                        out = module(x)
-                    else:
-                        out = module(out)
-
+                    out = module(x if i == 0 else out)
                 x = self.shortcut(x)
 
                 out_l, x_l = out.shape[2], x.shape[2]
@@ -555,43 +474,26 @@ class Classifier1D(nn.Module):
         layers = []
 
         for b in range(num_blocks):
-            if b == 0:
-                fe, shortcut = self.make_fe_se_block(
-                    channel_in=channel_in,
-                    channel_out=channel_out,
-                    stride=stride,
-                    kernel_size=kernel_size,
-                    bias=bias,
-                    dropout_rate=dropout_rate,
-                    reduction=reduction,
-                )
-                layers.append(ResnetBasicBlock(fe, shortcut, first_block=first_block))
-            else:
-                fe, shortcut = self.make_fe_se_block(
-                    channel_in=channel_out,
-                    channel_out=channel_out,
-                    stride=1,
-                    kernel_size=kernel_size,
-                    bias=bias,
-                    dropout_rate=dropout_rate,
-                    reduction=reduction,
-                )
-                layers.append(ResnetBasicBlock(fe, shortcut, first_block=False))
+            fe, shortcut = self.make_fe_block(
+                channel_in=channel_in if b == 0 else channel_out,
+                channel_out=channel_out,
+                stride=stride if b == 0 else 1,
+                kernel_size=kernel_size,
+                dropout_rate=dropout_rate,
+            )
+            layers.append(ResnetBasicBlock(fe, shortcut))
 
         return nn.Sequential(*layers)
 
-    def make_fe_se_block(
+    def make_fe_block(
         self,
         channel_in: int,
         channel_out: int,
         stride: int,
         kernel_size: int,
-        bias: bool,
         dropout_rate: float,
-        reduction: int,
     ):
         relu = nn.ReLU()
-        dropout = nn.Dropout(dropout_rate)
 
         fe_block = nn.ModuleList(
             [
@@ -602,50 +504,26 @@ class Classifier1D(nn.Module):
                     channel_out,
                     kernel_size=(kernel_size,),
                     stride=stride,
-                    bias=bias,
                 )
                 if stride != 1
-                else nn.Conv1d(
-                    channel_in, channel_out, (kernel_size,), padding="same", bias=bias
-                ),
+                else nn.Conv1d(channel_in, channel_out, (kernel_size,), padding="same"),
                 nn.BatchNorm1d(channel_out),
                 relu,
                 nn.Dropout(dropout_rate),
-                nn.Conv1d(
-                    channel_out, channel_out, (kernel_size,), padding="same", bias=bias
-                ),
-                nnn.SE(
-                    channel_out, reduction=reduction, bias=bias
-                ),  # TODO: make as an option
+                nn.Conv1d(channel_out, channel_out, (kernel_size,), padding="same"),
             ]
         )
 
         shortcut = nn.Sequential(
             nn.MaxPool1d(stride) if stride != 1 else nn.Identity(),
-            nn.Conv1d(channel_in, channel_out, kernel_size=(1,), bias=bias)
+            nn.Conv1d(channel_in, channel_out, kernel_size=(1,))
             if channel_in != channel_out and self.block_type == "conv"
             else nn.Identity(),
         )
 
         return fe_block, shortcut
 
-    @staticmethod
-    def get_vit_head(in_ch, num_class):
-        # image_size, patch_size, num_classes, dim, depth, heads, mlp_dim
-        linear = nnn.TransformerLayer(
-            image_size=66,
-            patch_size=1,
-            num_classes=num_class,
-            depth=3,
-            heads=4,
-            mlp_dim=256,
-            tmp_ch=in_ch,
-        )
-        linear.apply(transformer_option)
-
-        return linear
-
-    def forward(self, x, model_type="classifier"):
+    def forward(self, x):
         out = self.stem(x)
         out = self.stage_1(out)
         out = self.stage_2(out)
@@ -655,14 +533,5 @@ class Classifier1D(nn.Module):
         out = self.relu(self.bn1(out))
         out = self.dropout(out)
 
-        if model_type == "classifier":
-            out = self.linear(out)
-            return out
-        else:
-            out = self.avgpool(out)
-            out = out.view(out.size(0), -1)
-            # projection
-            z = self.projection(out)
-            # prediction
-            p = self.prediction(out)
-            return z, p
+        out = self.linear(out)
+        return out
