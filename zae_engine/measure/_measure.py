@@ -5,16 +5,28 @@ import torch
 import wfdb
 from typeguard import typechecked
 
-from zae_engine.operation import label_to_onoff, onoff_to_label, find_nearest, sanity_check,\
-    draw_confusion_matrix, print_confusion_matrix
+from zae_engine.operation import (
+    label_to_onoff,
+    onoff_to_label,
+    find_nearest,
+    sanity_check,
+    draw_confusion_matrix,
+    print_confusion_matrix,
+)
 
 
 EPS = np.finfo(np.float32).eps
 
+
 class BijectiveMetric:
-    def __init__(self,
-                 prediction: Union[np.ndarray, torch.Tensor],
-                 label: Union[np.ndarray, torch.Tensor], num_class: int, for_beat: bool = True, th_onoff: int = 2):
+    def __init__(
+        self,
+        prediction: Union[np.ndarray, torch.Tensor],
+        label: Union[np.ndarray, torch.Tensor],
+        num_class: int,
+        for_beat: bool = True,
+        th_onoff: int = 2,
+    ):
         """
         Compute bijective confusion matrix of given sequences.
         The surjective operation projects every onoff in prediction onto label and check IoU.
@@ -26,18 +38,25 @@ class BijectiveMetric:
         self.num_class = num_class
         self.eps = torch.finfo(torch.float32).eps
 
-        assert prediction.shape == label.shape, f'Unmatched shape error. {prediction.shape} =/= {label.shape}'
-        assert len(label.shape) == 1, f'Unexpected shape error. Expect 1-D array but receive {label.shape}.'
+        assert prediction.shape == label.shape, f"Unmatched shape error. {prediction.shape} =/= {label.shape}"
+        assert len(label.shape) == 1, f"Unexpected shape error. Expect 1-D array but receive {label.shape}."
 
         self.pred_onoff = label_to_onoff(prediction, outside_idx=for_beat, sense=th_onoff)
         self.pred_onoff = torch.tensor(sanity_check(self.pred_onoff, incomplete_only=True), dtype=torch.int)
-        self.pred_array = onoff_to_label(self.pred_onoff, length=len(prediction))     # w/o incomplete
+        self.pred_array = onoff_to_label(self.pred_onoff, length=len(prediction))  # w/o incomplete
 
         self.label_onoff = label_to_onoff(label, outside_idx=for_beat, sense=th_onoff)
-        self.label_onoff = torch.tensor(sanity_check(self.label_onoff, incomplete_only=True), dtype=torch.int)
-        self.label_array = onoff_to_label(self.label_onoff, length=len(prediction))   # w/o incomplete
+        self.label_onoff = torch.tensor(
+            sanity_check(self.label_onoff, incomplete_only=True),
+            dtype=torch.int,
+        )
+        self.label_array = onoff_to_label(self.label_onoff, length=len(prediction))  # w/o incomplete
 
-        self.bijective_onoff, self.injective_onoff, self.surjective_onoff = self.onoff_pairing()
+        (
+            self.bijective_onoff,
+            self.injective_onoff,
+            self.surjective_onoff,
+        ) = self.onoff_pairing()
 
         # Injective: pred --projection-> label
         self.injective_mat = self.map_and_confusion(self.pred_onoff, self.label_array).transpose()
@@ -65,7 +84,7 @@ class BijectiveMetric:
         if len(self.label_onoff.shape) == 2:
             for i_p, p_oo in enumerate(self.pred_onoff):
                 p_oo = p_oo.tolist()
-                i_nearest, v_nearest = find_nearest(self.label_onoff[:, 0], int(p_oo[0]))   # find nearest onoff
+                i_nearest, v_nearest = find_nearest(self.label_onoff[:, 0], int(p_oo[0]))  # find nearest onoff
                 l_oo = self.label_onoff[i_nearest].tolist()
                 iou = giou(p_oo[:-1], l_oo[:-1])[-1]
                 if iou > 0.5:
@@ -74,7 +93,7 @@ class BijectiveMetric:
         if len(self.pred_onoff.shape) == 2:
             for i_l, l_oo in enumerate(self.label_onoff):
                 l_oo = l_oo.tolist()
-                i_nearest, v_nearest = find_nearest(self.pred_onoff[:, 0], int(l_oo[0]))    # find nearest onoff
+                i_nearest, v_nearest = find_nearest(self.pred_onoff[:, 0], int(l_oo[0]))  # find nearest onoff
                 p_oo = self.pred_onoff[i_nearest].tolist()
                 iou = giou(l_oo[:-1], p_oo[:-1])[-1]
                 if iou > 0.5:
@@ -87,15 +106,25 @@ class BijectiveMetric:
 
         injective_onoff_pair = torch.tensor(injective_onoff_pair)
         surjective_onoff_pair = torch.tensor(surjective_onoff_pair)
-        return torch.tensor(bijective_onoff_pair), injective_onoff_pair, surjective_onoff_pair
+        return (
+            torch.tensor(bijective_onoff_pair),
+            injective_onoff_pair,
+            surjective_onoff_pair,
+        )
 
-    def map_and_confusion(self, x_onoff: Union[torch.Tensor, np.ndarray], y_array: Union[torch.Tensor, np.ndarray]):
-        if isinstance(x_onoff, np.ndarray): x_onoff = torch.tensor(x_onoff, dtype=torch.int)
-        if isinstance(y_array, np.ndarray): y_array = torch.tensor(y_array, dtype=torch.int)
+    def map_and_confusion(
+        self,
+        x_onoff: Union[torch.Tensor, np.ndarray],
+        y_array: Union[torch.Tensor, np.ndarray],
+    ):
+        if isinstance(x_onoff, np.ndarray):
+            x_onoff = torch.tensor(x_onoff, dtype=torch.int)
+        if isinstance(y_array, np.ndarray):
+            y_array = torch.tensor(y_array, dtype=torch.int)
 
         confusion_mat = np.zeros((self.num_class, self.num_class), dtype=np.int32)
         for i_onoff, (start, end, x) in enumerate(x_onoff):
-            y = int(y_array[start:end+1].mode().values)
+            y = int(y_array[start : end + 1].mode().values)
             confusion_mat[x, y] += 1
         return confusion_mat
 
@@ -107,25 +136,51 @@ class BijectiveMetric:
         return confusion_mat
 
     def summary(self, class_name: Union[Tuple, List] = None):
-        print("\t\t# of samples in bijective confusion mat -> Bi: {bi} / Inj: {inj} / Sur: {sur}"
-              .format(bi=self.bijective_count, inj=self.injective_count, sur=self.surjective_count))
-        print("\t\tF-beta score from bijective metric -> Bi: {bi:.2f}% / Inj: {inj:.2f}% / Sur: {sur:.2f}%"
-              .format(bi=100 * self.bijective_f1, inj=100 * self.injective_f1, sur=100 * self.surjective_f1))
-        print("\t\tAccuracy from bijective metric -> Bi: {bi:.2f}% / Inj: {inj:.2f}% / Sur: {sur:.2f}%"
-              .format(bi=100 * self.bijective_acc, inj=100 * self.injective_acc, sur=100 * self.surjective_acc))
+        print(
+            "\t\t# of samples in bijective confusion mat -> Bi: {bi} / Inj: {inj} / Sur: {sur}".format(
+                bi=self.bijective_count,
+                inj=self.injective_count,
+                sur=self.surjective_count,
+            )
+        )
+        print(
+            "\t\tF-beta score from bijective metric -> Bi: {bi:.2f}% / Inj: {inj:.2f}% / Sur: {sur:.2f}%".format(
+                bi=100 * self.bijective_f1,
+                inj=100 * self.injective_f1,
+                sur=100 * self.surjective_f1,
+            )
+        )
+        print(
+            "\t\tAccuracy from bijective metric -> Bi: {bi:.2f}% / Inj: {inj:.2f}% / Sur: {sur:.2f}%".format(
+                bi=100 * self.bijective_acc,
+                inj=100 * self.injective_acc,
+                sur=100 * self.surjective_acc,
+            )
+        )
 
         print_confusion_matrix(self.bijective_confusion(), class_name=class_name)
 
         num_catch = self.bijective_mat[1:, 1:].sum()
-        print('Beat Acc : %d / %d -> %.2f%%' %
-              (num_catch, self.bijective_count, 100 * num_catch / self.bijective_count + self.eps))
+        print(
+            "Beat Acc : %d / %d -> %.2f%%"
+            % (
+                num_catch,
+                self.bijective_count,
+                100 * num_catch / self.bijective_count + self.eps,
+            )
+        )
         print()
 
 
-def accuracy(true: Union[np.ndarray, torch.Tensor], predict: Union[np.ndarray, torch.Tensor]):
-    if isinstance(true, torch.Tensor): true = true.numpy()
-    if isinstance(predict, torch.Tensor): predict = predict.numpy()
-    assert true.shape == predict.shape, f'Shape unmatched: arg #1 {true.shape} =/= arg #2 {predict.shape}'
+def accuracy(
+    true: Union[np.ndarray, torch.Tensor],
+    predict: Union[np.ndarray, torch.Tensor],
+):
+    if isinstance(true, torch.Tensor):
+        true = true.numpy()
+    if isinstance(predict, torch.Tensor):
+        predict = predict.numpy()
+    assert true.shape == predict.shape, f"Shape unmatched: arg #1 {true.shape} =/= arg #2 {predict.shape}"
     return (true == predict).astype(float).mean()
 
 
@@ -133,10 +188,15 @@ def rms(recordings):
     return np.sqrt(np.mean(np.square(recordings), axis=-1))
 
 
-def mse(signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, torch.Tensor]):
-    assert signal1.shape == signal2.shape, f'Shape unmatched: arg #1 {signal1.shape} =/= arg #2 {signal2.shape}'
-    if isinstance(signal1, np.ndarray): signal1 = torch.tensor(signal1)
-    if isinstance(signal2, np.ndarray): signal2 = torch.tensor(signal2)
+def mse(
+    signal1: Union[np.ndarray, torch.Tensor],
+    signal2: Union[np.ndarray, torch.Tensor],
+):
+    assert signal1.shape == signal2.shape, f"Shape unmatched: arg #1 {signal1.shape} =/= arg #2 {signal2.shape}"
+    if isinstance(signal1, np.ndarray):
+        signal1 = torch.tensor(signal1)
+    if isinstance(signal2, np.ndarray):
+        signal2 = torch.tensor(signal2)
 
     return torch.mean(torch.square(signal1 - signal2), dim=-1)
 
@@ -156,7 +216,10 @@ def peak_signal_to_noise(signals, noisy, peak: float = 6.0):
 
 
 @typechecked
-def miou(outputs: Union[np.ndarray, torch.Tensor], labels: Union[np.ndarray, torch.Tensor]) -> torch.Tensor:
+def miou(
+    outputs: Union[np.ndarray, torch.Tensor],
+    labels: Union[np.ndarray, torch.Tensor],
+) -> torch.Tensor:
     """
     Compute mean IoU for given outputs and labels.
     :param outputs: Shape - [-1, dim]. tensor (or nd-array) of model's outputs.
@@ -164,15 +227,19 @@ def miou(outputs: Union[np.ndarray, torch.Tensor], labels: Union[np.ndarray, tor
     :return: mIoU with shape [-1].
     """
 
-    assert 'int' in str(outputs.dtype).lower() or 'bool' in str(outputs.dtype).lower(), \
-        f'outputs array\'s elements data type must be int or bool type current element type is {outputs.dtype}'
+    assert (
+        "int" in str(outputs.dtype).lower() or "bool" in str(outputs.dtype).lower()
+    ), f"outputs array's elements data type must be int or bool type current element type is {outputs.dtype}"
 
-    assert 'int' in str(labels.dtype) or 'bool' in str(labels.dtype).lower(), \
-        f'labels array\'s elements data type must be int or bool type current element type is {labels.dtype}'
+    assert (
+        "int" in str(labels.dtype) or "bool" in str(labels.dtype).lower()
+    ), f"labels array's elements data type must be int or bool type current element type is {labels.dtype}"
 
-    assert outputs.shape == labels.shape, f'Shape unmatched: arg #1 {outputs.shape} =/= arg #2 {labels.shape}'
-    if isinstance(outputs, np.ndarray): outputs = torch.tensor(outputs)
-    if isinstance(labels, np.ndarray): labels = torch.tensor(labels)
+    assert outputs.shape == labels.shape, f"Shape unmatched: arg #1 {outputs.shape} =/= arg #2 {labels.shape}"
+    if isinstance(outputs, np.ndarray):
+        outputs = torch.tensor(outputs)
+    if isinstance(labels, np.ndarray):
+        labels = torch.tensor(labels)
     if len(labels.shape) == 1:
         labels = labels.clone().reshape(1, -1)
         outputs = outputs.clone().reshape(1, -1)
@@ -183,15 +250,17 @@ def miou(outputs: Union[np.ndarray, torch.Tensor], labels: Union[np.ndarray, tor
     for m in range(maximum):
         intersection = ((outputs == m).int() & (labels == m).int()).float().sum(-1)
         union = ((outputs == m).int() | (labels == m).int()).float().sum(-1)
-        iou_ += (intersection / (union + torch.finfo(torch.float32).eps))
+        iou_ += intersection / (union + torch.finfo(torch.float32).eps)
 
     return iou_ / maximum
 
 
 @typechecked
-def giou(true_onoff: Union[np.ndarray, torch.Tensor, List[Union[int]]],
-         pred_onoff: Union[np.ndarray, torch.Tensor, List[Union[int]]],
-         iou: bool = False) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
+def giou(
+    true_onoff: Union[np.ndarray, torch.Tensor, List[Union[int]]],
+    pred_onoff: Union[np.ndarray, torch.Tensor, List[Union[int]]],
+    iou: bool = False,
+) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
     """
     Compute mean GIoU and IoU for given outputs and labels.
     :param true_onoff: Shape - [-1, 2].
@@ -202,26 +271,33 @@ def giou(true_onoff: Union[np.ndarray, torch.Tensor, List[Union[int]]],
     :return: GIoU, iou (option) with shape [-1].
     """
 
-    if not isinstance(true_onoff, torch.Tensor): true_onoff = torch.tensor(true_onoff)
-    if not isinstance(pred_onoff, torch.Tensor): pred_onoff = torch.tensor(pred_onoff)
+    if not isinstance(true_onoff, torch.Tensor):
+        true_onoff = torch.tensor(true_onoff)
+    if not isinstance(pred_onoff, torch.Tensor):
+        pred_onoff = torch.tensor(pred_onoff)
 
-    assert 'int' in str(true_onoff.dtype).lower(), \
-        f'true_onoff array\'s elements data type must be int, but receive {true_onoff.dtype}'
+    assert (
+        "int" in str(true_onoff.dtype).lower()
+    ), f"true_onoff array's elements data type must be int, but receive {true_onoff.dtype}"
 
-    assert 'int' in str(pred_onoff.dtype).lower(), \
-        f'pred_onoff array\'s elements data type must be int, but receive {pred_onoff.dtype}'
+    assert (
+        "int" in str(pred_onoff.dtype).lower()
+    ), f"pred_onoff array's elements data type must be int, but receive {pred_onoff.dtype}"
 
-    if len(true_onoff.shape) == 1: true_onoff = true_onoff.clone().unsqueeze(0)
-    if len(pred_onoff.shape) == 1: pred_onoff = pred_onoff.clone().unsqueeze(0)
-    assert true_onoff.shape == pred_onoff.shape, \
-        f'Shape unmatched: arg #1 {true_onoff.shape} =/= arg #2 {pred_onoff.shape}'
+    if len(true_onoff.shape) == 1:
+        true_onoff = true_onoff.clone().unsqueeze(0)
+    if len(pred_onoff.shape) == 1:
+        pred_onoff = pred_onoff.clone().unsqueeze(0)
+    assert (
+        true_onoff.shape == pred_onoff.shape
+    ), f"Shape unmatched: arg #1 {true_onoff.shape} =/= arg #2 {pred_onoff.shape}"
 
     true_on, true_off = true_onoff[:, 0], true_onoff[:, 1]
     pred_on, pred_off = pred_onoff[:, 0], pred_onoff[:, 1]
     C_on = torch.min(true_on, pred_on)
     C_off = torch.max(true_off, pred_off)
 
-    eps = + torch.finfo(torch.float32).eps
+    eps = +torch.finfo(torch.float32).eps
     C_area = C_off - C_on
     relative_area = C_area - (true_off - true_on)
     union = C_area  # they are same in 1-dimension
@@ -254,24 +330,26 @@ def qilv(signal1, signal2, window):
     window_ = window / np.sum(window)  # normalized
 
     # Local statistics
-    l_means1 = np.convolve(signal1, window_, 'valid')
-    l_means2 = np.convolve(signal2, window_, 'valid')
-    l_vars1 = np.convolve(signal1 ** 2, window_, 'valid') - l_means1 ** 2
-    l_vars2 = np.convolve(signal2 ** 2, window_, 'valid') - l_means2 ** 2
+    l_means1 = np.convolve(signal1, window_, "valid")
+    l_means2 = np.convolve(signal2, window_, "valid")
+    l_vars1 = np.convolve(signal1**2, window_, "valid") - l_means1**2
+    l_vars2 = np.convolve(signal2**2, window_, "valid") - l_means2**2
 
     # Global statistics
     mean_l_vars1, mean_l_vars2 = np.mean(l_vars1), np.mean(l_vars2)
     std_l_vars1, std_l_vars2 = np.std(l_vars1), np.std(l_vars2)
     covar_l_vars = np.mean((l_vars1 - mean_l_vars1) * (l_vars2 - mean_l_vars2))
 
-    index1 = ((2 * mean_l_vars1 * mean_l_vars2) / (mean_l_vars1 ** 2 + mean_l_vars2 ** 2 + torch.finfo(torch.float32).eps))
-    index2 = ((2 * std_l_vars1 * std_l_vars2) / (std_l_vars1 ** 2 + std_l_vars2 ** 2 + torch.finfo(torch.float32).eps))
+    index1 = (2 * mean_l_vars1 * mean_l_vars2) / (
+        mean_l_vars1**2 + mean_l_vars2**2 + torch.finfo(torch.float32).eps
+    )
+    index2 = (2 * std_l_vars1 * std_l_vars2) / (std_l_vars1**2 + std_l_vars2**2 + torch.finfo(torch.float32).eps)
     index3 = covar_l_vars / (std_l_vars1 * std_l_vars2 + torch.finfo(torch.float32).eps)
 
     return index1 * index2 * index3
 
 
-def fbeta(*args, beta: float, num_classes: int, average: str = 'micro'):
+def fbeta(*args, beta: float, num_classes: int, average: str = "micro"):
     """
     Compute f-beta score using given confusion matrix (args#1 with asterisk).
     If the first argument is a tuple of length 2, i.e. true and prediction, then compute confusion matrix first.
@@ -295,7 +373,7 @@ def fbeta(*args, beta: float, num_classes: int, average: str = 'micro'):
     row = conf.sum(1)
     col = conf.sum(0)
 
-    if average == 'micro':
+    if average == "micro":
         micro_tp = tp_set.sum()
         micro_fn = (row - tp_set).sum()
         micro_fp = (col - tp_set).sum()
@@ -303,15 +381,15 @@ def fbeta(*args, beta: float, num_classes: int, average: str = 'micro'):
         recall = micro_tp / (micro_tp + micro_fn + eps)
         precision = micro_tp / (micro_tp + micro_fp + eps)
 
-        micro_f1 = (1 + beta ** 2) * recall * precision / ((beta ** 2) * precision + recall + eps)
+        micro_f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + eps)
         return micro_f1
 
-    elif average == 'macro':
+    elif average == "macro":
         macro_f1 = 0
         for tp, r, c in zip(tp_set, row, col):
             precision = tp / (c + eps)
             recall = tp / (r + eps)
-            f1 = (1 + beta ** 2) * recall * precision / ((beta ** 2) * precision + recall + eps)
+            f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + eps)
             macro_f1 += f1
 
         return macro_f1 / num_classes
@@ -333,8 +411,9 @@ def iec_60601(true: dict, predict: dict, data_length: int, criteria: str) -> Tup
     :return: Tuple[float, float]
     """
 
-    assert (t1 := type(true)) == (t2 := type(predict)) == dict, \
-        f'Expect type of given arguments are Dictionary, but receive {t1} and {t2}'
+    assert (
+        (t1 := type(true)) == (t2 := type(predict)) == dict
+    ), f"Expect type of given arguments are Dictionary, but receive {t1} and {t2}"
 
     def get_set(anno) -> set:
         """
@@ -344,17 +423,19 @@ def iec_60601(true: dict, predict: dict, data_length: int, criteria: str) -> Tup
         """
         ON, sample_set = False, set()
 
-        assert len(samples := anno['sample']) == len(aux := anno['rhythm']), f'Lengths of keys must be same.'
+        assert len(samples := anno["sample"]) == len(aux := anno["rhythm"]), f"Lengths of keys must be same."
         assert samples == sorted(samples), f'Key "sample" must be sorted.'
 
         for i, a in zip(samples, aux):
             if criteria in a:
-                if not ON: ON = i
+                if not ON:
+                    ON = i
             else:
                 if ON:
                     sample_set = sample_set.union(list(range(ON, i)))
                     ON = False
-        if ON: sample_set = sample_set.union(list(range(ON, data_length)))
+        if ON:
+            sample_set = sample_set.union(list(range(ON, data_length)))
         return sample_set
 
     try:
@@ -365,7 +446,7 @@ def iec_60601(true: dict, predict: dict, data_length: int, criteria: str) -> Tup
         raise e
     else:
         inter = true_set.intersection(pred_set)
-        pp, se = len(inter) / (len(pred_set) + EPS), len(inter)/(len(true_set) + EPS)
+        pp, se = len(inter) / (len(pred_set) + EPS), len(inter) / (len(true_set) + EPS)
         return pp, se
 
 
@@ -384,18 +465,19 @@ def cpsc2021(true: list, predict: list, margin: int = 3) -> float:
     :return: float
     """
 
-    assert len(true) % 2 == len(predict) % 2 == 0, f'Expect the length of each input argument to be even.'
+    assert len(true) % 2 == len(predict) % 2 == 0, f"Expect the length of each input argument to be even."
 
     on, off = [], []
     for i, t in enumerate(true):
         set_to = off if i % 2 else on
-        set_to += list(range(t-margin, t+margin))
+        set_to += list(range(t - margin, t + margin))
     on, off = set(on), set(off)
 
     score = 0
     for i, p in enumerate(predict):
         find_set = off if i % 2 else on
-        if p in find_set: score += 1
+        if p in find_set:
+            score += 1
     score /= 2
-    n_episode = max(len(true)//2, len(predict)//2)
+    n_episode = max(len(true) // 2, len(predict) // 2)
     return score / n_episode
