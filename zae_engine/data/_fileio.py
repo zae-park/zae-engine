@@ -22,59 +22,41 @@ def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
         If beat_idx was given, return recording, r-peak index, and beat type for beat_idx'th beat.
         If not, return recording, label sequence for 10 sec data.
     """
-    lookup = {'N': 1, 'A': 2}
+    lookup = {"N": 1, "A": 2}
 
-    ex_path = os.path.join(os.path.dirname(__file__), 'resource/sample_data')
-    recording = wfdb.rdsamp(ex_path, return_res=32)[0].squeeze()     # nd-array, [2500, ]
-    anno = wfdb.rdann(ex_path, 'zae')
+    ex_path = os.path.join(os.path.dirname(__file__), "resource/sample_data")
+    recording = wfdb.rdsamp(ex_path, return_res=32)[0].squeeze()  # nd-array, [2500, ]
+    anno = wfdb.rdann(ex_path, "zae")
     samp, sym = anno.sample.tolist(), anno.symbol
-    if sym[0] != '*':
+    if sym[0] != "*":
         samp.insert(0, 0)
-        sym.insert(0, '*')
-    if sym[-1] != '*':
+        sym.insert(0, "*")
+    if sym[-1] != "*":
         samp.append(2499)
-        sym.append('*')
+        sym.append("*")
 
-    assert len(sym) == len(samp), 'The length of samples and symbols is not matched. The annotation file is insane.'
-    assert len(sym) % 3 == 0, 'Invalid symbol. Please check out the first & last symbol of annotation.'
+    assert len(sym) == len(samp), "The length of samples and symbols is not matched. The annotation file is insane."
+    assert len(sym) % 3 == 0, "Invalid symbol. Please check out the first & last symbol of annotation."
 
-    n_qrs = len(sym) // 3      # The number of QRS complexes.
+    n_qrs = len(sym) // 3  # The number of QRS complexes.
     if beat_idx is None:
         label = np.zeros_like(recording, dtype=np.int32)
         for i_qrs in np.arange(len(sym))[1::3]:
-            label[samp[i_qrs - 1]: samp[i_qrs + 1]] = lookup[s] if (s := sym[i_qrs]) in lookup.keys() else 3
+            label[samp[i_qrs - 1] : samp[i_qrs + 1]] = lookup[s] if (s := sym[i_qrs]) in lookup.keys() else 3
         return recording, label
-
-        # for i_qrs in range(n_qrs):
-        #
-        #     if sym[3*i_peak+1] == 'N':
-        #         label[samp[3*i_peak]:samp[3*i_peak+2]] = 1
-        #     elif sym[3*i_peak+1] == 'A':
-        #         label[samp[3*i_peak]:samp[3*i_peak+2]] = 2
-        #     else:
-        #         label[samp[3*i_peak]:samp[3*i_peak+2]] = 3
-        # return recording, label
     else:
-        assert beat_idx < n_qrs, f'The maximum value os beat_idx is {n_qrs}. But {beat_idx} was provided.'
-        qrs_chunk = recording[samp[3*beat_idx]:samp[3*beat_idx+2]]
-        sym = sym[3*beat_idx+1]
-        qrs_loc = samp[3*beat_idx+1] - samp[3*beat_idx]
+        assert beat_idx < n_qrs, f"The maximum value os beat_idx is {n_qrs}. But {beat_idx} was provided."
+        qrs_chunk = recording[samp[3 * beat_idx] : samp[3 * beat_idx + 2]]
+        sym = sym[3 * beat_idx + 1]
+        qrs_loc = samp[3 * beat_idx + 1] - samp[3 * beat_idx]
         return qrs_chunk, qrs_loc, sym
 
 
-def example_mri() -> Tuple[np.ndarray, ...]:
-    example_path = os.path.join(data_path, 'example4d.nii.gz')
-
+def example_mri() -> np.ndarray:
+    example_path = os.path.join(data_path, "example4d.nii.gz")
     proxy = nib.load(example_path)
-
-    if 'get_fdata' in proxy.__dir__():
-
-        header = proxy.header
-        arr = proxy.get_fdata()
-
-        # 3. 원하는 Image Array 영역만 불러오기
-        sub_arr = proxy.dataobj[..., 0:5]
-    return ()
+    if "get_fdata" in proxy.__dir__():
+        return proxy.dataobj
 
 
 if __name__ == "__main__":
