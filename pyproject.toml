@@ -3,19 +3,14 @@ name = 'zae-engine'
 version = '0.0.1'
 description = 'Deep learning engine powered by zae-park.'
 authors = ["zae-park <tom941105@gmail.com>"]
+packages = [
+    {include = "zae_engine"},
+]
 
 [tool.poetry.dependencies]
 python = "~3.10.0"
 matplotlib = "^3.7.2"
 tensorflow-io-gcs-filesystem = "0.31.0"
-torchvision = [
-    { platform = "win64", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-win_amd64.whl" },
-    { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-linux_x86_64.whl" },
-]
-torch = [
-    { platform = "win64", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-win_amd64.whl" },
-    { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-linux_x86_64.whl" },
-]
 segment-anything = "^1.0"
 pandas = "^2.0.3"
 termcolor = "2.2.0"
@@ -49,20 +44,17 @@ pytest = "^7.4.2"
 [tool.poetry.group.dev.dependencies]
 python = "^3.10"
 pytest = "^7.4.2"
+torchvision = [
+    { platform = "win64", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-win_amd64.whl" },
+    { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-linux_x86_64.whl" },
+]
+torch = [
+    { platform = "win64", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-win_amd64.whl" },
+    { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-linux_x86_64.whl" },
+]
 
 [build-system]
-requires = [
-"poetry>=1.5",
-# "click",
-# "einops>=0.6.0",
-# "numpy>=1.24.0",
-# "pandas>=1.5.1",
-# "psutil>=5.9.4",
-# "rich>=12.5.1",
-# "torch>=2.0.0",
-# "tensorflow",
-# "tqdm>=4.64.1",
- ]
+requires = ["poetry>=1.5"]
 build-backend = "poetry.masonry.api"
 
 [tool.black]
