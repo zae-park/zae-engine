@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 
 import zae_engine
 from zae_engine.data_pipeline.collate import Collate_seq
-from zae_engine.models.benchmark import sec10_classification
+from zae_engine.models.build import CNNBase
 
 
 def core(x: np.ndarray, batch_size: int):
@@ -19,7 +19,7 @@ def core(x: np.ndarray, batch_size: int):
     dataset = Sec10Dataset(x)
     ex_loader1 = DataLoader(dataset=dataset, batch_size=batch_size, collate_fn=collate.wrap(), shuffle=False)
 
-    model = sec10_classification(True)
+    model = CNNBase(1, 9, 7, 2, 1)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     trainer = Sec10Trainer(model, device, "test")
     trainer.inference(ex_loader1)
