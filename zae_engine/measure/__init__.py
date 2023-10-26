@@ -1,4 +1,3 @@
-from ._measure import BijectiveMetric
 from ._measure import accuracy
 from ._measure import rms
 from ._measure import mse
