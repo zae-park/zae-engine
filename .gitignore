@@ -3,4 +3,5 @@
 *.pt
 *.pth
 *.lock
-.idea
+.idea/
+dist/
