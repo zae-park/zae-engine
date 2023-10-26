@@ -9,7 +9,7 @@ import torch
 from torch.nn import functional as F
 from einops import repeat, reduce
 
-from ..operation import label_to_onoff, sanity_check
+from zae_engine.operation import label_to_onoff
 
 
 class Collate_seq(ABC):

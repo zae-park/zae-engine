@@ -47,7 +47,7 @@ class TestLogger(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        dummy = torch.randn(10, 1, 2500)
+        dummy = torch.randn(10, 1, 2560)
         train_set = DummySet(dummy)
         valid_set = DummySet(dummy)
 
