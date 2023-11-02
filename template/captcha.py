@@ -46,8 +46,8 @@ class CaptchaDataset(Dataset):
         return np.array(Image.open(self.x[idx]))
 
     def __getitem__(self, idx):
-        x = torch.tensor(self.load_image(idx), dtype=torch.float32)[..., :-1]
-        x = torch.permute(x, [2, 0, 1])
+        x = torch.tensor(self.load_image(idx), dtype=torch.float32)
+        x = torch.mean(torch.permute(x, [2, 0, 1]), 0, keepdim=True)
         y = torch.zeros((36, 5), dtype=torch.float32)
         for i, yy in enumerate(self.str2emb(self.y[idx])):
             y[yy, i] = 1
@@ -125,7 +125,7 @@ def core():
     captcha_dataset = CaptchaDataset(x=x_filenames, y=y_txt)
     captcha_loader = DataLoader(dataset=captcha_dataset, batch_size=16)
 
-    captcha_model = CaptchaModel(3, 36, 16, kernel_size=(3, 3), stride=[2, 2], depth=3, order=2)
+    captcha_model = CaptchaModel(1, 36, 16, kernel_size=(3, 3), stride=[2, 2], depth=3, order=2)
 
     captcha_opt = torch.optim.Adam(params=captcha_model.parameters(), lr=1e-5)
     captcha_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer=captcha_opt)
