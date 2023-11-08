@@ -4,11 +4,22 @@ import time
 import glob
 import torch
 import torch.nn as nn
+from torchvision.transforms import Resize
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 import numpy as np
+import tensorflow as tf
 from PIL import Image
 from tqdm import tqdm
+
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+from glob import glob
+import tensorflow as tf
+from PIL import Image
+from tensorflow import keras
+from keras import layers
 
 from zae_engine.data_pipeline import example_ecg
 from zae_engine import trainer, models, measure, data_pipeline
@@ -38,6 +49,7 @@ class CaptchaDataset(Dataset):
         self._type = _type
         self.str2emb = lambda label: [LOOKDOWN[l] for l in label]
         self.emb2str = lambda embed: [LOOKUP[e] for e in embed]
+        self.resizer = Resize((60, 250))
 
     def __len__(self):
         return len(self.x)
@@ -47,7 +59,7 @@ class CaptchaDataset(Dataset):
 
     def __getitem__(self, idx):
         x = torch.tensor(self.load_image(idx), dtype=torch.float32)
-        x = torch.mean(torch.permute(x, [2, 0, 1]), 0, keepdim=True)
+        x = torch.mean(self.resizer(torch.permute(x, [2, 0, 1])), 0, keepdim=True)
         y = torch.zeros((36, 5), dtype=torch.float32)
         for i, yy in enumerate(self.str2emb(self.y[idx])):
             y[yy, i] = 1
@@ -87,7 +99,7 @@ class CaptchaTrainer(trainer.Trainer):
         out = self.model(x).softmax(1)
         prediction = out.argmax(1)
         loss = F.cross_entropy(out, y)
-        acc = measure.accuracy(self._to_cpu(y), self._to_cpu(prediction))
+        acc = measure.accuracy(self._to_cpu(y.argmax(1)), self._to_cpu(prediction))
         return {"loss": loss, "output": out, "acc": acc}
 
 
@@ -115,16 +127,100 @@ class CaptchaModel(models.CNNBase):
         return self.head(pool)
 
 
+class CTCLayer(layers.Layer):
+    def __init__(self, name=None):
+        super().__init__(name=name)
+        self.loss_fn = keras.backend.ctc_batch_cost
+
+    def call(self, y_true, y_pred):
+        # Compute the training-time loss value and add it
+        # to the layer using `self.add_loss()`.
+        batch_len = tf.cast(tf.shape(y_true)[0], dtype="int64")
+        input_length = tf.cast(tf.shape(y_pred)[1], dtype="int64")
+        label_length = tf.cast(tf.shape(y_true)[1], dtype="int64")
+
+        input_length = input_length * tf.ones(shape=(batch_len, 1), dtype="int64")
+        label_length = label_length * tf.ones(shape=(batch_len, 1), dtype="int64")
+
+        loss = self.loss_fn(y_true, y_pred, input_length, label_length)
+        self.add_loss(loss)
+
+        # At test time, just return the computed predictions
+        return y_pred
+
+
+def build_model():
+    # Inputs to the model
+    input_img = layers.Input(shape=(img_width, img_height, 1), name="image", dtype="float32")
+    labels = layers.Input(name="label", shape=(None,), dtype="float32")
+
+    # First conv block
+    x = layers.Conv2D(
+        32,
+        (3, 3),
+        activation="relu",
+        kernel_initializer="he_normal",
+        padding="same",
+        name="Conv1",
+    )(input_img)
+    x = layers.MaxPooling2D((2, 2), name="pool1")(x)
+
+    # Second conv block
+    x = layers.Conv2D(
+        64,
+        (3, 3),
+        activation="relu",
+        kernel_initializer="he_normal",
+        padding="same",
+        name="Conv2",
+    )(x)
+    x = layers.MaxPooling2D((2, 2), name="pool2")(x)
+
+    # We have used two max pool with pool size and strides 2.
+    # Hence, downsampled feature maps are 4x smaller. The number of
+    # filters in the last layer is 64. Reshape accordingly before
+    # passing the output to the RNN part of the model
+    new_shape = ((img_width // 4), (img_height // 4) * 64)
+    x = layers.Reshape(target_shape=new_shape, name="reshape")(x)
+    x = layers.Dense(64, activation="relu", name="dense1")(x)
+    x = layers.Dropout(0.2)(x)
+
+    # RNNs
+    x = layers.Bidirectional(layers.LSTM(128, return_sequences=True, dropout=0.25))(x)
+    x = layers.Bidirectional(layers.LSTM(64, return_sequences=True, dropout=0.25))(x)
+
+    # Output layer
+    x = layers.Dense(len(char_to_num.get_vocabulary()) + 1, activation="softmax", name="dense2")(x)
+
+    # Add CTC layer for calculating CTC loss at each step
+    output = CTCLayer(name="ctc_loss")(labels, x)
+
+    # Define the model
+    model = keras.models.Model(inputs=[input_img, labels], outputs=output, name="ocr_model_v1")
+    # Optimizer
+    opt = keras.optimizers.Adam()
+    # Compile the model and return
+    model.compile(optimizer=opt)
+    return model
+
+
 def core():
     device = torch.device(f"cuda:{0}" if torch.cuda.is_available() else "cpu")
 
-    x_filenames = glob.glob("Z:/dev-zae/chapcha_database/labeled/*.png")
-    with open("Z:/dev-zae/chapcha_database/labeled/label.txt", "r") as f:
-        y_txt = f.read().split("\n")
+    filenames = glob.glob("Z:/dev-zae/captcha_database/labeled/*.png")
+    filenames += glob.glob("Z:/dev-zae/captcha_images_v2/*.png")
+    labels = [os.path.splitext(os.path.split(fn)[-1])[0] for fn in filenames]
 
-    captcha_dataset = CaptchaDataset(x=x_filenames, y=y_txt)
-    captcha_loader = DataLoader(dataset=captcha_dataset, batch_size=16)
+    # filenames = glob.glob("Z:/dev-zae/chapcha_database/labeled/*.png")
+    # labels = [os.path.splitext(os.path.split(fn)[-1])[0] for fn in filenames]
 
+    n = len(filenames)
+    split_ratio = 0.8
+    x_train, x_valid = filenames[: int(split_ratio * n)], filenames[int(split_ratio * n) :]
+    y_train, y_valid = labels[: int(split_ratio * n)], labels[int(split_ratio * n) :]
+
+    train_loader = DataLoader(dataset=CaptchaDataset(x=x_train, y=y_train), batch_size=16)
+    valid_loader = DataLoader(dataset=CaptchaDataset(x=x_valid, y=y_valid), batch_size=16)
     captcha_model = CaptchaModel(1, 36, 16, kernel_size=(3, 3), stride=[2, 2], depth=3, order=2)
 
     captcha_opt = torch.optim.Adam(params=captcha_model.parameters(), lr=1e-5)
@@ -134,13 +230,187 @@ def core():
         model=captcha_model, device=device, mode="train", optimizer=captcha_opt, scheduler=captcha_scheduler
     )
     t = time.time()
-    ex_trainer.run(n_epoch=100, loader=captcha_loader)
+    ex_trainer.run(n_epoch=500, loader=train_loader, valid_loader=valid_loader)
     print(time.time() - t)
 
-    # result = np.concatenate(ex_trainer.inference(loader=ex_loader3), axis=0).argmax(1)
-    # print(f"Accuracy: {measure.accuracy(test_y, result):.8f}")
-    #
-    # return result, ex_loader3.dataset.y
+
+def core2():
+    device = torch.device(f"cuda:{0}" if torch.cuda.is_available() else "cpu")
+
+    x_filenames = glob.glob("Z:/dev-zae/chapcha_database/labeled/*.png")
+    with open("Z:/dev-zae/chapcha_database/labeled/label.txt", "r") as f:
+        y_txt = f.read().split("\n")
+
+    n = len(x_filenames)
+    split_ratio = 0.5
+    x_train, x_valid = x_filenames[: int(split_ratio * n)], x_filenames[int(split_ratio * n) :]
+    y_train, y_valid = y_txt[: int(split_ratio * n)], y_txt[int(split_ratio * n) :]
+
+    train_loader = DataLoader(dataset=CaptchaDataset(x=x_train, y=y_train), batch_size=16)
+    valid_loader = DataLoader(dataset=CaptchaDataset(x=x_valid, y=y_valid), batch_size=16)
+    captcha_model = pre_trained("./")
+
+    for v in valid_loader:
+        x, y = v
+        predict = captcha_model.predict(x)
+        print(predict)
+        print(y.argmax(1))
+
+
+def core_tf():
+    # Preview Dataset
+    images = glob("Z:/dev-zae/captcha_database/labeled/*.png")
+    images += glob("Z:/dev-zae/captcha_images_v2/*.png")
+    labels = [os.path.splitext(os.path.split(fn)[-1])[0] for fn in images]
+
+    LOOKUP = {k: v for k, v in enumerate("0123456789abcdefghijklmnopqrstuvwxyz")}
+    LOOKDOWN = {v: k for k, v in LOOKUP.items()}
+    characters = LOOKUP.values()
+
+    # Batch size for training and validation
+    batch_size = 16
+
+    # Desired image dimensions
+    img_width = 200
+    img_height = 50
+
+    # Factor by which the image is going to be downsampled
+    # by the convolutional blocks. We will be using two
+    # convolution blocks and each block will have
+    # a pooling layer which downsample the features by a factor of 2.
+    # Hence total downsampling factor would be 4.
+    downsample_factor = 4
+
+    # Maximum length of any captcha in the dataset
+    max_length = 5
+
+    # Mapping characters to integers
+    char_to_num = layers.StringLookup(vocabulary=list(characters), mask_token=None)
+    # Mapping integers back to original characters
+    num_to_char = layers.StringLookup(vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True)
+
+    def split_data(images, labels, train_size=0.9, shuffle=True):
+        # 1. Get the total size of the dataset
+        size = len(images)
+        # 2. Make an indices array and shuffle it, if required
+        indices = np.arange(size)
+        if shuffle:
+            np.random.shuffle(indices)
+        # 3. Get the size of training samples
+        train_samples = int(size * train_size)
+        # 4. Split data into training and validation sets
+        x_train, y_train = images[indices[:train_samples]], labels[indices[:train_samples]]
+        x_valid, y_valid = images[indices[train_samples:]], labels[indices[train_samples:]]
+        return x_train, x_valid, y_train, y_valid
+
+    # Splitting data into training and validation sets
+    x_train, x_valid, y_train, y_valid = split_data(np.array(images), np.array(labels))
+
+    def encode_single_sample(img_path, label):
+        # 1. Read image
+        img = tf.io.read_file(img_path)
+        # 2. Decode and convert to grayscale
+        img = tf.io.decode_png(img, channels=4)
+        img = tf.reduce_mean(img, axis=-1, keepdims=True)
+        # 3. Convert to float32 in [0, 1] range
+        img = tf.image.convert_image_dtype(img, tf.float32)
+        # 4. Resize to the desired size
+        img = tf.image.resize(img, [img_height, img_width])
+        # 5. Transpose the image because we want the time
+        # dimension to correspond to the width of the image.
+        img = tf.transpose(img, perm=[1, 0, 2])
+        # 6. Map the characters in label to numbers
+        label = char_to_num(tf.strings.unicode_split(label, input_encoding="UTF-8"))
+        # 7. Return a dict as our model is expecting two inputs
+        return {"image": img, "label": label}
+
+    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
+    train_dataset = (
+        train_dataset.map(encode_single_sample, num_parallel_calls=tf.data.AUTOTUNE)
+        .batch(batch_size)
+        .prefetch(buffer_size=tf.data.AUTOTUNE)
+    )
+
+    validation_dataset = tf.data.Dataset.from_tensor_slices((x_valid, y_valid))
+    validation_dataset = (
+        validation_dataset.map(encode_single_sample, num_parallel_calls=tf.data.AUTOTUNE)
+        .batch(batch_size)
+        .prefetch(buffer_size=tf.data.AUTOTUNE)
+    )
+
+    _, ax = plt.subplots(4, 4, figsize=(10, 5))
+    for batch in train_dataset.take(1):
+        images = batch["image"]
+        labels = batch["label"]
+        for i in range(16):
+            img = (images[i] * 255).numpy().astype("uint8")
+            label = tf.strings.reduce_join(num_to_char(labels[i])).numpy().decode("utf-8")
+            ax[i // 4, i % 4].imshow(img[:, :, 0].T, cmap="gray")
+            ax[i // 4, i % 4].set_title(label)
+            ax[i // 4, i % 4].axis("off")
+    plt.show()
+
+    # Get the model
+    model = build_model()
+    model.summary()
+
+    epochs = 500
+    early_stopping_patience = 10
+    # Add early stopping
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss", patience=early_stopping_patience, restore_best_weights=True
+    )
+
+    # Train the model
+    history = model.fit(
+        train_dataset,
+        validation_data=validation_dataset,
+        epochs=epochs,
+        callbacks=[early_stopping],
+    )
+
+    # Get the prediction model by extracting layers till the output layer
+    prediction_model = keras.models.Model(model.get_layer(name="image").input, model.get_layer(name="dense2").output)
+    prediction_model.summary()
+
+    def decode_batch_predictions(pred):
+        input_len = np.ones(pred.shape[0]) * pred.shape[1]
+        # Use greedy search. For complex tasks, you can use beam search
+        results = keras.backend.ctc_decode(pred, input_length=input_len, greedy=True)[0][0][:, :max_length]
+        # Iterate over the results and get back the text
+        output_text = []
+        for res in results:
+            res = tf.strings.reduce_join(num_to_char(res)).numpy().decode("utf-8")
+            output_text.append(res)
+        return output_text
+
+    #  Let's check results on some validation samples
+    for batch in validation_dataset.take(1):
+        batch_images = batch["image"]
+        batch_labels = batch["label"]
+
+        preds = prediction_model.predict(batch_images)
+        pred_texts = decode_batch_predictions(preds)
+
+        orig_texts = []
+        for label in batch_labels:
+            label = tf.strings.reduce_join(num_to_char(label)).numpy().decode("utf-8")
+            orig_texts.append(label)
+
+        _, ax = plt.subplots(4, 4, figsize=(15, 5))
+        for i in range(len(pred_texts)):
+            img = (batch_images[i, :, :, 0] * 255).numpy().astype(np.uint8)
+            img = img.T
+            title = f"Prediction: {pred_texts[i]}"
+            ax[i // 4, i % 4].imshow(img, cmap="gray")
+            ax[i // 4, i % 4].set_title(title)
+            ax[i // 4, i % 4].axis("off")
+    plt.show()
+
+
+def pre_trained(modelpath: str):
+    model = tf.saved_model.load(modelpath, options=tf.saved_model.LoadOptions(experimental_io_device="/job:localhost"))
+    return model
 
 
 if __name__ == "__main__":
