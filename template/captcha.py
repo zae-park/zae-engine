@@ -1,15 +1,12 @@
-import os
+import random
 import urllib.request
 import time
 import glob
 import torch
 import torch.nn as nn
 from torchvision.transforms import Resize
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, ConcatDataset
 import torch.nn.functional as F
-import numpy as np
-import tensorflow as tf
-from PIL import Image
 from tqdm import tqdm
 
 import os
@@ -21,12 +18,14 @@ from PIL import Image
 from tensorflow import keras
 from keras import layers
 
-from zae_engine.data_pipeline import example_ecg
 from zae_engine import trainer, models, measure, data_pipeline
-from zae_engine.trainer import mpu_utils
 
 LOOKUP = {k: v for k, v in enumerate("0123456789abcdefghijklmnopqrstuvwxyz")}
 LOOKDOWN = {v: k for k, v in LOOKUP.items()}
+
+epochs = 500
+batch_size = 16
+learning_rate = 1e-4
 
 
 class CaptchaImgSaver:
@@ -149,9 +148,9 @@ class CTCLayer(layers.Layer):
         return y_pred
 
 
-def build_model():
+def build_model(img_h, img_w):
     # Inputs to the model
-    input_img = layers.Input(shape=(img_width, img_height, 1), name="image", dtype="float32")
+    input_img = layers.Input(shape=(img_w, img_h, 1), name="image", dtype="float32")
     labels = layers.Input(name="label", shape=(None,), dtype="float32")
 
     # First conv block
@@ -180,7 +179,7 @@ def build_model():
     # Hence, downsampled feature maps are 4x smaller. The number of
     # filters in the last layer is 64. Reshape accordingly before
     # passing the output to the RNN part of the model
-    new_shape = ((img_width // 4), (img_height // 4) * 64)
+    new_shape = ((img_w // 4), (img_h // 4) * 64)
     x = layers.Reshape(target_shape=new_shape, name="reshape")(x)
     x = layers.Dense(64, activation="relu", name="dense1")(x)
     x = layers.Dropout(0.2)(x)
@@ -190,7 +189,7 @@ def build_model():
     x = layers.Bidirectional(layers.LSTM(64, return_sequences=True, dropout=0.25))(x)
 
     # Output layer
-    x = layers.Dense(len(char_to_num.get_vocabulary()) + 1, activation="softmax", name="dense2")(x)
+    x = layers.Dense(len(LOOKUP) + 1, activation="softmax", name="dense2")(x)
 
     # Add CTC layer for calculating CTC loss at each step
     output = CTCLayer(name="ctc_loss")(labels, x)
@@ -207,54 +206,38 @@ def build_model():
 def core():
     device = torch.device(f"cuda:{0}" if torch.cuda.is_available() else "cpu")
 
-    filenames = glob.glob("Z:/dev-zae/captcha_database/labeled/*.png")
-    filenames += glob.glob("Z:/dev-zae/captcha_images_v2/*.png")
-    labels = [os.path.splitext(os.path.split(fn)[-1])[0] for fn in filenames]
+    # Load target dataset
+    tgt_filenames = glob("Z:/dev-zae/captcha_database/labeled/*.png")
+    src_filenames = glob("Z:/dev-zae/captcha_images_v2/*.png")
+    tgt_labels = [os.path.splitext(os.path.split(fn)[-1])[0] for fn in tgt_filenames]
+    src_labels = [os.path.splitext(os.path.split(fn)[-1])[0] for fn in src_filenames]
 
-    # filenames = glob.glob("Z:/dev-zae/chapcha_database/labeled/*.png")
-    # labels = [os.path.splitext(os.path.split(fn)[-1])[0] for fn in filenames]
+    # Random split train/validation/test dataset as 8:1:1 ratio
+    random.shuffle(tgt_filenames)
+    split_80, split_10 = int((n := len(tgt_filenames)) * 0.8), int(n * 0.2)
 
-    n = len(filenames)
-    split_ratio = 0.8
-    x_train, x_valid = filenames[: int(split_ratio * n)], filenames[int(split_ratio * n) :]
-    y_train, y_valid = labels[: int(split_ratio * n)], labels[int(split_ratio * n) :]
+    x_train, x_valid = tgt_filenames[:split_80] + src_filenames, tgt_filenames[split_80:]
+    y_train, y_valid = tgt_labels[:split_80] + src_labels, tgt_labels[split_80:]
+    x_valid, x_test = tgt_filenames[:split_10], tgt_filenames[split_10:]
+    y_valid, y_test = tgt_labels[:split_10], tgt_labels[split_10:]
 
-    train_loader = DataLoader(dataset=CaptchaDataset(x=x_train, y=y_train), batch_size=16)
-    valid_loader = DataLoader(dataset=CaptchaDataset(x=x_valid, y=y_valid), batch_size=16)
+    train_loader = DataLoader(dataset=CaptchaDataset(x=x_train, y=y_train), batch_size=batch_size)
+    valid_loader = DataLoader(dataset=CaptchaDataset(x=x_valid, y=y_valid), batch_size=batch_size)
+    test_loader = DataLoader(dataset=CaptchaDataset(x=x_test, y=y_test), batch_size=batch_size)
+
+    # Modeling
     captcha_model = CaptchaModel(1, 36, 16, kernel_size=(3, 3), stride=[2, 2], depth=3, order=2)
-
-    captcha_opt = torch.optim.Adam(params=captcha_model.parameters(), lr=1e-5)
+    captcha_opt = torch.optim.Adam(params=captcha_model.parameters(), lr=learning_rate)
     captcha_scheduler = torch.optim.lr_scheduler.LinearLR(optimizer=captcha_opt)
 
-    ex_trainer = CaptchaTrainer(
+    captcha_trainer = CaptchaTrainer(
         model=captcha_model, device=device, mode="train", optimizer=captcha_opt, scheduler=captcha_scheduler
     )
     t = time.time()
-    ex_trainer.run(n_epoch=500, loader=train_loader, valid_loader=valid_loader)
+    captcha_trainer.run(n_epoch=epochs, loader=train_loader, valid_loader=valid_loader)
     print(time.time() - t)
-
-
-def core2():
-    device = torch.device(f"cuda:{0}" if torch.cuda.is_available() else "cpu")
-
-    x_filenames = glob.glob("Z:/dev-zae/chapcha_database/labeled/*.png")
-    with open("Z:/dev-zae/chapcha_database/labeled/label.txt", "r") as f:
-        y_txt = f.read().split("\n")
-
-    n = len(x_filenames)
-    split_ratio = 0.5
-    x_train, x_valid = x_filenames[: int(split_ratio * n)], x_filenames[int(split_ratio * n) :]
-    y_train, y_valid = y_txt[: int(split_ratio * n)], y_txt[int(split_ratio * n) :]
-
-    train_loader = DataLoader(dataset=CaptchaDataset(x=x_train, y=y_train), batch_size=16)
-    valid_loader = DataLoader(dataset=CaptchaDataset(x=x_valid, y=y_valid), batch_size=16)
-    captcha_model = pre_trained("./")
-
-    for v in valid_loader:
-        x, y = v
-        predict = captcha_model.predict(x)
-        print(predict)
-        print(y.argmax(1))
+    captcha_trainer.inference(test_loader)
+    print(f'Accuracy @ test dataset: {captcha_trainer.log_test["acc"]}')
 
 
 def core_tf():
@@ -263,12 +246,7 @@ def core_tf():
     images += glob("Z:/dev-zae/captcha_images_v2/*.png")
     labels = [os.path.splitext(os.path.split(fn)[-1])[0] for fn in images]
 
-    LOOKUP = {k: v for k, v in enumerate("0123456789abcdefghijklmnopqrstuvwxyz")}
-    LOOKDOWN = {v: k for k, v in LOOKUP.items()}
     characters = LOOKUP.values()
-
-    # Batch size for training and validation
-    batch_size = 16
 
     # Desired image dimensions
     img_width = 200
@@ -289,7 +267,7 @@ def core_tf():
     # Mapping integers back to original characters
     num_to_char = layers.StringLookup(vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True)
 
-    def split_data(images, labels, train_size=0.9, shuffle=True):
+    def split_data(images, labels, train_size=0.8, shuffle=True):
         # 1. Get the total size of the dataset
         size = len(images)
         # 2. Make an indices array and shuffle it, if required
@@ -305,6 +283,7 @@ def core_tf():
 
     # Splitting data into training and validation sets
     x_train, x_valid, y_train, y_valid = split_data(np.array(images), np.array(labels))
+    x_valid, x_test, y_valid, y_test = split_data(x_valid, y_valid, train_size=0.5)
 
     def encode_single_sample(img_path, label):
         # 1. Read image
@@ -338,6 +317,13 @@ def core_tf():
         .prefetch(buffer_size=tf.data.AUTOTUNE)
     )
 
+    test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
+    test_dataset = (
+        test_dataset.map(encode_single_sample, num_parallel_calls=tf.data.AUTOTUNE)
+        .batch(batch_size)
+        .prefetch(buffer_size=tf.data.AUTOTUNE)
+    )
+
     _, ax = plt.subplots(4, 4, figsize=(10, 5))
     for batch in train_dataset.take(1):
         images = batch["image"]
@@ -351,10 +337,9 @@ def core_tf():
     plt.show()
 
     # Get the model
-    model = build_model()
+    model = build_model(img_h=img_height, img_w=img_width)
     model.summary()
 
-    epochs = 500
     early_stopping_patience = 10
     # Add early stopping
     early_stopping = keras.callbacks.EarlyStopping(
@@ -385,7 +370,7 @@ def core_tf():
         return output_text
 
     #  Let's check results on some validation samples
-    for batch in validation_dataset.take(1):
+    for batch in test_dataset.take(1):
         batch_images = batch["image"]
         batch_labels = batch["label"]
 
@@ -418,3 +403,4 @@ if __name__ == "__main__":
     # cap.run(iter=10000)
 
     core()
+    core_tf()
