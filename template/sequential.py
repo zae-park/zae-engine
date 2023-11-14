@@ -1,6 +1,6 @@
-import pandas as pd
+import json
 from statsmodels.tsa.arima_model import ARIMA
-from statsmodels.tsa.statespace.sarimax import SARIMAX
+from collections import defaultdict
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
@@ -31,11 +31,14 @@ patience = 100
 class ForecastLSTM:
     def __init__(self, random_seed: int = 1234):
         self.random_seed = random_seed
+        self.pre_set = False
 
-    def set_dataset(self, x, y, name):
-        self.x = x
-        self.y = y
-        self.name = name
+    def set_dataset(self, train_valid_dict: dict):
+        self.X_train = np.concatenate(train_valid_dict['train_x'], axis=0)
+        self.y_train = np.concatenate(train_valid_dict['train_y'], axis=0)
+        self.X_val = np.concatenate(train_valid_dict['valid_x'], axis=0)
+        self.y_val = np.concatenate(train_valid_dict['valid_y'], axis=0)
+        self.pre_set = True
 
     def build_model(
         self,
@@ -208,8 +211,8 @@ class ForecastLSTM:
                 single_output=single_output,
             )
         else:
-            self.X_train = self.X_val = self.x
-            self.y_train = self.y_val = self.y
+            if not self.pre_set:
+                return
 
         # LSTM 모델 생성
         # n_features = self.X_train.shape[1]
@@ -332,20 +335,30 @@ if __name__ == "__main__":
     # df.dropna(inplace=True)
     # stock, x, y = df.iloc[:, 1], df.iloc[:, 2:-3], df.iloc[:, -3:].sum(axis=1)
 
+    forecast = ForecastLSTM(random_seed=0)
+    forecast_step = 3
+    len_sequence = 12
+
+    train_valid = defaultdict(list)
+    for k, v in new_dict.items():
+        tmp_df = pd.DataFrame(np.stack((v[:-1], v[1:]), axis=1), columns=["x", "y"])
+        tv = forecast.split_train_valid_dataset(tmp_df, steps=forecast_step, seq_len=len_sequence, single_output=False)
+        train_valid['train_x'].append(tv[0])
+        train_valid['train_y'].append(tv[1])
+        train_valid['valid_x'].append(tv[2])
+        train_valid['valid_y'].append(tv[3])
+    forecast.set_dataset(train_valid_dict=train_valid)
+
+    # train entire stock code
+    forecast.fit_lstm(df=None, steps=forecast_step, seq_len=len_sequence, single_output=False, last_lstm_return_sequences=True, dense_units=[32, 16])
+    with open('./entire_train_history.json', 'w') as f:
+        json.dump(forecast.history, f, ensure_ascii=False, indent=4)
+
+    # train specific stock code
     code = "10002"
     sample_df = pd.DataFrame(np.stack(((arr := new_dict[code])[:-1], arr[1:]), axis=1), columns=["x", "y"])
-
-    forecast = ForecastLSTM(random_seed=0)
-    # forecast.set_dataset(x, y, stock)
     forecast.fit_lstm(df=sample_df, steps=3, single_output=False, last_lstm_return_sequences=True, dense_units=[32, 16])
-
-    # Split
-    # n_data, ratio = len(stock), 0.8
-
-    # print(y.shape)
-    #
-    # model = ARIMA(train['price'], order=(0, 1, 1))
-    # model_fit = model.fit(trend='c', full_output=True, disp=True)
-    # print(model_fit.summary())
+    with open('./specific_train_history.json', 'w') as f:
+        json.dump(forecast.history, f, ensure_ascii=False, indent=4)
 
     print()
