@@ -1,4 +1,4 @@
-import json
+import pickle
 from statsmodels.tsa.arima_model import ARIMA
 from collections import defaultdict
 from tqdm import tqdm
@@ -9,8 +9,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import statsmodels.api as sm
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-import itertools
-
+import time
 from tensorflow import keras
 from keras.layers import Dense
 from keras.layers import LSTM
@@ -266,7 +265,8 @@ class ForecastLSTM:
             if metrics == "mape":
                 plt.axhline(y=10, xmin=0, xmax=1, color="grey", ls="--", alpha=0.5)
             plt.legend(["Train", "Validation"], loc="upper right")
-            plt.show()
+            plt.savefig(f'int({time.time()}).png')
+            # plt.show()
 
 
 def arima_model(sequnce, p=1, d=0, q=1, code: str = None):
@@ -339,6 +339,13 @@ if __name__ == "__main__":
     forecast_step = 3
     len_sequence = 12
 
+    # train specific stock code
+    code = "10002"
+    sample_df = pd.DataFrame(np.stack(((arr := new_dict[code])[:-1], arr[1:]), axis=1), columns=["x", "y"])
+    forecast.fit_lstm(df=sample_df, steps=3, single_output=False, last_lstm_return_sequences=True, dense_units=[32, 16])
+    with open('/specific_train_history', 'wb') as file_pi:
+        pickle.dump(forecast.history, file_pi)
+
     train_valid = defaultdict(list)
     for k, v in new_dict.items():
         tmp_df = pd.DataFrame(np.stack((v[:-1], v[1:]), axis=1), columns=["x", "y"])
@@ -348,17 +355,9 @@ if __name__ == "__main__":
         train_valid['valid_x'].append(tv[2])
         train_valid['valid_y'].append(tv[3])
     forecast.set_dataset(train_valid_dict=train_valid)
-
     # train entire stock code
     forecast.fit_lstm(df=None, steps=forecast_step, seq_len=len_sequence, single_output=False, last_lstm_return_sequences=True, dense_units=[32, 16])
-    with open('./entire_train_history.json', 'w') as f:
-        json.dump(forecast.history, f, ensure_ascii=False, indent=4)
-
-    # train specific stock code
-    code = "10002"
-    sample_df = pd.DataFrame(np.stack(((arr := new_dict[code])[:-1], arr[1:]), axis=1), columns=["x", "y"])
-    forecast.fit_lstm(df=sample_df, steps=3, single_output=False, last_lstm_return_sequences=True, dense_units=[32, 16])
-    with open('./specific_train_history.json', 'w') as f:
-        json.dump(forecast.history, f, ensure_ascii=False, indent=4)
+    with open('/entire_train_history', 'wb') as file_pi:
+        pickle.dump(forecast.history, file_pi)
 
     print()
