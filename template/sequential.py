@@ -267,50 +267,15 @@ class ForecastLSTM:
 
 
 def arima_model(sequnce, p=1, d=0, q=1, code: str = None):
-    # sequnce = np.convolve(sequnce, np.ones(3) / 3)
-    # length = len(sequnce)
-    # x, y = sequnce[: int(length * 0.9)], sequnce[int(length * 0.9) :]
-    #
-    # p = range(0, 2)
-    # d = range(0, 1)
-    # q = range(0, 4)
-    # m = 7
-    # pdq = list(itertools.product(p, d, q))
-    # seasonal_pdq = [(x[0], x[1], x[2], m) for x in list(itertools.product(p, d, q))]
-    #
-    # aic = []
-    # params = []
-    #
-    # with tqdm(total=len(pdq) * len(seasonal_pdq)) as pg:
-    #     for i in pdq:
-    #         for j in seasonal_pdq:
-    #             pg.update(1)
-    #             try:
-    #                 model = SARIMAX(x, order=(i), season_order=(j))
-    #                 model_fit = model.fit(disp=0)
-    #                 aic.append(round(model_fit.aic, 2))
-    #                 params.append((i, j))
-    #             except:
-    #                 continue
-    # optimal = [(params[i], j) for i, j in enumerate(aic) if j == min(aic)]
-    # model_opt = SARIMAX(x, order=optimal[0][0][0], seasonal_order=optimal[0][0][1])
-    # model_opt_fit = model_opt.fit()
-    # model_opt_fit.summary()
-    #
-    # model = SARIMAX(x, order=optimal[0][0][0], seasonal_order=optimal[0][0][1])
-    # model_fit = model.fit(disp=0)
-    # forecast = model_fit.forecast(steps=len(y))
-    #
-    # plt.figure(figsize=(20, 5))
-    # plt.plot(x.tolist() + y.tolist(), label="real")
-    # plt.plot(x.tolist() + forecast.tolist(), label="predict")
-    # plt.legend()
-    # plt.show()
+    # p = 0
+    # d = 0  # differential factor: 시계열 data를 station하게 만들기 위한 차분 계수.
+    # q = 0
 
-    raw = sequnce
-    sequnce = np.convolve(sequnce, np.ones(5) / 5)
+    kernel_size = 5
+    sequnce = np.convolve(sequnce, np.ones(kernel_size) / kernel_size)
     length = len(sequnce)
 
+    # Checkout auto-correlation & Partial auto-correlation
     # fig, (ax1, ax2, ax3) = plt.subplots(3)
     # plot_acf(sequnce, ax=ax1)
     # plot_acf(d1 := np.diff(sequnce), ax=ax2)
@@ -326,8 +291,7 @@ def arima_model(sequnce, p=1, d=0, q=1, code: str = None):
         yhat = model_fit.forecast()[0]
         arr.append(yhat)
     print(model_fit.summary())
-    # model_fit.plot_diagnostics()
-    # plt.show()
+
     plt.figure(figsize=(16, 8))
     plt.plot(x.tolist() + y.tolist(), color="blue", label="True")
     plt.plot(x.tolist() + [sum(y) / len(y)] * len(y), color="skyblue", label="True-Mean")
@@ -357,9 +321,6 @@ if __name__ == "__main__":
     # ######## ARIMA model
     # # reference: https://dong-guri.tistory.com/9
     # # reference2: https://www.kdnuggets.com/2023/08/times-series-analysis-arima-models-python.html
-    # p = 0
-    # d = 0  # differential factor: 시계열 data를 station하게 만들기 위한 차분 계수.
-    # q = 0
     #
     # errors = []
     # for code, arr in new_dict.items():
