@@ -1,5 +1,7 @@
 import pickle
 from statsmodels.tsa.arima_model import ARIMA
+from transformers import AutoTokenizer, GPT2Model, PreTrainedTokenizer
+import torch
 from collections import defaultdict
 from tqdm import tqdm
 import numpy as np
@@ -24,7 +26,7 @@ from keras.callbacks import ReduceLROnPlateau
 
 epochs = 500
 learning_rate = 1e-5
-patience = 100
+patience = 5
 
 
 class ForecastLSTM:
@@ -33,10 +35,10 @@ class ForecastLSTM:
         self.pre_set = False
 
     def set_dataset(self, train_valid_dict: dict):
-        self.X_train = np.concatenate(train_valid_dict['train_x'], axis=0)
-        self.y_train = np.concatenate(train_valid_dict['train_y'], axis=0)
-        self.X_val = np.concatenate(train_valid_dict['valid_x'], axis=0)
-        self.y_val = np.concatenate(train_valid_dict['valid_y'], axis=0)
+        self.X_train = np.concatenate(train_valid_dict["train_x"], axis=0)
+        self.y_train = np.concatenate(train_valid_dict["train_y"], axis=0)
+        self.X_val = np.concatenate(train_valid_dict["valid_x"], axis=0)
+        self.y_val = np.concatenate(train_valid_dict["valid_y"], axis=0)
         self.pre_set = True
 
     def build_model(
@@ -51,9 +53,13 @@ class ForecastLSTM:
         last_lstm_return_sequences: bool = False,
         dense_units: list = None,
         act: str = "relu",
+        tkn=None,
     ):
         """
-        Return LSTM
+        Return LSTM model
+        # https://velog.io/@lighthouse97/Tensorflow%EB%A1%9C-%EB%AA%A8%EB%8D%B8%EC%9D%84-%EB%A7%8C%EB%93%9C%EB%8A%94-3%EA%B0%80%EC%A7%80-%EB%B0%A9%EB%B2%95
+        # 위 링크 참조해서 build 바꾸기
+
 
         :param seq_len: Length of sequences. (Look back window size)
         :param n_features: Number of features. It requires for model input shape.
@@ -247,7 +253,7 @@ class ForecastLSTM:
             use_multiprocessing=True,
             workers=8,
             callbacks=callbacks,
-            shuffle=False,
+            shuffle=True,
         )
 
         # 훈련 종료 후 best model 로드
@@ -265,7 +271,7 @@ class ForecastLSTM:
             if metrics == "mape":
                 plt.axhline(y=10, xmin=0, xmax=1, color="grey", ls="--", alpha=0.5)
             plt.legend(["Train", "Validation"], loc="upper right")
-            plt.savefig(f'int({time.time()}).png')
+            plt.savefig(f"int({time.time()}).png")
             # plt.show()
 
 
@@ -308,8 +314,24 @@ def arima_model(sequnce, p=1, d=0, q=1, code: str = None):
     return mse
 
 
+def tokenize(tknzr, model, sequence):
+    # 토큰화
+    inputs = tknzr(sequence, return_tensors="pt")
+    # 임베딩
+    return model(**inputs).detach().numpy()
+
+
 if __name__ == "__main__":
+    tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    model = GPT2Model.from_pretrained("gpt2")
+
     df = pd.read_csv("./data.csv")
+    raw_df = pd.read_excel("./online_retail_II.xlsx")
+
+    tkn_dict = {
+        code: tokenize(tokenizer, model, descript)
+        for (code, descript), _ in raw_df.groupby(by=["StockCode", "Description"])
+    }
     stocks = df["0"].unique()
     new_dict = {}
     for s in stocks:
@@ -343,21 +365,28 @@ if __name__ == "__main__":
     code = "10002"
     sample_df = pd.DataFrame(np.stack(((arr := new_dict[code])[:-1], arr[1:]), axis=1), columns=["x", "y"])
     forecast.fit_lstm(df=sample_df, steps=3, single_output=False, last_lstm_return_sequences=True, dense_units=[32, 16])
-    with open('/specific_train_history', 'wb') as file_pi:
+    with open("./specific_train_history", "wb") as file_pi:
         pickle.dump(forecast.history, file_pi)
 
     train_valid = defaultdict(list)
     for k, v in new_dict.items():
         tmp_df = pd.DataFrame(np.stack((v[:-1], v[1:]), axis=1), columns=["x", "y"])
         tv = forecast.split_train_valid_dataset(tmp_df, steps=forecast_step, seq_len=len_sequence, single_output=False)
-        train_valid['train_x'].append(tv[0])
-        train_valid['train_y'].append(tv[1])
-        train_valid['valid_x'].append(tv[2])
-        train_valid['valid_y'].append(tv[3])
+        train_valid["train_x"].append(tv[0])
+        train_valid["train_y"].append(tv[1])
+        train_valid["valid_x"].append(tv[2])
+        train_valid["valid_y"].append(tv[3])
     forecast.set_dataset(train_valid_dict=train_valid)
     # train entire stock code
-    forecast.fit_lstm(df=None, steps=forecast_step, seq_len=len_sequence, single_output=False, last_lstm_return_sequences=True, dense_units=[32, 16])
-    with open('/entire_train_history', 'wb') as file_pi:
+    forecast.fit_lstm(
+        df=None,
+        steps=forecast_step,
+        seq_len=len_sequence,
+        single_output=False,
+        last_lstm_return_sequences=True,
+        dense_units=[32, 16],
+    )
+    with open("./entire_train_history", "wb") as file_pi:
         pickle.dump(forecast.history, file_pi)
 
     print()
