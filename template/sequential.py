@@ -20,7 +20,7 @@ from keras.losses import MSE
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
 epochs = 500
-learning_rate = 1e-5
+learning_rate = 1e-3
 patience = 5
 
 
@@ -53,6 +53,7 @@ class ForecastLSTM:
         last_lstm_return_sequences: bool = False,
         dense_units: tuple = (),
         act: str = "relu",
+        aux: bool = False,
     ):
         """
         Return LSTM model
@@ -76,14 +77,43 @@ class ForecastLSTM:
         model = Sequential()
 
         # LSTM -> ... -> LSTM -> Dense(steps)
+        # return_seq = True if len(lstms) != 1 else False if single_output else last_lstm_return_sequences
+        #
+        # # return_seq = False if single_output else last_lstm_return_sequences if len(lstms) == 1 else True
+        #
+        # model.add(LSTM(units=lstms[0], activation=act, return_sequences=return_seq, input_shape=(seq_len, n_features)))
+        #
+        # for i, n_lstm in enumerate(lstms, start=1):
+        #     return_seq = True if i != (len(lstms) - 1) else False if single_output else last_lstm_return_sequences
+        #     model.add(
+        #         LSTM(units=n_lstm, activation=act, return_sequences=return_seq, input_shape=(seq_len, n_features))
+        #     )
 
-        return_seq = False if single_output else last_lstm_return_sequences if len(lstms) == 1 else True
-
-        model.add(LSTM(units=lstms[0], activation=act, return_sequences=return_seq, input_shape=(seq_len, n_features)))
-
-        for i, n_lstm in enumerate(lstms, start=1):
-            return_seq = False if single_output else last_lstm_return_sequences if i == len(lstms) - 1 else True
-            model.add(LSTM(units=n_lstm, activation=act, return_sequences=return_seq))
+        if len(lstms) == 1:
+            model.add(
+                LSTM(
+                    units=lstms[0],
+                    activation=act,
+                    return_sequences=False if single_output else last_lstm_return_sequences,
+                    input_shape=(seq_len, n_features),
+                )
+            )
+        else:
+            for i, n_lstm in enumerate(lstms):
+                if i == 0:
+                    node = LSTM(
+                        units=lstms[0], activation=act, return_sequences=True, input_shape=(seq_len, n_features)
+                    )
+                    model.add(node)
+                else:
+                    return_sequence = False if single_output else last_lstm_return_sequences
+                    model.add(
+                        LSTM(
+                            units=n_lstm,
+                            activation=act,
+                            return_sequences=return_sequence if i == len(lstms) - 1 else True,
+                        )
+                    )
 
         if not single_output and last_lstm_return_sequences:
             model.add(Flatten())
@@ -108,6 +138,7 @@ class ForecastLSTM:
         last_lstm_return_sequences: bool = False,
         dense_units: tuple = (),
         act: str = "relu",
+        aux: bool = (False,),
     ):
         """
         Return LSTM model
@@ -128,27 +159,53 @@ class ForecastLSTM:
 
         tf.random.set_seed(self.random_seed)
         main_inputs = Input(shape=(seq_len, 1), name="main_inputs")
-        aux_inputs = Input(shape=(20,), name="aux_inputs")
 
         # LSTM -> ... -> LSTM -> Dense(steps)
 
-        return_seq = False if single_output else last_lstm_return_sequences if len(lstms) == 1 else True
+        # return_seq = False if single_output else last_lstm_return_sequences if len(lstms) == 1 else True
+        #
+        # x = LSTM(units=lstms[0], activation=act, return_sequences=return_seq, input_shape=(seq_len, 1))(main_inputs)
+        #
+        # for i, n_lstm in enumerate(lstms, start=1):
+        #     return_seq = False if single_output else last_lstm_return_sequences if i == len(lstms) - 1 else True
+        #     x = LSTM(units=n_lstm, activation=act, return_sequences=return_seq)(x)
 
-        x = LSTM(units=lstms[0], activation=act, return_sequences=return_seq, input_shape=(seq_len, 1))(main_inputs)
+        if len(lstms) == 1:
+            x = LSTM(
+                units=lstms[0],
+                activation=act,
+                return_sequences=False if single_output else last_lstm_return_sequences,
+                input_shape=(seq_len, 1),
+            )(main_inputs)
 
-        for i, n_lstm in enumerate(lstms, start=1):
-            return_seq = False if single_output else last_lstm_return_sequences if i == len(lstms) - 1 else True
-            x = LSTM(units=n_lstm, activation=act, return_sequences=return_seq)(x)
+        else:
+            for i, n_lstm in enumerate(lstms):
+                if i == 0:
+                    x = LSTM(units=lstms[0], activation=act, return_sequences=True, input_shape=(seq_len, 1))(
+                        main_inputs
+                    )
+                else:
+                    return_sequence = False if single_output else last_lstm_return_sequences
+                    x = LSTM(
+                        units=n_lstm,
+                        activation=act,
+                        return_sequences=return_sequence if i == len(lstms) - 1 else True,
+                    )(x)
 
         if not single_output and last_lstm_return_sequences:
             x = Flatten()(x)
-        x = Concatenate()((x, aux_inputs))
+        if aux:
+            aux_inputs = Input(shape=(20,), name="aux_inputs")
+            x = Concatenate()((x, aux_inputs))
         for n_units in dense_units:
             x = Dense(units=n_units, activation=act)(x)
         x = Dropout(rate=dropout)(x)
         outputs = Dense(1 if single_output else steps)(x)
 
-        model = Model(inputs=[main_inputs, aux_inputs], outputs=[outputs])
+        if aux:
+            model = Model(inputs=[main_inputs, aux_inputs], outputs=[outputs])
+        else:
+            model = Model(inputs=main_inputs, outputs=[outputs])
 
         # Compile the model
         optimizer = Adam(learning_rate=learning_rate)
@@ -165,10 +222,14 @@ class ForecastLSTM:
             if idx_out > len(dataset):
                 break
             seq_x = dataset[i:idx_in, :-1]
+            # if single_output:
+            #     seq_y = dataset[idx_out - 1 : idx_out, -1]
+            # else:
+            #     seq_y = dataset[idx_in:idx_out, -1]
+
+            seq_y = dataset[idx_in:idx_out, -1]
             if single_output:
-                seq_y = dataset[idx_out - 1 : idx_out, -1]
-            else:
-                seq_y = dataset[idx_in:idx_out, -1]
+                seq_y = dataset[idx_out - 1 : idx_out, -1].sum(keepdims=True)
             X.append(seq_x)
             y.append(seq_y)
         return np.array(X), np.array(y)
@@ -222,6 +283,7 @@ class ForecastLSTM:
         check_point_path: str = None,
         plot: bool = True,
         aux_input: bool = False,
+        patience: int = 50,
     ):
         """
         LSTM 기반 모델 훈련을 진행한다.
@@ -259,6 +321,7 @@ class ForecastLSTM:
             dense_units=dense_units,
             single_output=single_output,
         )
+        self.model.summary()
 
         callbacks = []
         # 모델 적합 과정에서 best model 저장
@@ -283,6 +346,7 @@ class ForecastLSTM:
             workers=8,
             callbacks=callbacks,
             shuffle=True,
+            batch_size=64,
         )
 
         # 훈련 종료 후 best model 로드
@@ -395,27 +459,30 @@ if __name__ == "__main__":
     # stock, x, y = df.iloc[:, 1], df.iloc[:, 2:-3], df.iloc[:, -3:].sum(axis=1)
 
     forecast = ForecastLSTM(random_seed=0)
-    forecast_step = 3
-    len_sequence = 12
+    forecast_step = 6
+    len_sequence = 24
 
-    # # train specific stock code
-    # code = "10002"
-    # sample_df = pd.DataFrame(np.stack(((arr := new_dict[code])[:-1], arr[1:]), axis=1), columns=["x", "y"])
-    # forecast.fit_lstm(df=sample_df, steps=3, single_output=False, last_lstm_return_sequences=True, dense_units=(32, 16))
-    # with open("./specific_train_history", "wb") as file_pi:
-    #     pickle.dump(forecast.history, file_pi)
+    # train specific stock code
+    code = "10002"
+    sample_df = pd.DataFrame(np.stack(((arr := new_dict[code])[:-1], arr[1:]), axis=1), columns=["x", "y"])
+    forecast.fit_lstm(
+        df=sample_df, steps=3, single_output=True, last_lstm_return_sequences=False, dense_units=(32, 16), patience=50
+    )
+    with open("./specific_train_history", "wb") as file_pi:
+        pickle.dump(forecast.history, file_pi)
 
     train_valid = defaultdict(list)
     for k, v in new_dict.items():
         tmp_df = pd.DataFrame(np.stack((v[:-1], v[1:]), axis=1), columns=["x", "y"])
         tv = forecast.split_train_valid_dataset(tmp_df, steps=forecast_step, seq_len=len_sequence, single_output=False)
-        aux = np.stack([tkn_dict[k]] * len(tv[0]))
+        train_aux = np.stack([tkn_dict[k]] * len(tv[0]))
+        valid_aux = np.stack([tkn_dict[k]] * len(tv[2]))
         train_valid["train_x"].append(tv[0])
         train_valid["train_y"].append(tv[1])
         train_valid["valid_x"].append(tv[2])
         train_valid["valid_y"].append(tv[3])
-        train_valid["train_aux"].append(aux)
-        train_valid["val_aux"].append(aux)
+        train_valid["train_aux"].append(train_aux)
+        train_valid["val_aux"].append(valid_aux)
 
     forecast.set_dataset(train_valid_dict=train_valid)
     # train entire stock code
@@ -423,12 +490,26 @@ if __name__ == "__main__":
         df=None,
         steps=forecast_step,
         seq_len=len_sequence,
-        single_output=False,
-        last_lstm_return_sequences=True,
+        single_output=True,
+        last_lstm_return_sequences=False,
         dense_units=(32, 16),
         aux_input=True,
+        patience=10,
     )
-    with open("./entire_train_history", "wb") as file_pi:
+    with open("./entire_train_history_w_aux", "wb") as file_pi:
+        pickle.dump(forecast.history, file_pi)
+
+    forecast.fit_lstm(
+        df=None,
+        steps=forecast_step,
+        seq_len=len_sequence,
+        single_output=True,
+        last_lstm_return_sequences=False,
+        dense_units=(32, 16),
+        aux_input=False,
+        patience=10,
+    )
+    with open("./entire_train_history_wo_aux", "wb") as file_pi:
         pickle.dump(forecast.history, file_pi)
 
     print()
