@@ -51,7 +51,7 @@ class ForecastLSTM:
         metrics: str = "mse",
         single_output: bool = False,
         last_lstm_return_sequences: bool = False,
-        dense_units: list = None,
+        dense_units: list = [],
         act: str = "relu",
         tkn=None,
     ):
@@ -78,48 +78,20 @@ class ForecastLSTM:
 
         # LSTM -> ... -> LSTM -> Dense(steps)
 
-        if len(lstms) == 1:
-            model.add(
-                LSTM(
-                    units=lstms[0],
-                    activation=act,
-                    return_sequences=False if single_output else last_lstm_return_sequences,
-                    input_shape=(seq_len, n_features),
-                )
-            )
-        else:
-            for i, n_lstm in enumerate(lstms):
-                if i == 0:
-                    node = LSTM(
-                        units=lstms[0], activation=act, return_sequences=True, input_shape=(seq_len, n_features)
-                    )
-                    model.add(node)
-                else:
-                    return_sequence = False if single_output else last_lstm_return_sequences
-                    model.add(
-                        LSTM(
-                            units=n_lstm,
-                            activation=act,
-                            return_sequences=return_sequence if i == len(lstms) - 1 else True,
-                        )
-                    )
+        return_seq = False if single_output else last_lstm_return_sequences if len(lstms) == 1 else True
 
-        if single_output:  # Single Step, Direct Multi Step
-            if dense_units:
-                for n_units in dense_units:
-                    model.add(Dense(units=n_units, activation=act))
-            if dropout > 0:
-                model.add(Dropout(rate=dropout))
-            model.add(Dense(1))
-        else:  # Multiple Output Step
-            if last_lstm_return_sequences:
-                model.add(Flatten())
-            if dense_units:
-                for n_units in dense_units:
-                    model.add(Dense(units=n_units, activation=act))
-            if dropout > 0:
-                model.add(Dropout(rate=dropout))
-            model.add(Dense(units=steps))
+        model.add(LSTM(units=lstms[0], activation=act, return_sequences=return_seq, input_shape=(seq_len, n_features)))
+
+        for i, n_lstm in enumerate(lstms, start=1):
+            return_seq = False if single_output else last_lstm_return_sequences if i == len(lstms) - 1 else True
+            model.add(LSTM(units=n_lstm, activation=act, return_sequences=return_seq))
+
+        if not single_output and last_lstm_return_sequences:
+            model.add(Flatten())
+        for n_units in dense_units:
+            model.add(Dense(units=n_units, activation=act))
+        model.add(Dropout(rate=dropout))
+        model.add(Dense(1))
 
         # Compile the model
         optimizer = Adam(learning_rate=learning_rate)
