@@ -1,7 +1,7 @@
 import pickle
 from statsmodels.tsa.arima_model import ARIMA
 from transformers import AutoTokenizer, GPT2Model, PreTrainedTokenizer
-import torch
+import keras_nlp
 from collections import defaultdict
 from tqdm import tqdm
 import numpy as np
@@ -13,16 +13,11 @@ import statsmodels.api as sm
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 import time
 from tensorflow import keras
-from keras.layers import Dense
-from keras.layers import LSTM
-from keras.layers import Dropout
-from keras.layers import Activation, Flatten
-from keras.models import Sequential
+from keras.layers import Dense, LSTM, Dropout, Input, Activation, Flatten, Concatenate
+from keras.models import Sequential, Model
 from keras.optimizers import Adam
 from keras.losses import MSE
-from keras.callbacks import EarlyStopping
-from keras.callbacks import ModelCheckpoint
-from keras.callbacks import ReduceLROnPlateau
+from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 
 epochs = 500
 learning_rate = 1e-5
@@ -33,17 +28,22 @@ class ForecastLSTM:
     def __init__(self, random_seed: int = 1234):
         self.random_seed = random_seed
         self.pre_set = False
+        self.X_train, self.y_train, self.X_val, self.y_val = None, None, None, None
+        self.X_train_aux, self.X_val_aux = None, None
+        self.history = None
 
     def set_dataset(self, train_valid_dict: dict):
         self.X_train = np.concatenate(train_valid_dict["train_x"], axis=0)
         self.y_train = np.concatenate(train_valid_dict["train_y"], axis=0)
         self.X_val = np.concatenate(train_valid_dict["valid_x"], axis=0)
         self.y_val = np.concatenate(train_valid_dict["valid_y"], axis=0)
+        self.X_train_aux = np.concatenate(train_valid_dict["train_aux"], axis=0)
+        self.X_val_aux = np.concatenate(train_valid_dict["val_aux"], axis=0)
         self.pre_set = True
 
     def build_model(
         self,
-        n_features: int,
+        n_features: int = 1,
         steps: int = 3,
         lstms: tuple = (64, 32),
         seq_len: int = 11,
@@ -51,14 +51,13 @@ class ForecastLSTM:
         metrics: str = "mse",
         single_output: bool = False,
         last_lstm_return_sequences: bool = False,
-        dense_units: list = [],
+        dense_units: tuple = (),
         act: str = "relu",
-        tkn=None,
     ):
         """
         Return LSTM model
         # https://velog.io/@lighthouse97/Tensorflow%EB%A1%9C-%EB%AA%A8%EB%8D%B8%EC%9D%84-%EB%A7%8C%EB%93%9C%EB%8A%94-3%EA%B0%80%EC%A7%80-%EB%B0%A9%EB%B2%95
-        # 위 링크 참조해서 build 바꾸기
+        # 위 링크 참조 build 바꾸기
 
 
         :param seq_len: Length of sequences. (Look back window size)
@@ -70,7 +69,7 @@ class ForecastLSTM:
         :param single_output: Whether 'yhat' is a multiple value or a single value.
         :param last_lstm_return_sequences: Last LSTM's `return_sequences`. Allow when `single_output=False` only.
         :param dense_units: Number of cells each Dense layers. It adds after LSTM layers.
-        :param activation: Activation function of Layers.
+        :param act: Activation function of Layers.
         """
 
         tf.random.set_seed(self.random_seed)
@@ -91,7 +90,65 @@ class ForecastLSTM:
         for n_units in dense_units:
             model.add(Dense(units=n_units, activation=act))
         model.add(Dropout(rate=dropout))
-        model.add(Dense(1))
+        model.add(Dense(1 if single_output else steps))
+
+        # Compile the model
+        optimizer = Adam(learning_rate=learning_rate)
+        model.compile(optimizer=optimizer, loss=MSE, metrics=metrics)
+        return model
+
+    def build_model_func(
+        self,
+        steps: int = 3,
+        lstms: tuple = (64, 32),
+        seq_len: int = 11,
+        dropout: float = 0.0,
+        metrics: str = "mse",
+        single_output: bool = False,
+        last_lstm_return_sequences: bool = False,
+        dense_units: tuple = (),
+        act: str = "relu",
+    ):
+        """
+        Return LSTM model
+        # https://keras.io/ko/getting-started/functional-api-guide/
+        # 위 링크 참조 build 바꾸기
+
+
+        :param seq_len: Length of sequences. (Look back window size)
+        :param lstms: Number of cells each LSTM layers.
+        :param dropout: Dropout rate.
+        :param steps: Length to predict.
+        :param metrics: Model loss function metric.
+        :param single_output: Whether 'yhat' is a multiple value or a single value.
+        :param last_lstm_return_sequences: Last LSTM's `return_sequences`. Allow when `single_output=False` only.
+        :param dense_units: Number of cells each Dense layers. It adds after LSTM layers.
+        :param act: Activation function of Layers.
+        """
+
+        tf.random.set_seed(self.random_seed)
+        main_inputs = Input(shape=(seq_len, 1), name="main_inputs")
+        aux_inputs = Input(shape=(20,), name="aux_inputs")
+
+        # LSTM -> ... -> LSTM -> Dense(steps)
+
+        return_seq = False if single_output else last_lstm_return_sequences if len(lstms) == 1 else True
+
+        x = LSTM(units=lstms[0], activation=act, return_sequences=return_seq, input_shape=(seq_len, 1))(main_inputs)
+
+        for i, n_lstm in enumerate(lstms, start=1):
+            return_seq = False if single_output else last_lstm_return_sequences if i == len(lstms) - 1 else True
+            x = LSTM(units=n_lstm, activation=act, return_sequences=return_seq)(x)
+
+        if not single_output and last_lstm_return_sequences:
+            x = Flatten()(x)
+        x = Concatenate()((x, aux_inputs))
+        for n_units in dense_units:
+            x = Dense(units=n_units, activation=act)(x)
+        x = Dropout(rate=dropout)(x)
+        outputs = Dense(1 if single_output else steps)(x)
+
+        model = Model(inputs=[main_inputs, aux_inputs], outputs=[outputs])
 
         # Compile the model
         optimizer = Adam(learning_rate=learning_rate)
@@ -160,10 +217,11 @@ class ForecastLSTM:
         seq_len: int = 27,
         single_output: bool = True,
         last_lstm_return_sequences: bool = False,
-        dense_units: list = None,
+        dense_units: tuple = (),
         metrics: str = "mse",
         check_point_path: str = None,
         plot: bool = True,
+        aux_input: bool = False,
     ):
         """
         LSTM 기반 모델 훈련을 진행한다.
@@ -193,10 +251,9 @@ class ForecastLSTM:
 
         # LSTM 모델 생성
         # n_features = self.X_train.shape[1]
-        n_features = 1
-        self.model = self.build_model(
+        model_api = self.build_model_func if aux_input else self.build_model
+        self.model = model_api(
             seq_len=seq_len,
-            n_features=n_features,
             steps=steps,
             last_lstm_return_sequences=last_lstm_return_sequences,
             dense_units=dense_units,
@@ -218,9 +275,9 @@ class ForecastLSTM:
 
         # 모델 훈련
         self.history = self.model.fit(
-            self.X_train,
+            [self.X_train, self.X_train_aux] if aux_input else [self.X_train],
             self.y_train,
-            validation_data=(self.X_val, self.y_val),
+            validation_data=([self.X_val, self.X_val_aux] if aux_input else [self.X_val], self.y_val),
             epochs=epochs,
             use_multiprocessing=True,
             workers=8,
@@ -247,28 +304,29 @@ class ForecastLSTM:
             # plt.show()
 
 
-def arima_model(sequnce, p=1, d=0, q=1, code: str = None):
+def arima_model(sequence, p=1, d=0, q=1, code: str = None):
     # p = 0
     # d = 0  # differential factor: 시계열 data를 station하게 만들기 위한 차분 계수.
     # q = 0
 
     kernel_size = 5
-    sequnce = np.convolve(sequnce, np.ones(kernel_size) / kernel_size)
-    length = len(sequnce)
+    sequence = np.convolve(sequence, np.ones(kernel_size) / kernel_size)
+    length = len(sequence)
 
     # Checkout auto-correlation & Partial auto-correlation
     # fig, (ax1, ax2, ax3) = plt.subplots(3)
-    # plot_acf(sequnce, ax=ax1)
-    # plot_acf(d1 := np.diff(sequnce), ax=ax2)
+    # plot_acf(sequence, ax=ax1)
+    # plot_acf(d1 := np.diff(sequence), ax=ax2)
     # plot_acf(np.diff(d1), ax=ax3)
     # plot_pacf(d1)
     # plt.show()
 
-    x, y = sequnce[: int(length * 0.9)], sequnce[int(length * 0.9) :]
+    x, y = sequence[: int(length * 0.9)], sequence[int(length * 0.9) :]
     arr = x.tolist()
+    model_fit = None
     for _ in y:
-        model = sm.tsa.ARIMA(arr, order=(p, d, q))
-        model_fit = model.fit()
+        arima = sm.tsa.ARIMA(arr, order=(p, d, q))
+        model_fit = arima.fit()
         yhat = model_fit.forecast()[0]
         arr.append(yhat)
     print(model_fit.summary())
@@ -286,22 +344,29 @@ def arima_model(sequnce, p=1, d=0, q=1, code: str = None):
     return mse
 
 
-def tokenize(tknzr, model, sequence):
+def embedding(tknzr, model, sequence):
     # 토큰화
     inputs = tknzr(sequence, return_tensors="pt")
     # 임베딩
     return model(**inputs).detach().numpy()
 
 
+def tokenize(tknzr, sequence, max_length=20) -> np.ndarray:
+    if isinstance(sequence, int):
+        sequence = [str(sequence)]
+    return np.pad(t := (tknzr(sequence)["input_ids"]), (0, max_length - len(t)))
+
+
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    ktokenizer = keras_nlp.models.BertTokenizer.from_preset("bert_tiny_en_uncased")
     model = GPT2Model.from_pretrained("gpt2")
 
     df = pd.read_csv("./data.csv")
     raw_df = pd.read_excel("./online_retail_II.xlsx")
 
     tkn_dict = {
-        code: tokenize(tokenizer, model, descript)
+        str(code): tokenize(tokenizer, descript)
         for (code, descript), _ in raw_df.groupby(by=["StockCode", "Description"])
     }
     stocks = df["0"].unique()
@@ -333,21 +398,25 @@ if __name__ == "__main__":
     forecast_step = 3
     len_sequence = 12
 
-    # train specific stock code
-    code = "10002"
-    sample_df = pd.DataFrame(np.stack(((arr := new_dict[code])[:-1], arr[1:]), axis=1), columns=["x", "y"])
-    forecast.fit_lstm(df=sample_df, steps=3, single_output=False, last_lstm_return_sequences=True, dense_units=[32, 16])
-    with open("./specific_train_history", "wb") as file_pi:
-        pickle.dump(forecast.history, file_pi)
+    # # train specific stock code
+    # code = "10002"
+    # sample_df = pd.DataFrame(np.stack(((arr := new_dict[code])[:-1], arr[1:]), axis=1), columns=["x", "y"])
+    # forecast.fit_lstm(df=sample_df, steps=3, single_output=False, last_lstm_return_sequences=True, dense_units=(32, 16))
+    # with open("./specific_train_history", "wb") as file_pi:
+    #     pickle.dump(forecast.history, file_pi)
 
     train_valid = defaultdict(list)
     for k, v in new_dict.items():
         tmp_df = pd.DataFrame(np.stack((v[:-1], v[1:]), axis=1), columns=["x", "y"])
         tv = forecast.split_train_valid_dataset(tmp_df, steps=forecast_step, seq_len=len_sequence, single_output=False)
+        aux = np.stack([tkn_dict[k]] * len(tv[0]))
         train_valid["train_x"].append(tv[0])
         train_valid["train_y"].append(tv[1])
         train_valid["valid_x"].append(tv[2])
         train_valid["valid_y"].append(tv[3])
+        train_valid["train_aux"].append(aux)
+        train_valid["val_aux"].append(aux)
+
     forecast.set_dataset(train_valid_dict=train_valid)
     # train entire stock code
     forecast.fit_lstm(
@@ -356,7 +425,8 @@ if __name__ == "__main__":
         seq_len=len_sequence,
         single_output=False,
         last_lstm_return_sequences=True,
-        dense_units=[32, 16],
+        dense_units=(32, 16),
+        aux_input=True,
     )
     with open("./entire_train_history", "wb") as file_pi:
         pickle.dump(forecast.history, file_pi)
