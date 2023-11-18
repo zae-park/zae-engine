@@ -229,7 +229,7 @@ class ForecastLSTM:
 
             seq_y = dataset[idx_in:idx_out, -1]
             if single_output:
-                seq_y = dataset[idx_out - 1 : idx_out, -1].sum(keepdims=True)
+                seq_y = dataset[idx_out - 1 : idx_out, -1].mean(keepdims=True)
             X.append(seq_x)
             y.append(seq_y)
         return np.array(X), np.array(y)
@@ -333,7 +333,7 @@ class ForecastLSTM:
                 monitor="val_loss",
             )
             callbacks.append(checkpoint)
-        rlr = ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=patience)
+        rlr = ReduceLROnPlateau(monitor="val_loss", factor=0.2, patience=patience)
         callbacks += [EarlyStopping(patience=patience), rlr]
 
         # 모델 훈련
@@ -361,6 +361,7 @@ class ForecastLSTM:
             plt.title("Performance Metric")
             plt.xlabel("Epoch")
             plt.ylabel(f"{metrics}")
+            plt.yscale("log", base=10)
             if metrics == "mape":
                 plt.axhline(y=10, xmin=0, xmax=1, color="grey", ls="--", alpha=0.5)
             plt.legend(["Train", "Validation"], loc="upper right")
@@ -435,6 +436,7 @@ if __name__ == "__main__":
     }
     stocks = df["0"].unique()
     new_dict = {}
+    kernel_size = 3
     for s in stocks:
         tmp_df = df[df["0"] == s]
         n = tmp_df.shape[0]
@@ -442,7 +444,9 @@ if __name__ == "__main__":
         for r in range(0, n, 3):
             arr = tmp_df.iloc[r, 2:].tolist()
             full_arr += arr
-        new_dict[str(s)] = full_arr[: np.argwhere(np.isnan(full_arr))[0][0]]
+        new_dict[str(s)] = np.convolve(
+            full_arr[: np.argwhere(np.isnan(full_arr))[0][0]], np.ones(kernel_size) / kernel_size
+        )
 
     # ######## ARIMA model
     # # reference: https://dong-guri.tistory.com/9
@@ -490,8 +494,8 @@ if __name__ == "__main__":
         df=None,
         steps=forecast_step,
         seq_len=len_sequence,
-        single_output=True,
-        last_lstm_return_sequences=False,
+        single_output=False,
+        last_lstm_return_sequences=True,
         dense_units=(32, 16),
         aux_input=True,
         patience=10,
@@ -503,8 +507,8 @@ if __name__ == "__main__":
         df=None,
         steps=forecast_step,
         seq_len=len_sequence,
-        single_output=True,
-        last_lstm_return_sequences=False,
+        single_output=False,
+        last_lstm_return_sequences=True,
         dense_units=(32, 16),
         aux_input=False,
         patience=10,
