@@ -1,6 +1,6 @@
 from functools import partial
 
-import neptune.new as nep
+import neptune as nep
 from neptune.common.exceptions import NeptuneInvalidApiTokenException as InvalidTkn
 
 
