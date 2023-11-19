@@ -1,4 +1,5 @@
 from typing import Union
+import PIL
 from PIL import Image
 import urllib.request
 import time
@@ -8,7 +9,7 @@ import os
 IMAGE_FORMAT = ['png', 'jpg', 'jpeg', 'til']
 
 
-def image_from_url(url: str, save_dst: str = None) -> Union[None, Image]:
+def image_from_url(url: str, save_dst: str = None) -> Union[None, Image.Image]:
 
 	save_mode = False if save_dst is None else True
 
@@ -21,7 +22,7 @@ def image_from_url(url: str, save_dst: str = None) -> Union[None, Image]:
 	if save_mode:
 		return
 	else:
-		img = Image.open(save_dst)
+		img = PIL.Image.open(save_dst)
 		os.remove(save_dst)
 		return img
 
