@@ -1,5 +1,4 @@
 import random
-import urllib.request
 import time
 import glob
 import torch
@@ -19,6 +18,7 @@ from tensorflow import keras
 from keras import layers
 
 from zae_engine import trainer, models, measure, data_pipeline
+from zae_engine.utils.io import image_from_url
 
 LOOKUP = {k: v for k, v in enumerate("0123456789abcdefghijklmnopqrstuvwxyz")}
 LOOKDOWN = {v: k for k, v in LOOKUP.items()}
@@ -38,7 +38,7 @@ class CaptchaImgSaver:
     def run(self, iter: int = 100):
         for i in tqdm(range(iter), desc="Get Captcha images from url "):
             name = str(time.time()).replace(".", "") + ".png"
-            urllib.request.urlretrieve(self.url, os.path.join(self.dst, name))
+            image_from_url(url=self.url, save_dst=os.path.join(self.dst, name))
 
 
 class CaptchaDataset(Dataset):
