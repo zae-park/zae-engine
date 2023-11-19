@@ -14,7 +14,6 @@ tensorflow-io-gcs-filesystem = "0.31.0"
 segment-anything = "^1.0"
 termcolor = "2.2.0"
 keras-ocr = "0.8.9"
-simple-lama-inpainting = "^0.1.2"
 opencv-python-headless = "^4.8.0.76"
 ultralytics = "8.0.155"
 seaborn = "^0.12.2"
@@ -41,6 +40,7 @@ pytest = "^7.4.2"
 pandas = "^2.1.2"
 openpyxl = "^3.1.2"
 click = "^8.1.7"
+pillow = "^10.1.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -62,3 +62,6 @@ build-backend = "poetry.masonry.api"
 [tool.black]
 line-length = 120
 target-version = ['py310']
+
+[tool.poetry.scripts]
+zae = "zae_engine.utils.cli:cli_run"
