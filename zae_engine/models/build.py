@@ -123,7 +123,7 @@ class CNNBase(nn.Module):
             blk.append(sequence)
         return nn.Sequential(*blk)
 
-    def gen_body(self, ch_in, width, kernel_size, depth, order, stride) -> Tuple[ModuleList, ModuleList]:
+    def gen_body(self, ch_in, width, kernel_size, depth, order, stride) -> Tuple[nn.Sequential, nn.Sequential]:
         # Feature extraction
         pools = nn.ModuleList()
         body = nn.ModuleList()
@@ -140,7 +140,7 @@ class CNNBase(nn.Module):
                 if d == 1:
                     c_in, c_out, s = width * d, width * (d + 1), stride[d - 1]
                 else:
-                    c_in, c_out, s = ch_in + width * d, width * (d + 1), stride[d - 1]
+                    c_in, c_out, s = width * d, width * (d + 1), stride[d - 1]
                 pools.append(self._pool(p := (int(np.prod(stride[:d]))), p))
                 body.append(
                     nn.Sequential(
@@ -148,7 +148,7 @@ class CNNBase(nn.Module):
                         self.gen_block(c_out, c_out, kernel_size, order),
                     )
                 )
-        return body, pools
+        return nn.Sequential(*body), nn.Sequential(*pools)
 
     def gen_head(self, ch_in, ch_out, kernel=None):
         if kernel is None:

@@ -12,10 +12,8 @@ python = "~3.10.0"
 matplotlib = "^3.7.2"
 tensorflow-io-gcs-filesystem = "0.31.0"
 segment-anything = "^1.0"
-pandas = "^2.0.3"
 termcolor = "2.2.0"
 keras-ocr = "0.8.9"
-simple-lama-inpainting = "^0.1.2"
 opencv-python-headless = "^4.8.0.76"
 ultralytics = "8.0.155"
 seaborn = "^0.12.2"
@@ -39,17 +37,21 @@ neurokit2 = "^0.2.6"
 nibabel = "^5.1.0"
 minio = "^7.1.17"
 pytest = "^7.4.2"
+pandas = "^2.1.2"
+openpyxl = "^3.1.2"
+click = "^8.1.7"
+pillow = "^10.1.0"
 
 
 [tool.poetry.group.dev.dependencies]
 python = "^3.10"
 pytest = "^7.4.2"
 torchvision = [
-    { platform = "win64", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-win_amd64.whl" },
+    { platform = "win32", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-win_amd64.whl" },
     { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-linux_x86_64.whl" },
 ]
 torch = [
-    { platform = "win64", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-win_amd64.whl" },
+    { platform = "win32", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-win_amd64.whl" },
     { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-linux_x86_64.whl" },
 ]
 
@@ -60,3 +62,6 @@ build-backend = "poetry.masonry.api"
 [tool.black]
 line-length = 120
 target-version = ['py310']
+
+[tool.poetry.scripts]
+zae = "zae_engine.utils.cli:cli_run"

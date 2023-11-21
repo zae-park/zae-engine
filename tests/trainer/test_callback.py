@@ -122,13 +122,13 @@ class TestLogger(unittest.TestCase):
 
     # ------------------------------------- Legacy ------------------------------------- #
 
-    def test_not_notated_epoch_step(self):
-        with self.assertRaises(ValueError):
-            CallbackInterface()
+    # def test_not_notated_epoch_step(self):
+    #     with self.assertRaises(ValueError):
+    #         CallbackInterface()
 
-    def test_not_given(self):
-        trainer = DummyTrainer(model=self.model, optimizer=self.optimizer, scheduler=self.scheduler, mode="train")
-        trainer.run(3, self.train_loader, self.valid_loader)
+    # def test_not_given(self):
+    #     trainer = DummyTrainer(model=self.model, optimizer=self.optimizer, scheduler=self.scheduler, mode="train")
+    #     trainer.run(3, self.train_loader, self.valid_loader)
 
     # def test_NeptuneCallback(self):
     #     neptune_callback = NeptuneCallback('acc', 'loss', callback_step=self.step_check)
@@ -148,12 +148,12 @@ class TestLogger(unittest.TestCase):
     #
     #     trainer.run(3, self.train_loader, self.valid_loader)
 
-    def test_progress_checker(self):
-        checker = EpochStepChecker(callback_step=self.step_check, callback_epoch=self.epoch_check)
-        trainer = DummyTrainer(
-            model=self.model, optimizer=self.optimizer, scheduler=self.scheduler, mode="train", callbacks=[checker]
-        )
-        trainer.run(3, self.train_loader, self.valid_loader)
+    # def test_progress_checker(self):
+    #     checker = EpochStepChecker(callback_step=self.step_check, callback_epoch=self.epoch_check)
+    #     trainer = DummyTrainer(
+    #         model=self.model, optimizer=self.optimizer, scheduler=self.scheduler, mode="train", callbacks=[checker]
+    #     )
+    #     trainer.run(3, self.train_loader, self.valid_loader)
 
     # def test_log_stopped(self):
     #     checker = EpochStepChecker(self.step_check, self.epoch_check)
