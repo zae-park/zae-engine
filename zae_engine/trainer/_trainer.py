@@ -115,8 +115,7 @@ class Trainer(ABC):
         self.loader, self.valid_loader = loader, valid_loader
         self._check_batch_size()
         for e in range(n_epoch):
-            if e:
-                print("Epoch %d" % (e + 1))
+            print("Epoch %d" % (e + 1))
             self._data_count(initial=True)
             self.run_epoch(loader)
             if valid_loader:
