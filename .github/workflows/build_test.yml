@@ -37,7 +37,9 @@ jobs:
       shell: bash
       env:
         WANDB_API: ${{ secrets.WANDB_KEY }}
-      run: wandb login "$WANDB_API"
+      run: |
+        chmod +x $(which wandb)
+        wandb login "$WANDB_API"
     - name: Build
       run: |
         poetry build
