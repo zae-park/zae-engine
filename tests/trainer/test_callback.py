@@ -1,4 +1,5 @@
 import os
+import shutil
 import unittest
 from typing import Union, Dict
 from datetime import datetime
@@ -65,6 +66,10 @@ class TestLogger(unittest.TestCase):
         cls.scheduler = torch.optim.lr_scheduler.LambdaLR(cls.optimizer, lr_lambda=lambda epoch: 0.95**epoch)
 
     @classmethod
+    def tearDownClass(cls) -> None:
+        shutil.rmtree("./wandb")
+
+    @classmethod
     def get_attribute(cls):
         model, optimizer, scheduler = cls.model, cls.optimizer, cls.scheduler
         train_loader, valid_loader = cls.train_loader, cls.valid_loader
@@ -85,7 +90,6 @@ class TestLogger(unittest.TestCase):
         self.test_time_point = None
         self.runner.finish()
         self.runner = None
-        os.remove("./wandb")
 
     def test_wandb_init(self):
         self.assertIn("wandb", os.listdir("."))
