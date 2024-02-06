@@ -7,6 +7,8 @@ from torchvision.transforms import Resize
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 import torch.nn.functional as F
 from tqdm import tqdm
+import onnx
+import tf2onnx
 
 import os
 import numpy as np
@@ -325,11 +327,14 @@ def core_tf(pretrained: bool = False, seed: int = 1234, inference_test: bool = F
         img = tf.io.read_file(img_path)
         # 2. Decode and convert to grayscale
         img = tf.io.decode_png(img, channels=4)
+        decoded = img
         img = tf.reduce_mean(img, axis=-1, keepdims=True)
+        meaned = img
         # 3. Convert to float32 in [0, 1] range
         img = tf.image.convert_image_dtype(img, tf.float32)
         # 4. Resize to the desired size
         img = tf.image.resize(img, [img_height, img_width])
+        resized = img
         # 5. Transpose the image because we want the time
         # dimension to correspond to the width of the image.
         img = tf.transpose(img, perm=[1, 0, 2])
@@ -337,7 +342,12 @@ def core_tf(pretrained: bool = False, seed: int = 1234, inference_test: bool = F
         label = char_to_num(tf.strings.unicode_split(label, input_encoding="UTF-8"))
         # 7. Return a dict as our model is expecting two inputs
 
-        return {"image": img, "label": label, "origin": origin}
+        return {
+            "image": img,
+            "label": label,
+            "origin": origin,
+            "dummy": {"decoded": decoded, "meaned": meaned, "resized": resized},
+        }
 
     train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train, o_train))
     train_dataset = (
@@ -392,6 +402,10 @@ def core_tf(pretrained: bool = False, seed: int = 1234, inference_test: bool = F
         )
         model.save("./captcha_model.ckpt")
 
+    # input_signature = [tf.TensorSpec([3, 3], tf.float32, name="x")]
+    # onnx_model, _ = tf2onnx.convert.from_keras(model, input_signature, opset=13)
+    # onnx.save(onnx_model, "./captcga_model.onnx")
+
     # Get the prediction model by extracting layers till the output layer
     prediction_model = keras.models.Model(model.get_layer(name="image").input, model.get_layer(name="dense2").output)
     prediction_model.summary()
@@ -421,7 +435,8 @@ def core_tf(pretrained: bool = False, seed: int = 1234, inference_test: bool = F
     acc = np.mean(acc)
 
     if inference_test:
-        inference_images = glob(f"Z:/dev-zae/captcha_database/*.png")[:100]
+        inference_images = glob(f"Z:/dev-zae//*.png")[:]
+        inference_images *= 8
         inference_labels = [os.path.splitext(os.path.split(fn)[-1])[0] for fn in inference_images]
         inference_origins = [1 if "database" in fn else -1 for fn in inference_images]
         inference_dataset = tf.data.Dataset.from_tensor_slices((inference_images, inference_labels, inference_origins))
@@ -476,9 +491,18 @@ def core_tf(pretrained: bool = False, seed: int = 1234, inference_test: bool = F
         return prediction_model
 
 
-def pre_trained(modelpath: str):
-    model = tf.saved_model.load(modelpath, options=tf.saved_model.LoadOptions(experimental_io_device="/job:localhost"))
-    return model
+def convert_model_to_onnx(modelpath: str):
+    model = tf.keras.models.load_model(modelpath)
+    prediction_model = keras.models.Model(model.get_layer(name="image").input, model.get_layer(name="dense2").output)
+    prediction_model.summary()
+    prediction_model.save("./captcha_model_serve.ckpt")
+
+    # input_signature = [tf.TensorSpec([200, 50, 1], tf.float32, name="x")]
+    # onnx_model, _ = tf2onnx.convert.from_keras(prediction_model, input_signature, opset=13)
+    # onnx.save(onnx_model, "./captcha_model.onnx")
+
+    # model = tf.saved_model.load(modelpath, options=tf.saved_model.LoadOptions(experimental_io_device="/job:localhost"))
+    # return model
 
 
 def inference_test():
@@ -488,6 +512,8 @@ def inference_test():
 
 
 if __name__ == "__main__":
+    # convert_model_to_onnx("./captcha_model.ckpt")
+
     # cap = CaptchaImgSaver("./outputs")
     # cap.run(iter=10000)
 
