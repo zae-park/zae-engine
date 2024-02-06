@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Tuple, Dict, Union, Optional, Iterable
 
+import wandb
 import numpy as np
 import torch
 
@@ -33,6 +34,7 @@ class Trainer(ABC):
         optimizer: Optional[torch.optim.Optimizer] = None,
         scheduler: Optional = None,
         callbacks: Iterable = (),
+        web_logger: Optional[dict[str, Union[object, dict]]] = None,
     ):
         if "cuda" in device.type:
             torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
@@ -40,7 +42,6 @@ class Trainer(ABC):
         self.loader, self.n_data, self.batch_size = None, None, None
         self.valid_loader, self.n_valid_data, self.valid_batch_size = None, None, None
         self.mode = mode
-        self.class_weight = None
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.model = self._to_device(model)
@@ -48,7 +49,8 @@ class Trainer(ABC):
         self.loss_buffer, self.weight_buffer = torch.inf, defaultdict(list)
         self.callbacks = callbacks
         self.progress_checker = ProgressChecker()
-        self.web_logger = None
+        if web_logger:
+            self.web_logger = self.check_web_logger(web_logger)
 
     def _to_cpu(self, *args) -> Tuple[torch.Tensor, ...] or torch.Tensor:
         """
@@ -113,8 +115,7 @@ class Trainer(ABC):
         self.loader, self.valid_loader = loader, valid_loader
         self._check_batch_size()
         for e in range(n_epoch):
-            if e:
-                print("Epoch %d" % (e + 1))
+            print("Epoch %d" % (e + 1))
             self._data_count(initial=True)
             self.run_epoch(loader)
             if valid_loader:
@@ -263,6 +264,24 @@ class Trainer(ABC):
         except IndexError as e:
             print(f"There is no weight in buffer of trainer.", e)
 
+    def check_web_logger(self, web_logger: Dict[str, Union[object, dict]]) -> Dict[str, Union[object, None]]:
+        """
+        Check given web_logger is runner object or runner params.
+        If runner params are provided, init new runner object using those.
+        :param web_logger:
+        :return:
+        """
+        logger_dict = defaultdict(None)
+        for k, v in web_logger.items():
+            if k.lower() in ["wandb", "w&b"]:
+                logger_dict["wandb"] = wandb.init(**v) if isinstance(v, dict) else v
+            elif k.lower() in ["neptune", "neptune.ai", "neptuneai", "neptune-ai", "nep"]:
+                logger_dict["neptune"] = self.init_tkn(**v) if isinstance(v, dict) else v
+            else:
+                # zae-engine now supports WandB and Neptune.ai only.
+                continue
+        return logger_dict
+
     def init_tkn(self, project_name: str, api_tkn: str = "", **kwargs) -> None:
         """
         Initialize neptune logger with given project name and token.
@@ -275,9 +294,19 @@ class Trainer(ABC):
         """
         self.web_logger = NeptuneLogger(project_name, api_tkn, **kwargs)
 
-    def inference(self, loader):
+    def end_web_logger(self) -> None:
+        """
+        Eliminate web_loggers.
+        :return: None
+        """
+        if wb_log := self.web_logger["wandb"]:
+            wb_log.finish()
+        if np_log := self.web_logger["neptune"]:
+            np_log.eliminate()
+
+    def inference(self, loader) -> list:
         if self.web_logger:
-            self.web_logger.eliminate()
+            self.end_web_logger()
         self.toggle("test")
         self.run(n_epoch=1, loader=loader)
         return self.log_test["output"]
