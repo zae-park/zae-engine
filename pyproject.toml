@@ -1,14 +1,15 @@
 [tool.poetry]
 name = 'zae-engine'
-version = '0.1.1'
+version = '0.1.2'
 description = 'Deep learning engine powered by zae-park.'
 authors = ["zae-park <tom941105@gmail.com>"]
 packages = [
-    {include = "zae_engine"},
+    {include = "zae_engine", from='.'},
+    {include = "zae_cli", from='.'},
 ]
 
 [tool.poetry.dependencies]
-python = "~3.10.0"
+python = "^3.10.0"
 matplotlib = "^3.7.2"
 tensorflow-io-gcs-filesystem = "0.31.0"
 segment-anything = "^1.0"
@@ -66,4 +67,5 @@ line-length = 120
 target-version = ['py310']
 
 [tool.poetry.scripts]
-zae = "zae_engine.utils.cli:cli_run"
+zae = "zae_cli.cli:cli_run"
+zae-test = "zae_cli.cli:zae_print"
