@@ -47,7 +47,7 @@ wandb = "^0.16.2"
 
 
 [tool.poetry.group.dev.dependencies]
-python = "^3.10"
+python = ">=3.10.0,<3.12"
 pytest = "^7.4.2"
 torchvision = [
     { platform = "win32", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-win_amd64.whl" },
