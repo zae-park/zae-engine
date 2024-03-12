@@ -38,6 +38,8 @@ jobs:
       run: |
         curl -sSL https://install.python-poetry.org | python3 -
         python --version
+        poetry cache clear --all pypi
+        poetry cache clear --all _default_cache
         poetry env use python3
         poetry lock
         poetry install
