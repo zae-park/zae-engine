@@ -9,7 +9,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10.0"
+python = ">=3.10.0,<3.12"
 matplotlib = "^3.7.2"
 tensorflow-io-gcs-filesystem = "0.31.0"
 segment-anything = "^1.0"
