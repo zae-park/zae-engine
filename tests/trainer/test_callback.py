@@ -1,7 +1,10 @@
+import os
+import shutil
 import unittest
 from typing import Union, Dict
 from datetime import datetime
 
+import wandb
 import torch
 import numpy as np
 from torch.optim import Adam
@@ -63,6 +66,10 @@ class TestLogger(unittest.TestCase):
         cls.scheduler = torch.optim.lr_scheduler.LambdaLR(cls.optimizer, lr_lambda=lambda epoch: 0.95**epoch)
 
     @classmethod
+    def tearDownClass(cls) -> None:
+        shutil.rmtree("./wandb")
+
+    @classmethod
     def get_attribute(cls):
         model, optimizer, scheduler = cls.model, cls.optimizer, cls.scheduler
         train_loader, valid_loader = cls.train_loader, cls.valid_loader
@@ -74,11 +81,22 @@ class TestLogger(unittest.TestCase):
         self.epoch_check = np.random.randint(1, 3)
         self.model, self.optimizer, self.scheduler, self.train_loader, self.valid_loader = self.get_attribute()
         self.test_time_point = str(now.timestamp()).split(".")[0][:9]
+        wandb.setup(wandb.Settings(program="test_callback.py", program_relpath="test_callback.py"))
+        self.runner = wandb.init(project="wandb-test", config={"a": 1, "b": 2, "c": 3})
 
     def tearDown(self) -> None:
         self.step_check = None
         self.epoch_check = None
         self.test_time_point = None
+        self.runner.finish()
+        self.runner = None
+
+    def test_wandb_init(self):
+        self.assertIn("wandb", os.listdir("."))
+
+    def test_wandb_log(self):
+        self.runner.log({"test": True})
+        self.assertTrue(self.runner.summary["test"])
 
     # ------------------------------------- Legacy ------------------------------------- #
     # def test_result(self):

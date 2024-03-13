@@ -5,3 +5,4 @@
 *.lock
 .idea/
 dist/
+**/wandb/
