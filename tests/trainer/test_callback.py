@@ -96,7 +96,7 @@ class TestLogger(unittest.TestCase):
 
     def test_wandb_log(self):
         self.runner.log({"test": True})
-        self.assert_(self.runner.summary["test"])
+        self.assertTrue(self.runner.summary["test"])
 
     # ------------------------------------- Legacy ------------------------------------- #
     # def test_result(self):
