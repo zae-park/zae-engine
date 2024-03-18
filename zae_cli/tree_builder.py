@@ -10,7 +10,7 @@ from rich.text import Text
 from rich.tree import Tree
 
 
-class Walk:
+class TreeBuilder:
     START_IGNORE = ['.', '__', 'test']
     _tree = None
 
@@ -90,6 +90,6 @@ class Walk:
 
 
 if __name__ == '__main__':
-    Walk.print_tree('./zae_engine')
+    TreeBuilder.print_tree('./zae_engine')
 
 
