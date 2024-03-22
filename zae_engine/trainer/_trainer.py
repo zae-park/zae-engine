@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Tuple, Dict, Union, Optional, Iterable
 
+import tqdm
 import wandb
 import numpy as np
 import torch
@@ -33,6 +34,7 @@ class Trainer(ABC):
         mode: str,
         optimizer: Optional[torch.optim.Optimizer] = None,
         scheduler: Optional = None,
+        log_bar: bool = True,
         callbacks: Iterable = (),
         web_logger: Optional[dict[str, Union[object, dict]]] = None,
     ):
@@ -42,6 +44,7 @@ class Trainer(ABC):
         self.loader, self.n_data, self.batch_size = None, None, None
         self.valid_loader, self.n_valid_data, self.valid_batch_size = None, None, None
         self.mode = mode
+        self.log_bar = log_bar
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.model = self._to_device(model)
@@ -114,8 +117,12 @@ class Trainer(ABC):
         """
         self.loader, self.valid_loader = loader, valid_loader
         self._check_batch_size()
-        for e in range(n_epoch):
-            print("Epoch %d" % (e + 1))
+        progress = tqdm.tqdm(range(n_epoch), position=0, leave=True) if self.log_bar else range(n_epoch)
+        for e in progress:
+            if self.log_bar:
+                progress.set_description("Epoch %d" % (e + 1))
+            else:
+                print("Epoch %d" % (e + 1))
             self._data_count(initial=True)
             self.run_epoch(loader)
             if valid_loader:
@@ -135,10 +142,15 @@ class Trainer(ABC):
 
     def run_epoch(self, loader) -> None:
         self.log_reset()
-        for i, batch in enumerate(loader):
+        progress = tqdm.tqdm(loader, position=1, leave=False) if self.log_bar else loader
+        for i, batch in enumerate(progress):
             self.run_batch(batch)
             self._data_count()
-            self.print_log(cur_batch=i + 1, num_batch=len(loader))
+            desc, printer = self.print_log(cur_batch=i + 1, num_batch=len(loader))
+            if self.log_bar:
+                progress.set_description(desc)
+            else:
+                print(desc, **printer)
 
     def run_batch(self, batch: Union[tuple, dict]) -> None:
         """
@@ -227,7 +239,7 @@ class Trainer(ABC):
         self.log_train.clear()
         self.log_test.clear()
 
-    def print_log(self, cur_batch: int, num_batch: int) -> None:
+    def print_log(self, cur_batch: int, num_batch: int) -> Tuple[str, dict]:
         log = self.log_train if self.mode == "train" else self.log_test
         LR = self.optimizer.param_groups[0]["lr"] if self.optimizer else 0
         is_end = cur_batch == num_batch
@@ -240,7 +252,8 @@ class Trainer(ABC):
                 continue
             log_str += f"\t{k}: {np.mean(v):.6f}"
         log_str += f"\tLR: {LR:.3e}"
-        print(log_str, end=end, file=disp)
+        # print(log_str, end=end, file=disp)
+        return log_str, {"end": end, "file": disp}
 
     def save_model(self, filename: str) -> None:
         torch.save(self.model.state_dict(), filename)
@@ -305,8 +318,8 @@ class Trainer(ABC):
             np_log.eliminate()
 
     def inference(self, loader) -> list:
-        if self.web_logger:
-            self.end_web_logger()
+        # if self.web_logger:
+        #     self.end_web_logger()
         self.toggle("test")
         self.run(n_epoch=1, loader=loader)
         return self.log_test["output"]
