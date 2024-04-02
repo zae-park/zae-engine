@@ -1,32 +1,20 @@
-from collections import namedtuple
-import random
-import time
-import glob
-import torch
-import torch.nn as nn
-from torchvision.transforms import Resize
-from torch.utils.data import Dataset, DataLoader, ConcatDataset
-import torch.nn.functional as F
-from tqdm import tqdm
-import onnx
-import tf2onnx
-
 import os
+import datetime
+from collections import namedtuple
+
+import numpy as np
 from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
-import numpy as np
-import matplotlib.pyplot as plt
-from glob import glob
-import tensorflow as tf
-from PIL import Image
-from tensorflow import keras
-from keras import layers
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import Dataset
 
 from zae_engine import trainer, models, measure, data_pipeline
 from zae_engine.operation import draw_confusion_matrix, print_confusion_matrix
 
 
-class ExDataset(data.Dataset):
+class ExDataset(Dataset):
     def __init__(self, x, y, _type: type = tuple):
         self.x = torch.tensor(x, dtype=torch.float32).unsqueeze(0)
         self.y = torch.tensor(y, dtype=torch.float32)
