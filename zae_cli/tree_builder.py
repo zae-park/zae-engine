@@ -1,6 +1,7 @@
 import os
 import ast
 import pathlib
+from collections import defaultdict
 from importlib import import_module
 from inspect import isclass, isfunction, isroutine, getmembers
 
@@ -12,21 +13,26 @@ from rich.tree import Tree
 
 
 def get_methods_from_abspath(abs_path):
-    with open(abs_path, "r") as file:
+    with open(abs_path, "r", encoding="utf-8") as file:
         tree = ast.parse(file.read(), filename=abs_path)
 
-    defined_methods_with_classes = {}
+    defined_methods_with_classes = defaultdict(list)
     current_class = None
 
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
             current_class = node.name
             defined_methods_with_classes[current_class] = []
-        elif isinstance(node, ast.FunctionDef) and current_class:
-            # Check if the function is not a dunder method and wrap function
-            if node.name.startswith("__") or node.name.endswith("__") or node.name.endswith("wrap"):
+        elif isinstance(node, ast.FunctionDef):
+            # Check if the function is not a dunder
+            if node.name.startswith("__") or node.name.endswith("__") or "wrap" in node.name:
                 continue
-            defined_methods_with_classes[current_class].append(node.name)
+            # Check if the function is in a class
+            if current_class:
+                defined_methods_with_classes[current_class].append(node.name)
+            # Check if the function is standalone and not in a class
+            else:
+                defined_methods_with_classes["standalone"].append(node.name)
 
     return defined_methods_with_classes
 
@@ -63,20 +69,28 @@ class TreeBuilder:
 
                     print(path)
                     # bag = getmembers(import_module(path.name[:-3]))
-                    bag = getmembers(import_module(path.__str__().replace("\\", ".")[:-3]))
-                    for n, v in bag:
+                    bag = get_methods_from_abspath(str(path.resolve()))
+                    # bag = getmembers(import_module(path.__str__().replace("\\", ".")[:-3]))
+                    for n, v in bag.items():
                         if os.path.splitext(n)[-1]:
                             self.add_leaf(path.name, branch)
                         else:
-                            if isroutine(v):
-                                if isfunction(v):
-                                    self.add_leaf(n, branch, icon="📄 ")
-                                    # self.add_leaf(n, branch, icon='⬛ ')
-                            elif isclass(v):
-                                self.add_leaf(n, branch, icon="📘 ")
-                                # self.add_leaf(n, branch, icon='◼ ')
+                            if n == "standalone":
+                                for func_name in v:
+                                    self.add_leaf(func_name, branch, icon="📄 ")
                             else:
-                                pass
+                                # for cls_name in v:
+                                self.add_leaf(n, branch, icon="📘 ")
+
+                            # if isroutine(v):
+                            #     if isfunction(v):
+                            #         self.add_leaf(n, branch, icon="📘 ")
+                            #         # self.add_leaf(n, branch, icon='⬛ ')
+                            # elif isclass(v):
+                            #     self.add_leaf(n, branch, icon="📘 ")
+                            #     # self.add_leaf(n, branch, icon='◼ ')
+                            # else:
+                            #     pass
 
     def add_branch(self, path, branch):
         text_filename = Text(path.name, "green")
@@ -114,5 +128,5 @@ class TreeBuilder:
 
 
 if __name__ == "__main__":
-    defined_methods_with_classes("Z:\\dev-zae\\zae-engine\\zae_cli\\../zae_engine\\data_pipeline\\collate.py")
-    TreeBuilder.print_tree("./zae_engine")
+    # res = get_methods_from_abspath("Z:\\dev-zae\\zae-engine\\zae_cli\\../zae_engine\\data_pipeline\\collate.py")
+    TreeBuilder.print_tree("../zae_engine")
