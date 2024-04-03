@@ -8,6 +8,8 @@
 # zae-engine
 AI 프로젝트의 quick-start를 위한 package. </br>
 
+[//]: # (https://github.com/dbrgn/coverage-badge)
+
 ### zae-command
 `zae` 명령어를 통해 아래의 기능들을 지원합니다.
 - `zae hello` : 정상 설치 확인
