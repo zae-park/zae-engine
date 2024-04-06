@@ -3,7 +3,7 @@ import shutil
 
 import click
 
-from .tree_builder import TreeBuilder
+from tree_builder import TreeBuilder
 
 
 # Package structure will be changed in the future.
@@ -28,9 +28,9 @@ def zae_print():
     help="The destination path where example file will be created when the `example` command.",
 )
 def cli_run(command: str, path: str = ""):
-    print("CLI in cli dir")
     if command == "tree":
         TreeBuilder.print_tree(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../zae_engine"))
+
     elif command == "example":
         if not path:
             path = os.path.join(os.getcwd(), "zae_example.py")
@@ -42,7 +42,8 @@ def cli_run(command: str, path: str = ""):
         print(f'Invalid command "{command}".')
 
 
-if __name__ == "__main__":
-    # python -m zae_cli.cli
-    print("module run")
-    cli_run(["snippet"])
+# if __name__ == "__main__":
+#     os.system("zae tree")
+# python -m zae_cli.cli
+# print("module run")
+# cli_run(["snippet"])
