@@ -36,6 +36,15 @@ jobs:
         poetry lock
         poetry install
 
+    - name: Login W&B
+      shell: bash
+      env:
+        WANDB_API: ${{ secrets.WANDB_KEY }}
+      run: |
+        pip install wandb
+        chmod +x $(which wandb)
+        wandb login "$WANDB_API"
+
     - name: Pytest
       run: |
         poetry run pytest --junitxml=reports/junit/junit.xml
