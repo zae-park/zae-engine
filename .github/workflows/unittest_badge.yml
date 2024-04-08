@@ -51,7 +51,7 @@ jobs:
 
     - name: Badge
       run: |
-        genbadge tests --output-file=reports/tests-badge.svg
+        genbadge tests --output-file reports/tests-badge.svg
 
 
         
