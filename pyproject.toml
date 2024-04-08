@@ -44,6 +44,7 @@ openpyxl = "^3.1.2"
 click = "^8.1.7"
 pillow = "^10.1.0"
 wandb = "^0.16.2"
+genbadge = "^1.1.1"
 
 
 [tool.poetry.group.dev.dependencies]
