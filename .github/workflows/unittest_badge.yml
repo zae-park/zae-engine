@@ -50,6 +50,7 @@ jobs:
         poetry run pytest --junitxml=reports/junit/junit.xml
 
     - name: Badge
+      shell: bash
       run: |
         genbadge tests --output-file reports/tests-badge.svg
 
