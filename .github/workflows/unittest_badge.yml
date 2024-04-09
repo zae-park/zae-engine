@@ -55,16 +55,11 @@ jobs:
 #        genbadge tests --output-file reports/tests-badge.svg
     - name: Generate coverage report
       run: |
-        poetry run pytest --cov=.
+        poetry run pytest --cov=./
+
     - name: Upload coverage reports to Codecov
-      run: |
-        # Replace `linux` below with the appropriate OS
-        # Options are `alpine`, `linux`, `macos`, `windows`
-        curl -Os https://uploader.codecov.io/latest/linux/codecov
-        chmod +x codecov
-        ./codecov -t ${CODECOV_TOKEN}
+      uses: codecov/codecov-action@v4
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-
-
-        
 
