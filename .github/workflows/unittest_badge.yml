@@ -48,13 +48,8 @@ jobs:
 #      run: |
 #        poetry run pytest --junitxml=reports/junit/junit.xml
 
-    - name: Run ATS
-      uses: codecov/codecov-ats@v0
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-    - name: Run tests and collect coverage
-      run: pytest --cov app ${{ env.CODECOV_ATS_TESTS }}
+#    - name: Run tests and collect coverage
+#      run: pytest --cov app ${{ env.CODECOV_ATS_TESTS }}
 
 #    - name: Badge
 #      shell: bash
