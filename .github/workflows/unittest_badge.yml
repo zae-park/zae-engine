@@ -56,13 +56,12 @@ jobs:
     - name: Generate coverage report
       run: |
         poetry run pytest --cov=.
+        poetry run codecov
 
     - name: Generate report and upload coverage reports to Codecov
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
-        poetry run pytest --cov=.
-        ls
         # Replace `linux` below with the appropriate OS
         # Options are `alpine`, `linux`, `macos`, `windows`
         curl -Os https://uploader.codecov.io/latest/linux/codecov
