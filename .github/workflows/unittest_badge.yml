@@ -13,8 +13,7 @@ jobs:
   build:
 
     runs-on: ${{ matrix.os }}
-    
-    
+
     strategy:
       matrix:
         python-version: ["3.10"]
@@ -45,14 +44,28 @@ jobs:
         chmod +x $(which wandb)
         wandb login "$WANDB_API"
 
-    - name: Pytest
-      run: |
-        poetry run pytest --junitxml=reports/junit/junit.xml
+#    - name: Pytest
+#      run: |
+#        poetry run pytest --junitxml=reports/junit/junit.xml
 
-    - name: Badge
-      shell: bash
-      run: |
-        genbadge tests --output-file reports/tests-badge.svg
+    - name: Run ATS
+      uses: codecov/codecov-ats@v0
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Run tests and collect coverage
+      run: pytest --cov app ${{ env.CODECOV_ATS_TESTS }}
+
+#    - name: Badge
+#      shell: bash
+#      run: |
+#        genbadge tests --output-file reports/tests-badge.svg
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: zae-park/zae-engine
 
 
         
