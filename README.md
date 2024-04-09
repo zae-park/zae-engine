@@ -6,6 +6,7 @@
 <p align="center">
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/build_test.yml/badge.svg">
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/unittest_badge.yml/badge.svg">
+    <img src="https://codecov.io/gh/zae-park/zae-engine/graph/badge.svg?token=4BENXZJHPF"/>
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/wandb_test.yml/badge.svg">
   <br />
 </p>
