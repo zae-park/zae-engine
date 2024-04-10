@@ -40,10 +40,13 @@ pytest = "^7.4.2"
 pandas = "^2.1.2"
 openpyxl = "^3.1.2"
 #tf2onnx = { git = "https://github.com/onnx/tensorflow-onnx.git" }
-onnx = "1.14.1"
+#onnx = "1.14.1"
 click = "^8.1.7"
 pillow = "^10.1.0"
 wandb = "^0.16.2"
+genbadge = "^1.1.1"
+pytest-cov = "^5.0.0"
+codecov = "^2.1.13"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -57,6 +60,7 @@ torch = [
     { platform = "win32", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-win_amd64.whl" },
     { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-linux_x86_64.whl" },
 ]
+coverage = "^7.4.4"
 
 [build-system]
 requires = ["poetry>=1.5"]
