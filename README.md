@@ -2,20 +2,11 @@
 <p align="center">
   <img src="assets/img/spinning_ascii_donut.gif" style="border-radius: 20px">
   <br />
-</p>
-<p align="center">
-    <img src="https://github.com/zae-park/zae-engine/actions/workflows/build_test.yml/badge.svg">
-    <img src="https://github.com/zae-park/zae-engine/actions/workflows/unittest_badge.yml/badge.svg">
-    <img src="https://codecov.io/gh/zae-park/zae-engine/graph/badge.svg?token=4BENXZJHPF"/>
-    <img src="https://github.com/zae-park/zae-engine/actions/workflows/wandb_test.yml/badge.svg">
-  <br />
+ 
 </p>
 
 # zae-engine
 AI 프로젝트의 quick-start를 위한 package. </br>
-
-
-[//]: # (https://github.com/dbrgn/coverage-badge)
 
 ### zae-command
 `zae` 명령어를 통해 아래의 기능들을 지원합니다.
