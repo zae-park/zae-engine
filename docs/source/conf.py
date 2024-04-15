@@ -5,6 +5,7 @@
 
 import os
 import sys
+import sphinx_rtd_theme
 # sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -44,7 +45,6 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 
 # html_theme = 'alabaster'
-import sphinx_rtd_theme
 html_theme = 'sphinx_rtd_theme'
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
@@ -54,3 +54,10 @@ html_static_path = ['_static']
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 html_favicon = '../../assets/zaevicon.ico'
+
+
+coverage_ignore_functions = [
+    # torch
+    "data_pipeline.resource",
+    "data_pipeline.sample",
+    ]

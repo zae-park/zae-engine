@@ -19,7 +19,9 @@
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="zae_engine.models.resource package" href="zae_engine.models.resource.html" />
+    <link rel="prev" title="zae_engine.measure package" href="zae_engine.measure.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,65 +43,30 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">zae_engine.models package</a><ul>
-<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-zae_engine.models.benchmark">zae_engine.models.benchmark module</a><ul>
-<li><a class="reference internal" href="#zae_engine.models.benchmark.beat_segmentation"><code class="docutils literal notranslate"><span class="pre">beat_segmentation()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.benchmark.peak_regression"><code class="docutils literal notranslate"><span class="pre">peak_regression()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.benchmark.u_net"><code class="docutils literal notranslate"><span class="pre">u_net()</span></code></a></li>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">zae_engine</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="zae_engine.html">zae_engine package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="zae_engine.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="zae_engine.data_pipeline.html">zae_engine.data_pipeline package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="zae_engine.inference.html">zae_engine.inference package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="zae_engine.loss.html">zae_engine.loss package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="zae_engine.measure.html">zae_engine.measure package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">zae_engine.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="zae_engine.nn_night.html">zae_engine.nn_night package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="zae_engine.operation.html">zae_engine.operation package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="zae_engine.scripts.html">zae_engine.scripts package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="zae_engine.trainer.html">zae_engine.trainer package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="zae_engine.utils.html">zae_engine.utils package</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-zae_engine.models.build">zae_engine.models.build module</a><ul>
-<li><a class="reference internal" href="#zae_engine.models.build.CNNBase"><code class="docutils literal notranslate"><span class="pre">CNNBase</span></code></a><ul>
-<li><a class="reference internal" href="#zae_engine.models.build.CNNBase.calc_padding"><code class="docutils literal notranslate"><span class="pre">CNNBase.calc_padding()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.CNNBase.gen_block"><code class="docutils literal notranslate"><span class="pre">CNNBase.gen_block()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.CNNBase.gen_body"><code class="docutils literal notranslate"><span class="pre">CNNBase.gen_body()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.CNNBase.gen_head"><code class="docutils literal notranslate"><span class="pre">CNNBase.gen_head()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.CNNBase.set_dimension"><code class="docutils literal notranslate"><span class="pre">CNNBase.set_dimension()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.CNNBase.unit_layer"><code class="docutils literal notranslate"><span class="pre">CNNBase.unit_layer()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#zae_engine.models.build.Regressor1D"><code class="docutils literal notranslate"><span class="pre">Regressor1D</span></code></a><ul>
-<li><a class="reference internal" href="#zae_engine.models.build.Regressor1D.forward"><code class="docutils literal notranslate"><span class="pre">Regressor1D.forward()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.Regressor1D.gen_embedding"><code class="docutils literal notranslate"><span class="pre">Regressor1D.gen_embedding()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.Regressor1D.unit_layer"><code class="docutils literal notranslate"><span class="pre">Regressor1D.unit_layer()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.Regressor1D.update_dimension"><code class="docutils literal notranslate"><span class="pre">Regressor1D.update_dimension()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#zae_engine.models.build.ResNet1D"><code class="docutils literal notranslate"><span class="pre">ResNet1D</span></code></a><ul>
-<li><a class="reference internal" href="#zae_engine.models.build.ResNet1D.forward"><code class="docutils literal notranslate"><span class="pre">ResNet1D.forward()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.ResNet1D.make_fe_block"><code class="docutils literal notranslate"><span class="pre">ResNet1D.make_fe_block()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.ResNet1D.make_stem"><code class="docutils literal notranslate"><span class="pre">ResNet1D.make_stem()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.build.ResNet1D.stack_layers"><code class="docutils literal notranslate"><span class="pre">ResNet1D.stack_layers()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#zae_engine.models.build.Segmentor"><code class="docutils literal notranslate"><span class="pre">Segmentor</span></code></a><ul>
-<li><a class="reference internal" href="#zae_engine.models.build.Segmentor.forward"><code class="docutils literal notranslate"><span class="pre">Segmentor.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-zae_engine">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-zae_engine.models.utility">zae_engine.models.utility module</a><ul>
-<li><a class="reference internal" href="#zae_engine.models.utility.WeightLoader"><code class="docutils literal notranslate"><span class="pre">WeightLoader</span></code></a><ul>
-<li><a class="reference internal" href="#zae_engine.models.utility.WeightLoader.get"><code class="docutils literal notranslate"><span class="pre">WeightLoader.get()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.utility.WeightLoader.set_w"><code class="docutils literal notranslate"><span class="pre">WeightLoader.set_w()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.utility.WeightLoader.state_dict"><code class="docutils literal notranslate"><span class="pre">WeightLoader.state_dict</span></code></a></li>
 </ul>
-</li>
-<li><a class="reference internal" href="#zae_engine.models.utility.download"><code class="docutils literal notranslate"><span class="pre">download()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.utility.initializer"><code class="docutils literal notranslate"><span class="pre">initializer()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.utility.load_weights"><code class="docutils literal notranslate"><span class="pre">load_weights()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.models.utility.transformer_option"><code class="docutils literal notranslate"><span class="pre">transformer_option()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-zae_engine.models">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
+
         </div>
       </div>
     </nav>
@@ -114,6 +81,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">zae_engine</a></li>
+          <li class="breadcrumb-item"><a href="zae_engine.html">zae_engine package</a></li>
       <li class="breadcrumb-item active">zae_engine.models package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/zae_engine.models.rst.txt" rel="nofollow"> View page source</a>
@@ -498,7 +467,10 @@ For others, weights are initialized following kaiming method based on normal dis
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="zae_engine.measure.html" class="btn btn-neutral float-left" title="zae_engine.measure package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="zae_engine.models.resource.html" class="btn btn-neutral float-right" title="zae_engine.models.resource package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
