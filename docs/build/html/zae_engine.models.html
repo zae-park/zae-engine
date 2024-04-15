@@ -19,9 +19,7 @@
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="zae_engine.models.resource package" href="zae_engine.models.resource.html" />
-    <link rel="prev" title="zae_engine.measure package" href="zae_engine.measure.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,27 +42,17 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">zae_engine</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="zae_engine.html">zae_engine package</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="zae_engine.html#subpackages">Subpackages</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="zae_engine.data_pipeline.html">zae_engine.data_pipeline package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="zae_engine.inference.html">zae_engine.inference package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="zae_engine.loss.html">zae_engine.loss package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="zae_engine.measure.html">zae_engine.measure package</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">zae_engine.models package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="zae_engine.nn_night.html">zae_engine.nn_night package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="zae_engine.operation.html">zae_engine.operation package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="zae_engine.scripts.html">zae_engine.scripts package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="zae_engine.trainer.html">zae_engine.trainer package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="zae_engine.utils.html">zae_engine.utils package</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-zae_engine">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data_pipeline/zae_engine.data_pipeline.html">zae_engine.data_pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference/zae_engine.inference.html">zae_engine.inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loss/zae_engine.loss.html">zae_engine.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="measure/zae_engine.measure.html">zae_engine.measure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models/zae_engine.models.html">zae_engine.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nn_night/zae_engine.nn_night.html">zae_engine.nn_night</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operation/zae_engine.operation.html">zae_engine.operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts/zae_engine.scripts.html">zae_engine.scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trainer/zae_engine.trainer.html">zae_engine.trainer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils/zae_engine.utils.html">zae_engine.utils</a></li>
 </ul>
 
         </div>
@@ -81,8 +69,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">zae_engine</a></li>
-          <li class="breadcrumb-item"><a href="zae_engine.html">zae_engine package</a></li>
       <li class="breadcrumb-item active">zae_engine.models package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/zae_engine.models.rst.txt" rel="nofollow"> View page source</a>
@@ -248,16 +234,7 @@ The spatial-wise dimension of feature vector (or latent space).</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Regressor1D.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.gen_embedding">
@@ -267,14 +244,7 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.unit_layer">
 <span class="sig-name descname"><span class="pre">unit_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Regressor1D.unit_layer" title="Link to this definition">¶</a></dt>
-<dd><p>Return unit layer. The unit layer consists of {convolution} - {batch norm} - {activation}.
-:param ch_in: [Int]
-:param ch_out: [Int]
-:param kernel_size: [Int, Iterable]
-:param stride: [Int]
-:param dilation: [Int]
-:return:</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.update_dimension">
@@ -311,16 +281,7 @@ The scaling ratio for pooling layers.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.ResNet1D.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.ResNet1D.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.ResNet1D.make_fe_block">
@@ -372,16 +333,7 @@ If not, replace the decoding part of U-Net to up-sampling.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.Segmentor.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Segmentor.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -467,10 +419,7 @@ For others, weights are initialized following kaiming method based on normal dis
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="zae_engine.measure.html" class="btn btn-neutral float-left" title="zae_engine.measure package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="zae_engine.models.resource.html" class="btn btn-neutral float-right" title="zae_engine.models.resource package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

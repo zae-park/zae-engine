@@ -286,16 +286,7 @@ The spatial-wise dimension of feature vector (or latent space).</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Regressor1D.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.gen_embedding">
@@ -305,14 +296,7 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.unit_layer">
 <span class="sig-name descname"><span class="pre">unit_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Regressor1D.unit_layer" title="Link to this definition">¶</a></dt>
-<dd><p>Return unit layer. The unit layer consists of {convolution} - {batch norm} - {activation}.
-:param ch_in: [Int]
-:param ch_out: [Int]
-:param kernel_size: [Int, Iterable]
-:param stride: [Int]
-:param dilation: [Int]
-:return:</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.update_dimension">
@@ -349,16 +333,7 @@ The scaling ratio for pooling layers.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.ResNet1D.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.ResNet1D.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.ResNet1D.make_fe_block">
@@ -410,16 +385,7 @@ If not, replace the decoding part of U-Net to up-sampling.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.build.Segmentor.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Segmentor.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
+<dd></dd></dl>
 
 </dd></dl>
 

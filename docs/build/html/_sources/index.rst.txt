@@ -10,6 +10,15 @@ zae-engine은 딥러닝 프로젝트의 quick start를 돕기 위한 파이썬 �
 
 아래의 명령어를 통해 설치 확인 및 각 기능을 지원 예정입니다.
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Command:
+
+.. code-block:: console
+
+   zae hello
+   zae example
+   zae tree
 
 .. toctree::
    :maxdepth: 1
