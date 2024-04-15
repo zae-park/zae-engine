@@ -9,12 +9,11 @@
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
+    <link rel="shortcut icon" href="_static/zaevicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
@@ -85,25 +84,25 @@
            <div itemprop="articleBody">
              
   <section id="zae-engine-scripts-package">
-<h1>zae_engine.scripts package<a class="headerlink" href="#zae-engine-scripts-package" title="Link to this heading"></a></h1>
+<h1>zae_engine.scripts package<a class="headerlink" href="#zae-engine-scripts-package" title="Link to this heading">¶</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
 <section id="module-zae_engine.scripts.example_script">
-<span id="zae-engine-scripts-example-script-module"></span><h2>zae_engine.scripts.example_script module<a class="headerlink" href="#module-zae_engine.scripts.example_script" title="Link to this heading"></a></h2>
+<span id="zae-engine-scripts-example-script-module"></span><h2>zae_engine.scripts.example_script module<a class="headerlink" href="#module-zae_engine.scripts.example_script" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="zae_engine.scripts.example_script.ExDataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.scripts.example_script.</span></span><span class="sig-name descname"><span class="pre">ExDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tuple'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.scripts.example_script.ExDataset" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.scripts.example_script.</span></span><span class="sig-name descname"><span class="pre">ExDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tuple'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.scripts.example_script.ExDataset" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="zae_engine.scripts.example_script.ExTrainer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.scripts.example_script.</span></span><span class="sig-name descname"><span class="pre">ExTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.scripts.example_script.ExTrainer" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.scripts.example_script.</span></span><span class="sig-name descname"><span class="pre">ExTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.scripts.example_script.ExTrainer" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Trainer</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.scripts.example_script.ExTrainer.test_step">
-<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.scripts.example_script.ExTrainer.test_step" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.scripts.example_script.ExTrainer.test_step" title="Link to this definition">¶</a></dt>
 <dd><p>Unused dummy function yet exist to provide I/O format information.
 The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
 The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
@@ -112,7 +111,7 @@ Note that this function work only in ‘test’ mode.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.scripts.example_script.ExTrainer.train_step">
-<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.scripts.example_script.ExTrainer.train_step" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.scripts.example_script.ExTrainer.train_step" title="Link to this definition">¶</a></dt>
 <dd><p>Unused dummy function yet exist to provide I/O format information.
 The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
 The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
@@ -123,7 +122,7 @@ Note that this function work only in ‘train’ mode, hence back() method in nn
 
 </section>
 <section id="module-zae_engine.scripts">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.scripts" title="Link to this heading"></a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.scripts" title="Link to this heading">¶</a></h2>
 </section>
 </section>
 
