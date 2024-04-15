@@ -22,6 +22,8 @@ author = 'zae-park'
 # extensions = []
 extensions = ['sphinx.ext.autodoc']
 
+autodoc_inherit_docstrings = False
+
 templates_path = ['_templates']
 exclude_patterns = []
 
@@ -53,7 +55,7 @@ html_static_path = ['_static']
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = '../../assets/zaevicon.ico'
+html_favicon = './_static/zaevicon.ico'
 
 
 coverage_ignore_functions = [
