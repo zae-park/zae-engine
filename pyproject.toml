@@ -1,6 +1,6 @@
 [tool.poetry]
 name = 'zae-engine'
-version = '0.1.2'
+version = '0.1.4'
 description = 'Deep learning engine powered by zae-park.'
 authors = ["zae-park <tom941105@gmail.com>"]
 packages = [
@@ -47,6 +47,8 @@ wandb = "^0.16.2"
 genbadge = "^1.1.1"
 pytest-cov = "^5.0.0"
 codecov = "^2.1.13"
+sphinx = "^7.2.6"
+sphinx-rtd-theme = "^2.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -73,3 +75,6 @@ target-version = ['py310']
 [tool.poetry.scripts]
 zae = "zae_cli.cli:cli_run"
 zae-test = "zae_cli.cli:zae_print"
+
+[tool.pydoc-markdown]
+

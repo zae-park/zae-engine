@@ -7,9 +7,8 @@ from torchvision.transforms import Resize
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 import torch.nn.functional as F
 from tqdm import tqdm
-
-# import onnx
-# import tf2onnx
+import onnx
+import tf2onnx
 
 import os
 import numpy as np

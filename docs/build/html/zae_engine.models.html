@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.models package &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data_pipeline/zae_engine.data_pipeline.html">zae_engine.data_pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference/zae_engine.inference.html">zae_engine.inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loss/zae_engine.loss.html">zae_engine.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="measure/zae_engine.measure.html">zae_engine.measure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models/zae_engine.models.html">zae_engine.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nn_night/zae_engine.nn_night.html">zae_engine.nn_night</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operation/zae_engine.operation.html">zae_engine.operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts/zae_engine.scripts.html">zae_engine.scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trainer/zae_engine.trainer.html">zae_engine.trainer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils/zae_engine.utils.html">zae_engine.utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">zae_engine.models package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/zae_engine.models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zae-engine-models-package">
+<h1>zae_engine.models package<a class="headerlink" href="#zae-engine-models-package" title="Link to this heading">¶</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zae_engine.models.resource.html">zae_engine.models.resource package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.resource.html#module-zae_engine.models.resource">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-zae_engine.models.benchmark">
+<span id="zae-engine-models-benchmark-module"></span><h2>zae_engine.models.benchmark module<a class="headerlink" href="#module-zae_engine.models.benchmark" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.benchmark.beat_segmentation">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.benchmark.</span></span><span class="sig-name descname"><span class="pre">beat_segmentation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Module</span></span></span><a class="headerlink" href="#zae_engine.models.benchmark.beat_segmentation" title="Link to this definition">¶</a></dt>
+<dd><p>Build model which has a same structure with the latest released model.
+:param pretrained: bool</p>
+<blockquote>
+<div><p>If True, load weight from the server.
+If not, weights are initialized with ‘initializer’ method in utils.py</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.benchmark.peak_regression">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.benchmark.</span></span><span class="sig-name descname"><span class="pre">peak_regression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Module</span></span></span><a class="headerlink" href="#zae_engine.models.benchmark.peak_regression" title="Link to this definition">¶</a></dt>
+<dd><p>Build model which has a same structure with the latest released model.
+:param pretrained: bool</p>
+<blockquote>
+<div><p>If True, load weight from the server.
+If not, weights are initialized with ‘initializer’ method in utils.py.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.benchmark.u_net">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.benchmark.</span></span><span class="sig-name descname"><span class="pre">u_net</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Module</span></span></span><a class="headerlink" href="#zae_engine.models.benchmark.u_net" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-zae_engine.models.build">
+<span id="zae-engine-models-build-module"></span><h2>zae_engine.models.build module<a class="headerlink" href="#module-zae_engine.models.build" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.build.CNNBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.build.</span></span><span class="sig-name descname"><span class="pre">CNNBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.CNNBase" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>The interface class using Convolutional Layers.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.CNNBase.calc_padding">
+<span class="sig-name descname"><span class="pre">calc_padding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dilation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.CNNBase.calc_padding" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.CNNBase.gen_block">
+<span class="sig-name descname"><span class="pre">gen_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.CNNBase.gen_block" title="Link to this definition">¶</a></dt>
+<dd><p>Return block, accumulated layers in-stage. Stack CBR ‘order’ times.
+:param ch_in: [Int] input channels of block
+:param ch_out: [Int] output channels of block
+:param kernel_size: [Int, Iterable] convolution kernel size.</p>
+<blockquote>
+<div><p>If type of argument is int, assume that model will receive 1-D input tensor.
+Else, the type of argument is iterable, assume that model will receive len(argument)-D input tensor.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>order</strong> – [Int] the number of blocks in stage.
+The stage means same resolution. e.g. from after previous pooling (or stem) to before next pooling.</p></li>
+<li><p><strong>dilation</strong> – [Int, Iterable] Default is 1. If argument more than 1, dilated convolution will performed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>[nn.Module]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.CNNBase.gen_body">
+<span class="sig-name descname"><span class="pre">gen_body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequential</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Sequential</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#zae_engine.models.build.CNNBase.gen_body" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.CNNBase.gen_head">
+<span class="sig-name descname"><span class="pre">gen_head</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.CNNBase.gen_head" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.CNNBase.set_dimension">
+<span class="sig-name descname"><span class="pre">set_dimension</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.CNNBase.set_dimension" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.CNNBase.unit_layer">
+<span class="sig-name descname"><span class="pre">unit_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.CNNBase.unit_layer" title="Link to this definition">¶</a></dt>
+<dd><p>Return unit layer. The unit layer consists of {convolution} - {batch norm} - {activation}.
+:param ch_in: [Int]
+:param ch_out: [Int]
+:param kernel_size: [Int, Iterable]
+:param stride: [Int]
+:param dilation: [Int]
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.build.</span></span><span class="sig-name descname"><span class="pre">Regressor1D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dims</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Regressor1D" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zae_engine.models.build.CNNBase" title="zae_engine.models.build.CNNBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">CNNBase</span></code></a></p>
+<p>Builder class for rpeak_regression which has cascade CNN structure.
+:param dim_in: int</p>
+<blockquote>
+<div><p>The spatial-wise dimension of input tensor.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_in</strong> – int
+The channels-wise dimension of input tensor.</p></li>
+<li><p><strong>width</strong> – int
+The channel expand factor.</p></li>
+<li><p><strong>kernel_size</strong> – int</p></li>
+<li><p><strong>order</strong> – int
+The number of blocks in stage. The stage means layer sequence in a depth.</p></li>
+<li><p><strong>depth</strong> – int
+The number of pooling layers. Must be 1 less than length of stride.</p></li>
+<li><p><strong>stride</strong> – list or tuple
+The scaling ratio for pooling layers.</p></li>
+<li><p><strong>head_depth</strong> – int
+The number of layers in head.</p></li>
+<li><p><strong>embedding_dims</strong> – int
+The spatial-wise dimension of feature vector (or latent space).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Regressor1D.forward" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.gen_embedding">
+<span class="sig-name descname"><span class="pre">gen_embedding</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Regressor1D.gen_embedding" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.unit_layer">
+<span class="sig-name descname"><span class="pre">unit_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Regressor1D.unit_layer" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.Regressor1D.update_dimension">
+<span class="sig-name descname"><span class="pre">update_dimension</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Regressor1D.update_dimension" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.build.ResNet1D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.build.</span></span><span class="sig-name descname"><span class="pre">ResNet1D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.ResNet1D" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Builder class for resnet model.
+:param num_layers: int</p>
+<blockquote>
+<div><p>The number of entire layers. Support the value in [10, 14, 18, 34, 50, 101, 152].</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_classes</strong> – int
+The number of classes. Same as a channels-wise dimension of the output tensor.</p></li>
+<li><p><strong>num_channels</strong> – int
+The channels-wise dimension of the input tensor.</p></li>
+<li><p><strong>kernel_size</strong> – int</p></li>
+<li><p><strong>dropout_rate</strong> – int</p></li>
+<li><p><strong>width_factor</strong> – int
+The channel expand factor.</p></li>
+<li><p><strong>stride</strong> – list or tuple
+The scaling ratio for pooling layers.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.ResNet1D.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.ResNet1D.forward" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.ResNet1D.make_fe_block">
+<span class="sig-name descname"><span class="pre">make_fe_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.ResNet1D.make_fe_block" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.ResNet1D.make_stem">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">make_stem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.ResNet1D.make_stem" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.ResNet1D.stack_layers">
+<span class="sig-name descname"><span class="pre">stack_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_blocks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.ResNet1D.stack_layers" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.build.Segmentor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.build.</span></span><span class="sig-name descname"><span class="pre">Segmentor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(2,</span> <span class="pre">2,</span> <span class="pre">2,</span> <span class="pre">2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Segmentor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zae_engine.models.build.CNNBase" title="zae_engine.models.build.CNNBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">CNNBase</span></code></a></p>
+<p>Builder class for beat_segmentation which has U-Net-like structure.
+:param ch_in: int</p>
+<blockquote>
+<div><p>The channels-wise dimension of input tensor.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_out</strong> – int
+The channels-wise dimension of output tensor, same as number of classes.</p></li>
+<li><p><strong>width</strong> – int
+The channel expand factor.</p></li>
+<li><p><strong>kernel_size</strong> – int</p></li>
+<li><p><strong>depth</strong> – int
+The number of pooling layers. Must be 1 less than length of stride.</p></li>
+<li><p><strong>order</strong> – int
+The number of blocks in stage. The stage means layer sequence in a depth.</p></li>
+<li><p><strong>stride</strong> – list or tuple
+The scaling ratio for pooling layers.</p></li>
+<li><p><strong>decoding</strong> – bool
+Optional.
+If True, build the decoding part of U-Net.
+If not, replace the decoding part of U-Net to up-sampling.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.build.Segmentor.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.build.Segmentor.forward" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.models.utility">
+<span id="zae-engine-models-utility-module"></span><h2>zae_engine.models.utility module<a class="headerlink" href="#module-zae_engine.models.utility" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.utility.WeightLoader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.utility.</span></span><span class="sig-name descname"><span class="pre">WeightLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.utility.WeightLoader" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.utility.WeightLoader.get">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.utility.WeightLoader.get" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.utility.WeightLoader.set_w">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_w</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.utility.WeightLoader.set_w" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.utility.WeightLoader.state_dict">
+<span class="sig-name descname"><span class="pre">state_dict</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'arrhythmia_classification':</span> <span class="pre">None,</span> <span class="pre">'beat_segmentation':</span> <span class="pre">None,</span> <span class="pre">'peak_regression':</span> <span class="pre">None}</span></em><a class="headerlink" href="#zae_engine.models.utility.WeightLoader.state_dict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.utility.download">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.utility.</span></span><span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bucket_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">access_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'a-key'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">secret_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'s-key'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.utility.download" title="Link to this definition">¶</a></dt>
+<dd><p>Download the weight from the given URL.
+There is no return, but write a file to the device.
+:param endpoint: str
+:param bucket_name: str
+:param model_path: int, optional
+:param access_key:str
+:param secret_key :str</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.utility.initializer">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.utility.</span></span><span class="sig-name descname"><span class="pre">initializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.utility.initializer" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the parameters in model.
+For Linear layer, weights are initialized following normal distribution.
+For BatchNorm layer, weights are initialized following uniform distribution.
+For LayerNorm layer, weights are not initialized.
+For others, weights are initialized following kaiming method based on normal distribution.</p>
+<blockquote>
+<div><p>(<a class="reference external" href="https://arxiv.org/abs/1502.01852v1">https://arxiv.org/abs/1502.01852v1</a>)</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>m</strong> – The member of model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.utility.load_weights">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.utility.</span></span><span class="sig-name descname"><span class="pre">load_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">OrderedDict</span></span></span><a class="headerlink" href="#zae_engine.models.utility.load_weights" title="Link to this definition">¶</a></dt>
+<dd><p>Get model weights from cloud bucket</p>
+<ul class="simple">
+<li><p>model_type = choice one of model type in [sec_10, r_peak or beat]</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.utility.transformer_option">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.utility.</span></span><span class="sig-name descname"><span class="pre">transformer_option</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.models.utility.transformer_option" title="Link to this definition">¶</a></dt>
+<dd><p>Used to protect the weight against the initializer.
+:param m:</p>
+<blockquote>
+<div><p>The member of model.</p>
+</div></blockquote>
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.models" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
