@@ -24,7 +24,7 @@ def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
     """
     lookup = {"N": 1, "A": 2}
 
-    ex_path = os.path.join(os.path.dirname(__file__), "resource/sample_data")
+    ex_path = os.path.join(os.path.dirname(__file__), "sample/sample_data")
     recording = wfdb.rdsamp(ex_path, return_res=32)[0].squeeze()  # nd-array, [2500, ]
     anno = wfdb.rdann(ex_path, "zae")
     samp, sym = anno.sample.tolist(), anno.symbol

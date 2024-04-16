@@ -9,12 +9,11 @@
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
+    <link rel="shortcut icon" href="_static/zaevicon.ico"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
@@ -42,48 +41,20 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">zae_engine.inference package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-zae_engine.inference.beat">zae_engine.inference.beat module</a><ul>
-<li><a class="reference internal" href="#zae_engine.inference.beat.ECG_dataset"><code class="docutils literal notranslate"><span class="pre">ECG_dataset</span></code></a><ul>
-<li><a class="reference internal" href="#zae_engine.inference.beat.ECG_dataset.attr"><code class="docutils literal notranslate"><span class="pre">ECG_dataset.attr()</span></code></a></li>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data_pipeline/zae_engine.data_pipeline.html">zae_engine.data_pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inference/zae_engine.inference.html">zae_engine.inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loss/zae_engine.loss.html">zae_engine.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="measure/zae_engine.measure.html">zae_engine.measure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models/zae_engine.models.html">zae_engine.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nn_night/zae_engine.nn_night.html">zae_engine.nn_night</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operation/zae_engine.operation.html">zae_engine.operation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripts/zae_engine.scripts.html">zae_engine.scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trainer/zae_engine.trainer.html">zae_engine.trainer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils/zae_engine.utils.html">zae_engine.utils</a></li>
 </ul>
-</li>
-<li><a class="reference internal" href="#zae_engine.inference.beat.Trainer_stg1"><code class="docutils literal notranslate"><span class="pre">Trainer_stg1</span></code></a><ul>
-<li><a class="reference internal" href="#zae_engine.inference.beat.Trainer_stg1.test_step"><code class="docutils literal notranslate"><span class="pre">Trainer_stg1.test_step()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.inference.beat.Trainer_stg1.train_step"><code class="docutils literal notranslate"><span class="pre">Trainer_stg1.train_step()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#zae_engine.inference.beat.core"><code class="docutils literal notranslate"><span class="pre">core()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-zae_engine.inference.sec10">zae_engine.inference.sec10 module</a><ul>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.Sec10Collate"><code class="docutils literal notranslate"><span class="pre">Sec10Collate</span></code></a><ul>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.Sec10Collate.chunk"><code class="docutils literal notranslate"><span class="pre">Sec10Collate.chunk()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.Sec10Collate.filtering"><code class="docutils literal notranslate"><span class="pre">Sec10Collate.filtering()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.Sec10Collate.hot"><code class="docutils literal notranslate"><span class="pre">Sec10Collate.hot()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.Sec10Collate.scaling"><code class="docutils literal notranslate"><span class="pre">Sec10Collate.scaling()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.Sec10Collate.wrap"><code class="docutils literal notranslate"><span class="pre">Sec10Collate.wrap()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.Sec10Dataset"><code class="docutils literal notranslate"><span class="pre">Sec10Dataset</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.Sec10Trainer"><code class="docutils literal notranslate"><span class="pre">Sec10Trainer</span></code></a><ul>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.Sec10Trainer.test_step"><code class="docutils literal notranslate"><span class="pre">Sec10Trainer.test_step()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.Sec10Trainer.train_step"><code class="docutils literal notranslate"><span class="pre">Sec10Trainer.train_step()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.core"><code class="docutils literal notranslate"><span class="pre">core()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.filter_signal"><code class="docutils literal notranslate"><span class="pre">filter_signal()</span></code></a></li>
-<li><a class="reference internal" href="#zae_engine.inference.sec10.scale_signal"><code class="docutils literal notranslate"><span class="pre">scale_signal()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-zae_engine.inference">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
+
         </div>
       </div>
     </nav>
@@ -109,50 +80,42 @@
            <div itemprop="articleBody">
              
   <section id="zae-engine-inference-package">
-<h1>zae_engine.inference package<a class="headerlink" href="#zae-engine-inference-package" title="Link to this heading"></a></h1>
+<h1>zae_engine.inference package<a class="headerlink" href="#zae-engine-inference-package" title="Link to this heading">¶</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
 <section id="module-zae_engine.inference.beat">
-<span id="zae-engine-inference-beat-module"></span><h2>zae_engine.inference.beat module<a class="headerlink" href="#module-zae_engine.inference.beat" title="Link to this heading"></a></h2>
+<span id="zae-engine-inference-beat-module"></span><h2>zae_engine.inference.beat module<a class="headerlink" href="#module-zae_engine.inference.beat" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="zae_engine.inference.beat.ECG_dataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.beat.</span></span><span class="sig-name descname"><span class="pre">ECG_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.ECG_dataset" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.beat.</span></span><span class="sig-name descname"><span class="pre">ECG_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.ECG_dataset" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.beat.ECG_dataset.attr">
-<span class="sig-name descname"><span class="pre">attr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.ECG_dataset.attr" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">attr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.ECG_dataset.attr" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="zae_engine.inference.beat.Trainer_stg1">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.beat.</span></span><span class="sig-name descname"><span class="pre">Trainer_stg1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.Trainer_stg1" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.beat.</span></span><span class="sig-name descname"><span class="pre">Trainer_stg1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.Trainer_stg1" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Trainer</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.beat.Trainer_stg1.test_step">
-<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.Trainer_stg1.test_step" title="Link to this definition"></a></dt>
-<dd><p>Unused dummy function yet exist to provide I/O format information.
-The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
-The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
-Note that this function work only in ‘test’ mode.</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.Trainer_stg1.test_step" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.beat.Trainer_stg1.train_step">
-<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.Trainer_stg1.train_step" title="Link to this definition"></a></dt>
-<dd><p>Unused dummy function yet exist to provide I/O format information.
-The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
-The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
-Note that this function work only in ‘train’ mode, hence back() method in nn.Module is necessary.</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.Trainer_stg1.train_step" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="zae_engine.inference.beat.core">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.inference.beat.</span></span><span class="sig-name descname"><span class="pre">core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.core" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">zae_engine.inference.beat.</span></span><span class="sig-name descname"><span class="pre">core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.beat.core" title="Link to this definition">¶</a></dt>
 <dd><p>Detect beat and its class for a given waveform.
 :param x: List of waveforms.
 :return: Onoff matrix consists of [[on, off, cls, rpeak] x beats] for each x.</p>
@@ -160,87 +123,79 @@ Note that this function work only in ‘train’ mode, hence back() method in nn
 
 </section>
 <section id="module-zae_engine.inference.sec10">
-<span id="zae-engine-inference-sec10-module"></span><h2>zae_engine.inference.sec10 module<a class="headerlink" href="#module-zae_engine.inference.sec10" title="Link to this heading"></a></h2>
+<span id="zae-engine-inference-sec10-module"></span><h2>zae_engine.inference.sec10 module<a class="headerlink" href="#module-zae_engine.inference.sec10" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Collate">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">Sec10Collate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('chunk',</span> <span class="pre">'filtering',</span> <span class="pre">'scaling')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.5,</span> <span class="pre">50)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">Sec10Collate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('chunk',</span> <span class="pre">'filtering',</span> <span class="pre">'scaling')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.5,</span> <span class="pre">50)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="zae_engine.data_pipeline.html#zae_engine.data_pipeline.collate.Collate_seq" title="zae_engine.data_pipeline.collate.Collate_seq"><code class="xref py py-class docutils literal notranslate"><span class="pre">Collate_seq</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Collate.chunk">
-<span class="sig-name descname"><span class="pre">chunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate.chunk" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">chunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate.chunk" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Collate.filtering">
-<span class="sig-name descname"><span class="pre">filtering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandpass_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate.filtering" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">filtering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandpass_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate.filtering" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Collate.hot">
-<span class="sig-name descname"><span class="pre">hot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate.hot" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">hot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate.hot" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Collate.scaling">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scaling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate.scaling" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scaling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate.scaling" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Collate.wrap">
-<span class="sig-name descname"><span class="pre">wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate.wrap" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Collate.wrap" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Dataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">Sec10Dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecg_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Dataset" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">Sec10Dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecg_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Dataset" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Trainer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">Sec10Trainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Trainer" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">Sec10Trainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Trainer" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Trainer</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Trainer.test_step">
-<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Trainer.test_step" title="Link to this definition"></a></dt>
-<dd><p>Unused dummy function yet exist to provide I/O format information.
-The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
-The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
-Note that this function work only in ‘test’ mode.</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Trainer.test_step" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Trainer.train_step">
-<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Trainer.train_step" title="Link to this definition"></a></dt>
-<dd><p>Unused dummy function yet exist to provide I/O format information.
-The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
-The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
-Note that this function work only in ‘train’ mode, hence back() method in nn.Module is necessary.</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Trainer.train_step" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.core">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.core" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.core" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.filter_signal">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">filter_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">btype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bandpass'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.filter_signal" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">filter_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">btype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bandpass'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.filter_signal" title="Link to this definition">¶</a></dt>
 <dd><p>filter ecg signal</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.scale_signal">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">scale_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.scale_signal" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">scale_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zae_engine.inference.sec10.scale_signal" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>
 <section id="module-zae_engine.inference">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.inference" title="Link to this heading"></a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.inference" title="Link to this heading">¶</a></h2>
 </section>
 </section>
 

@@ -1,11 +1,11 @@
-zae\_engine package
+zae\_engine
 ===================
 
 Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    zae_engine.data_pipeline
    zae_engine.inference
