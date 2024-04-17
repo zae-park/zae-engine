@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import Any, Callable, List, Optional, Iterable, Union
 
 import torch
 import torch.nn as nn
@@ -10,45 +10,46 @@ from blocks.resblock import BasicBlock, Bottleneck
 
 class ResNet(nn.Module):
     def __init__(
-        self,
-        block: Type[Union[BasicBlock, Bottleneck]],
-        layers: List[int],
-        num_classes: int = 1000,
-        zero_init_residual: bool = False,
-        groups: int = 1,
-        width_per_group: int = 64,
-        replace_stride_with_dilation: Optional[List[bool]] = None,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
+            self,
+            block: Union[BasicBlock, Bottleneck],
+            ch_in: int,
+            width: int,
+            n_cls: int,
+            layers: list[int],
+            groups: int = 1,
+            # zero_init_residual: bool = False,
+            # replace_stride_with_dilation: Optional[list[bool]] = None,
+            norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
     ) -> None:
         super().__init__()
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
-        self._norm_layer = norm_layer
 
-        self.inplanes = 64
-        self.dilation = 1
-        if replace_stride_with_dilation is None:
-            # each element in the tuple indicates if we should replace
-            # the 2x2 stride with a dilated convolution instead
-            replace_stride_with_dilation = [False, False, False]
-        if len(replace_stride_with_dilation) != 3:
-            raise ValueError(
-                "replace_stride_with_dilation should be None "
-                f"or a 3-element tuple, got {replace_stride_with_dilation}"
-            )
+        self.ch_in = ch_in
+        self.width = width
+        self.n_cls = n_cls
+        self.layers = layers
+        self.norm_layer = norm_layer
+
         self.groups = groups
-        self.base_width = width_per_group
-        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False)
-        self.bn1 = norm_layer(self.inplanes)
-        self.relu = nn.ReLU(inplace=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2, dilate=replace_stride_with_dilation[0])
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2, dilate=replace_stride_with_dilation[1])
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2, dilate=replace_stride_with_dilation[2])
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        # self.dilation = 1
+        # self.base_width = width_per_group
 
+        self.stem = self._make_stem(ch_in=ch_in, ch_out=width, kernel_size=7)
+        stages = []
+        for i, l in enumerate(layers):
+            stages.append(self._make_layer(blocks=[block] * l, ch_in=width * (2**i), stride=2, dilate=bool(i)))
+        self.stages = nn.Sequential(*stages)
+
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc = nn.Linear(width * 8 * block.expansion, n_cls)
+
+        self.initializer()
+        # Zero-initialize the last BN in each residual branch,
+        # so that the residual branch starts with zeros, and each residual block behaves like an identity.
+        # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
+        # if zero_init_residual:
+        #     self.zero_initializer()
+
+    def initializer(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
@@ -56,21 +57,24 @@ class ResNet(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-        # Zero-initialize the last BN in each residual branch,
-        # so that the residual branch starts with zeros, and each residual block behaves like an identity.
-        # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
-        if zero_init_residual:
-            for m in self.modules():
-                if isinstance(m, Bottleneck) and m.bn3.weight is not None:
-                    nn.init.constant_(m.bn3.weight, 0)  # type: ignore[arg-type]
-                elif isinstance(m, BasicBlock) and m.bn2.weight is not None:
-                    nn.init.constant_(m.bn2.weight, 0)  # type: ignore[arg-type]
+    def zero_initializer(self):
+        for m in self.modules():
+            if isinstance(m, Bottleneck) and m.bn3.weight is not None:
+                nn.init.constant_(m.bn3.weight, 0)  # type: ignore[arg-type]
+            elif isinstance(m, BasicBlock) and m.bn2.weight is not None:
+                nn.init.constant_(m.bn2.weight, 0)  # type: ignore[arg-type]
+
+    def _make_stem(self, ch_in: int, ch_out: int, kernel_size: Union[int, tuple[int, int]]):
+        conv = nn.Conv2d(ch_in, ch_out, kernel_size=kernel_size, stride=2, padding='same', bias=False)
+        norm = self.norm_layer(self.ch_in)
+        act = nn.ReLU()
+        pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        return nn.Sequential(conv, norm, act, pool)
 
     def _make_layer(
         self,
-        block: Type[Union[BasicBlock, Bottleneck]],
-        planes: int,
-        blocks: int,
+        blocks: Iterable[BasicBlock | Bottleneck],
+        ch_in: int,
         stride: int = 1,
         dilate: bool = False,
     ) -> nn.Sequential:
@@ -80,19 +84,22 @@ class ResNet(nn.Module):
         if dilate:
             self.dilation *= stride
             stride = 1
-        if stride != 1 or self.inplanes != planes * block.expansion:
+        if stride != 1 or self.inplanes != ch_in * block.expansion:
             downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, planes * block.expansion, stride=stride),
-                norm_layer(planes * block.expansion),
+                nn.Conv2d(self.inplanes, ch_in * block.expansion, kernel_size=1, stride=stride),
+                norm_layer(ch_in * block.expansion),
             )
 
         layers = []
+        # for 1st block
         layers.append(
             block(
-                self.inplanes, planes, stride, downsample, self.groups, self.base_width, previous_dilation, norm_layer
+                self.inplanes, ch_in, stride, downsample, self.groups, self.base_width, previous_dilation, norm_layer
             )
         )
         self.inplanes = planes * block.expansion
+
+        # from 2nd block to last
         for _ in range(1, blocks):
             layers.append(
                 block(
