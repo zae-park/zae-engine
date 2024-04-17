@@ -31,7 +31,6 @@ zae-engine은 딥러닝 프로젝트의 quick start를 돕기 위한 파이썬 �
    models/zae_engine.models.rst
    nn_night/zae_engine.nn_night.rst
    operation/zae_engine.operation.rst
-   scripts/zae_engine.scripts.rst
    trainer/zae_engine.trainer.rst
    utils/zae_engine.utils.rst
 
