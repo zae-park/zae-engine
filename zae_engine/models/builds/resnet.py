@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Callable, List, Optional, Iterable, Union
+from typing import Any, Callable, List, Type, Iterable, Union
 
 import torch
 import torch.nn as nn
@@ -11,12 +11,13 @@ from blocks.resblock import BasicBlock, Bottleneck
 class ResNet(nn.Module):
     def __init__(
         self,
-        block: Union[BasicBlock, Bottleneck],
+        block: Type[Union[BasicBlock, Bottleneck]],
         ch_in: int,
         width: int,
         n_cls: int,
         layers: list[int],
         groups: int = 1,
+        dilation: int = 1,
         # zero_init_residual: bool = False,
         # replace_stride_with_dilation: Optional[list[bool]] = None,
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
@@ -30,7 +31,7 @@ class ResNet(nn.Module):
         self.norm_layer = norm_layer
 
         self.groups = groups
-        # self.dilation = 1
+        self.dilation = dilation  # TODO: apply atrous convolution
         # self.base_width = width_per_group
 
         # make 'Stem' layer to receive input image and extract features with large kernel size as 7
@@ -39,7 +40,7 @@ class ResNet(nn.Module):
         # maks 'Body' layer with given 'block'. Expect that the 'block' include residual connection.
         body = []
         for i, l in enumerate(layers):
-            body.append(self._make_body(blocks=[block] * l, ch_in=width * (2**i), stride=2, dilate=bool(i)))
+            body.append(self._make_body(blocks=[block] * l, ch_in=width * (2**i), stride=2))
         self.body = nn.Sequential(*body)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
@@ -68,7 +69,7 @@ class ResNet(nn.Module):
                 nn.init.constant_(m.bn2.weight, 0)  # type: ignore[arg-type]
 
     def _make_stem(self, ch_in: int, ch_out: int, kernel_size: Union[int, tuple[int, int]]):
-        conv = nn.Conv2d(ch_in, ch_out, kernel_size=kernel_size, stride=2, padding="same", bias=False)
+        conv = nn.Conv2d(ch_in, ch_out, kernel_size=kernel_size, stride=2, padding=3, bias=False)
         norm = self.norm_layer(self.ch_in)
         act = nn.ReLU()
         pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -79,38 +80,38 @@ class ResNet(nn.Module):
         blocks: Iterable[BasicBlock | Bottleneck],
         ch_in: int,
         stride: int = 1,
-        dilate: bool = False,
     ) -> nn.Sequential:
-        norm_layer = self._norm_layer
-        downsample = None
-        previous_dilation = self.dilation
 
-        # if dilate is true,
-        if dilate:
-            self.dilation *= stride
-            stride = 1
-        if stride != 1 or self.width != ch_in * block.expansion:
+        norm_layer = self.norm_layer
+        downsample = None
+
+        if stride != 1:
             downsample = nn.Sequential(
-                nn.Conv2d(self.inplanes, ch_in * block.expansion, kernel_size=1, stride=stride),
-                norm_layer(ch_in * block.expansion),
+                nn.Conv2d(ch_in * 2, ch_in * 2, kernel_size=1, stride=stride),
+                norm_layer(ch_in * 2),
             )
 
         layers = []
         # for 1st block
+        block = blocks[0]
         layers.append(
-            block(self.inplanes, ch_in, stride, downsample, self.groups, self.base_width, previous_dilation, norm_layer)
+            block(
+                ch_in,
+                ch_in * 2,
+                stride=stride,
+                downsample=downsample,
+                groups=self.groups,
+                norm_layer=norm_layer,
+            )
         )
-        self.inplanes = planes * block.expansion
 
         # from 2nd block to last
         for block in blocks[1:]:
             layers.append(
                 block(
                     ch_in,
-                    planes,
+                    ch_in * 2,
                     groups=self.groups,
-                    base_width=self.base_width,
-                    dilation=self.dilation,
                     norm_layer=norm_layer,
                 )
             )
@@ -137,3 +138,10 @@ class ResNet(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         return self._forward_impl(x)
+
+
+if __name__ == "__main__":
+    resnet = ResNet(block=BasicBlock, ch_in=3, width=16, n_cls=10, layers=[2, 2, 2, 2])
+    resnet = ResNet(block=Bottleneck, ch_in=6, width=16, n_cls=12, layers=[2, 3, 6, 2])
+    resnet = ResNet(block=BasicBlock, ch_in=3, width=16, n_cls=10, layers=[2, 2, 2, 2], groups=2)
+    resnet = ResNet(block=BasicBlock, ch_in=3, width=16, n_cls=10, layers=[2, 2, 2, 2], groups=2, dilation=2)
