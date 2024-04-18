@@ -7,8 +7,6 @@ from torch import Tensor
 
 
 class BasicBlock(nn.Module):
-    expansion: int = 1
-
     def __init__(
         self,
         ch_in: int,
@@ -16,23 +14,19 @@ class BasicBlock(nn.Module):
         stride: int = 1,
         downsample: Optional[nn.Module] = None,
         groups: int = 1,
-        base_width: int = 64,
         dilation: int = 1,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
+        norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
     ) -> None:
         super().__init__()
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
-        if groups != 1 or base_width != 64:
-            raise ValueError("BasicBlock only supports groups=1 and base_width=64")
         if dilation > 1:
             raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+        if (ch_in % groups) == (ch_out % groups) == 0:
+            raise ValueError("Group must be common divisor of ch_in and ch_out.")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
-        # self.conv1 = conv3x3(ch_in, ch_out, stride)
         self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=1)
         self.bn1 = norm_layer(ch_out)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=1)
+        self.conv2 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=1, groups=groups)
         self.bn2 = norm_layer(ch_out)
         self.downsample = downsample
         self.stride = stride
@@ -63,30 +57,30 @@ class Bottleneck(nn.Module):
     # This variant is also known as ResNet V1.5 and improves accuracy according to
     # https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch.
 
-    expansion: int = 4
-
     def __init__(
         self,
         ch_in: int,
         ch_out: int,
         stride: int = 1,
         downsample: Optional[nn.Module] = None,
+        expansion: int = 4,
         groups: int = 1,
-        base_width: int = 64,
         dilation: int = 1,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
+        norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
     ) -> None:
         super().__init__()
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
-        width = int(ch_out * (base_width / 64.0)) * groups
+        if (ch_in % groups) == (ch_out % groups) == 0:
+            raise ValueError("Group must be common divisor of ch_in and ch_out.")
+
+        width = (ch_out // expansion) * groups
+        self.expansion = expansion
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         self.conv1 = nn.Conv2d(ch_in, width, kernel_size=1, stride=1)
         self.bn1 = norm_layer(width)
         self.conv2 = nn.Conv2d(width, width, kernel_size=3, stride=stride, groups=groups, dilation=dilation)
         self.bn2 = norm_layer(width)
-        self.conv3 = nn.Conv2d(width, ch_out * self.expansion)
-        self.bn3 = norm_layer(ch_out * self.expansion)
+        self.conv3 = nn.Conv2d(width, ch_out * expansion)
+        self.bn3 = norm_layer(ch_out * expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
