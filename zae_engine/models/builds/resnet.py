@@ -10,16 +10,16 @@ from blocks.resblock import BasicBlock, Bottleneck
 
 class ResNet(nn.Module):
     def __init__(
-            self,
-            block: Union[BasicBlock, Bottleneck],
-            ch_in: int,
-            width: int,
-            n_cls: int,
-            layers: list[int],
-            groups: int = 1,
-            # zero_init_residual: bool = False,
-            # replace_stride_with_dilation: Optional[list[bool]] = None,
-            norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
+        self,
+        block: Union[BasicBlock, Bottleneck],
+        ch_in: int,
+        width: int,
+        n_cls: int,
+        layers: list[int],
+        groups: int = 1,
+        # zero_init_residual: bool = False,
+        # replace_stride_with_dilation: Optional[list[bool]] = None,
+        norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
     ) -> None:
         super().__init__()
 
@@ -33,11 +33,14 @@ class ResNet(nn.Module):
         # self.dilation = 1
         # self.base_width = width_per_group
 
+        # make 'Stem' layer to receive input image and extract features with large kernel size as 7
         self.stem = self._make_stem(ch_in=ch_in, ch_out=width, kernel_size=7)
-        stages = []
+
+        # maks 'Body' layer with given 'block'. Expect that the 'block' include residual connection.
+        body = []
         for i, l in enumerate(layers):
-            stages.append(self._make_layer(blocks=[block] * l, ch_in=width * (2**i), stride=2, dilate=bool(i)))
-        self.stages = nn.Sequential(*stages)
+            body.append(self._make_body(blocks=[block] * l, ch_in=width * (2**i), stride=2, dilate=bool(i)))
+        self.body = nn.Sequential(*body)
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(width * 8 * block.expansion, n_cls)
@@ -65,13 +68,13 @@ class ResNet(nn.Module):
                 nn.init.constant_(m.bn2.weight, 0)  # type: ignore[arg-type]
 
     def _make_stem(self, ch_in: int, ch_out: int, kernel_size: Union[int, tuple[int, int]]):
-        conv = nn.Conv2d(ch_in, ch_out, kernel_size=kernel_size, stride=2, padding='same', bias=False)
+        conv = nn.Conv2d(ch_in, ch_out, kernel_size=kernel_size, stride=2, padding="same", bias=False)
         norm = self.norm_layer(self.ch_in)
         act = nn.ReLU()
         pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         return nn.Sequential(conv, norm, act, pool)
 
-    def _make_layer(
+    def _make_body(
         self,
         blocks: Iterable[BasicBlock | Bottleneck],
         ch_in: int,
@@ -81,10 +84,12 @@ class ResNet(nn.Module):
         norm_layer = self._norm_layer
         downsample = None
         previous_dilation = self.dilation
+
+        # if dilate is true,
         if dilate:
             self.dilation *= stride
             stride = 1
-        if stride != 1 or self.inplanes != ch_in * block.expansion:
+        if stride != 1 or self.width != ch_in * block.expansion:
             downsample = nn.Sequential(
                 nn.Conv2d(self.inplanes, ch_in * block.expansion, kernel_size=1, stride=stride),
                 norm_layer(ch_in * block.expansion),
@@ -93,17 +98,15 @@ class ResNet(nn.Module):
         layers = []
         # for 1st block
         layers.append(
-            block(
-                self.inplanes, ch_in, stride, downsample, self.groups, self.base_width, previous_dilation, norm_layer
-            )
+            block(self.inplanes, ch_in, stride, downsample, self.groups, self.base_width, previous_dilation, norm_layer)
         )
         self.inplanes = planes * block.expansion
 
         # from 2nd block to last
-        for _ in range(1, blocks):
+        for block in blocks[1:]:
             layers.append(
                 block(
-                    self.inplanes,
+                    ch_in,
                     planes,
                     groups=self.groups,
                     base_width=self.base_width,
