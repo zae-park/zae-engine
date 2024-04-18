@@ -7,6 +7,8 @@ from torch import Tensor
 
 
 class BasicBlock(nn.Module):
+    expansion: int = 1
+
     def __init__(
         self,
         ch_in: int,
@@ -20,8 +22,8 @@ class BasicBlock(nn.Module):
         super().__init__()
         if dilation > 1:
             raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
-        if (ch_in % groups) == (ch_out % groups) == 0:
-            raise ValueError("Group must be common divisor of ch_in and ch_out.")
+        assert (ch_in % groups) == (ch_out % groups) == 0, "Group must be common divisor of ch_in and ch_out."
+
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=1)
         self.bn1 = norm_layer(ch_out)
@@ -49,6 +51,8 @@ class BasicBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
+    expansion: int = 4
+
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
     # while original implementation places the stride at the first 1x1 convolution(self.conv1)
     # according to "Deep residual learning for image recognition" https://arxiv.org/abs/1512.03385.
@@ -61,24 +65,22 @@ class Bottleneck(nn.Module):
         ch_out: int,
         stride: int = 1,
         downsample: Optional[nn.Module] = None,
-        expansion: int = 4,
         groups: int = 1,
         dilation: int = 1,
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
     ) -> None:
         super().__init__()
-        if (ch_in % groups) == (ch_out % groups) == 0:
-            raise ValueError("Group must be common divisor of ch_in and ch_out.")
+        assert (ch_in % groups) == (ch_out % groups) == 0, "Group must be common divisor of ch_in and ch_out."
 
-        width = (ch_out // expansion) * groups
-        self.expansion = expansion
+        width = (ch_out // self.expansion) * groups
+        self.expansion = self.expansion
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         self.conv1 = nn.Conv2d(ch_in, width, kernel_size=1, stride=1)
         self.bn1 = norm_layer(width)
         self.conv2 = nn.Conv2d(width, width, kernel_size=3, stride=stride, groups=groups, dilation=dilation)
         self.bn2 = norm_layer(width)
-        self.conv3 = nn.Conv2d(width, ch_out * expansion)
-        self.bn3 = norm_layer(ch_out * expansion)
+        self.conv3 = nn.Conv2d(width, ch_out * self.expansion, kernel_size=1, stride=1)
+        self.bn3 = norm_layer(ch_out * self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
