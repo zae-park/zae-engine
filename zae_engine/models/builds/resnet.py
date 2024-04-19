@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from blocks.resblock import BasicBlock, Bottleneck
+from .blocks.resblock import BasicBlock, Bottleneck
 
 
 class ResNet(nn.Module):
