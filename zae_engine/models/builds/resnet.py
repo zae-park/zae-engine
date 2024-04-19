@@ -23,7 +23,7 @@ class ResNet(nn.Module):
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
     ) -> None:
         super().__init__()
-
+        self.block = block
         self.ch_in = ch_in
         self.width = width
         self.n_cls = n_cls
@@ -40,7 +40,9 @@ class ResNet(nn.Module):
         # maks 'Body' layer with given 'block'. Expect that the 'block' include residual connection.
         body = []
         for i, l in enumerate(layers):
-            body.append(self._make_body(blocks=[block] * l, ch_in=width * (2**i), stride=2))
+            ch_o = width * (2**i)
+            ch_i = ch_o if i == 0 else ch_o * self.block.expansion // 2
+            body.append(self._make_body(blocks=[block] * l, ch_in=ch_i, ch_out=ch_o, stride=2))
         self.body = nn.Sequential(*body)
 
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
@@ -70,7 +72,7 @@ class ResNet(nn.Module):
 
     def _make_stem(self, ch_in: int, ch_out: int, kernel_size: Union[int, tuple[int, int]]):
         conv = nn.Conv2d(ch_in, ch_out, kernel_size=kernel_size, stride=2, padding=3, bias=False)
-        norm = self.norm_layer(self.ch_in)
+        norm = self.norm_layer(ch_out)
         act = nn.ReLU()
         pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         return nn.Sequential(conv, norm, act, pool)
@@ -79,6 +81,7 @@ class ResNet(nn.Module):
         self,
         blocks: Union[List[Type[BasicBlock | Bottleneck]], tuple[Type[BasicBlock | Bottleneck]]],
         ch_in: int,
+        ch_out: int,
         stride: int = 1,
     ) -> nn.Sequential:
 
@@ -87,8 +90,8 @@ class ResNet(nn.Module):
 
         if stride != 1:
             downsample = nn.Sequential(
-                nn.Conv2d(ch_in * 2, ch_in * 2, kernel_size=1, stride=stride),
-                norm_layer(ch_in * 2),
+                nn.Conv2d(ch_in, ch_out * self.block.expansion, kernel_size=1, stride=stride),
+                norm_layer(ch_out * self.block.expansion),
             )
 
         layers = []
@@ -97,7 +100,7 @@ class ResNet(nn.Module):
         layers.append(
             block(
                 ch_in,
-                ch_in * 2,
+                ch_out,
                 stride=stride,
                 downsample=downsample,
                 groups=self.groups,
@@ -109,8 +112,8 @@ class ResNet(nn.Module):
         for block in blocks[1:]:
             layers.append(
                 block(
-                    ch_in,
-                    ch_in * 2,
+                    ch_out * self.block.expansion,
+                    ch_out,
                     groups=self.groups,
                     norm_layer=norm_layer,
                 )
