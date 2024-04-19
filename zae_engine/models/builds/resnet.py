@@ -43,7 +43,7 @@ class ResNet(nn.Module):
             body.append(self._make_body(blocks=[block] * l, ch_in=width * (2**i), stride=2))
         self.body = nn.Sequential(*body)
 
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(width * 8 * block.expansion, n_cls)
 
         self.initializer()
@@ -77,7 +77,7 @@ class ResNet(nn.Module):
 
     def _make_body(
         self,
-        blocks: Iterable[BasicBlock | Bottleneck],
+        blocks: Union[List[Type[BasicBlock | Bottleneck]], tuple[Type[BasicBlock | Bottleneck]]],
         ch_in: int,
         stride: int = 1,
     ) -> nn.Sequential:
@@ -130,7 +130,7 @@ class ResNet(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
 
-        x = self.avgpool(x)
+        x = self.pool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
 
