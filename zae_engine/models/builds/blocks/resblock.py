@@ -28,7 +28,7 @@ class BasicBlock(nn.Module):
         self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=1)
         self.bn1 = norm_layer(ch_out)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=1, groups=groups)
+        self.conv2 = nn.Conv2d(ch_out, ch_out, kernel_size=3, stride=1, groups=groups)
         self.bn2 = norm_layer(ch_out)
         self.downsample = downsample
         self.stride = stride
@@ -72,12 +72,11 @@ class Bottleneck(nn.Module):
         super().__init__()
         assert (ch_in % groups) == (ch_out % groups) == 0, "Group must be common divisor of ch_in and ch_out."
 
-        width = (ch_out // self.expansion) * groups
-        self.expansion = self.expansion
+        width = ch_out * groups
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = nn.Conv2d(ch_in, width, kernel_size=1, stride=1)
-        self.bn1 = norm_layer(width)
-        self.conv2 = nn.Conv2d(width, width, kernel_size=3, stride=stride, groups=groups, dilation=dilation)
+        self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=1, stride=1)
+        self.bn1 = norm_layer(ch_out)
+        self.conv2 = nn.Conv2d(ch_out, width, kernel_size=3, stride=stride, groups=groups, dilation=dilation)
         self.bn2 = norm_layer(width)
         self.conv3 = nn.Conv2d(width, ch_out * self.expansion, kernel_size=1, stride=1)
         self.bn3 = norm_layer(ch_out * self.expansion)
