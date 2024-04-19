@@ -74,8 +74,7 @@ def resnet50(pretrained=False):
     return model
 
 
-@resnet_deco(101)
-def resnet101(pretrained=False, **kwargs):
+def resnet101(pretrained=False):
     model = ResNet(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **res_map[101])
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet101_Weights.IMAGENET1K_V1.get_state_dict(True)
@@ -84,9 +83,8 @@ def resnet101(pretrained=False, **kwargs):
     return model
 
 
-@resnet_deco(152)
-def resnet152(pretrained=False, **kwargs):
-    model = ResNet(block=kwargs["block"], ch_in=3, width=64, n_cls=1000, layers=kwargs["layers"], groups=1, dilation=1)
+def resnet152(pretrained=False):
+    model = ResNet(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **res_map[152])
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet152_Weights.IMAGENET1K_V1.get_state_dict(True)
         dst_weight = weight_mapper(src_weight, model.state_dict())
