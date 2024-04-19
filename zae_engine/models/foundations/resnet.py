@@ -1,23 +1,15 @@
+from importlib import import_module
 from typing import Type, OrderedDict
-
-from torchvision.models import (
-    Weights,
-    ResNet18_Weights,
-    ResNet34_Weights,
-    ResNet50_Weights,
-    ResNet101_Weights,
-    ResNet152_Weights,
-)
 
 from ..builds.resnet import ResNet
 from ..builds.blocks.resblock import BasicBlock, Bottleneck
 
 res_map = {
-    18: {"block": BasicBlock, "layers": [2, 2, 2, 2], "weight": ResNet18_Weights.IMAGENET1K_V1},
-    34: {"block": BasicBlock, "layers": [3, 4, 6, 3], "weight": ResNet34_Weights.IMAGENET1K_V1},
-    50: {"block": Bottleneck, "layers": [3, 4, 6, 3], "weight": ResNet50_Weights.IMAGENET1K_V1},
-    101: {"block": Bottleneck, "layers": [3, 4, 23, 3], "weight": ResNet101_Weights.IMAGENET1K_V1},
-    152: {"block": Bottleneck, "layers": [3, 8, 36, 3], "weight": ResNet152_Weights.IMAGENET1K_V1},
+    18: {"block": BasicBlock, "layers": [2, 2, 2, 2]},
+    34: {"block": BasicBlock, "layers": [3, 4, 6, 3]},
+    50: {"block": Bottleneck, "layers": [3, 4, 6, 3]},
+    101: {"block": Bottleneck, "layers": [3, 4, 23, 3]},
+    152: {"block": Bottleneck, "layers": [3, 8, 36, 3]},
 }
 
 
@@ -33,35 +25,62 @@ def resnet_deco(n):
     return wrapper
 
 
-@resnet_deco(18)
-def resnet18(pretrained=False, **kwargs):
-    model = ResNet(block=kwargs["block"], ch_in=3, width=64, n_cls=1000, layers=kwargs["layers"], groups=1, dilation=1)
+def weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [OrderedDict | dict]):
+
+    for k, v in src_weight.items():
+
+        if k.startswith("layer"):
+            k = (
+                k.replace("layer1", "body.0")
+                .replace("layer2", "body.1")
+                .replace("layer3", "body.2")
+                .replace("layer4", "body.3")
+            )
+        elif k.startswith("fc"):
+            pass
+        else:
+            k = "stem." + k
+            k = k.replace("conv1", "0").replace("bn1", "1")
+
+        dst_weight[k] = v
+
+    return dst_weight
+
+
+def resnet18(pretrained=False):
+    model = ResNet(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **res_map[18])
     if pretrained:
-        model.load_state_dict(kwargs["weight"].get_state_dict(True))
+        src_weight = import_module("torchvision.models").ResNet18_Weights.IMAGENET1K_V1.get_state_dict(True)
+        dst_weight = weight_mapper(src_weight, model.state_dict())
+        model.load_state_dict(dst_weight)
     return model
 
 
-@resnet_deco(34)
-def resnet34(pretrained=False, **kwargs):
-    model = ResNet(block=kwargs["block"], ch_in=3, width=64, n_cls=1000, layers=kwargs["layers"], groups=1, dilation=1)
+def resnet34(pretrained=False):
+    model = ResNet(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **res_map[34])
     if pretrained:
-        model.load_state_dict(kwargs["weight"].get_state_dict(True))
+        src_weight = import_module("torchvision.models").ResNet34_Weights.IMAGENET1K_V1.get_state_dict(True)
+        dst_weight = weight_mapper(src_weight, model.state_dict())
+        model.load_state_dict(dst_weight)
     return model
 
 
-@resnet_deco(50)
-def resnet50(pretrained=False, **kwargs):
-    model = ResNet(block=kwargs["block"], ch_in=3, width=64, n_cls=1000, layers=kwargs["layers"], groups=1, dilation=1)
+def resnet50(pretrained=False):
+    model = ResNet(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **res_map[50])
     if pretrained:
-        model.load_state_dict(kwargs["weight"].get_state_dict(True))
+        src_weight = import_module("torchvision.models").ResNet50_Weights.IMAGENET1K_V1.get_state_dict(True)
+        dst_weight = weight_mapper(src_weight, model.state_dict())
+        model.load_state_dict(dst_weight)
     return model
 
 
 @resnet_deco(101)
 def resnet101(pretrained=False, **kwargs):
-    model = ResNet(block=kwargs["block"], ch_in=3, width=64, n_cls=1000, layers=kwargs["layers"], groups=1, dilation=1)
+    model = ResNet(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **res_map[101])
     if pretrained:
-        model.load_state_dict(kwargs["weight"].get_state_dict(True))
+        src_weight = import_module("torchvision.models").ResNet101_Weights.IMAGENET1K_V1.get_state_dict(True)
+        dst_weight = weight_mapper(src_weight, model.state_dict())
+        model.load_state_dict(dst_weight)
     return model
 
 
@@ -69,5 +88,7 @@ def resnet101(pretrained=False, **kwargs):
 def resnet152(pretrained=False, **kwargs):
     model = ResNet(block=kwargs["block"], ch_in=3, width=64, n_cls=1000, layers=kwargs["layers"], groups=1, dilation=1)
     if pretrained:
-        model.load_state_dict(kwargs["weight"].get_state_dict(True))
+        src_weight = import_module("torchvision.models").ResNet152_Weights.IMAGENET1K_V1.get_state_dict(True)
+        dst_weight = weight_mapper(src_weight, model.state_dict())
+        model.load_state_dict(dst_weight)
     return model
