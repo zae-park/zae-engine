@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 
 from ..trainer import Trainer
 from ..data_pipeline.collate import Collate_seq
-from ..models.builds.legacy import CNNBase
+from ..models.builds.legacy import CNNBaseLegacy
 
 
 def core(x: np.ndarray, batch_size: int):
@@ -19,7 +19,7 @@ def core(x: np.ndarray, batch_size: int):
     dataset = Sec10Dataset(x)
     ex_loader1 = DataLoader(dataset=dataset, batch_size=batch_size, collate_fn=collate.wrap(), shuffle=False)
 
-    model = CNNBase(1, 9, 7, 2, 1)
+    model = CNNBaseLegacy(1, 9, 7, 2, 1)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     trainer = Sec10Trainer(model, device, "test")
     trainer.inference(ex_loader1)
