@@ -1,17 +1,14 @@
-import sys
-from typing import Optional, Union, Tuple, List, Iterable
+from typing import Union, Tuple, Iterable
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn import ModuleList
 
-from zae_engine import nn_night as nnn
-from zae_engine.models.utility import transformer_option
+from ... import nn_night as nnn
 
 
-class CNNBase(nn.Module):
+class CNNBaseLegacy(nn.Module):
     """
     The interface class using Convolutional Layers.
     """
@@ -26,7 +23,7 @@ class CNNBase(nn.Module):
         order: int,
         stride: list or tuple,
     ):
-        super(CNNBase, self).__init__()
+        super(CNNBaseLegacy, self).__init__()
         self.ch_in = ch_in
         self.ch_out = ch_out
         self.width = width
@@ -156,7 +153,7 @@ class CNNBase(nn.Module):
         return self._conv(ch_in, ch_out, kernel_size=kernel, padding="same")
 
 
-class Segmentor(CNNBase):
+class Segmentor(CNNBaseLegacy):
     """
     Builder class for beat_segmentation which has U-Net-like structure.
     :param ch_in: int
@@ -244,7 +241,7 @@ class Segmentor(CNNBase):
         return out
 
 
-class Regressor1D(CNNBase):
+class Regressor1D(CNNBaseLegacy):
     """
     Builder class for rpeak_regression which has cascade CNN structure.
     :param dim_in: int
@@ -503,14 +500,16 @@ class ResNet1D(nn.Module):
             [
                 nn.BatchNorm1d(channel_in),
                 relu,
-                nn.Conv1d(
-                    channel_in,
-                    channel_out,
-                    kernel_size=(kernel_size,),
-                    stride=stride,
-                )
-                if stride != 1
-                else nn.Conv1d(channel_in, channel_out, (kernel_size,), padding="same"),
+                (
+                    nn.Conv1d(
+                        channel_in,
+                        channel_out,
+                        kernel_size=(kernel_size,),
+                        stride=stride,
+                    )
+                    if stride != 1
+                    else nn.Conv1d(channel_in, channel_out, (kernel_size,), padding="same")
+                ),
                 nn.BatchNorm1d(channel_out),
                 relu,
                 nn.Dropout(dropout_rate),
@@ -520,9 +519,11 @@ class ResNet1D(nn.Module):
 
         shortcut = nn.Sequential(
             nn.MaxPool1d(stride) if stride != 1 else nn.Identity(),
-            nn.Conv1d(channel_in, channel_out, kernel_size=(1,))
-            if channel_in != channel_out and self.block_type == "conv"
-            else nn.Identity(),
+            (
+                nn.Conv1d(channel_in, channel_out, kernel_size=(1,))
+                if channel_in != channel_out and self.block_type == "conv"
+                else nn.Identity()
+            ),
         )
 
         return fe_block, shortcut

@@ -1,14 +1,13 @@
-from functools import partial
-from typing import Any, Callable, List, Type, Iterable, Union
+from typing import Callable, List, Type, Union
 
 import torch
 import torch.nn as nn
 from torch import Tensor
 
-from .blocks.resblock import BasicBlock, Bottleneck
+from ..blocks.resblock import BasicBlock, Bottleneck
 
 
-class ResNet(nn.Module):
+class CNNBase(nn.Module):
     def __init__(
         self,
         block: Type[Union[BasicBlock, Bottleneck]],
@@ -141,10 +140,3 @@ class ResNet(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         return self._forward_impl(x)
-
-
-if __name__ == "__main__":
-    resnet = ResNet(block=BasicBlock, ch_in=3, width=16, n_cls=10, layers=[2, 2, 2, 2])
-    resnet = ResNet(block=Bottleneck, ch_in=6, width=16, n_cls=12, layers=[2, 3, 6, 2])
-    resnet = ResNet(block=BasicBlock, ch_in=3, width=16, n_cls=10, layers=[2, 2, 2, 2], groups=2)
-    resnet = ResNet(block=BasicBlock, ch_in=3, width=16, n_cls=10, layers=[2, 2, 2, 2], groups=2, dilation=2)

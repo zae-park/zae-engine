@@ -10,9 +10,8 @@ import numpy as np
 from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
 
-from zae_engine.models.benchmark import beat_segmentation
+from zae_engine.models.foundations.benchmark import beat_segmentation
 from zae_engine.trainer import Trainer
-from zae_engine.trainer.utils import CallbackInterface, EpochStepChecker
 
 
 class DummySet(Dataset):

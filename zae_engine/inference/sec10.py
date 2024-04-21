@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 
 import zae_engine
 from zae_engine.data_pipeline.collate import Collate_seq
-from zae_engine.models.build import CNNBase
+from zae_engine.models.builds.legacy import CNNBase
 
 
 def core(x: np.ndarray, batch_size: int):
