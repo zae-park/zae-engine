@@ -46,7 +46,7 @@ def IoU(true_onoff: Union[np.ndarray, torch.Tensor], pred_onoff: Union[np.ndarra
         "int" in str(pred_onoff.dtype).lower()
     ), f"pred_onoff array's elements data type must be int, but receive {pred_onoff.dtype}"
 
-    _, iou = _measure.giou(true_onoff=true_onoff, pred_onoff=pred_onoff, iou=True)
+    _, iou = giou(true_onoff=true_onoff, pred_onoff=pred_onoff, iou=True)
     return torch.mean(1 - iou)
 
 
