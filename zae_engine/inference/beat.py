@@ -5,8 +5,9 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from zae_engine import models, trainer
-from zae_engine.data_pipeline.collate import BeatCollateSeq as Col
+from ..models import beat_segmentation
+from ..trainer import Trainer
+from ..data_pipeline.collate import BeatCollateSeq as Col
 
 
 def core(x: Union[np.ndarray, torch.Tensor]):
@@ -23,7 +24,7 @@ def core(x: Union[np.ndarray, torch.Tensor]):
     )
 
     # --------------------------------- Inference & Postprocess @ stage 1 --------------------------------- #
-    model = models.beat_segmentation(True)
+    model = beat_segmentation(True)
     trainer1 = Trainer_stg1(model=model, device=device, mode="test")
     return np.concatenate(trainer1.inference(inference_loader)).argmax(1)
 
@@ -60,7 +61,7 @@ class ECG_dataset(Dataset):
         return batch_dict
 
 
-class Trainer_stg1(trainer.Trainer):
+class Trainer_stg1(Trainer):
     def __init__(self, model, device, mode: str, optimizer: torch.optim.Optimizer = None, scheduler=None):
         super(Trainer_stg1, self).__init__(model, device, mode, optimizer, scheduler)
         self.mini_batch_size = 32
