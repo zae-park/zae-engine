@@ -2,7 +2,7 @@ from importlib import import_module
 from typing import OrderedDict
 
 from ..builds.cnn import CNNBase
-from ..blocks.resblock import BasicBlock, Bottleneck
+from zae_engine.nn_night.blocks import BasicBlock, Bottleneck
 
 res_map = {
     18: {"block": BasicBlock, "layers": [2, 2, 2, 2]},
