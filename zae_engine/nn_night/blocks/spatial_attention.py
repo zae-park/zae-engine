@@ -15,16 +15,16 @@ class SE1d(nn.Module):
     :param bias: bool
     """
 
-    def __init__(self, ch: int, reduction: int = 8, bias: bool = False):
+    def __init__(self, ch_in: int, reduction: int = 8, bias: bool = False, *args, **kwargs):
         super(SE1d, self).__init__()
         self.reduction = reduction
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
 
-        assert ch % reduction == 0, f'Received invalid arguments. The "reduction" must be a divisor of "B".'
+        assert ch_in % reduction == 0, f'Received invalid arguments. The "reduction" must be a divisor of "B".'
         self.pool = nn.AdaptiveAvgPool1d(1)
-        self.fc = nn.Conv1d(ch, ch // reduction, kernel_size=(1,), bias=bias)
-        self.fc2 = nn.Conv1d(ch // reduction, ch, kernel_size=(1,), bias=bias)
+        self.fc = nn.Conv1d(ch_in, ch_in // reduction, kernel_size=(1,), bias=bias)
+        self.fc2 = nn.Conv1d(ch_in // reduction, ch_in, kernel_size=(1,), bias=bias)
 
     def channel_wise(self, x):
         vec = self.relu(self.fc(self.pool(x)))
@@ -52,16 +52,25 @@ class CBAM1d(nn.Module):
     """
 
     def __init__(
-        self, ch: int, kernel_size: _size_1_t = 7, reduction: int = 8, bias: bool = False, conv_pool: bool = False
+        self,
+        ch_in: int,
+        kernel_size: _size_1_t = 7,
+        reduction: int = 8,
+        bias: bool = False,
+        conv_pool: bool = False,
+        *args,
+        **kwargs,
     ):
         super(CBAM1d, self).__init__()
         self.kernel_size = kernel_size
         self.conv_pool = conv_pool
 
-        self.se_module = SE1d(ch=ch, reduction=reduction, bias=bias)
+        self.se_module = SE1d(ch_in=ch_in, reduction=reduction, bias=bias)
 
         self.sigmoid = nn.Sigmoid()
-        self.ch_pool = nn.Conv1d(in_channels=ch if conv_pool else 2, out_channels=1, kernel_size=kernel_size, bias=bias)
+        self.ch_pool = nn.Conv1d(
+            in_channels=ch_in if conv_pool else 2, out_channels=1, kernel_size=kernel_size, bias=bias
+        )
 
     def spatial_wise(self, x: torch.Tensor):
         if self.conv_pool:
