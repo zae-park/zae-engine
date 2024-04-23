@@ -99,5 +99,7 @@ def seresnet18(pretrained=False):
     se_map["block"] = nn.Sequential(**{"block": se_map["block"], "se": SE1d})
     model = CNNBase(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **se_map)
     if pretrained:
+        res_model = resnet18(pretrained=pretrained)
+        model.load_state_dict(res_model.state_dict())
         print("No pretrained weight for SE module.")
     return model
