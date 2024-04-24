@@ -5,75 +5,6 @@ from einops import repeat, rearrange
 from einops.layers.torch import Rearrange
 
 
-class SE(nn.Module):
-    """
-    Generalized version of Squeeze and Excitation module (https://arxiv.org/abs/1709.01507).
-    If spatial argument is False, this work equivalent to SE module.
-    :param ch: int
-        The channels-wise dimension of input tensor.
-    :param reduction: int
-        The Squeeze and Excitation ratio. Note that it must be a divisor of ch.
-    :param spatial: bool
-        Attention axis (default is False). If True, the layer returns a tensor with spatial attention.
-    :param bias: bool
-    """
-
-    def __init__(
-        self, ch: int, reduction: int = 8, spatial: bool = False, bias: bool = False
-    ):
-        super(SE, self).__init__()
-        self.reduction = reduction
-        self.spatial = spatial
-        self.relu = nn.ReLU()
-        self.sigmoid = nn.Sigmoid()
-
-        if spatial:
-            self.ch_pool = nn.Conv1d(ch, 1, (1,), bias=bias)
-        else:
-            assert (
-                ch % reduction == 0
-            ), f'Received invalid arguments. The "reduction" must be a divisor of "B".'
-            self.pool = nn.AdaptiveAvgPool1d(1)
-            self.fc = nn.Conv1d(ch, ch // reduction, kernel_size=(1,), bias=bias)
-            self.fc2 = nn.Conv1d(ch // reduction, ch, kernel_size=(1,), bias=bias)
-
-    def channel_wise(self, x):
-        vec = self.relu(self.fc(self.pool(x)))
-        vec = self.sigmoid(self.fc2(vec))
-        return x * vec
-
-    def spatial_wise(self, x):
-        attn_map = self.sigmoid(self.ch_pool(x))
-        return x * attn_map
-
-    def forward(self, x):
-        if self.spatial:
-            return self.spatial_wise(x)
-        else:
-            return self.channel_wise(x)
-
-
-class Residual(nn.Sequential):
-    """
-    Residual Block which inherit 'Sequential' class in torch.nn
-    """
-
-    def __init__(self, *args):
-        super(Residual, self).__init__(*args)
-
-    def forward(self, x):
-        """
-        The 'module' is sequence of arguments provides in __init__.
-        :param x: Input tensor
-        :return: Sum of input tensor and output of sequence.
-        """
-
-        residual = x
-        for module in self:
-            x = module(x)
-        return x + residual
-
-
 class TransformerLayer(nn.Module):
     def __init__(
         self,
@@ -102,16 +33,12 @@ class TransformerLayer(nn.Module):
         img_size = image_size  # temporary ( final resolution)
         num_patches = img_size // patch_height
 
-        self.to_patch_embedding = Rearrange(
-            "b c (w p1) -> b (w) (p1 c)", p1=patch_height
-        )
+        self.to_patch_embedding = Rearrange("b c (w p1) -> b (w) (p1 c)", p1=patch_height)
         self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))
         self.cls_token = nn.Parameter(torch.randn(1, 1, dim))
         self.dropout = nn.Dropout(0.1)
 
-        self.transformer = Transformer(
-            dim, depth=depth, heads=heads, dim_head=8, mlp_dim=mlp_dim, dropout=0.1
-        )
+        self.transformer = Transformer(dim, depth=depth, heads=heads, dim_head=8, mlp_dim=mlp_dim, dropout=0.1)
         pool = "cls"
         self.pool = pool
         self.to_latent = nn.Identity()
@@ -184,9 +111,7 @@ class Transformer(nn.Module):
                     [
                         PreNorm(
                             dim,
-                            Attention2(
-                                dim, heads=heads, dim_head=dim_head, dropout=dropout
-                            ),
+                            Attention2(dim, heads=heads, dim_head=dim_head, dropout=dropout),
                         ),
                         PreNorm(dim, FeedForward(dim, mlp_dim, dropout=dropout)),
                     ]
@@ -238,11 +163,7 @@ class Attention2(nn.Module):
         self.attend = nn.Softmax(dim=-1)
         self.to_qkv = nn.Linear(dim, inner_dim * 3, bias=False)
 
-        self.to_out = (
-            nn.Sequential(nn.Linear(inner_dim, dim), nn.Dropout(dropout))
-            if project_out
-            else nn.Identity()
-        )
+        self.to_out = nn.Sequential(nn.Linear(inner_dim, dim), nn.Dropout(dropout)) if project_out else nn.Identity()
 
     def forward(self, x):
         qkv = self.to_qkv(x).chunk(3, dim=-1)
