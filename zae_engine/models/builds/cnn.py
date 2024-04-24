@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from zae_engine.nn_night.blocks import BasicBlock, Bottleneck
+from ...nn_night.blocks import BasicBlock, Bottleneck
 
 
 class CNNBase(nn.Module):
