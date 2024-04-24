@@ -7,6 +7,10 @@ from .. import _backward
 class DynOPool(nn.Module):
     """
     https://arxiv.org/abs/2205.15254
+    TODO:
+        - fill description
+        - add test case
+        - optimize
     """
 
     def __init__(self):
