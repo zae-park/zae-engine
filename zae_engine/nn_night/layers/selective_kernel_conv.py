@@ -10,6 +10,7 @@ class SKConv1D(nn.Module):
         - add test case
         - optimize
     """
+
     def __init__(
         self,
         ch_in: int,
