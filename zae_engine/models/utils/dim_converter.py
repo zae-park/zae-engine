@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from einops import parsing
 
@@ -15,7 +16,17 @@ class DimConverter:
         return 1
 
     @staticmethod
-    def find_layers(model: nn.Module) -> list[nn.Module]:
+    def find_layers(model: nn.Module) -> dict[str, tuple[nn.Module, torch.Tensor]]:
+        """
+        find dimension convertable layers in given model.
+        return dictionary which has 'layer path' as key, and tuple of layer api and weight tensor as value.
+        :param model:
+        :return: Dict[str, tuple[nn.Module, torch.Tensor]]
+        """
+        tmp = dict(model.named_parameters())
+        ttmp = dict(model.named_modules())
+        modules, params = zip(model.named_modules(), model.named_parameters())
+
         return []
 
     def expand_dim(self):
