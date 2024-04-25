@@ -1,9 +1,25 @@
+from importlib import import_module
+from typing import Union
+from collections import defaultdict
+
 import torch
 import torch.nn as nn
 from einops import parsing
 
 
 class DimConverter:
+    convertable = (
+        nn.modules.conv._ConvNd,
+        nn.modules.conv._ConvTransposeNd,
+        nn.modules.pooling._LPPoolNd,
+        nn.modules.pooling._MaxPoolNd,
+        nn.modules.pooling._AvgPoolNd,
+        nn.modules.pooling._AdaptiveAvgPoolNd,
+        nn.modules.pooling._AdaptiveMaxPoolNd,
+        nn.modules.pooling._MaxUnpoolNd,
+        nn.modules.pooling._MaxUnpoolNd,
+    )
+
     def __init__(self, model: nn.Module):
         # check input model's dimension
         self.current_dim = self.dim_analysis(model)
@@ -12,22 +28,35 @@ class DimConverter:
 
     @staticmethod
     def dim_analysis(model: nn.Module) -> int:
-        print(model)
+        # print(model)
         return 1
 
-    @staticmethod
-    def find_layers(model: nn.Module) -> dict[str, tuple[nn.Module, torch.Tensor]]:
+    def find_layers(self, model: nn.Module) -> dict[str, Union[nn.Module, torch.Tensor]]:
         """
         find dimension convertable layers in given model.
         return dictionary which has 'layer path' as key, and tuple of layer api and weight tensor as value.
         :param model:
         :return: Dict[str, tuple[nn.Module, torch.Tensor]]
         """
-        tmp = dict(model.named_parameters())
-        ttmp = dict(model.named_modules())
-        modules, params = zip(model.named_modules(), model.named_parameters())
+        weight_dict = dict(model.named_parameters())
+        layer_dict = defaultdict(dict)
 
-        return []
+        for name, weight in weight_dict.items():
+            if name.endswith("weight"):
+                n = name.replace(".weight", "")
+                w_name = "weight"
+            elif name.endswith("bias"):
+                n = name.replace(".bias", "")
+                w_name = "bias"
+            else:
+                print(f"Unexpected name: {name}")
+                n = ""
+            layer = model.get_submodule(n)
+            if isinstance(layer, self.convertable):
+                layer_dict[n]["api"] = layer
+                layer_dict[n][w_name] = weight
+
+        return layer_dict
 
     def expand_dim(self):
         pass
