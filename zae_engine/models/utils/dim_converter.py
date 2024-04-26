@@ -1,3 +1,4 @@
+import re
 from copy import deepcopy
 from typing import Union, Any, Dict
 from collections import defaultdict
@@ -22,8 +23,7 @@ class DimConverter:
     )
 
     def __init__(self, model: nn.Module):
-        # check input model's dimension
-        self.current_dim = self.dim_analysis(model)
+        self.model = model
         # finding dimension-convertable layers
         self.layers = self.find_layers(model)
 
@@ -55,27 +55,62 @@ class DimConverter:
 
         return layer_dict
 
-    def expand_dim(self):
-        pass
+    def expand_dim(
+        self, src_dict: dict[str, Union[nn.Module, torch.Tensor]]
+    ) -> dict[str, Union[nn.Module, torch.Tensor]]:
+        expand_map = {nn.Conv2d: nn.Conv3d, nn.Conv1d: nn.Conv2d}
+        dst_dict = {}
+        for k, v in src_dict.items():
+            for kk, vv in v.items():
+                if kk == "weight":
+                    dst_dict[f"{k}.{kk}"] = torch.mm(vv.unsqueeze(-1), vv.unsqueeze(-2))
+                elif kk == "bias":
+                    dst_dict[f"{k}.{kk}"] = vv
+                else:
+                    dst_api = expand_map[type(vv)]
+                    needs = dst_api.__init__.__annotations__
+                    ready = {k: v for k, v in self.const_getter(vv).items() if k in needs.keys()}
+                    dst_dict[k] = dst_api(**ready)
+        return dst_dict
 
-    def reduce_dim(self):
-        pass
+    def reduce_dim(
+        self, src_dict: dict[str, Union[nn.Module, torch.Tensor]]
+    ) -> dict[str, Union[nn.Module, torch.Tensor]]:
+        reduce_map = {nn.Conv3d: nn.Conv2d, nn.Conv2d: nn.Conv1d}
 
-    def __call__(self, model: nn.Module, pattern: str, *args, **kwargs):
+        dst_dict = {}
+        for k, v in src_dict.items():
+            for kk, vv in v.items():
+                if kk == "weight":
+                    dst_dict[f"{k}.{kk}"] = vv.mean(-1)
+                elif kk == "bias":
+                    dst_dict[f"{k}.{kk}"] = vv
+                else:
+                    dst_api = reduce_map[type(vv)]
+                    needs = dst_api.__init__.__annotations__
+                    ready = {k: v for k, v in self.const_getter(vv).items() if k in needs.keys()}
+                    dst_dict[k] = dst_api(**ready)
+        return dst_dict
+
+    @staticmethod
+    def const_getter(conv_module: nn.Module):
+        return {k: v for k, v in conv_module.__dict__.items() if k in conv_module.__constants__}
+
+    def convert(self, pattern: str, *args, **kwargs):
         # 0. compare model's dimension with request pattern
         left, right = pattern.split("->")
-        assert self.current_dim != left, f"Expect dimension {self.current_dim}, but receive {left}"
-        l = parsing.ParsedExpression(left)
-        r = parsing.ParsedExpression(right)
+        # assert self.current_dim != left, f"Expect dimension {self.current_dim}, but receive {left}"
+        left = left.strip()
+        right = right.strip()
 
-        # 1. convert dim of layers to appropriately
-        if l == r:
-            return model
-        if l < r:
-            re_layer = [self.expand_dim(l) for l in self.layers]
-        else:
-            re_layer = [self.reduce_dim(l) for l in self.layers]
+        new_model = deepcopy(self.model)
+
+        if left == right:
+            return new_model
+
+        # convert dim of layers to appropriately
+        new_dict = self.reduce_dim(self.layers) if left > right else self.expand_dim(self.layers)
 
         # 2. apply them to new model
-
-        # 0. compare model's dimension with request pattern
+        new_model.load_state_dict(new_dict)
+        return new_model
