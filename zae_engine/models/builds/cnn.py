@@ -101,7 +101,6 @@ class CNNBase(nn.Module):
                 ch_in,
                 ch_out,
                 stride=stride,
-                downsample=downsample,
                 groups=self.groups,
                 norm_layer=norm_layer,
             )
