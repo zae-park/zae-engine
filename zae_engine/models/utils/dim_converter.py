@@ -1,10 +1,11 @@
-from importlib import import_module
-from typing import Union
+from copy import deepcopy
+from typing import Union, Any, Dict
 from collections import defaultdict
 
 import torch
 import torch.nn as nn
 from einops import parsing
+from torch.nn import Module
 
 
 class DimConverter:
@@ -31,30 +32,26 @@ class DimConverter:
         # print(model)
         return 1
 
-    def find_layers(self, model: nn.Module) -> dict[str, Union[nn.Module, torch.Tensor]]:
+    def find_layers(self, model: nn.Module) -> defaultdict[str, dict[str, None | Module | torch.Tensor]]:
         """
         find dimension convertable layers in given model.
         return dictionary which has 'layer path' as key, and tuple of layer api and weight tensor as value.
         :param model:
         :return: Dict[str, tuple[nn.Module, torch.Tensor]]
         """
-        weight_dict = dict(model.named_parameters())
-        layer_dict = defaultdict(dict)
+        layer_dict = defaultdict(lambda: {"api": None, "weight": None, "bias": None})
 
-        for name, weight in weight_dict.items():
-            if name.endswith("weight"):
-                n = name.replace(".weight", "")
-                w_name = "weight"
-            elif name.endswith("bias"):
-                n = name.replace(".bias", "")
-                w_name = "bias"
+        for name, weight in model.named_parameters():
+            name_split = name.split(".")
+            if name_split[-1] not in ["weight", "bias"]:
+                module_path, value_type = name, ""
             else:
-                print(f"Unexpected name: {name}")
-                n = ""
-            layer = model.get_submodule(n)
-            if isinstance(layer, self.convertable):
-                layer_dict[n]["api"] = layer
-                layer_dict[n][w_name] = weight
+                module_path, value_type = ".".join(name_split[:-1]), name_split[-1]
+
+            module: Module = model.get_submodule(module_path)
+            if isinstance(module, self.convertable):
+                layer_dict[module_path]["api"] = module
+                layer_dict[module_path][value_type] = weight
 
         return layer_dict
 
