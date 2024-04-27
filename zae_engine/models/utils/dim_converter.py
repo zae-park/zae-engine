@@ -69,7 +69,7 @@ class DimConverter:
                 else:
                     dst_api = expand_map[type(vv)]
                     needs = dst_api.__init__.__annotations__
-                    ready = {k: v for k, v in self.const_getter(vv).items() if k in needs.keys()}
+                    ready = {k: v for k, v in self.const_getter(vv, reduce=False).items() if k in needs.keys()}
                     dst_dict[k] = dst_api(**ready)
         return dst_dict
 
@@ -88,13 +88,21 @@ class DimConverter:
                 else:
                     dst_api = reduce_map[type(vv)]
                     needs = dst_api.__init__.__annotations__
-                    ready = {k: v for k, v in self.const_getter(vv).items() if k in needs.keys()}
+                    ready = {k: v for k, v in self.const_getter(vv, reduce=True).items() if k in needs.keys()}
                     dst_dict[k] = dst_api(**ready)
         return dst_dict
 
     @staticmethod
-    def const_getter(conv_module: nn.Module):
-        return {k: v for k, v in conv_module.__dict__.items() if k in conv_module.__constants__}
+    def const_getter(conv_module: nn.Module, reduce: bool):
+        module_dict = conv_module.__dict__
+        # const = {k: module_dict[k] for k in conv_module.__constants__}
+        const = {}
+        for k in conv_module.__constants__:
+            v = module_dict[k]
+            if isinstance(v, tuple):
+                v = v[:-1] if reduce else tuple(list(v) + [v[:-1]])
+            const[k] = v
+        return const
 
     def convert(self, pattern: str, *args, **kwargs):
         # 0. compare model's dimension with request pattern
