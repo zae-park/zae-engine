@@ -15,7 +15,8 @@ class TestResnet(unittest.TestCase):
         pass
 
     def setUp(self) -> None:
-        self.test_sample = torch.randn((2, torch.randint(1, 16, size=[1]), 256, 256))
+        # self.test_sample = torch.randn((2, torch.randint(1, 16, size=[1]), 256, 256))
+        self.test_sample = torch.randn((2, 3, 256, 256))
 
     def tearDown(self) -> None:
         pass
