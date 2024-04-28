@@ -122,7 +122,7 @@ class CNNBase(nn.Module):
     def _forward_impl(self, x: Tensor) -> Tensor:
         stem = self.stem(x)
         feat = self.body(stem)
-        pool = torch.flatten(self.pool(feat))
+        pool = torch.flatten(self.pool(feat), start_dim=1)
         out = self.fc(pool)
         return out
 
