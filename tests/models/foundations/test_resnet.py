@@ -24,52 +24,52 @@ class TestResnet(unittest.TestCase):
     def test_resnet18(self):
         model = resnet18()
         output = model(self.test_sample)
-        self.assertEqual(output.size(), 1000)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_resnet34(self):
         model = resnet34()
         output = model(self.test_sample)
-        self.assertEqual(output.size(), 1000)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_resnet50(self):
         model = resnet50()
         output = model(self.test_sample)
-        self.assertEqual(output.size(), 1000)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_resnet101(self):
         model = resnet101()
         output = model(self.test_sample)
-        self.assertEqual(output.size(), 1000)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_resnet152(self):
         model = resnet152()
         output = model(self.test_sample)
-        self.assertEqual(output.size(), 1000)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_seresnet18(self):
         model = seresnet18()
         output = model(self.test_sample)
-        self.assertEqual(output.size(), 1000)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_seresnet34(self):
         model = seresnet34()
         output = model(self.test_sample)
-        self.assertEqual(output.size(), 1000)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_seresnet50(self):
         model = seresnet50()
         output = model(self.test_sample)
-        self.assertEqual(output.size(), 1000)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_seresnet101(self):
         model = seresnet101()
         output = model(self.test_sample)
-        self.assertEqual(output.size(), 1000)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_seresnet152(self):
         model = seresnet152()
         output = model(self.test_sample)
-        self.assertEqual(output.size(), 1000)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
 
 
 if __name__ == "__main__":
