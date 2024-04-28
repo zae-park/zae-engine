@@ -21,11 +21,40 @@ class DimConverter:
         nn.modules.pooling._MaxUnpoolNd,
         nn.modules.pooling._MaxUnpoolNd,
     )
+    correction_map = {
+        nn.Conv2d: nn.Conv3d,
+        nn.Conv1d: nn.Conv2d,
+        nn.MaxPool1d: nn.MaxPool2d,
+        nn.MaxPool2d: nn.MaxPool3d,
+        nn.AdaptiveMaxPool1d: nn.AdaptiveMaxPool2d,
+        nn.AdaptiveMaxPool2d: nn.AdaptiveMaxPool3d,
+    }  # default is expand mode
 
     def __init__(self, model: nn.Module):
         self.model = model
+        self.model.apply(self.dim_checker)
         # finding dimension-convertable layers
         self.layer_dict, self.param_dict = self.find_layers(model)
+
+    def dim_checker(self, module: nn.Module):
+        if isinstance(module, self.convertable):
+            module_dict = module.__dict__
+            if "kernel_size" in module_dict.keys():
+                if isinstance(module_dict["kernel_size"], int):
+                    module.dim_check = 1
+                else:
+                    module.dim_check = len(module_dict["kernel_size"])
+            elif "output_size" in module_dict.keys():
+                if isinstance(module_dict["output_size"], int):
+                    module.dim_check = 1
+                else:
+                    module.dim_check = len(module_dict["output_size"])
+
+            else:
+                print(f"Check unknown module {module}")
+                module.dim_check = None
+        else:
+            module.dim_check = None
 
     def find_layers(self, model: nn.Module) -> tuple[dict, dict]:
         """
@@ -48,19 +77,17 @@ class DimConverter:
         return layer_dict, param_dict
 
     def dim_correction(self, reduce: bool):
-        correction_map = {nn.Conv2d: nn.Conv3d, nn.Conv1d: nn.Conv2d}  # default is expand mode
-        if reduce:
-            correction_map = {v: k for k, v in correction_map.items()}
-
-        for k, v in self.param_dict.items():
-            if k.endswith("weight"):
-                self.param_dict[k] = v.mean(-1) if reduce else torch.mm(v.unsqueeze(-1), v.unsqueeze(-2))
+        correction_map = {v: k for k, v in self.correction_map.items()} if reduce else self.correction_map
 
         for k, v in self.layer_dict.items():
             corrected_layer = correction_map[type(v)]
             needs = corrected_layer.__init__.__annotations__
             ready = {k: v for k, v in self.const_getter(v, reduce=reduce).items() if k in needs.keys()}
             self.layer_dict[k] = corrected_layer(**ready)
+
+        for k, v in self.param_dict.items():
+            if k.endswith("weight"):
+                self.param_dict[k] = v.mean(-1) if reduce else torch.mm(v.unsqueeze(-1), v.unsqueeze(-2))
 
     @staticmethod
     def const_getter(conv_module: nn.Module, reduce: bool):
@@ -99,5 +126,5 @@ class DimConverter:
             self.apply_new_dict(new_model, k, v)
 
         # 2. apply them to new model
-        new_model.load_state_dict(new_dict)
+        new_model.load_state_dict(self.param_dict)
         return new_model
