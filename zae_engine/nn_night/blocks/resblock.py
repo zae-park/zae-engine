@@ -22,6 +22,8 @@ class BasicBlock(nn.Module):
         if dilation > 1:
             raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
         assert (ch_in % groups) == (ch_out % groups) == 0, "Group must be common divisor of ch_in and ch_out."
+        self.ch_in = ch_in
+        self.ch_out = ch_out
 
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=stride, padding=1)
@@ -76,6 +78,8 @@ class Bottleneck(nn.Module):
     ) -> None:
         super().__init__()
         assert (ch_in % groups) == (ch_out % groups) == 0, "Group must be common divisor of ch_in and ch_out."
+        self.ch_in = ch_in
+        self.ch_out = ch_out
 
         width = ch_out * groups
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
