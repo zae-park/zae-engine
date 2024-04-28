@@ -94,6 +94,12 @@ def resnet152(pretrained=False):
     return model
 
 
+def se_injection(module: nn.Module):
+    if isinstance(module, (BasicBlock, Bottleneck)):
+        se_module = SE1d(ch_in=module.ch_out)
+        module = nn.Sequential(module, se_module)
+
+
 def seresnet18(pretrained=False):
     se_map = dict(res_map[18])
     se_map["block"] = nn.Sequential(**{"block": se_map["block"], "se": SE1d})
@@ -106,13 +112,12 @@ def seresnet18(pretrained=False):
 
 
 def seresnet34(pretrained=False):
-    se_map = dict(res_map[34])
-    se_map["block"] = nn.Sequential(**{"block": se_map["block"], "se": SE1d})
-    model = CNNBase(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **se_map)
+    model = CNNBase(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **res_map[34])
     if pretrained:
         res_model = resnet34(pretrained=pretrained)
         model.load_state_dict(res_model.state_dict())
         print("No pretrained weight for SE module.")
+    model.apply(se_injection)
     return model
 
 
