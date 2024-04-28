@@ -43,6 +43,9 @@ class DimConverter:
         self.layer_dict, self.param_dict = self.find_convertable(model)
 
     def dim_checker(self, module: nn.Module):
+        """
+        DEPRECATED
+        """
         if isinstance(module, self.convertable):
             module_dict = module.__dict__
             if "kernel_size" in module_dict.keys():
@@ -97,6 +100,8 @@ class DimConverter:
                 needs = corrected_layer.__init__.__annotations__
                 ready = {k: v for k, v in self.const_getter(module, reduce=reduce).items() if k in needs.keys()}
                 self.new_module_dict[name] = corrected_layer(**ready)
+
+                # TODO: add weight correction
                 # weight = module.weight
                 # bias = module.bias
 
@@ -151,6 +156,7 @@ class DimConverter:
 
         # TODO 2. apply them to new model
         # new_model.load_state_dict(self.param_dict)
+
         sample = torch.zeros((1, 3, 256))
         out = new_model(sample)
 
