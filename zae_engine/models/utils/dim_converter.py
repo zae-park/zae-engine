@@ -19,7 +19,7 @@ class DimConverter:
         nn.modules.pooling._AdaptiveAvgPoolNd,
         nn.modules.pooling._AdaptiveMaxPoolNd,
         nn.modules.pooling._MaxUnpoolNd,
-        nn.modules.pooling._MaxUnpoolNd,
+        nn.modules.batchnorm._BatchNorm,
     )
     correction_map = {
         nn.Conv2d: nn.Conv3d,
@@ -28,13 +28,19 @@ class DimConverter:
         nn.MaxPool2d: nn.MaxPool3d,
         nn.AdaptiveMaxPool1d: nn.AdaptiveMaxPool2d,
         nn.AdaptiveMaxPool2d: nn.AdaptiveMaxPool3d,
+        nn.AdaptiveAvgPool1d: nn.AdaptiveAvgPool2d,
+        nn.AdaptiveAvgPool2d: nn.AdaptiveAvgPool3d,
+        nn.BatchNorm1d: nn.BatchNorm2d,
+        nn.BatchNorm2d: nn.BatchNorm3d,
     }  # default is expand mode
 
     def __init__(self, model: nn.Module):
         self.model = model
-        self.model.apply(self.dim_checker)
+        # self.model.apply(self.dim_checker)
         # finding dimension-convertable layers
-        self.layer_dict, self.param_dict = self.find_layers(model)
+        self.module_dict = {}
+        self.new_module_dict = {}
+        self.layer_dict, self.param_dict = self.find_convertable(model)
 
     def dim_checker(self, module: nn.Module):
         if isinstance(module, self.convertable):
@@ -56,7 +62,7 @@ class DimConverter:
         else:
             module.dim_check = None
 
-    def find_layers(self, model: nn.Module) -> tuple[dict, dict]:
+    def find_convertable(self, model: nn.Module) -> tuple[dict, dict]:
         """
         find dimension convertable layers in given model.
         return dictionary which has 'layer path' as key, and tuple of layer api and weight tensor as value.
@@ -65,6 +71,12 @@ class DimConverter:
         """
         layer_dict = {}
         param_dict = {}
+
+        self.module_dict = {}
+        for name, weight in model.named_modules():
+            module = model.get_submodule(name)
+            if isinstance(module, self.convertable):
+                self.module_dict[name] = module
 
         for name, weight in model.named_parameters():
             param_dict[name] = weight
@@ -78,21 +90,31 @@ class DimConverter:
 
     def dim_correction(self, reduce: bool):
         correction_map = {v: k for k, v in self.correction_map.items()} if reduce else self.correction_map
+        correction_keys = tuple(correction_map.keys())
+        for name, module in self.module_dict.items():
+            if isinstance(module, correction_keys):
+                corrected_layer = correction_map[type(module)]
+                needs = corrected_layer.__init__.__annotations__
+                ready = {k: v for k, v in self.const_getter(module, reduce=reduce).items() if k in needs.keys()}
+                self.new_module_dict[name] = corrected_layer(**ready)
+                # weight = module.weight
+                # bias = module.bias
 
-        for k, v in self.layer_dict.items():
-            corrected_layer = correction_map[type(v)]
-            needs = corrected_layer.__init__.__annotations__
-            ready = {k: v for k, v in self.const_getter(v, reduce=reduce).items() if k in needs.keys()}
-            self.layer_dict[k] = corrected_layer(**ready)
-
-        for k, v in self.param_dict.items():
-            if k.endswith("weight"):
-                self.param_dict[k] = v.mean(-1) if reduce else torch.mm(v.unsqueeze(-1), v.unsqueeze(-2))
+        # for k, v in self.layer_dict.items():
+        #     corrected_layer = correction_map[type(v)]
+        #     if isinstance(v, nn.MaxPool2d):
+        #         print()
+        #     needs = corrected_layer.__init__.__annotations__
+        #     ready = {k: v for k, v in self.const_getter(v, reduce=reduce).items() if k in needs.keys()}
+        #     self.layer_dict[k] = corrected_layer(**ready)
+        #
+        # for k, v in self.param_dict.items():
+        #     if k.endswith("weight"):
+        #         self.param_dict[k] = v.mean(-1) if reduce else torch.mm(v.unsqueeze(-1), v.unsqueeze(-2))
 
     @staticmethod
     def const_getter(conv_module: nn.Module, reduce: bool):
         module_dict = conv_module.__dict__
-        # const = {k: module_dict[k] for k in conv_module.__constants__}
         const = {}
         for k in conv_module.__constants__:
             v = module_dict[k]
@@ -116,15 +138,20 @@ class DimConverter:
         right = right.strip()
 
         new_model = deepcopy(self.model)
+        sample = torch.zeros((1, 3, 256, 256))
+        out = new_model(sample)
         if left == right:
             return new_model
 
         # convert dim of layers to appropriately
         self.dim_correction(reduce=left > right)
 
-        for k, v in self.layer_dict.items():
+        for k, v in self.new_module_dict.items():
             self.apply_new_dict(new_model, k, v)
 
-        # 2. apply them to new model
-        new_model.load_state_dict(self.param_dict)
+        # TODO 2. apply them to new model
+        # new_model.load_state_dict(self.param_dict)
+        sample = torch.zeros((1, 3, 256))
+        out = new_model(sample)
+
         return new_model
