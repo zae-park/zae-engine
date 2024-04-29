@@ -124,7 +124,7 @@ class DimConverter:
         for k in conv_module.__constants__:
             v = module_dict[k]
             if isinstance(v, tuple):
-                v = v[:-1] if reduce else tuple(list(v) + [v[:-1]])
+                v = v[:-1] if reduce else v[0:1] * (1 + len(v))
             const[k] = v
         return const
 
@@ -143,8 +143,7 @@ class DimConverter:
         right = right.strip()
 
         new_model = deepcopy(self.model)
-        sample = torch.zeros((1, 3, 256, 256))
-        out = new_model(sample)
+
         if left == right:
             return new_model
 
@@ -156,8 +155,5 @@ class DimConverter:
 
         # TODO 2. apply them to new model
         # new_model.load_state_dict(self.param_dict)
-
-        sample = torch.zeros((1, 3, 256))
-        out = new_model(sample)
 
         return new_model
