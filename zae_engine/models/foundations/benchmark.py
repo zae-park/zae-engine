@@ -1,10 +1,9 @@
 from typing import Optional
 
-import torch
 import torch.nn as nn
 
-from zae_engine.models.build import Segmentor, Regressor1D, ResNet1D
-from zae_engine.models.utility import load_weights, initializer, WeightLoader
+from ..builds.legacy import Segmentor, Regressor1D
+from ..utility import initializer, WeightLoader
 
 
 def beat_segmentation(pretrained: Optional[bool] = False) -> nn.Module:
