@@ -4,6 +4,7 @@ from typing import OrderedDict
 import torch.nn as nn
 
 from ..builds.cnn import CNNBase
+from ..utils import dim_converter
 from ...nn_night.blocks import BasicBlock, Bottleneck, SE1d, CBAM1d
 
 res_map = {
@@ -94,61 +95,51 @@ def resnet152(pretrained=False):
     return model
 
 
-def se_injection(module: nn.Module):
-    if isinstance(module, (BasicBlock, Bottleneck)):
-        se_module = SE1d(ch_in=module.ch_out)
-        module = nn.Sequential(module, se_module)
+def se_injection(model: CNNBase):
+    for i, b in enumerate(model.body):
+        for ii, blk in enumerate(b):
+            if isinstance(blk, (BasicBlock, Bottleneck)):
+                cvtr = dim_converter.DimConverter(SE1d(ch_in=blk.ch_out * blk.expansion))
+                se_module = cvtr.convert("1d -> 2d")
+                model.body[i][ii] = nn.Sequential(blk, se_module)
+    return model
 
 
 def seresnet18(pretrained=False):
-    se_map = dict(res_map[18])
-    se_map["block"] = nn.Sequential(**{"block": se_map["block"], "se": SE1d})
-    model = CNNBase(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **se_map)
+    model = resnet18(pretrained=pretrained)
     if pretrained:
-        res_model = resnet18(pretrained=pretrained)
-        model.load_state_dict(res_model.state_dict())
         print("No pretrained weight for SE module.")
+    model = se_injection(model)
     return model
 
 
 def seresnet34(pretrained=False):
-    model = CNNBase(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **res_map[34])
+    model = resnet34(pretrained=pretrained)
     if pretrained:
-        res_model = resnet34(pretrained=pretrained)
-        model.load_state_dict(res_model.state_dict())
         print("No pretrained weight for SE module.")
-    model.apply(se_injection)
+    model = se_injection(model)
     return model
 
 
 def seresnet50(pretrained=False):
-    se_map = dict(res_map[50])
-    se_map["block"] = nn.Sequential(**{"block": se_map["block"], "se": SE1d})
-    model = CNNBase(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **se_map)
+    model = resnet50(pretrained=pretrained)
     if pretrained:
-        res_model = resnet50(pretrained=pretrained)
-        model.load_state_dict(res_model.state_dict())
         print("No pretrained weight for SE module.")
+    model = se_injection(model)
     return model
 
 
 def seresnet101(pretrained=False):
-    se_map = dict(res_map[101])
-    se_map["block"] = nn.Sequential(**{"block": se_map["block"], "se": SE1d})
-    model = CNNBase(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **se_map)
+    model = resnet101(pretrained=pretrained)
     if pretrained:
-        res_model = resnet101(pretrained=pretrained)
-        model.load_state_dict(res_model.state_dict())
         print("No pretrained weight for SE module.")
+    model = se_injection(model)
     return model
 
 
 def seresnet152(pretrained=False):
-    se_map = dict(res_map[152])
-    se_map["block"] = nn.Sequential(**{"block": se_map["block"], "se": SE1d})
-    model = CNNBase(ch_in=3, width=64, n_cls=1000, groups=1, dilation=1, **se_map)
+    model = resnet152(pretrained=pretrained)
     if pretrained:
-        res_model = resnet152(pretrained=pretrained)
-        model.load_state_dict(res_model.state_dict())
         print("No pretrained weight for SE module.")
+    model = se_injection(model)
     return model
