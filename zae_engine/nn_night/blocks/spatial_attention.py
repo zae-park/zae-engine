@@ -69,14 +69,18 @@ class CBAM1d(nn.Module):
 
         self.sigmoid = nn.Sigmoid()
         self.ch_pool = nn.Conv1d(
-            in_channels=ch_in if conv_pool else 2, out_channels=1, kernel_size=kernel_size, bias=bias
+            in_channels=ch_in if conv_pool else 2,
+            out_channels=1,
+            kernel_size=kernel_size,
+            bias=bias,
+            padding=(kernel_size - 1) // 2,
         )
 
     def spatial_wise(self, x: torch.Tensor):
         if self.conv_pool:
             attn_map = self.ch_pool(x)
         else:
-            max_map = torch.max(x, dim=1, keepdim=True)
+            max_map = torch.max(x, dim=1, keepdim=True)[0]
             avg_map = torch.mean(x, dim=1, keepdim=True)
             attn_map = self.ch_pool(torch.cat((max_map, avg_map), dim=1))
 
