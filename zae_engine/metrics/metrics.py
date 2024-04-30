@@ -155,7 +155,7 @@ def qilv(signal1, signal2, window):
     Quality Index based on Local Variance (QILV) - Santiago Aja Fernandez (santi @ bwh.harhard.edu)
     Ref - "Image quality assessment based on local variance", EMBC 2006
     ------------------------------------------------------------------
-    Calculate a global compatibility measure between two images, based on their local variance distribution.
+    Calculate a global compatibility metrics between two images, based on their local variance distribution.
     TODO: Seems not valid.
 
     INPUT:
