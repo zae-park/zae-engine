@@ -45,12 +45,12 @@ class TestCBAMBlock(unittest.TestCase):
         ch_in = randint(1, 64)
         reduction = randint(1, 8)
         kernel_size = 1 + 2 * randint(1, 5)  # guarantee kernel_size is odd number
-
+        conv_pool = conv_pool = choice([True, False])
         if ch_in % reduction:
             with self.assertRaises(AssertionError):
-                model = CBAM1d(ch_in=ch_in, reduction=reduction, kernel_size=kernel_size)
+                model = CBAM1d(ch_in=ch_in, reduction=reduction, kernel_size=kernel_size, conv_pool=conv_pool)
         else:
-            model = CBAM1d(ch_in=ch_in, reduction=reduction, kernel_size=kernel_size)
+            model = CBAM1d(ch_in=ch_in, reduction=reduction, kernel_size=kernel_size, conv_pool=conv_pool)
 
     def test_forward(self):
         random_ch = randint(1, 16)

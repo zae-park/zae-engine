@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -9,11 +8,11 @@ class Inv1d(nn.Module):
     Paper: https://arxiv.org/abs/2103.06255
     Author: Duo Li et al.
     """
+
     def __init__(self, ch: int, num_groups: int, kernel_size: int, stride: int, reduction_ratio: int):
         super(Inv1d, self).__init__()
         self.ch = ch
         self.num_groups = num_groups
-        assert ch % num_groups == 0
         self.group = ch // num_groups
         self.kernel_size = kernel_size
         self.stride = stride
@@ -22,9 +21,11 @@ class Inv1d(nn.Module):
         self.k_gen = self.kernel_generator()
         self.unfold = nn.Unfold(kernel_size=(1, kernel_size), padding=(0, (kernel_size - 1) // 2), stride=(1, stride))
 
+        assert ch % num_groups == 0
+
     def kernel_generator(self):
-        conv1 = nn.Conv1d(self.ch, self.ch // self.reduction_ratio, kernel_size=(1, ))
-        conv2 = nn.Conv1d(self.ch // self.reduction_ratio, self.kernel_size * self.num_groups, kernel_size=(1, ))
+        conv1 = nn.Conv1d(self.ch, self.ch // self.reduction_ratio, kernel_size=(1,))
+        conv2 = nn.Conv1d(self.ch // self.reduction_ratio, self.kernel_size * self.num_groups, kernel_size=(1,))
         return nn.Sequential(*[conv1, nn.ReLU(), nn.BatchNorm1d(self.ch // self.reduction_ratio), conv2])
 
     def forward(self, x):
