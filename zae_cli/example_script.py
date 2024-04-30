@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
-from zae_engine import trainer, models, measure, data_pipeline
+from zae_engine import trainer, models, metrics, data_pipeline
 from zae_engine.operation import draw_confusion_matrix, print_confusion_matrix
 
 
@@ -70,7 +70,7 @@ class ExTrainer(trainer.Trainer):
         predict = proba.argmax(1)
         loss = F.cross_entropy(proba, y)
 
-        acc = measure.accuracy(self._to_cpu(y.argmax(1)), self._to_cpu(predict))
+        acc = metrics.accuracy(self._to_cpu(y.argmax(1)), self._to_cpu(predict))
         return {"loss": loss, "output": predict, "acc": acc}
 
     def test_step(self, batch):

@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from ..measure import giou, mse, miou
+from ..metrics import giou, mse, miou
 
 
 @typechecked

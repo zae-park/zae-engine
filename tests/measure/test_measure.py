@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from zae_engine import measure as _measure
+from zae_engine import metrics as _measure
 
 
 class Test_loader(unittest.TestCase):
