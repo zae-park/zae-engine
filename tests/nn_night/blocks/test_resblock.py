@@ -26,7 +26,11 @@ class TestBasicBlock(unittest.TestCase):
 
     def test_group(self):
         group = randint(1, 4)
-        model = BasicBlock(self.ch_in, self.ch_out, stride=self.stride, groups=group, dilation=self.dilation)
+        if (self.ch_in % group) and (self.ch_out % group):
+            model = BasicBlock(self.ch_in, self.ch_out, stride=self.stride, groups=group, dilation=self.dilation)
+        else:
+            with self.assertRaises(AssertionError):
+                model = BasicBlock(self.ch_in, self.ch_out, stride=self.stride, groups=group, dilation=self.dilation)
 
     def test_dilation(self):
         dilation = randint(2, 5)
