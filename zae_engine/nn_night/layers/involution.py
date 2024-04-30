@@ -13,7 +13,6 @@ class Inv1d(nn.Module):
         super(Inv1d, self).__init__()
         self.ch = ch
         self.num_groups = num_groups
-        assert ch % num_groups == 0
         self.group = ch // num_groups
         self.kernel_size = kernel_size
         self.stride = stride
@@ -21,6 +20,8 @@ class Inv1d(nn.Module):
 
         self.k_gen = self.kernel_generator()
         self.unfold = nn.Unfold(kernel_size=(1, kernel_size), padding=(0, (kernel_size - 1) // 2), stride=(1, stride))
+
+        assert ch % num_groups == 0
 
     def kernel_generator(self):
         conv1 = nn.Conv1d(self.ch, self.ch // self.reduction_ratio, kernel_size=(1,))
