@@ -22,4 +22,4 @@ class ClippedReLU(nn.Module):
         self.act = nn.ReLU()
 
     def forward(self, x):
-        return self.act(x + self.lower) - self.act(x - self.upper)
+        return self.lower + self.upper - x + self.act(x - self.lower) - self.act(self.upper - x)
