@@ -41,7 +41,7 @@ class CNNBase(nn.Module):
         for i, l in enumerate(layers):
             ch_o = width * (2**i)
             ch_i = ch_o if i == 0 else ch_o * self.block.expansion // 2
-            body.append(self._make_body(blocks=[block] * l, ch_in=ch_i, ch_out=ch_o, stride=2))
+            body.append(self._make_body(blocks=[block] * l, ch_in=ch_i, ch_out=ch_o, stride=2 if i else 1))
         self.body = nn.Sequential(*body)
 
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
@@ -101,7 +101,6 @@ class CNNBase(nn.Module):
                 ch_in,
                 ch_out,
                 stride=stride,
-                downsample=downsample,
                 groups=self.groups,
                 norm_layer=norm_layer,
             )
@@ -121,22 +120,11 @@ class CNNBase(nn.Module):
         return nn.Sequential(*layers)
 
     def _forward_impl(self, x: Tensor) -> Tensor:
-        # See note [TorchScript super()]
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
-
-        x = self.pool(x)
-        x = torch.flatten(x, 1)
-        x = self.fc(x)
-
-        return x
+        stem = self.stem(x)
+        feat = self.body(stem)
+        pool = torch.flatten(self.pool(feat), start_dim=1)
+        out = self.fc(pool)
+        return out
 
     def forward(self, x: Tensor) -> Tensor:
         return self._forward_impl(x)

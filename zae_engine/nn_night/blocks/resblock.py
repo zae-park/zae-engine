@@ -14,7 +14,6 @@ class BasicBlock(nn.Module):
         ch_in: int,
         ch_out: int,
         stride: int = 1,
-        downsample: Optional[nn.Module] = None,
         groups: int = 1,
         dilation: int = 1,
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
@@ -23,15 +22,24 @@ class BasicBlock(nn.Module):
         if dilation > 1:
             raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
         assert (ch_in % groups) == (ch_out % groups) == 0, "Group must be common divisor of ch_in and ch_out."
+        self.ch_in = ch_in
+        self.ch_out = ch_out
 
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=1)
+        self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=stride, padding=1)
         self.bn1 = norm_layer(ch_out)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(ch_out, ch_out, kernel_size=3, stride=1, groups=groups)
+        self.conv2 = nn.Conv2d(ch_out, ch_out, kernel_size=3, stride=1, padding="same", groups=groups)
         self.bn2 = norm_layer(ch_out)
-        self.downsample = downsample
         self.stride = stride
+
+        if stride != 1 or ch_in != ch_out * self.expansion:
+            self.downsample = nn.Sequential(
+                nn.Conv2d(ch_in, ch_out * self.expansion, kernel_size=1, stride=stride),
+                norm_layer(ch_out * self.expansion),
+            )
+        else:
+            self.downsample = None
 
     def forward(self, x: Tensor) -> Tensor:
 
@@ -64,25 +72,33 @@ class Bottleneck(nn.Module):
         ch_in: int,
         ch_out: int,
         stride: int = 1,
-        downsample: Optional[nn.Module] = None,
         groups: int = 1,
         dilation: int = 1,
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
     ) -> None:
         super().__init__()
         assert (ch_in % groups) == (ch_out % groups) == 0, "Group must be common divisor of ch_in and ch_out."
+        self.ch_in = ch_in
+        self.ch_out = ch_out
 
         width = ch_out * groups
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=1, stride=1)
         self.bn1 = norm_layer(ch_out)
-        self.conv2 = nn.Conv2d(ch_out, width, kernel_size=3, stride=stride, groups=groups, dilation=dilation)
+        self.conv2 = nn.Conv2d(ch_out, width, kernel_size=3, stride=stride, padding=1, groups=groups, dilation=dilation)
         self.bn2 = norm_layer(width)
         self.conv3 = nn.Conv2d(width, ch_out * self.expansion, kernel_size=1, stride=1)
         self.bn3 = norm_layer(ch_out * self.expansion)
         self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
         self.stride = stride
+
+        if stride != 1 or ch_in != ch_out * self.expansion:
+            self.downsample = nn.Sequential(
+                nn.Conv2d(ch_in, ch_out * self.expansion, kernel_size=1, stride=stride),
+                norm_layer(ch_out * self.expansion),
+            )
+        else:
+            self.downsample = None
 
     def forward(self, x: Tensor) -> Tensor:
 
