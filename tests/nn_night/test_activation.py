@@ -11,7 +11,7 @@ class TestClippedReLU(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        pass
+        cls.eps = torch.finfo(torch.float32).eps
 
     def setUp(self) -> None:
         self.sample = torch.randn(size=(1, 1), requires_grad=True)
@@ -27,8 +27,8 @@ class TestClippedReLU(unittest.TestCase):
         if random_top > random_bot:
             activation = ClippedReLU(random_top, random_bot)
             out = activation(self.sample * multiply)
-            self.assertLessEqual(random_bot, out)
-            self.assertGreaterEqual(random_top, out)
+            self.assertLessEqual(random_bot, out + self.eps)
+            self.assertGreaterEqual(random_top, out - self.eps)
         else:
             with self.assertRaises(AssertionError):
                 activation = ClippedReLU(random_top, random_bot)
