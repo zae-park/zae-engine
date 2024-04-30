@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from .. import _backward
+from .. import _gumbel_sotfmax
 
 
 class DynOPool(nn.Module):

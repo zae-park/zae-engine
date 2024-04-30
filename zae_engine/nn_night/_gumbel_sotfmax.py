@@ -1,7 +1,7 @@
 import torch
 
 
-class GumbelRound(torch.autograd.Function):
+class GumbelSoftMax(torch.autograd.Function):
     """
     Re-parametric trick for categorical problems.
     ref: https://blog.evjang.com/2016/11/tutorial-categorical-variational.html
