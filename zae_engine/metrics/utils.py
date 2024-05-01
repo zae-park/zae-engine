@@ -2,6 +2,8 @@ from typing import Union, Iterable
 import numpy as np
 import torch
 
+EPS = torch.finfo(torch.float32).eps
+
 
 def np2torch(dtype: torch.dtype):
     def deco(func):
