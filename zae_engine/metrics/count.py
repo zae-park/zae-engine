@@ -13,8 +13,8 @@ def accuracy(
     true: Union[np.ndarray, torch.Tensor],
     predict: Union[np.ndarray, torch.Tensor],
 ):
-
-    return (true == predict).astype(float).mean()
+    correct = torch.eq(true, predict)
+    return sum(correct) / len(correct)
 
 
 def fbeta(*args, beta: float, num_classes: int, average: str = "micro"):
