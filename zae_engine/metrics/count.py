@@ -3,23 +3,17 @@ from typing import Union, Optional, Tuple, List, Any
 import numpy as np
 import torch
 
-from zae_engine.operation import (
-    draw_confusion_matrix,
-)
+from ..operation import draw_confusion_matrix
+from .utils import EPS, np2torch, shape_check
 
 
-EPS = torch.finfo(torch.float32).eps
-
-
+@np2torch(dtype=torch.int)
+@shape_check
 def accuracy(
     true: Union[np.ndarray, torch.Tensor],
     predict: Union[np.ndarray, torch.Tensor],
 ):
-    if isinstance(true, torch.Tensor):
-        true = true.numpy()
-    if isinstance(predict, torch.Tensor):
-        predict = predict.numpy()
-    assert true.shape == predict.shape, f"Shape unmatched: arg #1 {true.shape} =/= arg #2 {predict.shape}"
+
     return (true == predict).astype(float).mean()
 
 
@@ -37,7 +31,7 @@ def fbeta(*args, beta: float, num_classes: int, average: str = "micro"):
         If 'micro', precision and recall are derived using TP and FP for all classes.
         If 'macro', precision and recall are derived using precision and recall for each class.
     """
-    eps = torch.finfo(torch.float32).eps
+
     if len(args) == 2:
         conf = draw_confusion_matrix(*args, num_classes=num_classes)
     else:
@@ -55,7 +49,7 @@ def fbeta(*args, beta: float, num_classes: int, average: str = "micro"):
         recall = micro_tp / (micro_tp + micro_fn + eps)
         precision = micro_tp / (micro_tp + micro_fp + eps)
 
-        micro_f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + eps)
+        micro_f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + EPS)
         return micro_f1
 
     elif average == "macro":
@@ -63,7 +57,7 @@ def fbeta(*args, beta: float, num_classes: int, average: str = "micro"):
         for tp, r, c in zip(tp_set, row, col):
             precision = tp / (c + eps)
             recall = tp / (r + eps)
-            f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + eps)
+            f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + EPS)
             macro_f1 += f1
 
         return macro_f1 / num_classes

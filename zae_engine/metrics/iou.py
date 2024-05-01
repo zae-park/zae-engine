@@ -3,53 +3,40 @@ from typing import Union, Tuple, List
 import numpy as np
 import torch
 
-from .utils import np2torch
+from .utils import EPS, np2torch, shape_check
 
 
-@np2torch
-def miou(
-    outputs: Union[np.ndarray, torch.Tensor],
-    labels: Union[np.ndarray, torch.Tensor],
-) -> torch.Tensor:
+@np2torch(dtype=torch.int)
+@shape_check
+def miou(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> torch.Tensor:
     """
-    Compute mean IoU for given outputs and labels.
-    :param outputs: Shape - [-1, dim]. tensor (or nd-array) of model's outputs.
-    :param labels: Shape - [-1, dim]. tensor (or nd-array) of labels.
+    Compute mean IoU for each value in given images(arguments).
+    TODO: this function works for 1-dimensional arrays or tensors, 2 or greater dimensional mode will be update.
+    :param img1: Shape - [-1, dim]. tensor (or nd-array) of model's outputs.
+    :param img2: Shape - [-1, dim]. tensor (or nd-array) of labels.
     :return: mIoU with shape [-1].
     """
 
-    assert (
-        "int" in str(outputs.dtype).lower() or "bool" in str(outputs.dtype).lower()
-    ), f"outputs array's elements data type must be int or bool type current element type is {outputs.dtype}"
+    if len(img1.shape) == 1:
+        img1 = img1.clone().reshape(1, -1)
+        img2 = img2.clone().reshape(1, -1)
+    n = len(img1)
 
-    assert (
-        "int" in str(labels.dtype) or "bool" in str(labels.dtype).lower()
-    ), f"labels array's elements data type must be int or bool type current element type is {labels.dtype}"
-
-    assert outputs.shape == labels.shape, f"Shape unmatched: arg #1 {outputs.shape} =/= arg #2 {labels.shape}"
-    if isinstance(outputs, np.ndarray):
-        outputs = torch.tensor(outputs)
-    if isinstance(labels, np.ndarray):
-        labels = torch.tensor(labels)
-    if len(labels.shape) == 1:
-        labels = labels.clone().reshape(1, -1)
-        outputs = outputs.clone().reshape(1, -1)
-    n = len(labels)
-
-    maximum = int(max(outputs.max(), labels.max()))
+    maximum = int(max(img1.max(), img2.max()))
     iou_ = torch.zeros(n)
     for m in range(maximum):
-        intersection = ((outputs == m).int() & (labels == m).int()).float().sum(-1)
-        union = ((outputs == m).int() | (labels == m).int()).float().sum(-1)
-        iou_ += intersection / (union + torch.finfo(torch.float32).eps)
+        intersection = ((img1 == m).int() & (img2 == m).int()).float().sum(-1)
+        union = ((img1 == m).int() | (img2 == m).int()).float().sum(-1)
+        iou_ += intersection / (union + EPS)
 
     return iou_ / maximum
 
 
-@np2torch
+@np2torch(dtype=torch.int)
+@shape_check
 def giou(
-    true_onoff: Union[np.ndarray, torch.Tensor, List[Union[int]]],
-    pred_onoff: Union[np.ndarray, torch.Tensor, List[Union[int]]],
+    true_onoff: Union[np.ndarray, torch.Tensor, List],
+    pred_onoff: Union[np.ndarray, torch.Tensor, List],
     iou: bool = False,
 ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
     """
@@ -61,19 +48,6 @@ def giou(
     :param iou: if True, return IoU with GIoU. Default is False.
     :return: GIoU, iou (option) with shape [-1].
     """
-
-    if not isinstance(true_onoff, torch.Tensor):
-        true_onoff = torch.tensor(true_onoff)
-    if not isinstance(pred_onoff, torch.Tensor):
-        pred_onoff = torch.tensor(pred_onoff)
-
-    assert (
-        "int" in str(true_onoff.dtype).lower()
-    ), f"true_onoff array's elements data type must be int, but receive {true_onoff.dtype}"
-
-    assert (
-        "int" in str(pred_onoff.dtype).lower()
-    ), f"pred_onoff array's elements data type must be int, but receive {pred_onoff.dtype}"
 
     if len(true_onoff.shape) == 1:
         true_onoff = true_onoff.clone().unsqueeze(0)
