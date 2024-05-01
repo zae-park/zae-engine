@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from torch.utils import data
 
 from zae_engine.data_pipeline import example_ecg
-from zae_engine import trainer, models, measure
+from zae_engine import trainer, models, metrics
 from zae_engine.trainer import mpu_utils
 
 
@@ -57,7 +57,7 @@ class ExTrainer(trainer.Trainer):
             out = self._to_device(out)
         prediction = out.argmax(1)
         loss = F.cross_entropy(out, y)
-        acc = measure.accuracy(self._to_cpu(y), self._to_cpu(prediction))
+        acc = metrics.accuracy(self._to_cpu(y), self._to_cpu(prediction))
         return {"loss": loss, "output": out, "acc": acc}
 
     def test_step(self, batch):
@@ -70,7 +70,7 @@ class ExTrainer(trainer.Trainer):
         out = self.model(x).softmax(1)
         prediction = out.argmax(1)
         loss = F.cross_entropy(out, y)
-        acc = measure.accuracy(self._to_cpu(y), self._to_cpu(prediction))
+        acc = metrics.accuracy(self._to_cpu(y), self._to_cpu(prediction))
         return {"loss": loss, "output": out, "acc": acc}
 
 
@@ -89,7 +89,7 @@ class ExTrainer2(trainer.Trainer):
         out = self.model(x)
         prediction = torch.cat(self._to_cpu(*out), dim=0)
         loss = self.mpu_loss(out, y)
-        acc = measure.accuracy(self._to_cpu(y), torch.cat(self._to_cpu(*out), dim=0).argmax(1))
+        acc = metrics.accuracy(self._to_cpu(y), torch.cat(self._to_cpu(*out), dim=0).argmax(1))
         return {"loss": loss, "output": prediction, "acc": acc}
 
     def test_step(self, batch):
@@ -102,7 +102,7 @@ class ExTrainer2(trainer.Trainer):
         out = self.model(x)
         prediction = torch.cat(self._to_cpu(*out), dim=0)
         loss = self.mpu_loss(out, y)
-        acc = measure.accuracy(self._to_cpu(y), torch.cat(self._to_cpu(*out), dim=0).argmax(1))
+        acc = metrics.accuracy(self._to_cpu(y), torch.cat(self._to_cpu(*out), dim=0).argmax(1))
         return {"loss": loss, "output": prediction, "acc": acc}
 
 
@@ -129,7 +129,7 @@ def core0():
     ex_loader3 = data.DataLoader(dataset=dataset3, batch_size=num_batch)
 
     result = np.concatenate(ex_trainer.inference(loader=ex_loader3), axis=0).argmax(1)
-    print(f"Accuracy: {measure.accuracy(test_y, result):.8f}")
+    print(f"Accuracy: {metrics.accuracy(test_y, result):.8f}")
 
     return result, ex_loader3.dataset.y
 
@@ -158,7 +158,7 @@ def core1():
     ex_loader3 = data.DataLoader(dataset=dataset3, batch_size=num_batch)
 
     result = np.concatenate(ex_trainer.inference(loader=ex_loader3), axis=0).argmax(1)
-    print(f"Accuracy: {measure.accuracy(test_y, result):.8f}")
+    print(f"Accuracy: {metrics.accuracy(test_y, result):.8f}")
 
     return result, ex_loader3.dataset.y
 
@@ -185,7 +185,7 @@ def core2():
     ex_loader3 = data.DataLoader(dataset=dataset3, batch_size=num_batch)
 
     result = np.concatenate(ex_trainer.inference(loader=ex_loader3), axis=0).argmax(1)
-    print(f"Accuracy: {measure.accuracy(test_y, result):.8f}")
+    print(f"Accuracy: {metrics.accuracy(test_y, result):.8f}")
 
     return result, ex_loader3.dataset.y
 
