@@ -8,6 +8,8 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 
+from ..utils.deco import shape_check, np2torch
+
 
 class MorphologicalLayer(nn.Module):
     def __init__(self, ops: str, window_size: List[int]):
@@ -186,9 +188,11 @@ def find_nearest(arr: Union[np.ndarray, torch.Tensor], value: int):
             return i_gap, right
 
 
+@np2torch(dtype=torch.int)
+@shape_check(2)
 def draw_confusion_matrix(
-    y_true: Union[np.ndarray, torch.Tensor], y_hat: Union[np.ndarray, torch.Tensor], num_classes: int
-):
+    y_hat: Union[np.ndarray, torch.Tensor], y_true: Union[np.ndarray, torch.Tensor], num_classes: int
+) -> torch.Tensor:
     """
     Compute confusion matrix.
     Both the y_true and y_hat have data type as integer, and match in shape.
@@ -198,9 +202,7 @@ def draw_confusion_matrix(
     :param num_classes: int
     :return: confusion matrix with 2-D nd-array.
     """
-
-    assert len(y_true) == len(y_hat), f"length unmatched: arg #1 {len(y_true)} =/= arg #2 {len(y_hat)}"
-    canvas = np.zeros((num_classes, num_classes))
+    canvas = torch.zeros((num_classes, num_classes))
 
     for true, hat in zip(y_true, y_hat):
         canvas[true, hat] += 1
