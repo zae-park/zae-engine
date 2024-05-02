@@ -37,6 +37,8 @@ class TestLoss(unittest.TestCase):
     def test_batch_dot(self):
         samples = torch.randn(size=(10, 256))
         dot = batch_wise_dot(samples)
+        self.assertEqual(np.diag(dot), np.ones(len(dot)))
+        self.assertEqual(np.transpose(dot, (0, 1)), dot)
 
 
 if __name__ == "__main__":
