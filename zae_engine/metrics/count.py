@@ -8,7 +8,7 @@ from ..utils.deco import EPS, np2torch, shape_check
 
 
 @np2torch(dtype=torch.int)
-@shape_check
+@shape_check(2)
 def accuracy(
     true: Union[np.ndarray, torch.Tensor],
     predict: Union[np.ndarray, torch.Tensor],
