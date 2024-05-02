@@ -4,8 +4,8 @@ import numpy as np
 import torch
 from typeguard import typechecked
 
-from zae_engine.operation import draw_confusion_matrix
-from .utils import np2torch
+from ..operation import draw_confusion_matrix
+from ..utils.deco import np2torch
 
 
 EPS = torch.finfo(torch.float32).eps

@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 from ..operation import draw_confusion_matrix
-from .utils import EPS, np2torch, shape_check
+from ..utils.deco import EPS, np2torch, shape_check
 
 
 @np2torch(dtype=torch.int)

@@ -3,7 +3,7 @@ from typing import Union, Tuple, List
 import numpy as np
 import torch
 
-from .utils import EPS, np2torch, shape_check
+from ..utils.deco import EPS, np2torch, shape_check
 
 
 @np2torch(dtype=torch.int)
