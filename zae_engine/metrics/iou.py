@@ -7,7 +7,7 @@ from ..utils.deco import EPS, np2torch, shape_check
 
 
 @np2torch(dtype=torch.int)
-@shape_check
+@shape_check(2)
 def miou(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> torch.Tensor:
     """
     Compute mean IoU for each value in given images(arguments).
@@ -33,32 +33,28 @@ def miou(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> to
 
 
 @np2torch(dtype=torch.int)
-@shape_check
+@shape_check('img1', 'img2')
 def giou(
-    true_onoff: Union[np.ndarray, torch.Tensor, List],
-    pred_onoff: Union[np.ndarray, torch.Tensor, List],
+    img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor,
     iou: bool = False,
 ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
     """
     Compute mean GIoU and IoU for given outputs and labels.
-    :param true_onoff: Shape - [-1, 2].
+    :param img1: Shape - [-1, 2].
     tensor (or nd-array) of on-off pairs. Each on-off pair corresponds to bounding box in object detection.
-    :param pred_onoff: Shape - [-1, 2].
+    :param img2: Shape - [-1, 2].
     tensor (or nd-array) of on-off pairs. Each on-off pair corresponds to bounding box in object detection.
     :param iou: if True, return IoU with GIoU. Default is False.
     :return: GIoU, iou (option) with shape [-1].
     """
 
-    if len(true_onoff.shape) == 1:
-        true_onoff = true_onoff.clone().unsqueeze(0)
-    if len(pred_onoff.shape) == 1:
-        pred_onoff = pred_onoff.clone().unsqueeze(0)
-    assert (
-        true_onoff.shape == pred_onoff.shape
-    ), f"Shape unmatched: arg #1 {true_onoff.shape} =/= arg #2 {pred_onoff.shape}"
+    if len(img1.shape) == 1:
+        img1 = img1.clone().unsqueeze(0)
+    if len(img2.shape) == 1:
+        img2 = img2.clone().unsqueeze(0)
 
-    true_on, true_off = true_onoff[:, 0], true_onoff[:, 1]
-    pred_on, pred_off = pred_onoff[:, 0], pred_onoff[:, 1]
+    true_on, true_off = img1[:, 0], img1[:, 1]
+    pred_on, pred_off = img2[:, 0], img2[:, 1]
     C_on = torch.min(true_on, pred_on)
     C_off = torch.max(true_off, pred_off)
 
