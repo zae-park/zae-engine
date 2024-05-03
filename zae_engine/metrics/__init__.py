@@ -1,5 +1,6 @@
 from .count import accuracy
-from .count import fbeta
+from .count import f_beta
+from .count import f_beta_from_mat
 from .signal import rms
 from .signal import mse
 from .signal import signal_to_noise
