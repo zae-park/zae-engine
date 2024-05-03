@@ -4,6 +4,7 @@ import numpy as np
 import torch
 
 from zae_engine.loss._loss import cross_entropy, batch_wise_dot
+from zae_engine import utils
 
 
 class TestLoss(unittest.TestCase):
@@ -36,9 +37,9 @@ class TestLoss(unittest.TestCase):
 
     def test_batch_dot(self):
         samples = torch.randn(size=(10, 256))
-        dot = batch_wise_dot(samples)
-        self.assertEqual(np.diag(dot), np.ones(len(dot)))
-        self.assertEqual(np.transpose(dot, (0, 1)), dot)
+        dot_mat = batch_wise_dot(samples, reduce=False)
+        self.assertLessEqual((1 - torch.diag(dot_mat)).mean(), utils.EPS)
+        self.assertLessEqual((torch.transpose(dot_mat, 0, 1) - dot_mat).mean(), utils.EPS)
 
 
 if __name__ == "__main__":
