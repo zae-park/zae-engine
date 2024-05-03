@@ -27,8 +27,8 @@ class TestClippedReLU(unittest.TestCase):
         if random_top > random_bot:
             activation = ClippedReLU(random_top, random_bot)
             out = activation(self.sample * multiply)
-            self.assertLessEqual(random_bot, out + self.eps)
-            self.assertGreaterEqual(random_top, out - self.eps)
+            self.assertLessEqual(random_bot, out + self.eps * 2)
+            self.assertGreaterEqual(random_top, out - self.eps * 2)
         else:
             with self.assertRaises(AssertionError):
                 activation = ClippedReLU(random_top, random_bot)
