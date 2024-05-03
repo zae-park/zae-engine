@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 import torch
 import torch.nn.functional as F
@@ -9,11 +9,12 @@ def cross_entropy(logit: torch.Tensor, y_hot: torch.Tensor, class_weights: Union
     return loss
 
 
-def batch_wise_dot(batch: torch.Tensor) -> torch.Tensor:
+def batch_wise_dot(batch: torch.Tensor, reduce: bool = True) -> torch.Tensor:
     """
     Compute dot-product for all combination of vectors in batch.
     Possible shape of batch is [Batch, N] where N is length of dimension.
     :param batch:
+    :param reduce:
     :return:
     """
     norm = torch.norm(batch, dim=1, keepdim=True)
@@ -22,5 +23,9 @@ def batch_wise_dot(batch: torch.Tensor) -> torch.Tensor:
     mat1 = normalized.permute(2, 0, 1)  # [N, batch, 1]
     mat2 = normalized.permute(2, 1, 0)  # [N, 1, batch]
     squared_mat = torch.bmm(mat1, mat2)  # [N, batch, batch]. 1st dimension represents element-wise product vector
-    dot_mat = squared_mat.sum(0)  # [batch, batch]. Each values represent dot-product value between two vector.
-    return torch.mean(dot_mat)  # - torch.mean(eye)
+
+    # If reduce is True, return shape is [batch, batch]. Each values represent dot-product value between two vector.
+    # If reduce is False, return average of values.
+    dot_mat = squared_mat.sum(None if reduce else 0)
+
+    return dot_mat
