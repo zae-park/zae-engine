@@ -31,7 +31,7 @@ def confusion_matrix(
     return canvas
 
 
-@np2torch(dtype=torch.int)
+@deco.np2torch(dtype=torch.int)
 def print_confusion_matrix(
     conf_mat: np.ndarray | torch.Tensor,
     cell_width: Optional[int] = 4,
