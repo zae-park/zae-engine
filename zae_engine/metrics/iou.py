@@ -3,11 +3,11 @@ from typing import Union, Tuple, List
 import numpy as np
 import torch
 
-from ..utils.deco import EPS, np2torch, shape_check
+from ..utils import deco
 
 
-@np2torch(dtype=torch.int)
-@shape_check(2)
+@deco.np2torch(dtype=torch.int)
+@deco.shape_check(2)
 def miou(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> torch.Tensor:
     """
     Compute mean IoU for each value in given images(arguments).
@@ -27,13 +27,13 @@ def miou(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> to
     for m in range(maximum):
         intersection = ((img1 == m).int() & (img2 == m).int()).float().sum(-1)
         union = ((img1 == m).int() | (img2 == m).int()).float().sum(-1)
-        iou_ += intersection / (union + EPS)
+        iou_ += intersection / (union + deco.EPS)
 
     return iou_ / maximum
 
 
-@np2torch(dtype=torch.int)
-@shape_check('img1', 'img2')
+@deco.np2torch(dtype=torch.int)
+@deco.shape_check('img1', 'img2')
 def giou(
     img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor,
     iou: bool = False,
@@ -58,14 +58,13 @@ def giou(
     C_on = torch.min(true_on, pred_on)
     C_off = torch.max(true_off, pred_off)
 
-    eps = +torch.finfo(torch.float32).eps
     C_area = C_off - C_on
     relative_area = C_area - (true_off - true_on)
     union = C_area  # they are same in 1-dimension
     intersection = torch.min(abs(true_on - pred_off), abs(true_off - pred_on))
 
-    IoU = intersection / (union + eps)
+    IoU = intersection / (union + deco.EPS)
     if iou:
-        return IoU - abs(relative_area / (C_area + eps)), IoU
+        return IoU - abs(relative_area / (C_area + deco.EPS)), IoU
     else:
-        return IoU - abs(relative_area / (C_area + eps))
+        return IoU - abs(relative_area / (C_area + deco.EPS))

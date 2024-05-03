@@ -4,11 +4,11 @@ import numpy as np
 import torch
 
 from .confusion import confusion_matrix
-from ..utils.deco import EPS, np2torch, shape_check
+from ..utils import deco
 
 
-@np2torch(dtype=torch.int)
-@shape_check(2)
+@deco.np2torch(dtype=torch.int)
+@deco.shape_check(2)
 def accuracy(
     true: Union[np.ndarray, torch.Tensor],
     predict: Union[np.ndarray, torch.Tensor],
@@ -17,8 +17,8 @@ def accuracy(
     return sum(correct) / len(correct)
 
 
-@np2torch(dtype=torch.int)
-@shape_check(2)
+@deco.np2torch(dtype=torch.int)
+@deco.shape_check(2)
 def f_beta(
         pred: np.ndarray | torch.Tensor,
         true: np.ndarray | torch.Tensor,
@@ -45,7 +45,7 @@ def f_beta(
     return f_beta_from_mat(conf, beta=beta, num_classes=num_classes, average=average)
 
 
-@np2torch(dtype=torch.int)
+@deco.np2torch(dtype=torch.int)
 def f_beta_from_mat(conf_mat: np.ndarray | torch.Tensor, beta: float, num_classes: int, average: str = "micro"):
     """
     Compute f-beta score using given confusion matrix (args#1 with asterisk).
@@ -70,18 +70,18 @@ def f_beta_from_mat(conf_mat: np.ndarray | torch.Tensor, beta: float, num_classe
         micro_fn = (row - tp_set).sum()
         micro_fp = (col - tp_set).sum()
 
-        recall = micro_tp / (micro_tp + micro_fn + EPS)
-        precision = micro_tp / (micro_tp + micro_fp + EPS)
+        recall = micro_tp / (micro_tp + micro_fn + deco.EPS)
+        precision = micro_tp / (micro_tp + micro_fp + deco.EPS)
 
-        micro_f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + EPS)
+        micro_f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + deco.EPS)
         return micro_f1
 
     elif average == "macro":
         macro_f1 = 0
         for tp, r, c in zip(tp_set, row, col):
-            precision = tp / (c + EPS)
-            recall = tp / (r + EPS)
-            f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + EPS)
+            precision = tp / (c + deco.EPS)
+            recall = tp / (r + deco.EPS)
+            f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + deco.EPS)
             macro_f1 += f1
 
         return macro_f1 / num_classes

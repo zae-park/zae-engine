@@ -6,11 +6,11 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 
-from ..utils.deco import shape_check, np2torch
+from ..utils import deco
 
 
-@np2torch(dtype=torch.int)
-@shape_check(2)
+@deco.np2torch(dtype=torch.int)
+@deco.shape_check(2)
 def confusion_matrix(
     y_hat: Union[np.ndarray, torch.Tensor], y_true: Union[np.ndarray, torch.Tensor], num_classes: int
 ) -> torch.Tensor:

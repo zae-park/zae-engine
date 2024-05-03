@@ -6,10 +6,10 @@ import torch
 import torch.nn.functional as F
 
 from ..metrics import giou as _giou, miou as _miou
-from ..utils.deco import shape_check
+from ..utils import deco
 
 
-@shape_check(2)
+@deco.shape_check(2)
 def mIoU(pred: torch.Tensor, true: torch.Tensor):
     """
     Compute mean IoU using given outputs and labels.
@@ -22,7 +22,7 @@ def mIoU(pred: torch.Tensor, true: torch.Tensor):
     return torch.mean(score)
 
 
-@shape_check(2)
+@deco.shape_check(2)
 def IoU(pred: torch.Tensor, true: torch.Tensor):
     """
     Compute mean IoU using given true_onoff and pred_onoff.
@@ -36,7 +36,7 @@ def IoU(pred: torch.Tensor, true: torch.Tensor):
     return torch.mean(1 - iou)
 
 
-@shape_check(2)
+@deco.shape_check(2)
 def GIoU(true_onoff: Union[np.ndarray, torch.Tensor], pred_onoff: Union[np.ndarray, torch.Tensor]):
     """
     Compute mean generalized IoU using given true_onoff and pred_onoff (https://arxiv.org/abs/1902.09630v2).
