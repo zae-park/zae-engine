@@ -3,7 +3,7 @@ from typing import Union
 import numpy as np
 import torch
 
-from ..operation import draw_confusion_matrix
+from .confusion import confusion_matrix
 from ..utils.deco import EPS, np2torch, shape_check
 
 
@@ -41,7 +41,7 @@ def f_beta(
         If 'macro', precision and recall are derived using precision and recall for each class.
     """
 
-    conf = draw_confusion_matrix(pred, true, num_classes=num_classes)
+    conf = confusion_matrix(pred, true, num_classes=num_classes)
     return f_beta_from_mat(conf, beta=beta, num_classes=num_classes, average=average)
 
 
