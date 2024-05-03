@@ -4,8 +4,6 @@ from typing import Union, Iterable
 import numpy as np
 import torch
 
-EPS = torch.finfo(torch.float32).eps
-
 
 def np2torch(dtype: torch.dtype):
     def deco(func):
@@ -40,7 +38,8 @@ def shape_check(*keys):
                 shape_list = [a.shape for a in args[:keys]]
             else:
                 shape_list = [kwargs[key].shape for key in keys]
-            assert set(shape_list) == 1, "Shape of given args is not same."
+            print(shape_list)
+            assert len(set(shape_list)) == 1, "Shape of given args is not same."
             return func(*args, **kwargs)
 
         return wrapper
