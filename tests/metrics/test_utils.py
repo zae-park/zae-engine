@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from zae_engine.metrics.utils import np2torch, shape_check
+from zae_engine.utils import deco
 
 
 class TestDecorator(unittest.TestCase):

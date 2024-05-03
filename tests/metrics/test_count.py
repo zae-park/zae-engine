@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from zae_engine.metrics.count import accuracy, fbeta
+from zae_engine.metrics.count import accuracy, f_beta, f_beta_from_mat
 
 
 class TestCount(unittest.TestCase):
