@@ -8,7 +8,7 @@ import wandb
 import numpy as np
 import torch
 
-from .utils import NeptuneLogger
+from .add_on import NeptuneLogger
 
 
 class Trainer(ABC):
