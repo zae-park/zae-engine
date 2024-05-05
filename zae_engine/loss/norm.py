@@ -1,7 +1,7 @@
 import torch
 
-from ..metrics import mse
+from ..metrics import mse as _mse
 
 
 def mse(true: torch.Tensor, predict: torch.Tensor):
-    return mse(true, predict)
+    return _mse(true, predict)

@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from zae_engine.loss.iou import miou, giou
+from zae_engine.loss.iou import mIoU, GIoU
 
 
 class TestLossIoU(unittest.TestCase):

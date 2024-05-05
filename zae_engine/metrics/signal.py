@@ -4,8 +4,7 @@ import numpy as np
 import torch
 from typeguard import typechecked
 
-from zae_engine.operation import draw_confusion_matrix
-from .utils import np2torch
+from ..utils import deco
 
 
 EPS = torch.finfo(torch.float32).eps
@@ -15,12 +14,12 @@ def rms(signal: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tens
     return (signal ** 2).mean() ** 0.5
 
 
-@np2torch(torch.float)
+@deco.np2torch(torch.float)
 def mse(signal1: Union[np.ndarray, torch.Tensor], signal2:Union[np.ndarray, torch.Tensor]):
     return ((signal1 - signal2) ** 2).mean()
 
 
-@np2torch(torch.float)
+@deco.np2torch(torch.float)
 def signal_to_noise(signal: Union[torch.Tensor | np.ndarray], noise: Union[torch.Tensor | np.ndarray]):
     """
     Compute signal-to-noise ratio.
@@ -31,7 +30,7 @@ def signal_to_noise(signal: Union[torch.Tensor | np.ndarray], noise: Union[torch
     return db
 
 
-@np2torch(torch.float)
+@deco.np2torch(torch.float)
 def peak_signal_to_noise(signal, noise, peak: Union[bool | int | float] = False):
     """
     Compute peak-signal-to-noise ratio.
