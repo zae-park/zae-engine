@@ -10,8 +10,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
-from zae_engine import trainer, models, measure, data_pipeline
-from zae_engine.operation import draw_confusion_matrix, print_confusion_matrix
+from zae_engine import trainer, models, metrics, data_pipeline
+from zae_engine.metrics.confusion import confusion_matrix, print_confusion_matrix
 
 
 class ExDataset(Dataset):
@@ -70,7 +70,7 @@ class ExTrainer(trainer.Trainer):
         predict = proba.argmax(1)
         loss = F.cross_entropy(proba, y)
 
-        acc = measure.accuracy(self._to_cpu(y.argmax(1)), self._to_cpu(predict))
+        acc = metrics.accuracy(self._to_cpu(y.argmax(1)), self._to_cpu(predict))
         return {"loss": loss, "output": predict, "acc": acc}
 
     def test_step(self, batch):
@@ -103,7 +103,7 @@ def main():
     trainer.run(n_epoch=epochs, loader=train_loader, valid_loader=valid_loader)
 
     test_result = np.stack(trainer.inference(loader=test_loader))
-    confusion_mat = draw_confusion_matrix(y_test, test_result, num_classes=10)
+    confusion_mat = confusion_matrix(y_test, test_result, num_classes=10)
     print_confusion_matrix(confusion_mat)
 
     elapsed_time = datetime.datetime.now() - kickoff_time

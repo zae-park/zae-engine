@@ -1,2 +1,2 @@
 from ._trainer import Trainer
-from .utils import *
+from .add_on import *

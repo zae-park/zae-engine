@@ -4,7 +4,7 @@ from typing import OrderedDict
 import torch.nn as nn
 
 from ..builds.cnn import CNNBase
-from ..utils import dim_converter
+from ..converter import dim_converter
 from ...nn_night.blocks import BasicBlock, Bottleneck, SE1d, CBAM1d
 
 res_map = {

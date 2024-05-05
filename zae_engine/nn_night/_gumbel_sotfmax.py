@@ -1,11 +1,16 @@
 import torch
 
 
-class GumbelRound(torch.autograd.Function):
+class GumbelSoftMax(torch.autograd.Function):
     """
     Re-parametric trick for categorical problems.
     ref: https://blog.evjang.com/2016/11/tutorial-categorical-variational.html
+    TODO:
+        - fix description
+        - add test case
+        - optimize
     """
+
     @staticmethod
     def forward(ctx, *args):
         # Expect input argument to be a single tensor.
@@ -13,7 +18,7 @@ class GumbelRound(torch.autograd.Function):
         rounded = torch.round(x)
         stopped = x.detach()
         ctx.save_for_backward(x, rounded, stopped)
-        return x + rounded - stopped    # returned rounded tensor.
+        return x + rounded - stopped  # returned rounded tensor.
 
     @staticmethod
     def backward(ctx, *grad_outputs):
@@ -23,7 +28,7 @@ class GumbelRound(torch.autograd.Function):
         return grad
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     tmp = torch.rand(10, dtype=torch.float64).clone().detach().requires_grad_(True)
     r = torch.round(tmp)
