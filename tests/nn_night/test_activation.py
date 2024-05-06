@@ -21,17 +21,16 @@ class TestClippedReLU(unittest.TestCase):
 
     def test_build(self):
         multiply = randint(1, 8)
-        random_top = rand() * multiply
-        random_bot = rand() * multiply
+        a, b = rand() * multiply, rand() * multiply
+        random_top, random_bot = max(a, b), min(a, b)
 
-        if random_top > random_bot:
-            activation = ClippedReLU(random_top, random_bot)
-            out = activation(self.sample * multiply)
-            self.assertLessEqual(random_bot, out + self.eps * 2)
-            self.assertGreaterEqual(random_top, out - self.eps * 2)
-        else:
-            with self.assertRaises(AssertionError):
-                activation = ClippedReLU(random_top, random_bot)
+        activation = ClippedReLU(upper=random_top, lower=random_bot)
+        out = activation(self.sample * multiply)
+        self.assertLessEqual(random_bot, out + self.eps * 2)
+        self.assertGreaterEqual(random_top, out - self.eps * 2)
+
+        with self.assertRaises(AssertionError):
+            activation = ClippedReLU(upper=random_bot, lower=random_top)  # Error when lower > upper
 
     def test_clip(self):
         activation = ClippedReLU(rand() + 1, rand())
