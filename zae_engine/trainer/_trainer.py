@@ -341,3 +341,7 @@ class ProgressChecker:
 
     def get_epoch(self):
         return self.__epoch
+
+    def init_state(self):
+        self.__step = 1
+        self.__epoch = 1
