@@ -4,24 +4,45 @@ from torch.optim import lr_scheduler, Optimizer
 
 
 class WarmUpScheduler(lr_scheduler.LRScheduler):
-    def __init__(self, optimizer: Optimizer, epoch, eta_min, last_epoch: int = -1):
+    def __init__(self, optimizer: Optimizer, total_steps, eta_min, last_epoch: int = -1):
         """
         optimizer: Adam, AdamW, ...
-        T_0: # of epochs in a cycle.
-        T_multi: # of cycle. (T_0 * T_multi = total epochs)
-        T_up: # of epochs for warm-up.
-        eta_max: Maximum value of learning rate.
-        gamma: Attenuation factor of learning rate.
+        total_steps: # of steps.
+        eta_max: Minimum value of learning rate.
         """
 
-        self.epoch = epoch
+        self.total_steps = total_steps
         self.eta_min = eta_min
         self.last_epoch = last_epoch
         self._step_count = 0
         super(WarmUpScheduler, self).__init__(optimizer, last_epoch)
 
     def get_lr(self):
-        return [self.eta_min + base_lr * self._step_count / self.epoch for base_lr in self.base_lrs]
+        return [self.eta_min + (lr - self.eta_min) * self._step_count / self.total_steps for lr in self.base_lrs]
+
+
+class CosineAnnealingScheduler(lr_scheduler.LRScheduler):
+    def __init__(self, optimizer: Optimizer, total_steps, eta_min, last_epoch: int = -1):
+        """
+        optimizer: Adam, AdamW, ...
+        total_steps: # of steps.
+        eta_max: Minimum value of learning rate.
+        """
+
+        self.total_steps = total_steps
+        self.eta_min = eta_min
+        self.last_epoch = last_epoch
+        self._step_count = 0
+        super(CosineAnnealingScheduler, self).__init__(optimizer, last_epoch)
+
+    def get_lr(self):
+        lrs = []
+        for lr in self.base_lrs:
+            radian = math.pi * self._step_count / self.total_steps
+            annealing = 0.5 * (math.cos(radian) + 1)
+            offset = self.eta_min
+            lrs.append(offset + (lr - offset) * annealing)
+        return lrs
 
 
 class CosineAnnealingWarmUpRestarts(lr_scheduler.LRScheduler):
