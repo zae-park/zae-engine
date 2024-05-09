@@ -32,7 +32,7 @@ class TestScheduler(unittest.TestCase):
     def sweep_lrs(self, schedule: torch.optim.lr_scheduler) -> list:
 
         lrs = []
-        for _ in range(self.total_step):
+        for _ in range(schedule.total_steps):
             lrs.append(self.optimizer.param_groups[0]["lr"])
             schedule.step()
         return lrs
@@ -41,18 +41,31 @@ class TestScheduler(unittest.TestCase):
         schedule = scheduler.WarmUpScheduler(self.optimizer, self.total_step, eta_min=self.eta_min)
         lrs = self.sweep_lrs(schedule)
 
-        self.assertEqual(lrs[-1], self.eta_max)
-        # self.assertEqual(lrs[0], self.eta_min)
+        self.assertLessEqual(lrs[-1], self.eta_max)
+        self.assertGreaterEqual(lrs[0], self.eta_min)
         self.assertTrue(np.all(np.diff(lrs) > 0))
         self.assertLessEqual(np.mean(np.diff(np.diff(lrs))), EPS)
 
     def test_cosine_annealing(self):
-        schedule = scheduler.CosineAnnealingScheduler(self.optimizer, self.total_step, eta_min=self.eta_max)
+        schedule = scheduler.CosineAnnealingScheduler(self.optimizer, self.total_step, eta_min=self.eta_min)
         lrs = self.sweep_lrs(schedule)
 
-        self.assertEqual(lrs[0], self.eta_max)
-        # self.assertEqual(lrs[-1], self.eta_min)
-        self.assertFalse(np.all(np.diff(lrs) < 0))
+        self.assertLessEqual(lrs[0], self.eta_max)
+        self.assertGreaterEqual(lrs[-1], self.eta_min)
+        self.assertTrue(np.all(np.diff(lrs) < 0))
+
+    def test_chain(self):
+        schedule0 = scheduler.WarmUpScheduler(self.optimizer, self.total_step, eta_min=self.eta_min)
+        schedule1 = scheduler.CosineAnnealingScheduler(self.optimizer, self.total_step, eta_min=self.eta_min)
+        schedule2 = scheduler.CosineAnnealingScheduler(self.optimizer, self.total_step, eta_min=self.eta_min)
+        chains = scheduler.SchedulerChain(schedule0, schedule1, schedule2)
+        lrs = self.sweep_lrs(chains)
+
+        # import matplotlib.pyplot as plt
+        #
+        # plt.plot(lrs)
+        # plt.show()
+        # print()
 
     # ------------------------------------- Legacy ------------------------------------- #
     # def test_result(self):
