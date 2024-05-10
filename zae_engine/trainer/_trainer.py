@@ -7,10 +7,11 @@ import tqdm
 import wandb
 import numpy as np
 import torch
+from torch import optim
 from torch.utils import data as td
 
 from .add_on import NeptuneLogger
-from ..schedulers.core import lr_scheduler, SchedulerBase
+from ..schedulers import core
 
 
 class Trainer(ABC):
@@ -34,8 +35,8 @@ class Trainer(ABC):
         model,
         device: torch.device,
         mode: str,
-        optimizer: torch.optim.Optimizer,
-        scheduler: Optional[lr_scheduler, SchedulerBase],
+        optimizer: optim.Optimizer,
+        scheduler: Optional[Union[optim.lr_scheduler.LRScheduler, core.SchedulerBase]],
         log_bar: bool = True,
         callbacks: Iterable = (),
         web_logger: Optional[dict[str, Union[object, dict]]] = None,
