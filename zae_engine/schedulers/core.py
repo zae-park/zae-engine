@@ -4,14 +4,14 @@ from torch.optim import lr_scheduler, Optimizer
 
 
 class SchedulerBase(lr_scheduler.LRScheduler, ABC):
-    def __init__(self, optimizer: Optimizer, total_steps, eta_min, last_epoch: int = -1):
+    def __init__(self, optimizer: Optimizer, total_iters: int, eta_min: float, last_epoch: int = -1):
         """
         optimizer: Adam, AdamW, ...
         total_steps: # of steps.
         eta_max: Minimum value of learning rate.
         """
         self.optimizer = optimizer
-        self.total_steps = total_steps
+        self.total_iters = total_iters
         self.eta_min = eta_min
         self.last_epoch = last_epoch
         self._step_count = 0
@@ -26,30 +26,28 @@ class SchedulerBase(lr_scheduler.LRScheduler, ABC):
 class SchedulerChain(SchedulerBase):
     def __init__(self, *schedulers: SchedulerBase):
         self.schedulers = schedulers
-        self.steps = self.step_check()
-        self.next_steps = self.steps[:-1]
-        self.total_steps = self.steps[-1]
+        self.optimizer = self.sanity_check()
+
+        iters = [s.total_iters for s in self.schedulers]
+        accumulate_iters = [sum(iters[: i + 1]) for i in range(len(iters))]
+        self.next_iters, self.total_iters = accumulate_iters[:-1], accumulate_iters[-1]
 
         self.i_scheduler = 0
-        tmp = self.initializer()
-        lr_scheduler.LRScheduler.__init__(self, optimizer=tmp[0], last_epoch=tmp[-1])
-        # super(SchedulerChain).__init__(*self.initializer())
+        lr_scheduler.LRScheduler.__init__(self, optimizer=self.optimizer, last_epoch=-1)
 
-    def initializer(self):
-        schedule = self.schedulers[self.i_scheduler]
-        return schedule.optimizer, schedule.total_steps, schedule.eta_min, schedule.last_epoch
-
-    def step_check(self):
-        schedulers_steps = [scheduler.total_steps for scheduler in self.schedulers]
-        return [sum(schedulers_steps[: i + 1]) for i in range(len(schedulers_steps))]
-
-    def next_scheduler(self):
-        self.i_scheduler += 1
-        self.initializer()
+    def sanity_check(self):
+        # Check given schedulers for same optimizer
+        opts = [s.optimizer for s in self.schedulers]
+        cnt = len(set([id(o) for o in opts]))
+        assert cnt == 1, (
+            f"The given schedulers were expected to use single optimizer, "
+            f"but {cnt} optimizers were detected: {opts}"
+        )
+        return opts[0]
 
     def step(self, epoch=None):
-        if self._step_count in self.next_steps:
-            self.next_scheduler()
+        if self._step_count in self.next_iters:
+            self.i_scheduler += 1
         self.schedulers[self.i_scheduler].step(epoch)
         self._step_count += 1
 
