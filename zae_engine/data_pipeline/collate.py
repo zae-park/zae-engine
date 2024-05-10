@@ -1,4 +1,4 @@
-from typing import Union, Callable, List, Tuple
+from typing import Union, Callable, List, Tuple, OrderedDict, overload, Iterator
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from functools import wraps
@@ -10,6 +10,51 @@ from torch.nn import functional as F
 from einops import repeat, reduce
 
 from zae_engine.operation import label_to_onoff
+
+
+class CollatorBase(ABC):
+    _fn: OrderedDict[str, Callable]  # type: ignore[assignment]
+
+    @overload
+    def __init__(self, *args: Callable) -> None: ...
+
+    @overload
+    def __init__(self, arg: "OrderedDict[str, Callable]") -> None: ...
+
+    def __init__(self, *args):
+        super().__init__()
+        if len(args) == 1 and isinstance(args[0], OrderedDict):
+            for key, module in args[0].items():
+                self.add_fn(key, module)
+        else:
+            for idx, module in enumerate(args):
+                self.add_fn(str(idx), module)
+        self.sample_batch = {}
+
+    def __len__(self) -> int:
+        return len(self._fn)
+
+    def __iter__(self) -> Iterator:
+        return iter(self._fn.values())
+
+    def io_check(self, fn: Callable) -> None:
+        keys = self.sample_batch.keys()
+        updated = fn(self.sample_batch)
+        assert isinstance(updated, type(self.sample_batch))
+        assert set(keys).issubset(updated.keys())
+
+    def set_batch(self, batch: Union[dict, OrderedDict]) -> None:
+        self.sample_batch = batch
+
+    def add_fn(self, name: str, fn: Callable) -> None:
+        self.io_check(fn)
+        self._fn[name] = fn
+
+    def __call__(self, batch: Union[dict, OrderedDict]) -> Union[dict, OrderedDict]:
+        for fn in self:
+            batch = fn(batch)
+
+        return batch
 
 
 class Collate_seq(ABC):
