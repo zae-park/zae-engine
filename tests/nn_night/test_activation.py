@@ -26,8 +26,8 @@ class TestClippedReLU(unittest.TestCase):
 
         activation = ClippedReLU(upper=random_top, lower=random_bot)
         out = activation(self.sample * multiply)
-        self.assertLessEqual(random_bot, out + self.eps * 2)
-        self.assertGreaterEqual(random_top, out - self.eps * 2)
+        self.assertLessEqual(random_bot, out * 1.001)  # margin for knee in ReLU
+        self.assertGreaterEqual(random_top, out * 0.999)  # margin for knee in ReLU
 
         with self.assertRaises(AssertionError):
             activation = ClippedReLU(upper=random_bot, lower=random_top)  # Error when lower > upper

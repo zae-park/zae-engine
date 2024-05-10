@@ -22,7 +22,7 @@ class TestScheduler(unittest.TestCase):
         pass
 
     def setUp(self) -> None:
-        self.total_step = randint(0, 1024)
+        self.total_iters = randint(0, 1024)
         a, b = random(), random()
         self.eta_min, self.eta_max = min(a, b), max(a, b)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.eta_max)
@@ -33,13 +33,13 @@ class TestScheduler(unittest.TestCase):
     def sweep_lrs(self, schedule: torch.optim.lr_scheduler) -> list:
 
         lrs = []
-        for _ in range(schedule.total_steps):
+        for _ in range(schedule.total_iters):
             lrs.append(self.optimizer.param_groups[0]["lr"])
             schedule.step()
         return lrs
 
     def test_warmup(self):
-        schedule = scheduler.WarmUpScheduler(self.optimizer, self.total_step, eta_min=self.eta_min)
+        schedule = scheduler.WarmUpScheduler(self.optimizer, self.total_iters, eta_min=self.eta_min)
         lrs = self.sweep_lrs(schedule)
 
         self.assertLessEqual(lrs[-1], self.eta_max)
@@ -48,7 +48,7 @@ class TestScheduler(unittest.TestCase):
         self.assertLessEqual(np.mean(np.diff(np.diff(lrs))), EPS)
 
     def test_cosine_annealing(self):
-        schedule = scheduler.CosineAnnealingScheduler(self.optimizer, self.total_step, eta_min=self.eta_min)
+        schedule = scheduler.CosineAnnealingScheduler(self.optimizer, self.total_iters, eta_min=self.eta_min)
         lrs = self.sweep_lrs(schedule)
 
         self.assertLessEqual(lrs[0], self.eta_max)

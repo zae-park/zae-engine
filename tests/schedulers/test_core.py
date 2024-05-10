@@ -32,7 +32,7 @@ class TestScheduler(unittest.TestCase):
     def sweep_lrs(self, schedule: torch.optim.lr_scheduler) -> list:
 
         lrs = []
-        for _ in range(schedule.total_steps):
+        for _ in range(schedule.total_iters):
             lrs.append(self.optimizer.param_groups[0]["lr"])
             schedule.step()
         return lrs
@@ -40,7 +40,7 @@ class TestScheduler(unittest.TestCase):
     def test_base(self):
 
         with self.assertRaises(TypeError):
-            base = core.SchedulerBase(self.optimizer, total_steps := randint(0, 1024), eta_min=self.eta_min)
+            base = core.SchedulerBase(self.optimizer, total_iters=randint(0, 1024), eta_min=self.eta_min)
 
     def test_chain(self):
         schedule0 = scheduler.WarmUpScheduler(self.optimizer, step1 := randint(0, 1024), eta_min=self.eta_min)
