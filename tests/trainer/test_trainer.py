@@ -38,7 +38,7 @@ class TestTrainer(unittest.TestCase):
         if self.device_check:
             self.assertEqual(in_device.get_device(), 0)
         in_cpu = self.trainer._to_cpu(in_device)
-        self.assertEqual(in_device.get_device(), -1)
+        self.assertEqual(in_cpu.get_device(), -1)
 
     def test_data_count(self):
         # ex_loader = torch.utils.data

@@ -7,6 +7,7 @@ import tqdm
 import wandb
 import numpy as np
 import torch
+from torch.utils import data as td
 
 from .add_on import NeptuneLogger
 
@@ -37,6 +38,7 @@ class Trainer(ABC):
         log_bar: bool = True,
         callbacks: Iterable = (),
         web_logger: Optional[dict[str, Union[object, dict]]] = None,
+        scheduler_step_on_batch: bool = False,
     ):
         if "cuda" in device.type:
             torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
@@ -51,6 +53,7 @@ class Trainer(ABC):
         self.log_train, self.log_test = defaultdict(list), defaultdict(list)
         self.loss_buffer, self.weight_buffer = torch.inf, defaultdict(list)
         self.callbacks = callbacks
+        self.scheduler_step_on_batch = scheduler_step_on_batch
         self.progress_checker = ProgressChecker()
         if web_logger:
             self.web_logger = self.check_web_logger(web_logger)
@@ -106,7 +109,7 @@ class Trainer(ABC):
         self.batch_size = self.loader.batch_size if self.loader is not None else 0
         self.valid_batch_size = self.valid_loader.batch_size if self.valid_loader is not None else 0
 
-    def run(self, n_epoch: int, loader, valid_loader=None, **kwargs) -> None:
+    def run(self, n_epoch: int, loader: td.DataLoader, valid_loader: Optional[td.DataLoader] = None, **kwargs) -> None:
         """
         Run for a given loader.
         If valid_loader is not None, the model evaluates the data in valid_loader for every epoch.
@@ -124,15 +127,16 @@ class Trainer(ABC):
             else:
                 print("Epoch %d" % (e + 1))
             self._data_count(initial=True)
-            self.run_epoch(loader)
+            self.run_epoch(loader, **kwargs)
             if valid_loader:
                 self.toggle()
-                self.run_epoch(valid_loader)
+                self.run_epoch(valid_loader, **kwargs)
                 self.toggle()
             if self.mode == "train":
                 cur_loss = np.mean(self.log_test["loss"] if valid_loader else self.log_train["loss"]).item()
                 self.check_better(cur_epoch=e + 1, cur_loss=cur_loss)
-                self.scheduler.step(**kwargs)
+                if not self.scheduler_step_on_batch:
+                    self.scheduler.step(**kwargs)
                 self.progress_checker.update_epoch()
 
     def run_callback(self):
@@ -140,11 +144,11 @@ class Trainer(ABC):
             for cb in self.callbacks:
                 cb(self)  # replace even
 
-    def run_epoch(self, loader) -> None:
+    def run_epoch(self, loader: td.DataLoader, **kwargs) -> None:
         self.log_reset()
         progress = tqdm.tqdm(loader, position=1, leave=False) if self.log_bar else loader
         for i, batch in enumerate(progress):
-            self.run_batch(batch)
+            self.run_batch(batch, **kwargs)
             self._data_count()
             desc, printer = self.print_log(cur_batch=i + 1, num_batch=len(loader))
             if self.log_bar:
@@ -152,7 +156,7 @@ class Trainer(ABC):
             else:
                 print(desc, **printer)
 
-    def run_batch(self, batch: Union[tuple, dict]) -> None:
+    def run_batch(self, batch: Union[tuple, dict], **kwargs) -> None:
         """
         Run for a batch (not epoch)
         """
@@ -163,6 +167,8 @@ class Trainer(ABC):
             step_dict = self.train_step(batch)
             step_dict["loss"].backward()
             self.optimizer.step()
+            if self.scheduler_step_on_batch:
+                self.scheduler.step(**kwargs)
 
         elif self.mode == "test":
             self.model.eval()
