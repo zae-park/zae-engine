@@ -7,9 +7,11 @@ import tqdm
 import wandb
 import numpy as np
 import torch
+from torch import optim
 from torch.utils import data as td
 
 from .add_on import NeptuneLogger
+from ..schedulers import core
 
 
 class Trainer(ABC):
@@ -33,28 +35,34 @@ class Trainer(ABC):
         model,
         device: torch.device,
         mode: str,
-        optimizer: Optional[torch.optim.Optimizer] = None,
-        scheduler: Optional = None,
+        optimizer: optim.Optimizer,
+        scheduler: Optional[Union[optim.lr_scheduler.LRScheduler, core.SchedulerBase]],
         log_bar: bool = True,
         callbacks: Iterable = (),
         web_logger: Optional[dict[str, Union[object, dict]]] = None,
         scheduler_step_on_batch: bool = False,
     ):
+        # Init with given args
         if "cuda" in device.type:
             torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
         self.device = device
-        self.loader, self.n_data, self.batch_size = None, None, None
-        self.valid_loader, self.n_valid_data, self.valid_batch_size = None, None, None
+        self.model = self._to_device(model)
         self.mode = mode
-        self.log_bar = log_bar
         self.optimizer = optimizer
         self.scheduler = scheduler
-        self.model = self._to_device(model)
-        self.log_train, self.log_test = defaultdict(list), defaultdict(list)
-        self.loss_buffer, self.weight_buffer = torch.inf, defaultdict(list)
+        self.log_bar = log_bar
+        self.progress_checker = ProgressChecker()
+
+        # Init with options
         self.callbacks = callbacks
         self.scheduler_step_on_batch = scheduler_step_on_batch
-        self.progress_checker = ProgressChecker()
+
+        # Init vars
+        self.log_train, self.log_test = defaultdict(list), defaultdict(list)
+        self.loss_buffer, self.weight_buffer = torch.inf, defaultdict(list)
+        self.loader, self.n_data, self.batch_size = None, None, None
+        self.valid_loader, self.n_valid_data, self.valid_batch_size = None, None, None
+
         if web_logger:
             self.web_logger = self.check_web_logger(web_logger)
 
@@ -109,6 +117,16 @@ class Trainer(ABC):
         self.batch_size = self.loader.batch_size if self.loader is not None else 0
         self.valid_batch_size = self.valid_loader.batch_size if self.valid_loader is not None else 0
 
+    def _scheduler_step_check(self, epoch: int) -> None:
+        if "total_iters" in self.scheduler.__dict__ and self.scheduler_step_on_batch:
+            remain = 1 if (not self.loader.drop_last) and (self.n_data % self.batch_size) else 0
+            batch_cnt = self.n_data // self.batch_size + remain
+            need_steps = epoch * batch_cnt
+            assert self.scheduler.total_iters >= need_steps, (
+                f'The "total_iters" {self.scheduler.total_iters} for the given scheduler is insufficient.'
+                f"It must be at least more than the total iterations {need_steps} required during training."
+            )
+
     def run(self, n_epoch: int, loader: td.DataLoader, valid_loader: Optional[td.DataLoader] = None, **kwargs) -> None:
         """
         Run for a given loader.
@@ -120,6 +138,7 @@ class Trainer(ABC):
         """
         self.loader, self.valid_loader = loader, valid_loader
         self._check_batch_size()
+        self._scheduler_step_check(n_epoch)
         progress = tqdm.tqdm(range(n_epoch), position=0, leave=True) if self.log_bar else range(n_epoch)
         for e in progress:
             if self.log_bar:
