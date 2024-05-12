@@ -250,3 +250,170 @@ class BeatCollateSeq:
             return func(*args, **kwargs)
 
         return wrapped_func
+
+
+class Collator(Collate_seq):
+    def __init__(self, feat_dim: int = 27, max_length: int = 512, *logics: str):
+        super().__init__(sequence=logics)
+        self.logics = logics
+        self.max_length = max_length
+        self.func_map = {
+            "sort": self.sort,
+            "event": self.events,
+            "time": self.time_stamp,
+            "purchase": self.purchase,
+            "hot": self.hot,
+            "emb": self.emb,
+            "loc": self.relative_size,
+            "dict": self.as_dict,
+        }
+        self.url_eye = torch.eye(14, dtype=torch.float32)
+        self.event_map = {"null": 0, "pageview": 1, "click": 2, "purchase": 3}
+        self.event_eye = torch.eye(len(self.event_map), dtype=torch.float32)
+
+        self.canvas = torch.zeros(self.max_length, feat_dim)
+
+    def as_dict(self, mini_batch):
+        return mini_batch._asdict()
+
+    def chunk(self, mini_batch):
+        return mini_batch
+
+    def sort(self, mini_batch):
+        sorted_cols = [k for k in mini_batch.keys() if (k.endswith("list") and not k.startswith("request"))]
+        dt2int = np.array(mini_batch["tracking_date_list"], dtype=int)
+        sort_idx = np.argsort(dt2int)
+
+        mini_batch["tracking_date_list"] = dt2int[sort_idx]
+        for i, c in enumerate(sorted_cols):
+            try:
+                mini_batch[c] = mini_batch[c][sort_idx]
+            except:
+                mini_batch[c] = np.zeros_like(mini_batch["event_list"])[sort_idx]
+        return mini_batch
+
+    def hot(self, mini_batch):
+        # subsequence method for url_label
+
+        mini_batch["url_sanity"] = torch.ones(1)
+        label_cnt = len(mini_batch["label_list"])
+        event_cnt = len(mini_batch["event_list"])
+        if label_cnt > event_cnt:
+            mini_batch["label_list"] = [0] * len(mini_batch["event_list"])
+            mini_batch["url_sanity"] = torch.zeros(1)
+        else:
+            pageview_cnt = mini_batch["event_list"].count("pageview")
+            if pageview_cnt == label_cnt:
+                raw_labels = list(reversed(mini_batch["label_list"]))
+                mini_batch["label_list"] = [
+                    raw_labels.pop() if e == "pageview" else 0 for e in mini_batch["event_list"]
+                ]
+                mini_batch["url_sanity"] = torch.ones(1)
+            else:
+                mini_batch["label_list"] = [0] * len(mini_batch["event_list"])
+                mini_batch["url_sanity"] = torch.zeros(1)
+        if event_cnt < 16:
+            mini_batch["url_sanity"] = torch.zeros(1)
+        label_list = mini_batch["label_list"]
+
+        mini_batch["label_list"] = np.array(label_list, dtype=int)
+        mini_batch["label_hots"] = self.url_eye[np.array(label_list, dtype=int)]
+
+        agent = mini_batch["agent_list"]
+        mini_batch["agent_list"] = np.array([[1] if a.startswith == "[mobile" else [0] for a in agent])
+        return mini_batch
+
+    def time_stamp(self, mini_batch):
+        # subsequence method for tracking_time_list
+        ts = mini_batch["tracking_date_list"]
+        mini_batch["time_delay"] = [t - ts[0] for t in ts]
+        return mini_batch
+
+    def relative_size(self, mini_batch):
+        # subsequence method to calculate position of click event
+        mini_batch["event_list"] = np.array(mini_batch["event_list"])
+        events = mini_batch["event_list"]
+        location = list(reversed(mini_batch["location_list"]))
+        mini_batch["location_list"] = np.array(
+            [ast.literal_eval(location.pop()) if e == "click" else [0, 0] for e in events]
+        )
+        mini_batch["window_list"] = np.array([ast.literal_eval(l) for l in mini_batch["window_list"]])
+        mini_batch["page_list"] = np.array([ast.literal_eval(l.replace("null", "0")) for l in mini_batch["page_list"]])
+        mini_batch["screen_list"] = np.array([ast.literal_eval(l) for l in mini_batch["screen_list"]])
+
+        return mini_batch
+
+    def purchase(self, mini_batch):
+        # mini_batch['purchase'] = torch.tensor([True if max(mini_batch['event_list']) == 3 else False])
+        purchase_idx = np.where(mini_batch["event_list"] == "purchase")[0]
+        if not purchase_idx:
+            mini_batch["purchase"] = torch.tensor([False])
+        else:
+            mini_batch["purchase"] = torch.tensor([True])
+            sorted_cols = [k for k in mini_batch.keys() if (k.endswith("list") and not k.startswith("request"))]
+            for c in sorted_cols:
+                mini_batch[c] = mini_batch[c][: purchase_idx[0]]
+
+        return mini_batch
+
+    def events(self, mini_batch):
+        # subsequence method for event_list
+        event_list = mini_batch["event_list"]
+        mini_batch["event_hots"] = [self.event_eye[self.event_map[e]] for e in event_list]
+        return mini_batch
+
+    def emb(self, mini_batch):
+        try:
+            emb_vec = torch.cat(
+                [
+                    torch.stack(mini_batch["event_hots"]),  # length 3 + 1(no-event space)
+                    torch.tensor(mini_batch["label_hots"]),  # length 14
+                    torch.tensor(mini_batch["location_list"]),  # length 2
+                    torch.tensor(mini_batch["window_list"]),  # length 2
+                    torch.tensor(mini_batch["page_list"]),  # length 2
+                    torch.tensor(mini_batch["screen_list"]),  # length 2
+                    torch.tensor(mini_batch["agent_list"]),  # length 1
+                ],
+                dim=1,
+            )  # Total length of feature : 27
+        except TypeError:
+            emb_vec = torch.cat(
+                [
+                    torch.stack(mini_batch["event_hots"]),  # length 3 + 1(no-event space)
+                    torch.tensor(mini_batch["label_hots"]),  # length 14
+                    torch.tensor(mini_batch["location_list"]),  # length 2
+                    torch.tensor(mini_batch["location_list"]),  # length 2
+                    torch.tensor(mini_batch["location_list"]),  # length 2
+                    torch.tensor(mini_batch["location_list"]),  # length 2
+                    torch.tensor(mini_batch["location_list"][:, 0:1]),  # length 1
+                ],
+                dim=1,
+            )  # Tota
+
+        canvas = torch.clone(self.canvas)
+        t_canvas = torch.ones(len(canvas)) * -1  # represent timestamp for no-event element as -1
+
+        if len(emb_vec) > len(canvas):
+            overlap = emb_vec[: len(canvas)]
+            t_canvas[: len(overlap)] = torch.tensor(mini_batch["time_delay"][: len(canvas)])
+        else:
+            canvas[: len(emb_vec), :] = emb_vec
+            canvas[len(emb_vec) :, 0] = 1
+            t_canvas[: len(emb_vec)] = torch.tensor(mini_batch["time_delay"])
+        mini_batch["emb"] = canvas
+        mini_batch["t_delay"] = t_canvas
+        return mini_batch
+
+    def __call__(self, batch: list[dict], *args, **kwargs):
+        result = defaultdict(list)
+        for b in batch:
+            for logic in self.logics:
+                b = self.func_map[logic](b)
+            for k, v in b.items():
+                result[k].append(v)
+
+        tensor_id = ["emb", "t_delay", "purchase", "url_sanity"]
+        return {k: torch.stack(v) if k in tensor_id else v for k, v in result.items()}
+
+        # out = {i: result[i] for i in ['site_id', 'container_id', 'user_id', 'browser_id', 'session_id', 'purchase']}
+        # return {k: v for k, v in result.items()}

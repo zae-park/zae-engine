@@ -8,8 +8,8 @@ from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import Dataset, DataLoader
 
 import zae_engine
-from zae_engine.data_pipeline.collate import Collate_seq
-from zae_engine.models import sec10_classification
+from ..data import Collate_seq
+from ..models import sec10_classification
 
 
 def core(x: np.ndarray, batch_size: int):
