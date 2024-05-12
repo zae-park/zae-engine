@@ -1,12 +1,12 @@
 from collections import defaultdict
-from typing import Union, Tuple, List, Callable
+from typing import Union
 
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
 from zae_engine import models, trainer
-from zae_engine.data_pipeline.collate import BeatCollateSeq as Col
+from zae_engine.data.collate.collate import BeatCollateSeq as Col
 from zae_engine.operation import label_to_onoff, sanity_check, onoff_to_label
 
 

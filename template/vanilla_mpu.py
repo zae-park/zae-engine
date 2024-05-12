@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils import data
 
-from zae_engine.data_pipeline import example_ecg
+from zae_engine.utils import example_ecg
 from zae_engine import trainer, models, metrics
 from zae_engine.trainer import mpu_utils
 
