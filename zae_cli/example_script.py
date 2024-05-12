@@ -1,4 +1,3 @@
-import os
 import datetime
 from collections import namedtuple
 
@@ -6,11 +5,10 @@ import numpy as np
 from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
-from zae_engine import trainer, models, metrics, data_pipeline
+from zae_engine import trainer, models, metrics
 from zae_engine.metrics.confusion import confusion_matrix, print_confusion_matrix
 
 
@@ -35,29 +33,6 @@ class ExDataset(Dataset):
             return namedtuple("item", ["x", "y"])(x, y)
         else:
             raise ValueError
-
-
-class ExModel(models.CNNBase):
-    def __init__(
-        self,
-        ch_in: int = 1,
-        ch_out: int = 10,
-        width: int = 2,
-        kernel_size: int or tuple = (3, 3),
-        depth: int = 3,
-        order: int = 1,
-        stride: list or tuple = (2, 2),
-    ):
-        super().__init__(
-            ch_in=ch_in, ch_out=ch_out, width=width, kernel_size=kernel_size, depth=depth, order=order, stride=stride
-        )
-        self.pool = nn.Sequential(nn.Flatten(), nn.AdaptiveAvgPool1d(32))
-        self.head = nn.Linear(32, ch_out)
-
-    def forward(self, x):
-        out = self.body(x)
-        out = self.pool(out)
-        return self.head(out)
 
 
 class ExTrainer(trainer.Trainer):
@@ -94,15 +69,15 @@ def main():
     valid_loader = DataLoader(dataset=ExDataset(x_valid, y_valid), batch_size=batch_size * 2)
     test_loader = DataLoader(dataset=ExDataset(x_test, y_test), batch_size=batch_size * 2)
 
-    model = ExModel()
+    model = models.foundations.resnet18(pretrained=True)
     opt = torch.optim.Adam(params=model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=opt, lr_lambda=lambda x: 0.9**epochs)
 
-    trainer = ExTrainer(model, device=device, optimizer=opt, scheduler=scheduler)
+    ex_trainer = ExTrainer(model, device=device, optimizer=opt, scheduler=scheduler)
 
-    trainer.run(n_epoch=epochs, loader=train_loader, valid_loader=valid_loader)
+    ex_trainer.run(n_epoch=epochs, loader=train_loader, valid_loader=valid_loader)
 
-    test_result = np.stack(trainer.inference(loader=test_loader))
+    test_result = np.stack(ex_trainer.inference(loader=test_loader))
     confusion_mat = confusion_matrix(y_test, test_result, num_classes=10)
     print_confusion_matrix(confusion_mat)
 
