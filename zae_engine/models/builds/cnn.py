@@ -85,13 +85,6 @@ class CNNBase(nn.Module):
     ) -> nn.Sequential:
 
         norm_layer = self.norm_layer
-        downsample = None
-
-        if stride != 1:
-            downsample = nn.Sequential(
-                nn.Conv2d(ch_in, ch_out * self.block.expansion, kernel_size=1, stride=stride),
-                norm_layer(ch_out * self.block.expansion),
-            )
 
         layers = []
         # for 1st block
