@@ -4,9 +4,23 @@ from typing import Union, Dict
 
 import torch
 from torch.utils.data import Dataset, DataLoader
+from torch import optim
 
 from zae_engine.models.foundations.resnet import resnet18
 from zae_engine.trainer import Trainer
+from zae_engine.schedulers import WarmUpScheduler
+
+
+class ExDataset(Dataset):
+    def __init__(self, n_data: int):
+        super(ExDataset, self).__init__()
+        self.n_data = n_data
+
+    def __len__(self):
+        return self.n_data
+
+    def __getitem__(self, idx):
+        return idx
 
 
 class ExTrainer(Trainer):
@@ -21,28 +35,45 @@ class ExTrainer(Trainer):
 
 
 class TestTrainer(unittest.TestCase):
-    ex_dataset = Dataset()
+    model = None
+    optimizer = None
 
-    ex_model = resnet18()
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    ex_scheduler = torch.optim.lr_scheduler
-    ex_optimizer = torch.optim.Adam
-    trainer = ExTrainer(ex_model, device, mode="train", scheduler=ex_scheduler, optimizer=ex_optimizer)
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.model = resnet18()
+        cls.cpu = torch.device("cpu")
+        cls.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        cls.optimizer = optim.Adam(cls.model.parameters())
+        cls.scheduler = WarmUpScheduler(cls.optimizer, total_iters=randint(0, 256))
+        cls.dataset = Dataset()
 
     def setUp(self) -> None:
-        self.device_check = torch.cuda.is_available()
+        self.dataset = ExDataset(n_data=randint(0, 256))
+        self.trainer = ExTrainer(self.model, self.device, "train", scheduler=self.scheduler, optimizer=self.optimizer)
 
     def test_device_transfer(self):
         sample = torch.zeros(1, 3, 28, 28)
-        in_device = self.trainer._to_device(sample)
-        if self.device_check:
-            self.assertEqual(in_device.get_device(), 0)
-        in_cpu = self.trainer._to_cpu(in_device)
-        self.assertEqual(in_cpu.get_device(), -1)
+        dummy_sample = 1
 
-    def test_data_count(self):
-        # ex_loader = torch.utils.data
-        pass
+        if torch.cuda.is_available():
+            in_a_device = self.trainer._to_device(sample)
+            in_are_device = self.trainer._to_device(sample, dummy_sample)
+            self.assertEqual(in_a_device.get_device(), 0)
+            for in_device in in_are_device:
+                self.assertEqual(in_device.get_device(), 0)
+        else:
+            in_a_cpu = self.trainer._to_cpu(sample)
+            in_are_cpu = self.trainer._to_cpu(sample, dummy_sample)
+            self.assertEqual(in_a_cpu.get_device(), -1)
+            for in_cpu in in_are_cpu:
+                self.assertEqual(in_cpu.get_device(), -1)
+
+    # def test_data_count(self):
+    #       Test in Runner
+    #     loader = DataLoader(self.dataset)
+    #     self.trainer.loader = loader
+    #
+    #     pass
 
     def test_toggle(self):
         toggle_count = randint(1, 256)
