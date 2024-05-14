@@ -1,5 +1,6 @@
 import unittest
 import os
+import math
 from random import randint
 from typing import Union, Dict
 
@@ -30,7 +31,7 @@ class ExTrainer(Trainer):
         super(ExTrainer, self).__init__(model, device, mode, scheduler=scheduler, optimizer=optimizer, *args, **kwargs)
 
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
-        return {"loss": torch.ones(1)}
+        return {"loss": torch.ones(1, requires_grad=True)}
 
     def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         return self.train_step(batch)
@@ -68,10 +69,10 @@ class TestTrainer(unittest.TestCase):
 
         if torch.cuda.is_available():
             in_a_device = self.trainer._to_device(sample)
-            in_are_device = self.trainer._to_device(sample, dummy_sample)
+            in_device, dummy_in_device = self.trainer._to_cpu(sample, dummy_sample)
             self.assertEqual(in_a_device.get_device(), 0)
-            for in_device in in_are_device:
-                self.assertEqual(in_device.get_device(), 0)
+            self.assertEqual(in_device.get_device(), -1)
+            self.assertEqual(id(dummy_sample), id(dummy_in_device))
         else:
             in_a_cpu = self.trainer._to_cpu(sample)
             self.assertEqual(in_a_cpu.get_device(), -1)
@@ -82,13 +83,13 @@ class TestTrainer(unittest.TestCase):
 
     def test_run(self):
         # test _check_batch_size
-        size = min(self.trainer.loader.batch_size, self.n_data)
-        self.assertEqual(self.trainer.batch_size, size)
+        self.assertEqual(self.trainer.batch_size, self.trainer.loader.batch_size)
         self.assertEqual(self.trainer.valid_batch_size, 0)
         # test _scheduler_step_check
         pass
         # test logging
-        self.assertEqual(self.trainer.batch_cnt, len(self.trainer.log_train))
+        batch_cnt = math.ceil(self.n_data / self.trainer.batch_size)
+        self.assertEqual(batch_cnt, len(self.trainer.log_train["loss"]))
         self.assertEqual(0, len(self.trainer.log_test))
 
     def test_steps(self):
@@ -98,10 +99,14 @@ class TestTrainer(unittest.TestCase):
         self.assertDictEqual(dummy_train, dummy_test)
 
     def test_toggle(self):
+        pre_mode = self.trainer.mode
         toggle_count = randint(1, 256)
         for i in range(toggle_count):
             self.trainer.toggle()
-        self.assertEqual(self.trainer.mode, "test" if toggle_count % 2 else "train")
+        if toggle_count % 2:
+            self.assertNotEqual(self.trainer.mode, pre_mode)
+        else:
+            self.assertEqual(self.trainer.mode, pre_mode)
 
         self.trainer.toggle("zae-park")
         self.assertEqual(self.trainer.mode, "zae-park")
@@ -109,15 +114,14 @@ class TestTrainer(unittest.TestCase):
         self.assertEqual(self.trainer.mode, "train")
 
     def test_check_better(self):
-        pre_buffer = self.trainer.weight_buffer
+        pre_buffer = len(self.trainer.weight_buffer["epoch"])
         self.trainer.run(n_epoch=1, loader=self.loader)
-        mid_buffer = self.trainer.weight_buffer
-        self.trainer.train_step = lambda batch: {"loss": torch.zeros(1)}
+        mid_buffer = len(self.trainer.weight_buffer["epoch"])
+        self.trainer.train_step = lambda batch: {"loss": torch.zeros(1, requires_grad=True)}
         self.trainer.run(n_epoch=1, loader=self.loader)
-        post_buffer = self.trainer.weight_buffer
-        self.assertDictEqual(pre_buffer, mid_buffer)
-        with self.assertRaises(AssertionError):
-            self.assertDictEqual(mid_buffer, post_buffer)
+        post_buffer = len(self.trainer.weight_buffer["epoch"])
+        self.assertEqual(pre_buffer, mid_buffer)
+        self.assertGreater(pre_buffer, post_buffer)
 
     def test_log_reset(self):
         self.trainer.log_reset()
@@ -133,25 +137,28 @@ class TestTrainer(unittest.TestCase):
             self.assertNotEqual(c_batch, n_batch)
         self.assertIn(f"{c_batch}/{n_batch}", log_str)
 
-    def test_save_model(self):
+    def test_model_save_load(self):
+        dummy_sample = self.trainer._to_device(torch.ones((1, 3, 256, 256)), dtype=torch.float32)
+
+        # test save_model
         self.trainer.save_model("./test.pth")
         dir_list = os.listdir(".")
         self.assertIn("test.pth", dir_list)
 
-    def test_apply_weight(self):
-        pre_weight = self.trainer.model.state_dict()
+        # test apply_weight
+        pre_result = self.trainer.model(dummy_sample)
         self.trainer.model.apply(utility.initializer)
-        mid_weight = self.trainer.model.state_dict()
+        mid_result = self.trainer.model(dummy_sample)
         self.trainer.apply_weights("./test.pth", strict=True)
-        post_weight = self.trainer.model.state_dict()
-        self.assertDictEqual(pre_weight, post_weight)
-        with self.assertRaises(AssertionError):
-            self.assertDictEqual(mid_weight, post_weight)
+        post_result = self.trainer.model(dummy_sample)
+        self.assertEqual(self.trainer._to_cpu(pre_result).sum(), self.trainer._to_cpu(post_result).sum())
+        self.assertNotEqual(self.trainer._to_cpu(mid_result).sum(), self.trainer._to_cpu(post_result).sum())
 
     def test_inference(self):
         self.trainer.inference(loader=self.loader)
-        self.assertEqual(self.trainer.valid_batch_size, len(self.trainer.log_test))
-        self.assertEqual(0, len(self.trainer.log_train))
+        batch_cnt = math.ceil(self.n_data / self.loader.batch_size)
+        self.assertEqual(batch_cnt, len(self.trainer.log_test["loss"]))
+        self.assertEqual(0, len(self.trainer.log_train["loss"]))
 
 
 if __name__ == "__main__":
