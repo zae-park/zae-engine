@@ -63,10 +63,11 @@ class TestTrainer(unittest.TestCase):
                 self.assertEqual(in_device.get_device(), 0)
         else:
             in_a_cpu = self.trainer._to_cpu(sample)
-            in_are_cpu = self.trainer._to_cpu(sample, dummy_sample)
             self.assertEqual(in_a_cpu.get_device(), -1)
-            for in_cpu in in_are_cpu:
-                self.assertEqual(in_cpu.get_device(), -1)
+
+            in_cpu, dummy_in_cpu = self.trainer._to_cpu(sample, dummy_sample)
+            self.assertEqual(in_cpu.get_device(), -1)
+            self.assertEqual(id(dummy_sample), id(dummy_in_cpu))
 
     # def test_data_count(self):
     #       Test in Runner
