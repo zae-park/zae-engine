@@ -258,6 +258,7 @@ class Trainer(ABC):
             return
         self.weight_buffer["epoch"].append(cur_epoch)
         self.weight_buffer["weight"].append(self.model.state_dict())
+        self.loss_buffer = cur_loss
 
     def log_reset(self) -> None:
         """
