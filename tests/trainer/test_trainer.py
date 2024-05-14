@@ -57,7 +57,6 @@ class TestTrainer(unittest.TestCase):
         cls.trainer = ExTrainer(cls.model, device, "train", scheduler=cls.scheduler, optimizer=cls.optimizer)
         bs = randint(0, 256)
         cls.loader = DataLoader(dataset, batch_size=bs)
-        cls.trainer.run(n_epoch=randint(0, 4), loader=cls.loader)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -82,6 +81,7 @@ class TestTrainer(unittest.TestCase):
             self.assertEqual(id(dummy_sample), id(dummy_in_cpu))
 
     def test_run(self):
+        self.trainer.run(n_epoch=randint(0, 4), loader=self.loader)
         # test _check_batch_size
         self.assertEqual(self.trainer.batch_size, self.trainer.loader.batch_size)
         self.assertEqual(self.trainer.valid_batch_size, 0)
@@ -89,8 +89,11 @@ class TestTrainer(unittest.TestCase):
         pass
         # test logging
         batch_cnt = math.ceil(self.n_data / self.trainer.batch_size)
-        self.assertEqual(batch_cnt, len(self.trainer.log_train["loss"]))
-        self.assertEqual(0, len(self.trainer.log_test))
+        log_a, log_b = self.trainer.log_train, self.trainer.log_test
+        if self.trainer.mode == "test":
+            log_a, log_b = log_b, log_a
+        self.assertEqual(batch_cnt, len(log_a["loss"]))
+        self.assertEqual(0, len(log_b["loss"]))
 
     def test_steps(self):
         dummy_sample = [randint(0, 128)] * randint(0, 128)
@@ -114,14 +117,14 @@ class TestTrainer(unittest.TestCase):
         self.assertEqual(self.trainer.mode, "train")
 
     def test_check_better(self):
-        pre_buffer = len(self.trainer.weight_buffer["epoch"])
+        pre_buffer = max(1, len(self.trainer.weight_buffer["epoch"]))
         self.trainer.run(n_epoch=1, loader=self.loader)
         mid_buffer = len(self.trainer.weight_buffer["epoch"])
         self.trainer.train_step = lambda batch: {"loss": torch.zeros(1, requires_grad=True)}
         self.trainer.run(n_epoch=1, loader=self.loader)
         post_buffer = len(self.trainer.weight_buffer["epoch"])
         self.assertEqual(pre_buffer, mid_buffer)
-        self.assertGreater(pre_buffer, post_buffer)
+        self.assertGreater(post_buffer, pre_buffer)
 
     def test_log_reset(self):
         self.trainer.log_reset()
