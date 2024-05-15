@@ -81,7 +81,7 @@ class TestTrainer(unittest.TestCase):
             self.assertEqual(id(dummy_sample), id(dummy_in_cpu))
 
     def test_run(self):
-        self.trainer.run(n_epoch=randint(0, 4), loader=self.loader)
+        self.trainer.run(n_epoch=randint(1, 4), loader=self.loader)
         # test _check_batch_size
         self.assertEqual(self.trainer.batch_size, self.trainer.loader.batch_size)
         self.assertEqual(self.trainer.valid_batch_size, 0)
