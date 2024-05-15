@@ -119,9 +119,7 @@ class Trainer(ABC):
 
     def _scheduler_step_check(self, epoch: int) -> None:
         if "total_iters" in self.scheduler.__dict__ and self.scheduler_step_on_batch:
-            remain = 1 if (not self.loader.drop_last) and (self.n_data % self.batch_size) else 0
-            batch_cnt = self.n_data // self.batch_size + remain
-            need_steps = epoch * batch_cnt
+            need_steps = epoch * len(self.loader)
             assert self.scheduler.total_iters >= need_steps, (
                 f'The "total_iters" {self.scheduler.total_iters} for the given scheduler is insufficient.'
                 f"It must be at least more than the total iterations {need_steps} required during training."
