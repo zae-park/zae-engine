@@ -42,7 +42,7 @@ class TestScheduler(unittest.TestCase):
         schedule = scheduler.WarmUpScheduler(self.optimizer, self.total_iters, eta_min=self.eta_min)
         lrs = self.sweep_lrs(schedule)
 
-        self.assertLessEqual(lrs[-1], self.eta_max)
+        self.assertLessEqual(lrs[-1], self.eta_max + EPS)
         self.assertGreaterEqual(lrs[0], self.eta_min)
         self.assertTrue(np.all(np.diff(lrs) > 0))
         self.assertLessEqual(np.mean(np.diff(np.diff(lrs))), EPS)

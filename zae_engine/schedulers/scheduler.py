@@ -5,7 +5,7 @@ from . import core
 
 
 class WarmUpScheduler(core.SchedulerBase):
-    def __init__(self, optimizer: Optimizer, total_iters, eta_min, last_epoch: int = -1):
+    def __init__(self, optimizer: Optimizer, total_iters, eta_min: float = 0, last_epoch: int = -1):
         super(WarmUpScheduler, self).__init__(optimizer, total_iters, eta_min, last_epoch)
 
     def get_lr(self):
@@ -13,7 +13,7 @@ class WarmUpScheduler(core.SchedulerBase):
 
 
 class CosineAnnealingScheduler(core.SchedulerBase):
-    def __init__(self, optimizer: Optimizer, total_iters, eta_min, last_epoch: int = -1):
+    def __init__(self, optimizer: Optimizer, total_iters, eta_min: float = 0, last_epoch: int = -1):
         super(CosineAnnealingScheduler, self).__init__(optimizer, total_iters, eta_min, last_epoch)
 
     def get_lr(self):
