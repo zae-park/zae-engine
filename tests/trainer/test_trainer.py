@@ -88,12 +88,8 @@ class TestTrainer(unittest.TestCase):
         # test _scheduler_step_check
         pass
         # test logging
-        batch_cnt = math.ceil(self.n_data / self.trainer.batch_size)
-        log_a, log_b = self.trainer.log_train, self.trainer.log_test
-        if self.trainer.mode == "test":
-            log_a, log_b = log_b, log_a
-        self.assertEqual(batch_cnt, len(log_a["loss"]))
-        self.assertEqual(0, len(log_b["loss"]))
+        self.assertEqual(len(self.loader), len(self.trainer.log_train["loss"]))
+        self.assertEqual(0, len(self.trainer.log_test["loss"]))
 
         # test batch step
         self.trainer.scheduler_step_on_batch = True
