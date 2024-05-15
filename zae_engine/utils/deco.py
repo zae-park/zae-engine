@@ -38,7 +38,6 @@ def shape_check(*keys):
                 shape_list = [a.shape for a in args[:keys]]
             else:
                 shape_list = [kwargs[key].shape for key in keys]
-            print(shape_list)
             assert len(set(shape_list)) == 1, "Shape of given args is not same."
             return func(*args, **kwargs)
 
