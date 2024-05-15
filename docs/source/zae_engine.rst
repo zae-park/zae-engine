@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   zae_engine.data_pipeline
    zae_engine.inference
    zae_engine.loss
    zae_engine.measure

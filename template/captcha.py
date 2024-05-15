@@ -7,8 +7,6 @@ from torchvision.transforms import Resize
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 import torch.nn.functional as F
 from tqdm import tqdm
-import onnx
-import tf2onnx
 
 import os
 import numpy as np
@@ -19,7 +17,7 @@ from PIL import Image
 from tensorflow import keras
 from keras import layers
 
-from zae_engine import trainer, models, metrics, data_pipeline
+from zae_engine import trainer, models, metrics
 from zae_engine.utils.io import image_from_url
 
 LOOKUP = {k: v for k, v in enumerate("0123456789abcdefghijklmnopqrstuvwxyz")}

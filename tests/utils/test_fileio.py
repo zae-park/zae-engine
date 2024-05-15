@@ -1,9 +1,9 @@
 import unittest
 
-from zae_engine.data_pipeline import example_ecg, example_mri
+from zae_engine.utils import example_ecg, example_mri
 
 
-class Test_loader(unittest.TestCase):
+class TestSampleDataLoader(unittest.TestCase):
     EX_10sec = None
     EX_beat = None
 

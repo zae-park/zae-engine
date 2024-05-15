@@ -8,7 +8,7 @@ from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import Dataset, DataLoader
 
 from ..trainer import Trainer
-from ..data_pipeline.collate import Collate_seq
+from ..data import Collate_seq
 from ..models.builds.legacy import CNNBaseLegacy
 
 
