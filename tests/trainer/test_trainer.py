@@ -95,6 +95,10 @@ class TestTrainer(unittest.TestCase):
         self.assertEqual(batch_cnt, len(log_a["loss"]))
         self.assertEqual(0, len(log_b["loss"]))
 
+        # test batch step
+        self.trainer.scheduler_step_on_batch = True
+        self.trainer.run(n_epoch=randint(0, 4), loader=self.loader)
+
     def test_steps(self):
         dummy_sample = [randint(0, 128)] * randint(0, 128)
         dummy_train = self.trainer.train_step({"dummy": dummy_sample})
