@@ -52,20 +52,20 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(len(lrs), sum([step1, step2, step3]))
 
         # WarmUp
-        self.assertLessEqual(lrs[step1 - 2], self.eta_max)
+        self.assertLessEqual(lrs[chains.next_iters[0] - 2], self.eta_max)
         self.assertGreaterEqual(lrs[1], self.eta_min)
-        self.assertTrue(np.all(np.diff(lrs[:step1]) > 0))
-        self.assertLessEqual(np.mean(np.diff(np.diff(lrs[:step1]))), EPS)
+        self.assertTrue(np.all(np.diff(lrs[: chains.next_iters[0]]) > 0))
+        self.assertLessEqual(np.mean(np.diff(np.diff(lrs[: chains.next_iters[0]]))), EPS)
 
         # Cosine 1
-        self.assertLessEqual(lrs[step1], self.eta_max)
-        self.assertGreaterEqual(lrs[step2 - 1], self.eta_min)
-        self.assertTrue(np.all(np.diff(lrs[step1 : step2 - 1]) < 0))
+        self.assertLessEqual(lrs[chains.next_iters[0]], self.eta_max)
+        self.assertGreaterEqual(lrs[chains.next_iters[1] - 1], self.eta_min)
+        self.assertTrue(np.all(np.diff(lrs[step1 : chains.next_iters[1] - 1]) < 0))
 
         # Cosine 2
-        self.assertLessEqual(lrs[step2], self.eta_max)
-        self.assertGreaterEqual(lrs[step3 - 1], self.eta_min)
-        self.assertTrue(np.all(np.diff(lrs[step2 : step3 - 1]) < 0))
+        self.assertLessEqual(lrs[chains.next_iters[1]], self.eta_max)
+        self.assertGreaterEqual(lrs[-1], self.eta_min)
+        self.assertTrue(np.all(np.diff(lrs[chains.next_iters[1] : -1]) < 0))
 
 
 if __name__ == "__main__":

@@ -119,9 +119,7 @@ class Trainer(ABC):
 
     def _scheduler_step_check(self, epoch: int) -> None:
         if "total_iters" in self.scheduler.__dict__ and self.scheduler_step_on_batch:
-            remain = 1 if (not self.loader.drop_last) and (self.n_data % self.batch_size) else 0
-            batch_cnt = self.n_data // self.batch_size + remain
-            need_steps = epoch * batch_cnt
+            need_steps = epoch * len(self.loader)
             assert self.scheduler.total_iters >= need_steps, (
                 f'The "total_iters" {self.scheduler.total_iters} for the given scheduler is insufficient.'
                 f"It must be at least more than the total iterations {need_steps} required during training."
@@ -139,12 +137,14 @@ class Trainer(ABC):
         self.loader, self.valid_loader = loader, valid_loader
         self._check_batch_size()
         self._scheduler_step_check(n_epoch)
+        pre_epoch = self.progress_checker.get_epoch()
         progress = tqdm.tqdm(range(n_epoch), position=0, leave=True) if self.log_bar else range(n_epoch)
         for e in progress:
+            e += pre_epoch
             if self.log_bar:
-                progress.set_description("Epoch %d" % (e + 1))
+                progress.set_description("Epoch %d" % e)
             else:
-                print("Epoch %d" % (e + 1))
+                print("Epoch %d" % e)
             self._data_count(initial=True)
             self.run_epoch(loader, **kwargs)
             if valid_loader:
@@ -153,7 +153,7 @@ class Trainer(ABC):
                 self.toggle()
             if self.mode == "train":
                 cur_loss = np.mean(self.log_test["loss"] if valid_loader else self.log_train["loss"]).item()
-                self.check_better(cur_epoch=e + 1, cur_loss=cur_loss)
+                self.check_better(cur_epoch=e, cur_loss=cur_loss)
                 if not self.scheduler_step_on_batch:
                     self.scheduler.step(**kwargs)
                 self.progress_checker.update_epoch()
@@ -252,10 +252,11 @@ class Trainer(ABC):
         :param cur_epoch: int
         :param cur_loss: float
         """
-        if cur_loss > self.loss_buffer:
+        if cur_loss >= self.loss_buffer:
             return
         self.weight_buffer["epoch"].append(cur_epoch)
         self.weight_buffer["weight"].append(self.model.state_dict())
+        self.loss_buffer = cur_loss
 
     def log_reset(self) -> None:
         """
