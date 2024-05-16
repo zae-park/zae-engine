@@ -4,13 +4,13 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 
-from ...nn_night.blocks import BasicBlock, Bottleneck
+from ...nn_night import blocks as blk
 
 
 class CNNBase(nn.Module):
     def __init__(
         self,
-        block: Type[Union[BasicBlock, Bottleneck]],
+        block: Type[Union[blk.BasicBlock, blk.Bottleneck]],
         ch_in: int,
         width: int,
         n_cls: int,
@@ -64,9 +64,9 @@ class CNNBase(nn.Module):
 
     def zero_initializer(self):
         for m in self.modules():
-            if isinstance(m, Bottleneck) and m.bn3.weight is not None:
+            if isinstance(m, blk.Bottleneck) and m.bn3.weight is not None:
                 nn.init.constant_(m.bn3.weight, 0)  # type: ignore[arg-type]
-            elif isinstance(m, BasicBlock) and m.bn2.weight is not None:
+            elif isinstance(m, blk.BasicBlock) and m.bn2.weight is not None:
                 nn.init.constant_(m.bn2.weight, 0)  # type: ignore[arg-type]
 
     def _make_stem(self, ch_in: int, ch_out: int, kernel_size: Union[int, tuple[int, int]]):
@@ -78,7 +78,7 @@ class CNNBase(nn.Module):
 
     def _make_body(
         self,
-        blocks: Union[List[Type[BasicBlock | Bottleneck]], tuple[Type[BasicBlock | Bottleneck]]],
+        blocks: Union[List[Type[blk.BasicBlock | blk.Bottleneck]], tuple[Type[blk.BasicBlock | blk.Bottleneck]]],
         ch_in: int,
         ch_out: int,
         stride: int = 1,
