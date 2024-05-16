@@ -28,9 +28,10 @@ class BasicBlock(nn.Module):
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=stride, padding=1)
         self.bn1 = norm_layer(ch_out)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu1 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(ch_out, ch_out, kernel_size=3, stride=1, padding="same", groups=groups)
         self.bn2 = norm_layer(ch_out)
+        self.relu2 = nn.ReLU(inplace=True)
         self.stride = stride
 
         if stride != 1 or ch_in != ch_out * self.expansion:
@@ -45,7 +46,7 @@ class BasicBlock(nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu(out)
+        out = self.relu1(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
@@ -53,7 +54,7 @@ class BasicBlock(nn.Module):
         identity = x if self.downsample is None else self.downsample(x)
 
         out += identity
-        out = self.relu(out)
+        out = self.relu2(out)
 
         return out
 
@@ -85,11 +86,14 @@ class Bottleneck(nn.Module):
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=1, stride=1)
         self.bn1 = norm_layer(ch_out)
+        self.relu1 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(ch_out, width, kernel_size=3, stride=stride, padding=1, groups=groups, dilation=dilation)
         self.bn2 = norm_layer(width)
+        self.relu2 = nn.ReLU(inplace=True)
         self.conv3 = nn.Conv2d(width, ch_out * self.expansion, kernel_size=1, stride=1)
         self.bn3 = norm_layer(ch_out * self.expansion)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu3 = nn.ReLU(inplace=True)
+
         self.stride = stride
 
         if stride != 1 or ch_in != ch_out * self.expansion:
@@ -104,11 +108,11 @@ class Bottleneck(nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu(out)
+        out = self.relu1(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = self.relu(out)
+        out = self.relu2(out)
 
         out = self.conv3(out)
         out = self.bn3(out)
@@ -116,6 +120,6 @@ class Bottleneck(nn.Module):
         identity = x if self.downsample is None else self.downsample(x)
 
         out += identity
-        out = self.relu(out)
+        out = self.relu3(out)
 
         return out
