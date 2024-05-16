@@ -12,8 +12,8 @@ class CNNBase(nn.Module):
         self,
         block: Type[Union[blk.BasicBlock, blk.Bottleneck]],
         ch_in: int,
+        ch_out: int,
         width: int,
-        n_cls: int,
         layers: list[int],
         groups: int = 1,
         dilation: int = 1,
@@ -25,7 +25,7 @@ class CNNBase(nn.Module):
         self.block = block
         self.ch_in = ch_in
         self.width = width
-        self.n_cls = n_cls
+        self.ch_out = ch_out
         self.layers = layers
         self.norm_layer = norm_layer
 
@@ -45,7 +45,7 @@ class CNNBase(nn.Module):
         self.body = nn.Sequential(*body)
 
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(width * 8 * block.expansion, n_cls)
+        self.fc = nn.Linear(width * 8 * block.expansion, ch_out)
 
         self.initializer()
         # Zero-initialize the last BN in each residual branch,

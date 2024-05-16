@@ -75,7 +75,7 @@ def main():
     valid_loader = DataLoader(dataset=ExDataset(x_valid, y_valid), batch_size=batch_size * 2)
     test_loader = DataLoader(dataset=ExDataset(x_test, y_test), batch_size=batch_size * 2)
 
-    model = CNNBase(block=BasicBlock, ch_in=1, width=64, n_cls=10, groups=1, dilation=1, layers=[2, 2, 2, 2])
+    model = CNNBase(block=BasicBlock, ch_in=1, ch_out=10, width=64, groups=1, dilation=1, layers=[2, 2, 2, 2])
     opt = torch.optim.Adam(params=model.parameters(), lr=learning_rate)
     scheduler = CosineAnnealingScheduler(optimizer=opt, total_iters=epochs * len(train_loader))
     extrainer = ExTrainer(model, device=device, optimizer=opt, scheduler=scheduler)
