@@ -1,4 +1,4 @@
-from typing import Callable, List, Type, Union
+from typing import Callable, List, Type, Union, Tuple
 
 import torch
 import torch.nn as nn
@@ -14,7 +14,7 @@ class CNNBase(nn.Module):
         ch_in: int,
         ch_out: int,
         width: int,
-        layers: list[int],
+        layers: Union[Tuple[int], List[int]],
         groups: int = 1,
         dilation: int = 1,
         # zero_init_residual: bool = False,
