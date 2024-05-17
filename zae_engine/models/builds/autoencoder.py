@@ -23,7 +23,7 @@ class AutoEncoder(nn.Module):
         # zero_init_residual: bool = False,
         # replace_stride_with_dilation: Optional[list[bool]] = None,
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
-        skip_connection: bool = False,
+        skip_connect: bool = False,
     ):
         super(AutoEncoder, self).__init__()
 
@@ -38,55 +38,42 @@ class AutoEncoder(nn.Module):
             norm_layer=norm_layer,
         )
         # Remove Stem layer in CNNBase & use 1st layer in body instead.
-        self.skip_connection = skip_connection
+        self.skip_connect = skip_connect
 
         self.encoder.stem = nn.Identity()
         self.encoder.body[0] = self.encoder.make_body(blocks=[block] * layers[0], ch_in=ch_in, ch_out=width, stride=2)
 
         self.feature_vectors = []
         self.encoder.pool.register_forward_hook(self.feature_hook)
-        # [U-net] Register hook for every blocks in encoder when "skip_connection" is true.
-        if skip_connection:
+        # [U-net] Register hook for every blocks in encoder when "skip_connect" is true.
+        if skip_connect:
             for b in self.encoder.body:
                 b[0].relu2.register_forward_hook(self.feature_hook)
 
         self.bottleneck = block(width * 8, width * 16)
 
-        self.upconv4 = nn.ConvTranspose2d(width * 16, width * 8, kernel_size=2, stride=2)
-        self.decoder4 = block((width * 8) * 2, width * 8)
-        self.upconv3 = nn.ConvTranspose2d(width * 8, width * 4, kernel_size=2, stride=2)
-        self.decoder3 = block((width * 4) * 2, width * 4)
-        self.upconv2 = nn.ConvTranspose2d(width * 4, width * 2, kernel_size=2, stride=2)
-        self.decoder2 = block((width * 2) * 2, width * 2)
-        self.upconv1 = nn.ConvTranspose2d(width * 2, width, kernel_size=2, stride=2)
-        self.decoder1 = block(width * 2, width)
+        up_pools = []
+        decoder = []
+        for i, l in enumerate(layers):
+            c_i, c_o = width * 2 ** (i + 1), width * 2**i
+            up_pools.append(nn.ConvTranspose2d(in_channels=c_i, out_channels=c_o, kernel_size=2, stride=2))
+            decoder.append(self.encoder.make_body([block] * l, ch_in=c_i if skip_connect else c_i // 2, ch_out=c_o))
+        self.up_pools = reversed(up_pools)
+        self.decoder = reversed(decoder)
 
-        self.conv = nn.Conv2d(in_channels=width, out_channels=ch_out, kernel_size=1)
+        self.fc = nn.Conv2d(in_channels=width, out_channels=ch_out, kernel_size=1)
+        self.sig = nn.Sigmoid()
 
     def feature_hook(self, module, input_tensor, output_tensor):
         self.feature_vectors.append(input_tensor[0])
 
-    # def feature_hook(self, module, input_tensor):
-    #     self.feature_vectors.append(input_tensor[0])
-
     def forward(self, x):
-        feat = self.encoder(x)
+        feat = self.encoder(x)  # Forwarding encoder & hook immediate outputs
         feat = self.bottleneck(self.feature_vectors.pop())
 
-        dec4 = self.upconv4(feat)
-        if self.skip_connection:
-            dec4 = torch.cat((dec4, self.feature_vectors.pop()), dim=1)
-        dec4 = self.decoder4(dec4)
-        dec3 = self.upconv3(dec4)
-        if self.skip_connection:
-            dec3 = torch.cat((dec3, self.feature_vectors.pop()), dim=1)
-        dec3 = self.decoder3(dec3)
-        dec2 = self.upconv2(dec3)
-        if self.skip_connection:
-            dec2 = torch.cat((dec2, self.feature_vectors.pop()), dim=1)
-        dec2 = self.decoder2(dec2)
-        dec1 = self.upconv1(dec2)
-        if self.skip_connection:
-            dec1 = torch.cat((dec1, self.feature_vectors.pop()), dim=1)
-        dec1 = self.decoder1(dec1)
-        return torch.sigmoid(self.conv(dec1))
+        for up_pool, dec in zip(self.up_pools, self.decoder):
+            feat = up_pool(feat)
+            if self.skip_connect:
+                feat = torch.cat((feat, self.feature_vectors.pop()), dim=1)
+            feat = dec(feat)
+        return self.sig(self.fc(feat))
