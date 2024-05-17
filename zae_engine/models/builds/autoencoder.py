@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, Type, Union
+from typing import Callable, Tuple, Type, Union, List
 from collections import OrderedDict
 
 import torch
@@ -16,53 +16,39 @@ class AutoEncoder(nn.Module):
         block: Type[Union[blk.UNetBlock, nn.Module]],
         ch_in: int,
         ch_out: int,
-        kernel_size: Union[int, Tuple[int, int]],
         width: int,
-        depth: int = 5,
+        layers: Union[Tuple[int], List[int]],
         groups: int = 1,
         dilation: int = 1,
         # zero_init_residual: bool = False,
         # replace_stride_with_dilation: Optional[list[bool]] = None,
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
+        skip_connection: bool = False,
     ):
         super(AutoEncoder, self).__init__()
 
-        pools = nn.ModuleList()
-        body = nn.ModuleList()
+        self.encoder = cnn.CNNBase(
+            block=block,
+            ch_in=ch_in,
+            ch_out=ch_out,
+            width=width,
+            layers=layers,
+            groups=groups,
+            dilation=dilation,
+            norm_layer=norm_layer,
+        )
+        # Remove Stem layer in CNNBase & use 1st layer in body instead.
+        self.skip_connection = skip_connection
 
-        for d in range(depth):
-            if d == 0:
-                body.append(
-                    nn.Sequential(
-                        self.unit_layer(ch_in, width, kernel_size),
-                        self.gen_block(width, width, kernel_size, order),
-                    )
-                )
-            else:
-                if d == 1:
-                    c_in, c_out, s = width * d, width * (d + 1), stride[d - 1]
-                else:
-                    c_in, c_out, s = width * d, width * (d + 1), stride[d - 1]
-                pools.append(self._pool(p := (int(np.prod(stride[:d]))), p))
-                body.append(
-                    nn.Sequential(
-                        self.unit_layer(c_in, c_out, kernel_size, stride=s),
-                        self.gen_block(c_out, c_out, kernel_size, order),
-                    )
-                )
-
-        self.encoder = []
-        for i, l in enumerate(layers):
-            ch_o = width * (2**i)
-            ch_i = ch_o if i == 0 else ch_o * self.block.expansion // 2
-            body.append(self._make_body(blocks=[block] * l, ch_in=ch_i, ch_out=ch_o, stride=2 if i else 1))
-        self.body = nn.Sequential(*body)
+        self.encoder.stem = nn.Identity()
+        self.encoder.body[0] = self.encoder.make_body(blocks=[block] * layers[0], ch_in=ch_in, ch_out=width, stride=2)
 
         self.feature_vectors = []
         self.encoder.pool.register_forward_hook(self.feature_hook)
-
-        for b in self.encoder.body:
-            b[0].relu2.register_forward_hook(self.feature_hook)
+        # [U-net] Register hook for every blocks in encoder when "skip_connection" is true.
+        if skip_connection:
+            for b in self.encoder.body:
+                b[0].relu2.register_forward_hook(self.feature_hook)
 
         self.bottleneck = block(width * 8, width * 16)
 
@@ -77,36 +63,6 @@ class AutoEncoder(nn.Module):
 
         self.conv = nn.Conv2d(in_channels=width, out_channels=ch_out, kernel_size=1)
 
-    def gen_block(
-        self,
-        ch_in: int,
-        ch_out: int,
-        kernel_size: Union[int, list, tuple],
-        order: int,
-        dilation: int = 1,
-    ):
-        """
-        Return block, accumulated layers in-stage. Stack CBR 'order' times.
-        :param ch_in: [Int] input channels of block
-        :param ch_out: [Int] output channels of block
-        :param kernel_size: [Int, Iterable] convolution kernel size.
-            If type of argument is int, assume that model will receive 1-D input tensor.
-            Else, the type of argument is iterable, assume that model will receive len(argument)-D input tensor.
-        :param order: [Int] the number of blocks in stage.
-            The stage means same resolution. e.g. from after previous pooling (or stem) to before next pooling.
-        :param dilation: [Int, Iterable] Default is 1. If argument more than 1, dilated convolution will performed.
-        :return: [nn.Module]
-        """
-
-        blk = []  # List of blocks
-        for o in range(order):  # stack blocks 'order' times
-            sequence = nnn.Residual(
-                self.unit_layer(ch_in, ch_out, kernel_size, dilation=dilation),
-                self.unit_layer(ch_out, ch_out, kernel_size, dilation=dilation),
-            )
-            blk.append(sequence)
-        return nn.Sequential(*blk)
-
     def feature_hook(self, module, input_tensor, output_tensor):
         self.feature_vectors.append(input_tensor[0])
 
@@ -118,15 +74,19 @@ class AutoEncoder(nn.Module):
         feat = self.bottleneck(self.feature_vectors.pop())
 
         dec4 = self.upconv4(feat)
-        dec4 = torch.cat((dec4, self.feature_vectors.pop()), dim=1)
+        if self.skip_connection:
+            dec4 = torch.cat((dec4, self.feature_vectors.pop()), dim=1)
         dec4 = self.decoder4(dec4)
         dec3 = self.upconv3(dec4)
-        dec3 = torch.cat((dec3, self.feature_vectors.pop()), dim=1)
+        if self.skip_connection:
+            dec3 = torch.cat((dec3, self.feature_vectors.pop()), dim=1)
         dec3 = self.decoder3(dec3)
         dec2 = self.upconv2(dec3)
-        dec2 = torch.cat((dec2, self.feature_vectors.pop()), dim=1)
+        if self.skip_connection:
+            dec2 = torch.cat((dec2, self.feature_vectors.pop()), dim=1)
         dec2 = self.decoder2(dec2)
         dec1 = self.upconv1(dec2)
-        dec1 = torch.cat((dec1, self.feature_vectors.pop()), dim=1)
+        if self.skip_connection:
+            dec1 = torch.cat((dec1, self.feature_vectors.pop()), dim=1)
         dec1 = self.decoder1(dec1)
         return torch.sigmoid(self.conv(dec1))
