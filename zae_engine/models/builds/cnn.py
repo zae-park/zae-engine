@@ -41,7 +41,7 @@ class CNNBase(nn.Module):
         for i, l in enumerate(layers):
             ch_o = width * (2**i)
             ch_i = ch_o if i == 0 else ch_o * self.block.expansion // 2
-            body.append(self._make_body(blocks=[block] * l, ch_in=ch_i, ch_out=ch_o, stride=2 if i else 1))
+            body.append(self.make_body(blocks=[block] * l, ch_in=ch_i, ch_out=ch_o, stride=2 if i else 1))
         self.body = nn.Sequential(*body)
 
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
@@ -76,7 +76,7 @@ class CNNBase(nn.Module):
         pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         return nn.Sequential(conv, norm, act, pool)
 
-    def _make_body(
+    def make_body(
         self,
         blocks: Union[List[Type[blk.BasicBlock | blk.Bottleneck]], tuple[Type[blk.BasicBlock | blk.Bottleneck]]],
         ch_in: int,
