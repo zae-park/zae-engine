@@ -58,8 +58,8 @@ class AutoEncoder(nn.Module):
             c_i, c_o = width * 2 ** (i + 1), width * 2**i
             up_pools.append(nn.ConvTranspose2d(in_channels=c_i, out_channels=c_o, kernel_size=2, stride=2))
             decoder.append(self.encoder.make_body([block] * l, ch_in=c_i if skip_connect else c_i // 2, ch_out=c_o))
-        self.up_pools = reversed(up_pools)
-        self.decoder = reversed(decoder)
+        self.up_pools = nn.ModuleList(reversed(up_pools))
+        self.decoder = nn.ModuleList(reversed(decoder))
 
         self.fc = nn.Conv2d(in_channels=width, out_channels=ch_out, kernel_size=1)
         self.sig = nn.Sigmoid()
