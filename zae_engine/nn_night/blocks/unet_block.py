@@ -26,10 +26,10 @@ class UNetBlock(resblock.BasicBlock):
 
     def forward(self, x: Tensor) -> Tensor:
         out = self.conv1(x)
-        out = self.bn1(out)
+        out = self.norm1(out)
         out = self.relu1(out)
         out = self.conv2(out)
-        out = self.bn2(out)
+        out = self.norm2(out)
         out = self.relu2(out)
         out = out if self.downsample is None else self.downsample(out)
         return out

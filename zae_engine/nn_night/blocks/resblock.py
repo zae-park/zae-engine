@@ -27,10 +27,10 @@ class BasicBlock(nn.Module):
 
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
         self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=3, stride=stride, padding=1)
-        self.bn1 = norm_layer(ch_out)
+        self.norm1 = norm_layer(ch_out)
         self.relu1 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(ch_out, ch_out, kernel_size=3, stride=1, padding="same", groups=groups)
-        self.bn2 = norm_layer(ch_out)
+        self.norm2 = norm_layer(ch_out)
         self.relu2 = nn.ReLU(inplace=True)
         self.stride = stride
 
@@ -45,11 +45,11 @@ class BasicBlock(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
 
         out = self.conv1(x)
-        out = self.bn1(out)
+        out = self.norm1(out)
         out = self.relu1(out)
 
         out = self.conv2(out)
-        out = self.bn2(out)
+        out = self.norm2(out)
 
         identity = x if self.downsample is None else self.downsample(x)
 
@@ -85,13 +85,13 @@ class Bottleneck(nn.Module):
         width = ch_out * groups
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         self.conv1 = nn.Conv2d(ch_in, ch_out, kernel_size=1, stride=1)
-        self.bn1 = norm_layer(ch_out)
+        self.norm1 = norm_layer(ch_out)
         self.relu1 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(ch_out, width, kernel_size=3, stride=stride, padding=1, groups=groups, dilation=dilation)
-        self.bn2 = norm_layer(width)
+        self.norm2 = norm_layer(width)
         self.relu2 = nn.ReLU(inplace=True)
         self.conv3 = nn.Conv2d(width, ch_out * self.expansion, kernel_size=1, stride=1)
-        self.bn3 = norm_layer(ch_out * self.expansion)
+        self.norm3 = norm_layer(ch_out * self.expansion)
         self.relu3 = nn.ReLU(inplace=True)
 
         self.stride = stride
@@ -107,15 +107,15 @@ class Bottleneck(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
 
         out = self.conv1(x)
-        out = self.bn1(out)
+        out = self.norm1(out)
         out = self.relu1(out)
 
         out = self.conv2(out)
-        out = self.bn2(out)
+        out = self.norm2(out)
         out = self.relu2(out)
 
         out = self.conv3(out)
-        out = self.bn3(out)
+        out = self.norm3(out)
 
         identity = x if self.downsample is None else self.downsample(x)
 

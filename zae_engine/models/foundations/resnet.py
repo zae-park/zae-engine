@@ -39,6 +39,7 @@ def weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [OrderedDict | d
                 .replace("layer3", "body.2")
                 .replace("layer4", "body.3")
             )
+            k = k.replace(".bn", ".norm")
         elif k.startswith("fc"):
             pass
         else:
@@ -55,7 +56,7 @@ def resnet18(pretrained=False):
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet18_Weights.IMAGENET1K_V1.get_state_dict(True)
         dst_weight = weight_mapper(src_weight, model.state_dict())
-        model.load_state_dict(dst_weight)
+        model.load_state_dict(dst_weight, strict=True)
     return model
 
 
@@ -64,7 +65,7 @@ def resnet34(pretrained=False):
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet34_Weights.IMAGENET1K_V1.get_state_dict(True)
         dst_weight = weight_mapper(src_weight, model.state_dict())
-        model.load_state_dict(dst_weight)
+        model.load_state_dict(dst_weight, strict=True)
     return model
 
 
@@ -73,7 +74,7 @@ def resnet50(pretrained=False):
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet50_Weights.IMAGENET1K_V1.get_state_dict(True)
         dst_weight = weight_mapper(src_weight, model.state_dict())
-        model.load_state_dict(dst_weight)
+        model.load_state_dict(dst_weight, strict=True)
     return model
 
 
@@ -82,7 +83,7 @@ def resnet101(pretrained=False):
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet101_Weights.IMAGENET1K_V1.get_state_dict(True)
         dst_weight = weight_mapper(src_weight, model.state_dict())
-        model.load_state_dict(dst_weight)
+        model.load_state_dict(dst_weight, strict=True)
     return model
 
 
@@ -91,7 +92,7 @@ def resnet152(pretrained=False):
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet152_Weights.IMAGENET1K_V1.get_state_dict(True)
         dst_weight = weight_mapper(src_weight, model.state_dict())
-        model.load_state_dict(dst_weight)
+        model.load_state_dict(dst_weight, strict=True)
     return model
 
 

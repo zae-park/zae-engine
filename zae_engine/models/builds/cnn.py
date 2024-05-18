@@ -64,10 +64,10 @@ class CNNBase(nn.Module):
 
     def zero_initializer(self):
         for m in self.modules():
-            if isinstance(m, blk.Bottleneck) and m.bn3.weight is not None:
-                nn.init.constant_(m.bn3.weight, 0)  # type: ignore[arg-type]
-            elif isinstance(m, blk.BasicBlock) and m.bn2.weight is not None:
-                nn.init.constant_(m.bn2.weight, 0)  # type: ignore[arg-type]
+            if isinstance(m, blk.Bottleneck) and m.norm3.weight is not None:
+                nn.init.constant_(m.norm3.weight, 0)  # type: ignore[arg-type]
+            elif isinstance(m, blk.BasicBlock) and m.norm2.weight is not None:
+                nn.init.constant_(m.norm2.weight, 0)  # type: ignore[arg-type]
 
     def _make_stem(self, ch_in: int, ch_out: int, kernel_size: Union[int, tuple[int, int]]):
         conv = nn.Conv2d(ch_in, ch_out, kernel_size=kernel_size, stride=2, padding=3, bias=False)
