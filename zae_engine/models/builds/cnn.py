@@ -10,7 +10,7 @@ from ...nn_night import blocks as blk
 class CNNBase(nn.Module):
     def __init__(
         self,
-        block: Type[Union[blk.BasicBlock, blk.Bottleneck]],
+        block: Type[Union[blk.BasicBlock, blk.Bottleneck, nn.Module]],
         ch_in: int,
         ch_out: int,
         width: int,
