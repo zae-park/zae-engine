@@ -22,7 +22,7 @@ class TestResnet(unittest.TestCase):
         self.layers = [randint(1, 3)] * randint(1, 5)
 
         # self.test_sample = torch.randn((2, torch.randint(1, 16, size=[1]), 256, 256))
-        self.test_sample = torch.randn((2, 3, 256, 256))
+        self.test_sample = torch.randn((2, self.ch_in, 256, 256))
 
     def tearDown(self) -> None:
         pass

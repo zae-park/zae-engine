@@ -21,7 +21,7 @@ class TestUnet(unittest.TestCase):
         pass
 
     def test_unet(self):
-        model = unet()
+        model = unet.unet()
         output = model(self.test_sample)
         expect_output = self.test_sample.mean(1, keepdim=True)
 
