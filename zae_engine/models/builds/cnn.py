@@ -45,7 +45,7 @@ class CNNBase(nn.Module):
         self.body = nn.Sequential(*body)
 
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(width * 8 * block.expansion, ch_out)
+        self.fc = nn.Linear(width * 2 ** (len(self.layers) - 1) * block.expansion, ch_out)
 
         self.initializer()
         # Zero-initialize the last BN in each residual branch,
