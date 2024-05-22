@@ -23,7 +23,7 @@ class TestInv1d(unittest.TestCase):
         pass
 
     def test_divide(self):
-        random_ch = randint(1, 32)
+        random_ch = randint(3, 32)  # ch must be more than reduction ratio
         random_dim = randint(3, 2048)
         random_stride = randint(1, 5)
         sample = torch.zeros(1, random_ch, random_dim)
