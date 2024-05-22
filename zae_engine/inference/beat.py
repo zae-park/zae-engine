@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Union, Tuple, List, Callable
+from typing import Union
 
 import numpy as np
 import torch
@@ -7,7 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 
 from ..models import beat_segmentation
 from ..trainer import Trainer
-from ..data_pipeline.collate import BeatCollateSeq as Col
+from ..data.collate.collate import BeatCollateSeq as Col
 
 
 def core(x: Union[np.ndarray, torch.Tensor]):

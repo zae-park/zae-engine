@@ -2,8 +2,7 @@ import unittest
 
 import torch
 
-from zae_engine.models.foundations import resnet18, resnet34, resnet50, resnet101, resnet152
-from zae_engine.models.foundations import seresnet18, seresnet34, seresnet50, seresnet101, seresnet152
+from zae_engine.models import foundations
 
 
 class TestResnet(unittest.TestCase):
@@ -22,52 +21,52 @@ class TestResnet(unittest.TestCase):
         pass
 
     def test_resnet18(self):
-        model = resnet18()
+        model = foundations.resnet18()
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_resnet34(self):
-        model = resnet34()
+        model = foundations.resnet34()
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_resnet50(self):
-        model = resnet50()
+        model = foundations.resnet50()
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_resnet101(self):
-        model = resnet101()
+        model = foundations.resnet101()
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_resnet152(self):
-        model = resnet152()
+        model = foundations.resnet152()
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_seresnet18(self):
-        model = seresnet18()
+        model = foundations.seresnet18()
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_seresnet34(self):
-        model = seresnet34()
+        model = foundations.seresnet34()
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_seresnet50(self):
-        model = seresnet50()
+        model = foundations.seresnet50()
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_seresnet101(self):
-        model = seresnet101()
+        model = foundations.seresnet101()
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 
     def test_seresnet152(self):
-        model = seresnet152()
+        model = foundations.seresnet152()
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 

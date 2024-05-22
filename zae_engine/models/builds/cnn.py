@@ -1,20 +1,20 @@
-from typing import Callable, List, Type, Union
+from typing import Callable, List, Type, Union, Tuple
 
 import torch
 import torch.nn as nn
 from torch import Tensor
 
-from ...nn_night.blocks import BasicBlock, Bottleneck
+from ...nn_night import blocks as blk
 
 
 class CNNBase(nn.Module):
     def __init__(
         self,
-        block: Type[Union[BasicBlock, Bottleneck]],
+        block: Type[Union[blk.BasicBlock, blk.Bottleneck, nn.Module]],
         ch_in: int,
+        ch_out: int,
         width: int,
-        n_cls: int,
-        layers: list[int],
+        layers: Union[Tuple[int], List[int]],
         groups: int = 1,
         dilation: int = 1,
         # zero_init_residual: bool = False,
@@ -25,7 +25,7 @@ class CNNBase(nn.Module):
         self.block = block
         self.ch_in = ch_in
         self.width = width
-        self.n_cls = n_cls
+        self.ch_out = ch_out
         self.layers = layers
         self.norm_layer = norm_layer
 
@@ -41,11 +41,11 @@ class CNNBase(nn.Module):
         for i, l in enumerate(layers):
             ch_o = width * (2**i)
             ch_i = ch_o if i == 0 else ch_o * self.block.expansion // 2
-            body.append(self._make_body(blocks=[block] * l, ch_in=ch_i, ch_out=ch_o, stride=2 if i else 1))
+            body.append(self.make_body(blocks=[block] * l, ch_in=ch_i, ch_out=ch_o, stride=2 if i else 1))
         self.body = nn.Sequential(*body)
 
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(width * 8 * block.expansion, n_cls)
+        self.fc = nn.Linear(width * 2 ** (len(self.layers) - 1) * block.expansion, ch_out)
 
         self.initializer()
         # Zero-initialize the last BN in each residual branch,
@@ -64,10 +64,10 @@ class CNNBase(nn.Module):
 
     def zero_initializer(self):
         for m in self.modules():
-            if isinstance(m, Bottleneck) and m.bn3.weight is not None:
-                nn.init.constant_(m.bn3.weight, 0)  # type: ignore[arg-type]
-            elif isinstance(m, BasicBlock) and m.bn2.weight is not None:
-                nn.init.constant_(m.bn2.weight, 0)  # type: ignore[arg-type]
+            if isinstance(m, blk.Bottleneck) and m.norm3.weight is not None:
+                nn.init.constant_(m.norm3.weight, 0)  # type: ignore[arg-type]
+            elif isinstance(m, blk.BasicBlock) and m.norm2.weight is not None:
+                nn.init.constant_(m.norm2.weight, 0)  # type: ignore[arg-type]
 
     def _make_stem(self, ch_in: int, ch_out: int, kernel_size: Union[int, tuple[int, int]]):
         conv = nn.Conv2d(ch_in, ch_out, kernel_size=kernel_size, stride=2, padding=3, bias=False)
@@ -76,22 +76,15 @@ class CNNBase(nn.Module):
         pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         return nn.Sequential(conv, norm, act, pool)
 
-    def _make_body(
+    def make_body(
         self,
-        blocks: Union[List[Type[BasicBlock | Bottleneck]], tuple[Type[BasicBlock | Bottleneck]]],
+        blocks: Union[List[Type[blk.BasicBlock | blk.Bottleneck]], tuple[Type[blk.BasicBlock | blk.Bottleneck]]],
         ch_in: int,
         ch_out: int,
         stride: int = 1,
     ) -> nn.Sequential:
 
         norm_layer = self.norm_layer
-        downsample = None
-
-        if stride != 1:
-            downsample = nn.Sequential(
-                nn.Conv2d(ch_in, ch_out * self.block.expansion, kernel_size=1, stride=stride),
-                norm_layer(ch_out * self.block.expansion),
-            )
 
         layers = []
         # for 1st block

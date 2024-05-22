@@ -39,7 +39,7 @@ class TestBasicBlock(unittest.TestCase):
 
     def test_forward(self):
 
-        random_ch = randint(1, 64)
+        random_ch = randint(2, 64)  # BatchNorm: Expected more than 1 value per channel
         random_dim = randint(1, 2048)
         sample = torch.rand(size=(1, random_ch, random_dim, random_dim), dtype=torch.float32)
 
