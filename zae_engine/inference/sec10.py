@@ -9,24 +9,10 @@ from torch.utils.data import Dataset, DataLoader
 
 from ..trainer import Trainer
 from ..data import Collate_seq
-from ..models.builds.legacy import CNNBaseLegacy
-
-
-def core(x: np.ndarray, batch_size: int):
-    assert len(x.shape) < 3, f"Expect less than 3-D array, but receive {len(x.shape)}-D array."
-    collate = Sec10Collate()
-
-    dataset = Sec10Dataset(x)
-    ex_loader1 = DataLoader(dataset=dataset, batch_size=batch_size, collate_fn=collate.wrap(), shuffle=False)
-
-    model = CNNBaseLegacy(1, 9, 7, 2, 1)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    trainer = Sec10Trainer(model, device, "test")
-    trainer.inference(ex_loader1)
-
-    result = np.concatenate(trainer.log_test["output"])
-    result = result.reshape(len(dataset), -1)
-    return result
+from ..schedulers import CosineAnnealingScheduler
+from ..models.builds.cnn import CNNBase
+from ..models.converter import dim_converter
+from ..nn_night.blocks import BasicBlock
 
 
 def filter_signal(x: np.ndarray, sample_rate: int, btype: Optional[str] = "bandpass"):
@@ -51,8 +37,8 @@ def scale_signal(x: np.ndarray):
 
 
 class Sec10Trainer(Trainer):
-    def __init__(self, model, device, mode):
-        super(Sec10Trainer, self).__init__(model, device, mode)
+    def __init__(self, model, device, mode, optimizer, scheduler):
+        super(Sec10Trainer, self).__init__(model, device, mode, optimizer, scheduler)
         self.mini_batch_size = 32
 
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
@@ -158,3 +144,29 @@ class Sec10Dataset(Dataset):
             return {"x": ecg, "y": label}
         else:
             return {"x": ecg}
+
+
+def core(x: np.ndarray, batch_size: int):
+    assert len(x.shape) < 3, f"Expect less than 3-D array, but receive {len(x.shape)}-D array."
+    collate = Sec10Collate()
+
+    dataset = Sec10Dataset(x)
+    ex_loader1 = DataLoader(dataset=dataset, batch_size=batch_size, collate_fn=collate.wrap(), shuffle=False)
+
+    model = CNNBase(BasicBlock, 1, 9, 16, [2, 2, 2, 2])
+    cvtr = dim_converter.DimConverter(model)
+    model = cvtr.convert("2d -> 1d")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    optimizer = torch.optim.Adam(model.parameters())
+    scheduler = CosineAnnealingScheduler(optimizer, total_iters=100)
+    trainer = Sec10Trainer(model, device, "test", optimizer, scheduler)
+    trainer.inference(ex_loader1)
+
+    result = np.concatenate(trainer.log_test["output"])
+    result = result.reshape(len(dataset), -1)
+    return result
+
+
+if __name__ == "__main__":
+    x = np.zeros((1, 2500))
+    core(x, batch_size=10)

@@ -5,7 +5,8 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from ..models import beat_segmentation
+from ..models.foundations import unet
+from ..models.converter import dim_converter
 from ..trainer import Trainer
 from ..data.collate.collate import BeatCollateSeq as Col
 
@@ -24,7 +25,9 @@ def core(x: Union[np.ndarray, torch.Tensor]):
     )
 
     # --------------------------------- Inference & Postprocess @ stage 1 --------------------------------- #
-    model = beat_segmentation(True)
+    model = unet.unet()
+    cvtr = dim_converter.DimConverter(model)
+    model = cvtr.convert(model)
     trainer1 = Trainer_stg1(model=model, device=device, mode="test")
     return np.concatenate(trainer1.inference(inference_loader)).argmax(1)
 
