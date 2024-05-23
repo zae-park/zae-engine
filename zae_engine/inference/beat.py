@@ -5,10 +5,12 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from ..models.foundations import unet
-from ..models.converter import dim_converter
-from ..trainer import Trainer
-from ..data.collate.collate import BeatCollateSeq as Col
+from zae_engine.nn_night.blocks import UNetBlock
+from zae_engine.models.builds import autoencoder
+from zae_engine.models.converter import dim_converter
+from zae_engine.trainer import Trainer
+from zae_engine.schedulers import CosineAnnealingScheduler
+from zae_engine.data.collate.collate import BeatCollateSeq as Col
 
 
 def core(x: Union[np.ndarray, torch.Tensor]):
@@ -25,10 +27,14 @@ def core(x: Union[np.ndarray, torch.Tensor]):
     )
 
     # --------------------------------- Inference & Postprocess @ stage 1 --------------------------------- #
-    model = unet.unet()
+    model = autoencoder.AutoEncoder(
+        block=UNetBlock, ch_in=1, ch_out=4, width=16, layers=[1, 1, 1, 1], skip_connect=True
+    )
     cvtr = dim_converter.DimConverter(model)
-    model = cvtr.convert(model)
-    trainer1 = Trainer_stg1(model=model, device=device, mode="test")
+    model = cvtr.convert("2d -> 1d")
+    optimizer = torch.optim.Adam(model.parameters())
+    scheduler = CosineAnnealingScheduler(optimizer, total_iters=100)
+    trainer1 = Trainer_stg1(model=model, device=device, mode="test", optimizer=optimizer, scheduler=scheduler)
     return np.concatenate(trainer1.inference(inference_loader)).argmax(1)
 
 
@@ -77,3 +83,8 @@ class Trainer_stg1(Trainer):
         mini_x = x.split(self.mini_batch_size, dim=0)
         out = torch.cat([self.model(m_x) for m_x in mini_x])
         return {"loss": 0, "output": out}
+
+
+if __name__ == "__main__":
+    x = np.zeros(2048000)
+    core(x)

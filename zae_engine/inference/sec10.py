@@ -7,12 +7,12 @@ from scipy import signal as sig
 from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import Dataset, DataLoader
 
-from ..trainer import Trainer
-from ..data import Collate_seq
-from ..schedulers import CosineAnnealingScheduler
-from ..models.builds.cnn import CNNBase
-from ..models.converter import dim_converter
-from ..nn_night.blocks import BasicBlock
+from zae_engine.trainer import Trainer
+from zae_engine.data import Collate_seq
+from zae_engine.schedulers import CosineAnnealingScheduler
+from zae_engine.models.builds.cnn import CNNBase
+from zae_engine.models.converter import dim_converter
+from zae_engine.nn_night.blocks import BasicBlock
 
 
 def filter_signal(x: np.ndarray, sample_rate: int, btype: Optional[str] = "bandpass"):
