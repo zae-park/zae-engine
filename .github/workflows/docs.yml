@@ -47,9 +47,14 @@ jobs:
 #          github_token: ${{ secrets.PAT_GITHUB }}
 #          publish_dir: docs/build/html
 
-#      - name: Trigger RTDs build
-#        uses: dfm/rtds-action@v1
-#        with:
-#          webhook_url: ${{ secrets.RTD_WEBHOOK_URL }}
-#          webhook_token: ${{ secrets.RTD_TOKEN }}
-#          commit_ref: ${{ github.ref }}
+# Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: html-docs
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
