@@ -28,8 +28,6 @@ jobs:
           pip install sphinx_rtd_theme
 
       - name: Install Packages & Build HTML
-        run: |
-          pip install sphinx_rtd_theme
         uses: ammaraskar/sphinx-action@master
         with:
           docs-folder: "docs/"
