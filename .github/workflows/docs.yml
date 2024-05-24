@@ -7,8 +7,8 @@ on:
 
 
 jobs:
-  notebooks:
-    name: "Build the notebooks for the docs"
+  html_build:
+    name: "Build docs"
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -53,7 +53,7 @@ jobs:
       name: github-pages
       url: html-docs
     runs-on: ubuntu-latest
-    needs: build
+    needs: html_build
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
