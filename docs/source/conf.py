@@ -21,7 +21,7 @@ author = "zae-park"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 # extensions = []
-extensions = ["sphinx.ext.autodoc"]
+extensions = ["sphinx.ext.autodoc", "rtds_action"]
 
 autodoc_inherit_docstrings = False
 
@@ -56,6 +56,19 @@ html_static_path = ["_static"]
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 html_favicon = "./_static/zaevicon.ico"
+
+# The name of your GitHub repository
+rtds_action_github_repo = "zae-park/zae-engine"
+
+# The path where the artifact should be extracted
+# Note: this is relative to the conf.py file!
+rtds_action_path = "../../zae_engine"
+
+# The "prefix" used in the `upload-artifact` step of the action
+rtds_action_artifact_prefix = ""
+
+# A GitHub personal access token is required, more info below
+rtds_action_github_token = os.environ["GITHUB_TOKEN"]
 
 
 # coverage_ignore_functions = [
