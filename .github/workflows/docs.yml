@@ -25,7 +25,7 @@ jobs:
 
       - name: Create requirements
         run: |
-          echo "sphinx_rtd_theme" >> requirements.txt
+          echo "sphinx_rtd_theme" >> ./docs/requirements.txt
 
       - name: Install Packages & Build HTML
         uses: ammaraskar/sphinx-action@master
