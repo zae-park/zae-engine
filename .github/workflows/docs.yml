@@ -34,30 +34,3 @@ jobs:
         with:
           docs-folder: "docs/"
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: github-pages
-          path: docs/build/html/
-
-#      - name: Deploy
-#        uses: peaceiris/actions-gh-pages@v3
-#        if: github.ref == 'refs/heads/main'
-#        with:
-#          github_token: ${{ secrets.PAT_GITHUB }}
-#          publish_dir: docs/build/html
-
-# Deployment job
-  deploy:
-    environment:
-      name: github-pages
-      url: github-pages
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-    needs: html_build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
