@@ -126,7 +126,7 @@ class BeatCollateSeq:
         self.xtype, self.ytype, self.info_type = ["x", "w", "onoff"], ["y", "r_loc"], ["fn", "rp"]
         self.resamp = kwargs["resamp"] if "resamp" in kwargs.keys() else 64
         self.zit = kwargs["zit"] if "zit" in kwargs.keys() else True
-        self.overlapped = kwargs["overlapped"] if "overlapped" in kwargs.keys() else 500
+        self.overlapped = kwargs["overlapped"] if "overlapped" in kwargs.keys() else 560
         self.fs = 250
 
     def filter(self, batch):
@@ -141,10 +141,10 @@ class BeatCollateSeq:
     def split(self, batch):
         raw_data = batch["x"].squeeze()
         batch["raw"] = raw_data.tolist()
-        remain_length = (len(raw_data) - 2500) % (2500 - self.overlapped)
+        remain_length = (len(raw_data) - 2560) % (2560 - self.overlapped)
         if remain_length != 0:
-            raw_data = F.pad(raw_data.unsqueeze(0), (0, 2500 - remain_length), mode="replicate").squeeze()
-        splited = raw_data.unfold(dimension=0, size=2500, step=2500 - self.overlapped)
+            raw_data = F.pad(raw_data.unsqueeze(0), (0, 2560 - remain_length), mode="replicate").squeeze()
+        splited = raw_data.unfold(dimension=0, size=2560, step=2560 - self.overlapped)
 
         batch["x"] = splited
         batch["fn"] = [batch["fn"]] * len(splited)
