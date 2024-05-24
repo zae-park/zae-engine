@@ -25,14 +25,12 @@ jobs:
 
       - name: Install Packages
         run: |
-          pip install sphinx_rtd_theme
+          python -m pip install --upgrade pip sphinx_rtd_theme
 
       - name: Install Packages & Build HTML
         uses: ammaraskar/sphinx-action@master
         with:
           docs-folder: "docs/"
-          run: |
-            pip install sphinx_rtd_theme
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
