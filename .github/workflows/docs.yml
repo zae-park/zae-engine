@@ -1,35 +1,52 @@
 name: Docs
-on: [push, release]
+
+on:
+  push:
+    branches:
+      - main
+
 
 jobs:
   notebooks:
     name: "Build the notebooks for the docs"
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: "3.10"
 
-      - name: Install dependencies
+      - name: Install Poetry and Packages
         run: |
-          python -m pip install -U pip
-          python -m pip install -r .github/workflows/requirements.txt
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install
 
-      - name: Execute the notebooks
-        run: |
-          jupytext --to ipynb --execute docs/tutorials/*.py
+      - name: Build HTML
+        uses: ammaraskar/sphinx-action@0.4
 
-      - uses: actions/upload-artifact@v2
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
         with:
-          name: notebooks-for-${{ github.sha }}
-          path: docs/tutorials
+          name: html-docs
+          path: docs/build/html/
 
-      - name: Trigger RTDs build
-        uses: dfm/rtds-action@v1
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
         with:
-          webhook_url: ${{ secrets.RTD_WEBHOOK_URL }}
-          webhook_token: ${{ secrets.RTD_TOKEN }}
-          commit_ref: ${{ github.ref }}
+          github_token: ${{ secrets.PAT_GITHUB }}
+          publish_dir: docs/build/html
+
+#      - name: Trigger RTDs build
+#        uses: dfm/rtds-action@v1
+#        with:
+#          webhook_url: ${{ secrets.RTD_WEBHOOK_URL }}
+#          webhook_token: ${{ secrets.RTD_TOKEN }}
+#          commit_ref: ${{ github.ref }}
