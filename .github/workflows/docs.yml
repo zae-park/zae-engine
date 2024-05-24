@@ -23,9 +23,9 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install Packages
+      - name: Create requirements
         run: |
-          pip3 install -e sphinx_rtd_theme
+          echo "sphinx_rtd_theme" >> requirements.txt
 
       - name: Install Packages & Build HTML
         uses: ammaraskar/sphinx-action@master
