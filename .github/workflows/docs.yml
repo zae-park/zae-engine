@@ -53,6 +53,9 @@ jobs:
       name: github-pages
       url: html-docs
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     needs: html_build
     steps:
       - name: Deploy to GitHub Pages
