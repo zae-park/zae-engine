@@ -27,8 +27,14 @@ jobs:
         run: |
           pip install sphinx_rtd_theme
 
-      - name: Build HTML
+      - name: Install Packages & Build HTML
+        run: |
+          pip install sphinx_rtd_theme
         uses: ammaraskar/sphinx-action@master
+        with:
+          docs-folder: "docs/"
+          run: |
+            pip install sphinx_rtd_theme
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -36,12 +42,12 @@ jobs:
           name: html-docs
           path: docs/build/html/
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        if: github.ref == 'refs/heads/main'
-        with:
-          github_token: ${{ secrets.PAT_GITHUB }}
-          publish_dir: docs/build/html
+#      - name: Deploy
+#        uses: peaceiris/actions-gh-pages@v3
+#        if: github.ref == 'refs/heads/main'
+#        with:
+#          github_token: ${{ secrets.PAT_GITHUB }}
+#          publish_dir: docs/build/html
 
 #      - name: Trigger RTDs build
 #        uses: dfm/rtds-action@v1
