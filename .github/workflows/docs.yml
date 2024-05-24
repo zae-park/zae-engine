@@ -26,9 +26,11 @@ jobs:
       - name: Create requirements
         run: |
           echo "sphinx_rtd_theme" >> ./docs/requirements.txt
+          echo ./docs/requirements.txt
 
       - name: Install Packages & Build HTML
-        uses: ammaraskar/sphinx-action@master
+#        uses: ammaraskar/sphinx-action@master
+        uses: tbarbette/sphinx-action@master
         with:
           docs-folder: "docs/"
 
