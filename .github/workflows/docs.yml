@@ -37,7 +37,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: html-docs
+          name: github-pages
           path: docs/build/html/
 
 #      - name: Deploy
@@ -51,7 +51,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: html-docs
+      url: github-pages
     runs-on: ubuntu-latest
     permissions:
       contents: write
