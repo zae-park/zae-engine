@@ -96,7 +96,12 @@ class TestTrainer(unittest.TestCase):
 
         # test batch step
         self.trainer.scheduler_step_on_batch = True
-        self.trainer.run(n_epoch=randint(0, 4), loader=self.loader)
+        test_epoch = randint(0, 4)
+        if test_epoch * len(self.loader) > self.trainer.scheduler.total_iters:
+            with self.assertRaises(AssertionError):
+                self.trainer.run(n_epoch=test_epoch, loader=self.loader)
+        else:
+            self.trainer.run(n_epoch=test_epoch, loader=self.loader)
 
     def test_steps(self):
         dummy_sample = [randint(0, 128)] * randint(0, 128)
