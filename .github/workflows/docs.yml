@@ -36,7 +36,7 @@ jobs:
           docs-folder: "docs/"
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
-        if: github.ref == 'refs/heads/action'
+#        if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.PAT_GITHUB }}
           publish_branch: docs
