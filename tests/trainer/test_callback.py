@@ -10,7 +10,7 @@ import numpy as np
 from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
 
-from zae_engine.models.foundations.benchmark import beat_segmentation
+from zae_engine.models import DummyModel
 from zae_engine.trainer import Trainer
 
 
@@ -53,7 +53,7 @@ class TestLogger(unittest.TestCase):
         train_set = DummySet(dummy)
         valid_set = DummySet(dummy)
 
-        cls.model = beat_segmentation(False)
+        cls.model = DummyModel()
         cls.train_loader = DataLoader(
             train_set,
             batch_size=2,

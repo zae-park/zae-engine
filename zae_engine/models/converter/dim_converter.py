@@ -10,7 +10,7 @@ from torch.nn import Module
 
 
 class DimConverter:
-    convertable = (
+    __convertable = (
         nn.modules.conv._ConvNd,
         nn.modules.conv._ConvTransposeNd,
         nn.modules.pooling._LPPoolNd,
@@ -22,8 +22,12 @@ class DimConverter:
         nn.modules.batchnorm._BatchNorm,
     )
     correction_map = {
-        nn.Conv2d: nn.Conv3d,
         nn.Conv1d: nn.Conv2d,
+        nn.Conv2d: nn.Conv3d,
+        nn.ConvTranspose1d: nn.ConvTranspose2d,
+        nn.ConvTranspose2d: nn.ConvTranspose3d,
+        nn.LazyConvTranspose1d: nn.LazyConvTranspose2d,
+        nn.LazyConvTranspose2d: nn.LazyConvTranspose3d,
         nn.MaxPool1d: nn.MaxPool2d,
         nn.MaxPool2d: nn.MaxPool3d,
         nn.AdaptiveMaxPool1d: nn.AdaptiveMaxPool2d,
@@ -46,7 +50,7 @@ class DimConverter:
         """
         DEPRECATED
         """
-        if isinstance(module, self.convertable):
+        if isinstance(module, self.__convertable):
             module_dict = module.__dict__
             if "kernel_size" in module_dict.keys():
                 if isinstance(module_dict["kernel_size"], int):
@@ -78,7 +82,7 @@ class DimConverter:
         self.module_dict = {}
         for name, weight in model.named_modules():
             module = model.get_submodule(name)
-            if isinstance(module, self.convertable):
+            if isinstance(module, self.__convertable):
                 self.module_dict[name] = module
 
         for name, weight in model.named_parameters():
@@ -86,7 +90,7 @@ class DimConverter:
             if name.endswith(("weight", "bias")):
                 root, leaf = name.rsplit(".", 1)
                 module = model.get_submodule(root)
-                if isinstance(module, self.convertable):
+                if isinstance(module, self.__convertable):
                     layer_dict[root] = module
 
         return layer_dict, param_dict

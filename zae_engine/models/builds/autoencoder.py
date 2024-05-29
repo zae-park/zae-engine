@@ -44,11 +44,12 @@ class AutoEncoder(nn.Module):
         self.encoder.body[0] = self.encoder.make_body(blocks=[block] * layers[0], ch_in=ch_in, ch_out=width, stride=2)
 
         self.feature_vectors = []
-        self.encoder.pool.register_forward_hook(self.feature_hook)
         # [U-net] Register hook for every blocks in encoder when "skip_connect" is true.
         if skip_connect:
             for b in self.encoder.body:
                 b[0].relu2.register_forward_hook(self.feature_hook)
+        # registrate hook to end of last body instead of pooling layer
+        self.encoder.body[-1].register_forward_hook(self.feature_output_hook)
 
         self.bottleneck = block(width * 8, width * 16)
 
@@ -66,6 +67,9 @@ class AutoEncoder(nn.Module):
 
     def feature_hook(self, module, input_tensor, output_tensor):
         self.feature_vectors.append(input_tensor[0])
+
+    def feature_output_hook(self, module, input_tensor, output_tensor):
+        self.feature_vectors.append(output_tensor)
 
     def forward(self, x):
         feat = self.encoder(x)  # Forwarding encoder & hook immediate outputs
