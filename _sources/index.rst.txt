@@ -16,9 +16,9 @@ zae-engine은 딥러닝 프로젝트의 quick start를 돕기 위한 파이썬 �
 
 .. code-block:: console
 
-   zae hello
-   zae example
-   zae tree
+   zae hello   >> 안녕하세요
+   zae example >> 예제 파일 생성
+   zae tree    >> 패키지 구조 출력
 
 .. toctree::
    :maxdepth: 1
