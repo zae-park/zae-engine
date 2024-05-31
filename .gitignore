@@ -3,6 +3,7 @@
 *.pt
 *.pth
 *.lock
+.python-version
 .idea/
 dist/
 docs/build/
