@@ -12,7 +12,6 @@ packages = [
 python = ">=3.10.0,<3.12"
 matplotlib = "^3.7.2"
 termcolor = "2.2.0"
-opencv-python-headless = "^4.8.0.76"
 ultralytics = "8.0.155"
 seaborn = "^0.12.2"
 jupyter = "^1.0.0"
@@ -44,14 +43,24 @@ wandb = "^0.16.2"
 python = ">=3.10.0,<3.12"
 pytest = "^7.4.2"
 torchvision = [
-    { platform = "win32", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-win_amd64.whl" },
-    { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-linux_x86_64.whl" },
+    { version = "^0.15.1", source = "PyPI", markers = "sys_platform == 'darwin'"},
+    { platform = "!= darwin", source = "pytorch", version = "^0.15.1"},
 ]
 torch = [
-    { platform = "win32", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-win_amd64.whl" },
-    { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-linux_x86_64.whl" },
+    { version = "^2.0.0", source = "PyPI", markers = "sys_platform == 'darwin'"},
+    { platform = "!= darwin", source = "pytorch", version = "^2.0.0"},
 ]
-tensorflow-io-gcs-filesystem = "0.31.0"
+
+# torchvision = [
+#     { platform = "win32", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-win_amd64.whl" },
+#     { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torchvision-0.15.1%2Bcu117-cp310-cp310-linux_x86_64.whl" },
+# ]
+# torch = [
+#     { platform = "win32", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-win_amd64.whl" },
+#     { platform = "linux", url = "https://download.pytorch.org/whl/cu117/torch-2.0.0%2Bcu117-cp310-cp310-linux_x86_64.whl" },
+# ]
+# tensorflow-io-gcs-filesystem = "0.31.0"
+# opencv-python-headless = "^4.8.0.76"
 tensorflow = "^2.13.0"
 tensorflow-intel = { version = "^2.14.0", platform = "win64" }
 keras-ocr = "0.8.9"
@@ -61,6 +70,16 @@ pytest-cov = "^5.0.0"
 codecov = "^2.1.13"
 sphinx = "^7.2.6"
 sphinx-rtd-theme = "^2.0.0"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu117"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name = "pytorch-vision"
+url = "https://download.pytorch.org/whl/cu117"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry>=1.5"]
