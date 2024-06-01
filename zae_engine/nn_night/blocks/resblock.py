@@ -7,6 +7,8 @@ from torch import Tensor
 
 
 class BasicBlock(nn.Module):
+    """Basic residual block."""
+
     expansion: int = 1
 
     def __init__(
@@ -60,6 +62,8 @@ class BasicBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
+    """Bottleneck residual block."""
+
     expansion: int = 4
 
     # Bottleneck in torchvision places the stride for downsampling at 3x3 convolution(self.conv2)
