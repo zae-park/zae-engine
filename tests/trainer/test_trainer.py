@@ -55,7 +55,7 @@ class TestTrainer(unittest.TestCase):
         cls.n_data = randint(0, 256)
         dataset = ExDataset(n_data=cls.n_data)
         cls.trainer = ExTrainer(cls.model, device, "train", scheduler=cls.scheduler, optimizer=cls.optimizer)
-        bs = randint(0, 256)
+        bs = randint(1, 256)
         cls.loader = DataLoader(dataset, batch_size=bs)
 
     @classmethod
