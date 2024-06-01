@@ -39,10 +39,18 @@ jobs:
         with:
           name: html-docs
           path: docs/build/html/
-      - name: Deploy
+      - name: Deploy - ref main
         uses: peaceiris/actions-gh-pages@v3
-        if: {github.ref == 'refs/heads/main'} or {github.ref == 'refs/heads/dev'}
+        if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.PAT_GITHUB }}
           publish_branch: docs
           publish_dir: docs/build/html
+      - name: Deploy - ref dev
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/dev'
+        with:
+          github_token: ${{ secrets.PAT_GITHUB }}
+          publish_branch: docs
+          publish_dir: docs/build/html
+
