@@ -3,10 +3,31 @@ import torch.nn.functional as F
 
 
 class Inv1d(nn.Module):
-    """
-    Involution: Inverting the Inherence of Convolution for Visual Recognition. CVPR-2021.
-    Paper: https://arxiv.org/abs/2103.06255
-    Author: Duo Li et al.
+    """The involution layer for 1D input.
+
+    ...
+    Parameters
+    ----------
+    ch : int
+        Number of channels in the input tensor (signal or 1D arr)
+    num_groups : int
+        Number of channels produced by the convolution
+    kernel_size : int
+        Size of the convolving kernel
+    stride : int
+        Stride of the convolution. Default: 1
+    reduction_ratio : int
+        Ratio of channel reduction. This value must be divisor of ch.
+
+    Returns
+    -------
+    tensor : tensor
+
+    References
+    ----------
+    .. [1]  Li, Duo, et al.
+            "Involution: Inverting the inherence of convolution for visual recognition."
+            Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 2021.
     """
 
     def __init__(self, ch: int, num_groups: int, kernel_size: int, stride: int, reduction_ratio: int):
