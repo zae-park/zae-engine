@@ -40,7 +40,7 @@ jobs:
 
       - name: Build napoleon
         run : |
-          apt-get install python3-sphinx
+          sudo apt-get install python3-sphinx
           sphinx-apidoc -f -o docs/source docs/build
 
       - name: Upload artifacts
