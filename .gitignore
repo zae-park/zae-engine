@@ -6,5 +6,4 @@
 .python-version
 .idea/
 dist/
-docs/build/
 **/wandb/
