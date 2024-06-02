@@ -28,7 +28,9 @@ jobs:
         run: |
           echo "sphinx_rtd_theme" >> ./docs/requirements.txt
           echo ./docs/requirements.txt
-          echo $ {{ github.ref }}
+          echo ${{ github.ref }}
+          echo "${{ github.ref }}"
+          echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
 
       - name: Install Packages & Build HTML
 #        uses: ammaraskar/sphinx-action@master
