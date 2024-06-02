@@ -21,7 +21,7 @@ author = "zae-park"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 # extensions = []
-extensions = ["sphinx.ext.autodoc"]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinxcontrib.napoleon", "sphinx.ext.githubpages"]
 
 autodoc_inherit_docstrings = False
 
