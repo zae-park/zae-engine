@@ -53,4 +53,18 @@ jobs:
           github_token: ${{ secrets.PAT_GITHUB }}
           publish_branch: docs
           publish_dir: docs/build/html
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if:
+          contains('
+          refs/heads/main
+          refs/heads/master
+          refs/heads/dev
+          refs/heads/docstring
+          ', 
+          github.ref)
+        with:
+          github_token: ${{ secrets.PAT_GITHUB }}
+          publish_branch: docs
+          publish_dir: docs/build/html
 
