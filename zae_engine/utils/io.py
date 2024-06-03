@@ -33,18 +33,18 @@ def image_from_url(url: str, save_dst: str = None) -> Union[None, Image.Image]:
 
 def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
     """
-    Load 10 second ecg recording & annotation from example data with sampling frequency 250Hz.
+    Load 10 second ecg recording \& annotation from example data with sampling frequency 250Hz.
     The example data from LUDB(https://www.physionet.org/content/ludb/1.0.1/).
     The '*.zea' file includes QRS complex information.
     If argument 'beat_idx' is None(default), return the 10 second recording and label sequence.
     If not, return the recording, r-peak index, and beat type for beat_idx'th beat.
     :param beat_idx: int, optional
-        The index of beat in data.
-        Note that the value cannot be more than maximum index of beats in data (12).
-        If this parameter is not specified, run for 10 second data.
+    The index of beat in data.
+    Note that the value cannot be more than maximum index of beats in data (12).
+    If this parameter is not specified, run for 10 second data.
     :return:
-        If beat_idx was given, return recording, r-peak index, and beat type for beat_idx'th beat.
-        If not, return recording, label sequence for 10 sec data.
+    If beat_idx was given, return recording, r-peak index, and beat type for beat_idx'th beat.
+    If not, return recording, label sequence for 10 sec data.
     """
     lookup = {"N": 1, "A": 2}
 
