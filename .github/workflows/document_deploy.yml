@@ -29,7 +29,8 @@ jobs:
       - name: Install poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
-#          source $HOME/runner/.local/bin
+          export PATH="$HOME/.local/bin:$PATH"  # 실행 파일이 설치된 경로를 PATH에 추가
+          poetry --version  # 설치된 poetry 버전 확인
 
       - name: Install project dependencies
         run: |
