@@ -9,12 +9,10 @@ import numpy as np
 import nibabel as nib
 from nibabel.testing import data_path
 
-
 IMAGE_FORMAT = ["png", "jpg", "jpeg", "til"]
 
 
 def image_from_url(url: str, save_dst: str = None) -> Union[None, Image.Image]:
-
     save_mode = False if save_dst is None else True
 
     if save_dst is None:
@@ -33,8 +31,8 @@ def image_from_url(url: str, save_dst: str = None) -> Union[None, Image.Image]:
 
 def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
     """
-    Load 10 second ecg recording \& annotation from example data with sampling frequency 250Hz.
-    The example data from LUDB(https://www.physionet.org/content/ludb/1.0.1/).
+    Load 10 second ecg recording & annotation from example data with sampling frequency 250Hz.
+    The example data from LUDB (https://www.physionet.org/content/ludb/1.0.1).
     The '*.zea' file includes QRS complex information.
     If argument 'beat_idx' is None(default), return the 10 second recording and label sequence.
     If not, return the recording, r-peak index, and beat type for beat_idx'th beat.
