@@ -29,7 +29,7 @@ jobs:
       - name: Install poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
-          source $HOME/.poetry/env
+#          source $HOME/runner/.local/bin
 
       - name: Install project dependencies
         run: |
