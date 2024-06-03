@@ -36,9 +36,13 @@ jobs:
         run: |
           poetry install --no-root
 
+      - name: Install Sphinx on Ubuntu
+        run: |
+          sudo apt-get install python3-sphinx
+
       - name: Build documentation
         run: |
-          poetry run sphinx-apidoc -o docs/source/ ./zae_engine
+          sphinx-apidoc -o docs/source/ ./zae_engine
           cd docs
           make html
 
