@@ -7,26 +7,11 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   zae_engine.models.resource
+   zae_engine.models.builds
+   zae_engine.models.foundations
 
 Submodules
 ----------
-
-zae\_engine.models.benchmark module
------------------------------------
-
-.. automodule:: zae_engine.models.benchmark
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-zae\_engine.models.build module
--------------------------------
-
-.. automodule:: zae_engine.models.build
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 zae\_engine.models.utility module
 ---------------------------------

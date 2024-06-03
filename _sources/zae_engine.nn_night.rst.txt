@@ -1,6 +1,15 @@
 zae\_engine.nn\_night package
 =============================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   zae_engine.nn_night.blocks
+   zae_engine.nn_night.layers
+
 Module contents
 ---------------
 

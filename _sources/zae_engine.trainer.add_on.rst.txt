@@ -1,10 +1,10 @@
-zae\_engine.models.resource package
+zae\_engine.trainer.add\_on package
 ===================================
 
 Module contents
 ---------------
 
-.. automodule:: zae_engine.models.resource
+.. automodule:: zae_engine.trainer.add_on
    :members:
    :undoc-members:
    :show-inheritance:

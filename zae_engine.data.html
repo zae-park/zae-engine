@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>zae_engine.models package &mdash; zae-engine  documentation</title>
+  <title>zae_engine.data package &mdash; zae-engine  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -20,8 +20,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="zae_engine.models.builds package" href="zae_engine.models.builds.html" />
-    <link rel="prev" title="zae_engine.metrics package" href="zae_engine.metrics.html" /> 
+    <link rel="next" title="zae_engine.data.collate package" href="zae_engine.data.collate.html" />
+    <link rel="prev" title="zae_engine package" href="zae_engine.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,11 +48,11 @@
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">zae_engine</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="zae_engine.html">zae_engine package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="zae_engine.html#subpackages">Subpackages</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="zae_engine.data.html">zae_engine.data package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">zae_engine.data package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.inference.html">zae_engine.inference package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.loss.html">zae_engine.loss package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.metrics.html">zae_engine.metrics package</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">zae_engine.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="zae_engine.models.html">zae_engine.models package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.nn_night.html">zae_engine.nn_night package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.operation.html">zae_engine.operation package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.schedulers.html">zae_engine.schedulers package</a></li>
@@ -83,9 +83,9 @@
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="modules.html">zae_engine</a></li>
           <li class="breadcrumb-item"><a href="zae_engine.html">zae_engine package</a></li>
-      <li class="breadcrumb-item active">zae_engine.models package</li>
+      <li class="breadcrumb-item active">zae_engine.data package</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/zae_engine.models.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/zae_engine.data.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -93,36 +93,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="zae-engine-models-package">
-<h1>zae_engine.models package<a class="headerlink" href="#zae-engine-models-package" title="Link to this heading">¶</a></h1>
+  <section id="zae-engine-data-package">
+<h1>zae_engine.data package<a class="headerlink" href="#zae-engine-data-package" title="Link to this heading">¶</a></h1>
 <section id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="zae_engine.models.builds.html">zae_engine.models.builds package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.builds.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.builds.html#zae-engine-models-builds-autoencoder-module">zae_engine.models.builds.autoencoder module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.builds.html#zae-engine-models-builds-cnn-module">zae_engine.models.builds.cnn module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.builds.html#zae-engine-models-builds-legacy-module">zae_engine.models.builds.legacy module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.builds.html#module-contents">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="zae_engine.models.foundations.html">zae_engine.models.foundations package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.foundations.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.foundations.html#zae-engine-models-foundations-benchmark-module">zae_engine.models.foundations.benchmark module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.foundations.html#zae-engine-models-foundations-resnet-module">zae_engine.models.foundations.resnet module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.foundations.html#zae-engine-models-foundations-unet-module">zae_engine.models.foundations.unet module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zae_engine.models.foundations.html#module-contents">Module contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="zae_engine.data.collate.html">zae_engine.data.collate package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="zae_engine.data.collate.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zae_engine.data.collate.html#zae-engine-data-collate-collate-module">zae_engine.data.collate.collate module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zae_engine.data.collate.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </div>
-</section>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
-</section>
-<section id="zae-engine-models-utility-module">
-<h2>zae_engine.models.utility module<a class="headerlink" href="#zae-engine-models-utility-module" title="Link to this heading">¶</a></h2>
 </section>
 <section id="module-contents">
 <h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
@@ -133,8 +117,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="zae_engine.metrics.html" class="btn btn-neutral float-left" title="zae_engine.metrics package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="zae_engine.models.builds.html" class="btn btn-neutral float-right" title="zae_engine.models.builds package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="zae_engine.html" class="btn btn-neutral float-left" title="zae_engine package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="zae_engine.data.collate.html" class="btn btn-neutral float-right" title="zae_engine.data.collate package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

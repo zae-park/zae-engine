@@ -7,13 +7,14 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   zae_engine.data
    zae_engine.inference
    zae_engine.loss
-   zae_engine.measure
+   zae_engine.metrics
    zae_engine.models
    zae_engine.nn_night
    zae_engine.operation
-   zae_engine.scripts
+   zae_engine.schedulers
    zae_engine.trainer
    zae_engine.utils
 

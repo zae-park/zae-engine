@@ -1,6 +1,25 @@
 zae\_engine.loss package
 ========================
 
+Submodules
+----------
+
+zae\_engine.loss.iou module
+---------------------------
+
+.. automodule:: zae_engine.loss.iou
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.loss.norm module
+----------------------------
+
+.. automodule:: zae_engine.loss.norm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
