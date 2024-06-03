@@ -43,9 +43,9 @@ jobs:
 
       - name: Build documentation
         run: |
+          sphinx-apidoc -o docs/source/ ./zae_engine
           cd docs
-          sphinx-apidoc -o source/ ../zae_engine
-          make html
+          doc/make html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
