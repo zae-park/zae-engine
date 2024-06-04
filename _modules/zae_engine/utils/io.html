@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.utils.io &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">zae_engine</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">zae_engine.utils.io</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.utils.io</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">wfdb</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">nibabel</span> <span class="k">as</span> <span class="nn">nib</span>
+<span class="kn">from</span> <span class="nn">nibabel.testing</span> <span class="kn">import</span> <span class="n">data_path</span>
+
+<span class="n">IMAGE_FORMAT</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;til&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="image_from_url">
+<a class="viewcode-back" href="../../../zae_engine.utils.html#zae_engine.utils.io.image_from_url">[docs]</a>
+<span class="k">def</span> <span class="nf">image_from_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">save_dst</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">]:</span>
+    <span class="n">save_mode</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="n">save_dst</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="n">save_dst</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">save_dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="o">:=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">IMAGE_FORMAT</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid extension. Expect one of </span><span class="si">{</span><span class="n">IMAGE_FORMAT</span><span class="si">}</span><span class="s1">, but receive &quot;</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+    <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">save_dst</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">save_mode</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">img</span></div>
+
+
+
+<div class="viewcode-block" id="example_ecg">
+<a class="viewcode-back" href="../../../zae_engine.utils.html#zae_engine.utils.io.example_ecg">[docs]</a>
+<span class="k">def</span> <span class="nf">example_ecg</span><span class="p">(</span><span class="n">beat_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load 10 second ecg recording &amp; annotation from example data with sampling frequency 250Hz.</span>
+<span class="sd">    The example data from LUDB (https://www.physionet.org/content/ludb/1.0.1).</span>
+<span class="sd">    The &#39;*.zea&#39; file includes QRS complex information.</span>
+<span class="sd">    If argument &#39;beat_idx&#39; is None(default), return the 10 second recording and label sequence.</span>
+<span class="sd">    If not, return the recording, r-peak index, and beat type for beat_idx&#39;th beat.</span>
+<span class="sd">    :param beat_idx: int, optional</span>
+<span class="sd">    The index of beat in data.</span>
+<span class="sd">    Note that the value cannot be more than maximum index of beats in data (12).</span>
+<span class="sd">    If this parameter is not specified, run for 10 second data.</span>
+<span class="sd">    :return:</span>
+<span class="sd">    If beat_idx was given, return recording, r-peak index, and beat type for beat_idx&#39;th beat.</span>
+<span class="sd">    If not, return recording, label sequence for 10 sec data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lookup</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+
+    <span class="n">ex_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;__sample/sample_data&quot;</span><span class="p">)</span>
+    <span class="n">recording</span> <span class="o">=</span> <span class="n">wfdb</span><span class="o">.</span><span class="n">rdsamp</span><span class="p">(</span><span class="n">ex_path</span><span class="p">,</span> <span class="n">return_res</span><span class="o">=</span><span class="mi">32</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>  <span class="c1"># nd-array, [2500, ]</span>
+    <span class="n">anno</span> <span class="o">=</span> <span class="n">wfdb</span><span class="o">.</span><span class="n">rdann</span><span class="p">(</span><span class="n">ex_path</span><span class="p">,</span> <span class="s2">&quot;zae&quot;</span><span class="p">)</span>
+    <span class="n">samp</span><span class="p">,</span> <span class="n">sym</span> <span class="o">=</span> <span class="n">anno</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">anno</span><span class="o">.</span><span class="n">symbol</span>
+    <span class="k">if</span> <span class="n">sym</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+        <span class="n">samp</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">sym</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sym</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+        <span class="n">samp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2499</span><span class="p">)</span>
+        <span class="n">sym</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">samp</span><span class="p">),</span> <span class="s2">&quot;The length of samples and symbols is not matched. The annotation file is insane.&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Invalid symbol. Please check out the first &amp; last symbol of annotation.&quot;</span>
+
+    <span class="n">n_qrs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span>  <span class="c1"># The number of QRS complexes.</span>
+    <span class="k">if</span> <span class="n">beat_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">recording</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i_qrs</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sym</span><span class="p">))[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]:</span>
+            <span class="n">label</span><span class="p">[</span><span class="n">samp</span><span class="p">[</span><span class="n">i_qrs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">samp</span><span class="p">[</span><span class="n">i_qrs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="k">if</span> <span class="p">(</span><span class="n">s</span> <span class="o">:=</span> <span class="n">sym</span><span class="p">[</span><span class="n">i_qrs</span><span class="p">])</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="mi">3</span>
+        <span class="k">return</span> <span class="n">recording</span><span class="p">,</span> <span class="n">label</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">beat_idx</span> <span class="o">&lt;</span> <span class="n">n_qrs</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;The maximum value os beat_idx is </span><span class="si">{</span><span class="n">n_qrs</span><span class="si">}</span><span class="s2">. But </span><span class="si">{</span><span class="n">beat_idx</span><span class="si">}</span><span class="s2"> was provided.&quot;</span>
+        <span class="n">qrs_chunk</span> <span class="o">=</span> <span class="n">recording</span><span class="p">[</span><span class="n">samp</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">beat_idx</span><span class="p">]</span> <span class="p">:</span> <span class="n">samp</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">beat_idx</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]]</span>
+        <span class="n">sym</span> <span class="o">=</span> <span class="n">sym</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">beat_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">qrs_loc</span> <span class="o">=</span> <span class="n">samp</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">beat_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">samp</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">beat_idx</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">qrs_chunk</span><span class="p">,</span> <span class="n">qrs_loc</span><span class="p">,</span> <span class="n">sym</span></div>
+
+
+
+<div class="viewcode-block" id="example_mri">
+<a class="viewcode-back" href="../../../zae_engine.utils.html#zae_engine.utils.io.example_mri">[docs]</a>
+<span class="k">def</span> <span class="nf">example_mri</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="n">example_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s2">&quot;example4d.nii.gz&quot;</span><span class="p">)</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">example_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;get_fdata&quot;</span> <span class="ow">in</span> <span class="n">proxy</span><span class="o">.</span><span class="fm">__dir__</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">proxy</span><span class="o">.</span><span class="n">dataobj</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">example_mri</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

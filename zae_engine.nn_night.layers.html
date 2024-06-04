@@ -60,7 +60,7 @@
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.utils.html">zae_engine.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-zae_engine">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -99,20 +99,228 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
-<section id="zae-engine-nn-night-layers-dynamic-pool-module">
-<h2>zae_engine.nn_night.layers.dynamic_pool module<a class="headerlink" href="#zae-engine-nn-night-layers-dynamic-pool-module" title="Link to this heading">¶</a></h2>
+<section id="module-zae_engine.nn_night.layers.dynamic_pool">
+<span id="zae-engine-nn-night-layers-dynamic-pool-module"></span><h2>zae_engine.nn_night.layers.dynamic_pool module<a class="headerlink" href="#module-zae_engine.nn_night.layers.dynamic_pool" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.dynamic_pool.</span></span><span class="sig-name descname"><span class="pre">DynOPool</span></span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p><a class="reference external" href="https://arxiv.org/abs/2205.15254">https://arxiv.org/abs/2205.15254</a>
+.. todo:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">fill</span> <span class="n">description</span>
+<span class="o">-</span> <span class="n">add</span> <span class="n">test</span> <span class="n">case</span>
+<span class="o">-</span> <span class="n">optimize</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool.bilinear_interpolation">
+<span class="sig-name descname"><span class="pre">bilinear_interpolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_dim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool.bilinear_interpolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.bilinear_interpolation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
-<section id="zae-engine-nn-night-layers-involution-module">
-<h2>zae_engine.nn_night.layers.involution module<a class="headerlink" href="#zae-engine-nn-night-layers-involution-module" title="Link to this heading">¶</a></h2>
+<section id="module-zae_engine.nn_night.layers.involution">
+<span id="zae-engine-nn-night-layers-involution-module"></span><h2>zae_engine.nn_night.layers.involution module<a class="headerlink" href="#module-zae_engine.nn_night.layers.involution" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.involution.Inv1d">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.involution.</span></span><span class="sig-name descname"><span class="pre">Inv1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/involution.html#Inv1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.involution.Inv1d" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>The involution layer for 1D input <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>…
+:param ch: Number of channels in the input tensor (signal or 1D arr)
+:type ch: int
+:param num_groups: Number of channels produced by the convolution
+:type num_groups: int
+:param kernel_size: Size of the convolving kernel
+:type kernel_size: int
+:param stride: Stride of the convolution. Default: 1
+:type stride: int
+:param reduction_ratio: Ratio of channel reduction. This value must be divisor of ch.
+:type reduction_ratio: int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tensor</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tensor</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Li, Duo, et al.
+“Involution: Inverting the inherence of convolution for visual recognition.”
+Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 2021.</p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.involution.Inv1d.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/involution.html#Inv1d.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.involution.Inv1d.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.involution.Inv1d.kernel_generator">
+<span class="sig-name descname"><span class="pre">kernel_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/involution.html#Inv1d.kernel_generator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.involution.Inv1d.kernel_generator" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
-<section id="zae-engine-nn-night-layers-residual-connection-module">
-<h2>zae_engine.nn_night.layers.residual_connection module<a class="headerlink" href="#zae-engine-nn-night-layers-residual-connection-module" title="Link to this heading">¶</a></h2>
+<section id="module-zae_engine.nn_night.layers.residual_connection">
+<span id="zae-engine-nn-night-layers-residual-connection-module"></span><h2>zae_engine.nn_night.layers.residual_connection module<a class="headerlink" href="#module-zae_engine.nn_night.layers.residual_connection" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.residual_connection.Residual">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.residual_connection.</span></span><span class="sig-name descname"><span class="pre">Residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/residual_connection.html#Residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.residual_connection.Residual" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequential</span></code></p>
+<p>Residual connection.
+As nn.Sequential, receive modules but connect the output tensor to an input tensor.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.residual_connection.Residual.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/residual_connection.html#Residual.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.residual_connection.Residual.forward" title="Link to this definition">¶</a></dt>
+<dd><p>The ‘module’ is sequence of arguments provides in __init__.
+:param x: Input tensor
+:return: Sum of input tensor and output of sequence.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
-<section id="zae-engine-nn-night-layers-selective-kernel-conv-module">
-<h2>zae_engine.nn_night.layers.selective_kernel_conv module<a class="headerlink" href="#zae-engine-nn-night-layers-selective-kernel-conv-module" title="Link to this heading">¶</a></h2>
+<section id="module-zae_engine.nn_night.layers.selective_kernel_conv">
+<span id="zae-engine-nn-night-layers-selective-kernel-conv-module"></span><h2>zae_engine.nn_night.layers.selective_kernel_conv module<a class="headerlink" href="#module-zae_engine.nn_night.layers.selective_kernel_conv" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.selective_kernel_conv.</span></span><span class="sig-name descname"><span class="pre">SKConv1D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(3,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatten</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>TODO
+fill description
+add test case
+optimize</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.fuse">
+<span class="sig-name descname"><span class="pre">fuse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D.fuse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.fuse" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.kernel_valid">
+<span class="sig-name descname"><span class="pre">kernel_valid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D.kernel_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.kernel_valid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.selective_kernel_conv.</span></span><span class="sig-name descname"><span class="pre">ZaeClass</span></span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#ZaeClass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Summary line.</p>
+<p>Extended description of class</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass.attr1">
+<span class="sig-name descname"><span class="pre">attr1</span></span><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass.attr1" title="Link to this definition">¶</a></dt>
+<dd><p>Description of attr1</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass.attr2">
+<span class="sig-name descname"><span class="pre">attr2</span></span><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass.attr2" title="Link to this definition">¶</a></dt>
+<dd><p>Description of attr2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.func_zae_google">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.selective_kernel_conv.</span></span><span class="sig-name descname"><span class="pre">func_zae_google</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#func_zae_google"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.func_zae_google" title="Link to this definition">¶</a></dt>
+<dd><p>Summary line.</p>
+<p>Extended description of function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>int</em>) – Description of arg1</p></li>
+<li><p><strong>arg2</strong> (<em>str</em>) – Description of arg2</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Description of return value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.func_zae_numpy">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.selective_kernel_conv.</span></span><span class="sig-name descname"><span class="pre">func_zae_numpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#func_zae_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.func_zae_numpy" title="Link to this definition">¶</a></dt>
+<dd><p>Summary line.</p>
+<p>Extended description of function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arg1</strong> (<em>int</em>) – Description of arg1</p></li>
+<li><p><strong>arg2</strong> (<em>str</em>) – Description of arg2</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Description of return value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="module-zae_engine.nn_night.layers">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.nn_night.layers" title="Link to this heading">¶</a></h2>
 </section>
 </section>
 
