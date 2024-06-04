@@ -44,7 +44,7 @@ jobs:
 
       - name: Build documentation
         run: |
-          sphinx-apidoc -o docs/source/ ./zae_engine
+          poetry run sphinx-apidoc -o docs/source/ ./zae_engine
           cd docs
           make html
 
