@@ -9,9 +9,9 @@ class SE1d(nn.Module):
     Generalized version of Squeeze and Excitation module (https://arxiv.org/abs/1709.01507).
     If spatial argument is False, this work equivalent to SE module.
     :param ch: int
-        The channels-wise dimension of input tensor.
+    The channels-wise dimension of input tensor.
     :param reduction: int
-        The Squeeze and Excitation ratio. Note that it must be a divisor of ch.
+    The Squeeze and Excitation ratio. Note that it must be a divisor of ch.
     :param bias: bool
     """
 

@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 
 class Inv1d(nn.Module):
-    """The involution layer for 1D input.
+    """The involution layer for 1D input [1]_.
 
     ...
     Parameters
