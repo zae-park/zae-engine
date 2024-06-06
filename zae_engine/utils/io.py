@@ -94,6 +94,39 @@ def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
 
 
 def example_mri() -> np.ndarray:
+    """
+        Load a 4D MRI scan from a specified path.
+
+        This function loads an MRI scan stored in a NIfTI file ('.nii.gz') and returns the image data as a numpy array.
+        The MRI scan is expected to be a 4-dimensional array.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        np.ndarray
+            The 4-dimensional MRI scan data.
+
+        Notes
+        -----
+        This function assumes that the file 'example4d.nii.gz' exists in the 'data_path' directory.
+        The NIfTI file format is commonly used for storing MRI data, and this function uses the nibabel library to read it.
+        If the 'get_fdata' method is available in the loaded object, the function returns the image data directly from
+        the data object.
+
+        Examples
+        --------
+        >>> mri_data = example_mri()
+        >>> print(mri_data.shape)
+        (128, 128, 64, 30)  # Example output, actual dimensions may vary
+
+        References
+        ----------
+        The NIfTI file format: https://nifti.nimh.nih.gov/nifti-1
+        The nibabel library documentation: https://nipy.org/nibabel/
+        """
     example_path = os.path.join(data_path, "example4d.nii.gz")
     proxy = nib.load(example_path)
     if "get_fdata" in proxy.__dir__():
