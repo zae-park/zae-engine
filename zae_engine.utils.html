@@ -120,18 +120,37 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="zae_engine.utils.io.example_ecg">
 <span class="sig-prename descclassname"><span class="pre">zae_engine.utils.io.</span></span><span class="sig-name descname"><span class="pre">example_ecg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beat_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/utils/io.html#example_ecg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.io.example_ecg" title="Link to this definition">¶</a></dt>
-<dd><p>Load 10 second ecg recording &amp; annotation from example data with sampling frequency 250Hz.
-The example data from LUDB (<a class="reference external" href="https://www.physionet.org/content/ludb/1.0.1">https://www.physionet.org/content/ludb/1.0.1</a>).
-The ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.zea’ file includes QRS complex information.
-If argument ‘beat_idx’ is None(default), return the 10 second recording and label sequence.
-If not, return the recording, r-peak index, and beat type for beat_idx’th beat.
-:param beat_idx: int, optional
-The index of beat in data.
-Note that the value cannot be more than maximum index of beats in data (12).
-If this parameter is not specified, run for 10 second data.
-:return:
-If beat_idx was given, return recording, r-peak index, and beat type for beat_idx’th beat.
-If not, return recording, label sequence for 10 sec data.</p>
+<dd><p>Load a 10-second ECG recording and annotation from LUDB dataset [1], which has a sampling frequency of 250Hz.</p>
+<p>The ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.zae’ file in package contains QRS complex information from raw data[1] and beat locations via algorithm.
+If the argument ‘beat_idx’ is None (default), the function returns the 10-second recording and label sequence.
+If ‘beat_idx’ is specified, the function returns the segment of the recording, the location, and the symbol of beat.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>beat_idx</strong> (<em>int</em><em>, </em><em>optional</em>) – The index of the beat in the data.
+The value cannot be greater than the maximum index of beats in the data (12).
+If this parameter is not specified, the function returns the 10-second data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>signal</strong> (<em>np.ndarray</em>) – The 10-second ECG recording.
+If ‘beat_idx’ is specified, this is the segment of the recording around the specified beat.</p></li>
+<li><p><strong>label</strong> (<em>np.ndarray or int</em>) – If ‘beat_idx’ is None, this is the label sequence for the 10-second data.
+If ‘beat_idx’ is specified, this is the type of the specified beat.</p></li>
+<li><p><strong>loc</strong> (<em>None or int</em>) – The location of the specified beat if ‘beat_idx’ is specified.
+Otherwise, this is None.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Kalyakulina, A., Yusipov, I., Moskalenko, V., et al.
+Lobachevsky University Electrocardiography Database (version 1.0.0). PhysioNet. (2020).
+<a class="reference external" href="https://doi.org/10.13026/qweb-sr17">https://doi.org/10.13026/qweb-sr17</a>.</p>
+</aside>
+</aside>
 </dd></dl>
 
 <dl class="py function">
