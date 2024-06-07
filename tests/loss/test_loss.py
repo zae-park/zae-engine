@@ -1,7 +1,8 @@
 import unittest
 
-import numpy as np
 import torch
+import numpy as np
+from random import randint, choice
 
 from zae_engine.loss._loss import cross_entropy, batch_wise_dot
 from zae_engine import utils
