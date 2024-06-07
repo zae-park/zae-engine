@@ -6,20 +6,35 @@ import torch
 
 
 def np2torch(dtype: torch.dtype):
+    """
+    Convert numpy arrays to torch tensors with a specified dtype.
+
+    This decorator converts all numpy array arguments of a function to torch tensors with the specified dtype.
+    If an argument is already a torch tensor, it is not converted.
+
+    Parameters
+    ----------
+    dtype : torch.dtype
+        The desired dtype for the torch tensors.
+
+    Returns
+    -------
+    func
+        The decorated function with numpy array arguments converted to torch tensors.
+
+    Examples
+    --------
+    >>> @np2torch(torch.float32)
+    ... def example_func(x):
+    ...     return x
+    >>> example_func(np.array([1, 2, 3]))  # This will be converted to a torch tensor.
+    """
     def deco(func):
         def wrapper(*args: Union[np.ndarray, torch.Tensor, bool, int, float], **kwargs):
-            if args:
-                if len(args) == 1:
-                    args = a if isinstance((a := args[0]), torch.Tensor) else torch.tensor(a, dtype=dtype)
-                    # return func(args)
-                else:
-                    args = [a if isinstance(a, torch.Tensor) else torch.tensor(a, dtype=dtype) for a in args]
-                    # return func(*args)
+            args = tuple(a if isinstance(a, torch.Tensor) else torch.tensor(a, dtype=dtype) for a in args)
+            kwargs = {k: v if isinstance(v, torch.Tensor) else torch.tensor(v, dtype=dtype) for k, v in kwargs.items()}
             return func(*args, **kwargs)
-            # return {k: v if isinstance(v, torch.Tensor) else torch.tensor(v, dtype=dtype) for k, v in kwargs.items()}
-
         return wrapper
-
     return deco
 
 
