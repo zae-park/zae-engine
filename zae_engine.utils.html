@@ -59,7 +59,7 @@
 <li class="toctree-l4 current"><a class="current reference internal" href="#">zae_engine.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-zae_engine">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -97,23 +97,8 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.utils.deco">
-<span id="zae-engine-utils-deco-module"></span><h2>zae_engine.utils.deco module<a class="headerlink" href="#module-zae_engine.utils.deco" title="Link to this heading">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.utils.deco.np2torch">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.deco.</span></span><span class="sig-name descname"><span class="pre">np2torch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtype</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/utils/deco.html#np2torch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.deco.np2torch" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.utils.deco.shape_check">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.deco.</span></span><span class="sig-name descname"><span class="pre">shape_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/utils/deco.html#shape_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.deco.shape_check" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.utils.deco.tictoc">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.deco.</span></span><span class="sig-name descname"><span class="pre">tictoc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/utils/deco.html#tictoc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.deco.tictoc" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<section id="zae-engine-utils-deco-module">
+<h2>zae_engine.utils.deco module<a class="headerlink" href="#zae-engine-utils-deco-module" title="Link to this heading">¶</a></h2>
 </section>
 <section id="module-zae_engine.utils.io">
 <span id="zae-engine-utils-io-module"></span><h2>zae_engine.utils.io module<a class="headerlink" href="#module-zae_engine.utils.io" title="Link to this heading">¶</a></h2>
@@ -193,11 +178,41 @@ The nibabel library documentation: <a class="reference external" href="https://n
 <dl class="py function">
 <dt class="sig sig-object py" id="zae_engine.utils.io.image_from_url">
 <span class="sig-prename descclassname"><span class="pre">zae_engine.utils.io.</span></span><span class="sig-name descname"><span class="pre">image_from_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dst</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Image</span></span></span><a class="reference internal" href="_modules/zae_engine/utils/io.html#image_from_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.io.image_from_url" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Download an image from a URL and optionally save it to a specified path.</p>
+<p>This function downloads an image from the provided URL. If a save destination is provided, the image is saved
+to the specified path. If no save destination is provided, the image is temporarily saved, opened, and returned
+as a PIL Image object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>url</strong> (<em>str</em>) – The URL of the image to be downloaded.</p></li>
+<li><p><strong>save_dst</strong> (<em>str</em><em>, </em><em>optional</em>) – The file path where the image should be saved. If not provided, the image is temporarily saved and returned as a PIL Image object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If <cite>save_dst</cite> is provided, the function returns None after saving the image.
+If <cite>save_dst</cite> is not provided, the function returns the image as a PIL Image object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None or Image.Image</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If the file extension of <cite>save_dst</cite> is not one of the supported formats: ‘png’, ‘jpg’, ‘jpeg’, ‘tif’.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The supported image formats are defined in the <cite>IMAGE_FORMAT</cite> list.</p>
+<p class="rubric">Examples</p>
+<p>Download and save an image:
+&gt;&gt;&gt; image_from_url(’<a class="reference external" href="https://example.com/image.png">https://example.com/image.png</a>’, ‘downloaded_image.png’)</p>
+<p>Download an image and return it as a PIL Image object:
+&gt;&gt;&gt; img = image_from_url(’<a class="reference external" href="https://example.com/image.png">https://example.com/image.png</a>’)
+&gt;&gt;&gt; img.show()</p>
+</dd></dl>
 
 </section>
-<section id="module-zae_engine.utils">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.utils" title="Link to this heading">¶</a></h2>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 </section>
 </section>
 

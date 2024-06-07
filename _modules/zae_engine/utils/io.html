@@ -89,20 +89,57 @@
 <div class="viewcode-block" id="image_from_url">
 <a class="viewcode-back" href="../../../zae_engine.utils.html#zae_engine.utils.io.image_from_url">[docs]</a>
 <span class="k">def</span> <span class="nf">image_from_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">save_dst</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">]:</span>
-    <span class="n">save_mode</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="n">save_dst</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Download an image from a URL and optionally save it to a specified path.</span>
 
-    <span class="k">if</span> <span class="n">save_dst</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">save_dst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">ext</span> <span class="o">:=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">IMAGE_FORMAT</span><span class="p">:</span>
+<span class="sd">    This function downloads an image from the provided URL. If a save destination is provided, the image is saved</span>
+<span class="sd">    to the specified path. If no save destination is provided, the image is temporarily saved, opened, and returned</span>
+<span class="sd">    as a PIL Image object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : str</span>
+<span class="sd">        The URL of the image to be downloaded.</span>
+<span class="sd">    save_dst : str, optional</span>
+<span class="sd">        The file path where the image should be saved. If not provided, the image is temporarily saved and returned as a PIL Image object.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None or Image.Image</span>
+<span class="sd">        If `save_dst` is provided, the function returns None after saving the image.</span>
+<span class="sd">        If `save_dst` is not provided, the function returns the image as a PIL Image object.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    AssertionError</span>
+<span class="sd">        If the file extension of `save_dst` is not one of the supported formats: &#39;png&#39;, &#39;jpg&#39;, &#39;jpeg&#39;, &#39;tif&#39;.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The supported image formats are defined in the `IMAGE_FORMAT` list.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Download and save an image:</span>
+<span class="sd">    &gt;&gt;&gt; image_from_url(&#39;https://example.com/image.png&#39;, &#39;downloaded_image.png&#39;)</span>
+
+<span class="sd">    Download an image and return it as a PIL Image object:</span>
+<span class="sd">    &gt;&gt;&gt; img = image_from_url(&#39;https://example.com/image.png&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; img.show()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">save_dst</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Saving mode</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="o">:=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">IMAGE_FORMAT</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid extension. Expect one of </span><span class="si">{</span><span class="n">IMAGE_FORMAT</span><span class="si">}</span><span class="s1">, but receive &quot;</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
-    <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">save_dst</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">save_mode</span><span class="p">:</span>
-        <span class="k">return</span>
+        <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">save_dst</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">img</span></div>
+        <span class="c1"># Return Image without saving.</span>
+        <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+            <span class="n">img_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">img_data</span><span class="p">))</span></div>
 
 
 
