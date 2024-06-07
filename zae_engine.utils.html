@@ -128,12 +128,56 @@ If an argument is already a torch tensor, it is not converted.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="zae_engine.utils.deco.shape_check">
 <span class="sig-prename descclassname"><span class="pre">zae_engine.utils.deco.</span></span><span class="sig-name descname"><span class="pre">shape_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/utils/deco.html#shape_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.deco.shape_check" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Ensure that the shapes of specified arguments are the same.</p>
+<p>This decorator checks that the shapes of the specified arguments (either positional or keyword arguments) are the same.
+If the shapes do not match, an AssertionError is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>keys</strong> (<em>int</em><em> or </em><em>str</em>) – If a single integer is provided, it checks the shapes of the first ‘keys’ positional arguments.
+If multiple strings are provided, it checks the shapes of the corresponding keyword arguments.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The decorated function with shape checks on the specified arguments.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>func</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">example_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@shape_check</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">example_func</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="zae_engine.utils.deco.tictoc">
 <span class="sig-prename descclassname"><span class="pre">zae_engine.utils.deco.</span></span><span class="sig-name descname"><span class="pre">tictoc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/utils/deco.html#tictoc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.deco.tictoc" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Measure and print the elapsed time of a function execution.</p>
+<p>This decorator measures the time it takes to execute the decorated function and prints the elapsed time in seconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func</strong> (<em>function</em>) – The function to be timed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The decorated function with timing functionality.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>func</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@tictoc</span>
+<span class="gp">... </span><span class="k">def</span> <span class="nf">example_func</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">example_func</span><span class="p">()</span>  <span class="c1"># This will print the elapsed time.</span>
+</pre></div>
+</div>
+</dd></dl>
 
 </section>
 <section id="module-zae_engine.utils.io">
