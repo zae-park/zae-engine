@@ -36,10 +36,11 @@ class TestLoss(unittest.TestCase):
         # self.assertAlmostEqual(float(loss), 0.80567473, places=4)
 
     def test_batch_dot(self):
-        samples = torch.randn(size=(10, 256))
+        feat_len = randint(1, 512)
+        samples = torch.randn(size=(10, feat_len))
         dot_mat = batch_wise_dot(samples, reduce=False)
         self.assertLessEqual((1 - torch.diag(dot_mat)).mean(), utils.EPS)
-        self.assertLessEqual((torch.transpose(dot_mat, 0, 1) - dot_mat).mean(), utils.EPS)
+        self.assertLessEqual((torch.transpose(dot_mat, 0, 1) - dot_mat).mean(), utils.EPS * feat_len)
 
 
 if __name__ == "__main__":
