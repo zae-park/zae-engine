@@ -1,5 +1,7 @@
 import os
 import time
+
+import nibabel.arrayproxy
 from PIL import Image
 import urllib.request
 from typing import Union, Tuple
@@ -93,40 +95,44 @@ def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
         return qrs_chunk, qrs_loc, sym
 
 
-def example_mri() -> np.ndarray:
+def example_mri() -> nibabel.arrayproxy.ArrayProxy:
     """
-        Load a 4D MRI scan from a specified path.
+    Load a 4D MRI scan .
 
-        This function loads an MRI scan stored in a NIfTI file ('.nii.gz') and returns the image data as a numpy array.
-        The MRI scan is expected to be a 4-dimensional array.
+    This function loads an MRI scan stored in a NIfTI file ('.nii.gz') and returns the image data as an ArrayProxy object.
+    The MRI scan is expected to be a 4-dimensional array.
 
-        Parameters
-        ----------
-        None
+    Parameters
+    ----------
+    None
 
-        Returns
-        -------
-        np.ndarray
-            The 4-dimensional MRI scan data.
+    Returns
+    -------
+    nibabel.arrayproxy.ArrayProxy
+        The 4-dimensional MRI scan data as an ArrayProxy object. The dimensions represent:
+        - Frequency encoding
+        - Phase encoding
+        - Slice
+        - Complex component (real and imaginary)
 
-        Notes
-        -----
-        This function assumes that the file 'example4d.nii.gz' exists in the 'data_path' directory.
-        The NIfTI file format is commonly used for storing MRI data, and this function uses the nibabel library to read it.
-        If the 'get_fdata' method is available in the loaded object, the function returns the image data directly from
-        the data object.
+    Notes
+    -----
+    This function assumes that the file 'example4d.nii.gz' exists in the 'data_path' directory provided by nibabel's testing module.
+    The NIfTI file format is commonly used for storing MRI data, and this function uses the nibabel library to read it.
+    If the 'get_fdata' method is available in the loaded object, the function returns the image data directly from
+    the data object.
 
-        Examples
-        --------
-        >>> mri_data = example_mri()
-        >>> print(mri_data.shape)
-        (128, 128, 64, 30)  # Example output, actual dimensions may vary
+    Examples
+    --------
+    >>> mri_data = example_mri()
+    >>> print(mri_data.shape)
+    (128, 96, 24, 2)  # Example output, actual dimensions may vary
 
-        References
-        ----------
-        The NIfTI file format: https://nifti.nimh.nih.gov/nifti-1
-        The nibabel library documentation: https://nipy.org/nibabel/
-        """
+    References
+    ----------
+    The NIfTI file format: https://nifti.nimh.nih.gov/nifti-1
+    The nibabel library documentation: https://nipy.org/nibabel/
+    """
     example_path = os.path.join(data_path, "example4d.nii.gz")
     proxy = nib.load(example_path)
     if "get_fdata" in proxy.__dir__():
