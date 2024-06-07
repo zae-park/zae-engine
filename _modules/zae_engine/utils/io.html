@@ -72,6 +72,8 @@
   <h1>Source code for zae_engine.utils.io</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">nibabel.arrayproxy</span>
 <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 <span class="kn">import</span> <span class="nn">urllib.request</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
@@ -173,40 +175,44 @@
 
 <div class="viewcode-block" id="example_mri">
 <a class="viewcode-back" href="../../../zae_engine.utils.html#zae_engine.utils.io.example_mri">[docs]</a>
-<span class="k">def</span> <span class="nf">example_mri</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">example_mri</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">arrayproxy</span><span class="o">.</span><span class="n">ArrayProxy</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Load a 4D MRI scan from a specified path.</span>
+<span class="sd">    Load a 4D MRI scan .</span>
 
-<span class="sd">        This function loads an MRI scan stored in a NIfTI file (&#39;.nii.gz&#39;) and returns the image data as a numpy array.</span>
-<span class="sd">        The MRI scan is expected to be a 4-dimensional array.</span>
+<span class="sd">    This function loads an MRI scan stored in a NIfTI file (&#39;.nii.gz&#39;) and returns the image data as an ArrayProxy object.</span>
+<span class="sd">    The MRI scan is expected to be a 4-dimensional array.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        None</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    None</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        np.ndarray</span>
-<span class="sd">            The 4-dimensional MRI scan data.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nibabel.arrayproxy.ArrayProxy</span>
+<span class="sd">        The 4-dimensional MRI scan data as an ArrayProxy object. The dimensions represent:</span>
+<span class="sd">        - Frequency encoding</span>
+<span class="sd">        - Phase encoding</span>
+<span class="sd">        - Slice</span>
+<span class="sd">        - Complex component (real and imaginary)</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        This function assumes that the file &#39;example4d.nii.gz&#39; exists in the &#39;data_path&#39; directory.</span>
-<span class="sd">        The NIfTI file format is commonly used for storing MRI data, and this function uses the nibabel library to read it.</span>
-<span class="sd">        If the &#39;get_fdata&#39; method is available in the loaded object, the function returns the image data directly from</span>
-<span class="sd">        the data object.</span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function assumes that the file &#39;example4d.nii.gz&#39; exists in the &#39;data_path&#39; directory provided by nibabel&#39;s testing module.</span>
+<span class="sd">    The NIfTI file format is commonly used for storing MRI data, and this function uses the nibabel library to read it.</span>
+<span class="sd">    If the &#39;get_fdata&#39; method is available in the loaded object, the function returns the image data directly from</span>
+<span class="sd">    the data object.</span>
 
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; mri_data = example_mri()</span>
-<span class="sd">        &gt;&gt;&gt; print(mri_data.shape)</span>
-<span class="sd">        (128, 128, 64, 30)  # Example output, actual dimensions may vary</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; mri_data = example_mri()</span>
+<span class="sd">    &gt;&gt;&gt; print(mri_data.shape)</span>
+<span class="sd">    (128, 96, 24, 2)  # Example output, actual dimensions may vary</span>
 
-<span class="sd">        References</span>
-<span class="sd">        ----------</span>
-<span class="sd">        The NIfTI file format: https://nifti.nimh.nih.gov/nifti-1</span>
-<span class="sd">        The nibabel library documentation: https://nipy.org/nibabel/</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    The NIfTI file format: https://nifti.nimh.nih.gov/nifti-1</span>
+<span class="sd">    The nibabel library documentation: https://nipy.org/nibabel/</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">example_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s2">&quot;example4d.nii.gz&quot;</span><span class="p">)</span>
     <span class="n">proxy</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">example_path</span><span class="p">)</span>
     <span class="k">if</span> <span class="s2">&quot;get_fdata&quot;</span> <span class="ow">in</span> <span class="n">proxy</span><span class="o">.</span><span class="fm">__dir__</span><span class="p">():</span>

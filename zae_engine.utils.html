@@ -155,30 +155,34 @@ Lobachevsky University Electrocardiography Database (version 1.0.0). PhysioNet. 
 
 <dl class="py function">
 <dt class="sig sig-object py" id="zae_engine.utils.io.example_mri">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.io.</span></span><span class="sig-name descname"><span class="pre">example_mri</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/zae_engine/utils/io.html#example_mri"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.io.example_mri" title="Link to this definition">¶</a></dt>
-<dd><p>Load a 4D MRI scan from a specified path.</p>
-<p>This function loads an MRI scan stored in a NIfTI file (‘.nii.gz’) and returns the image data as a numpy array.
+<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.io.</span></span><span class="sig-name descname"><span class="pre">example_mri</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrayProxy</span></span></span><a class="reference internal" href="_modules/zae_engine/utils/io.html#example_mri"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.io.example_mri" title="Link to this definition">¶</a></dt>
+<dd><p>Load a 4D MRI scan .</p>
+<p>This function loads an MRI scan stored in a NIfTI file (‘.nii.gz’) and returns the image data as an ArrayProxy object.
 The MRI scan is expected to be a 4-dimensional array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>None</strong></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The 4-dimensional MRI scan data.</p>
+<dd class="field-even"><p>The 4-dimensional MRI scan data as an ArrayProxy object. The dimensions represent:
+- Frequency encoding
+- Phase encoding
+- Slice
+- Complex component (real and imaginary)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>nibabel.arrayproxy.ArrayProxy</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>This function assumes that the file ‘example4d.nii.gz’ exists in the ‘data_path’ directory.
+<p>This function assumes that the file ‘example4d.nii.gz’ exists in the ‘data_path’ directory provided by nibabel’s testing module.
 The NIfTI file format is commonly used for storing MRI data, and this function uses the nibabel library to read it.
 If the ‘get_fdata’ method is available in the loaded object, the function returns the image data directly from
 the data object.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mri_data</span> <span class="o">=</span> <span class="n">example_mri</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">mri_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="go">(128, 128, 64, 30)  # Example output, actual dimensions may vary</span>
+<span class="go">(128, 96, 24, 2)  # Example output, actual dimensions may vary</span>
 </pre></div>
 </div>
 <p class="rubric">References</p>
