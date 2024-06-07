@@ -15,20 +15,57 @@ IMAGE_FORMAT = ["png", "jpg", "jpeg", "til"]
 
 
 def image_from_url(url: str, save_dst: str = None) -> Union[None, Image.Image]:
-    save_mode = False if save_dst is None else True
+    """
+    Download an image from a URL and optionally save it to a specified path.
 
-    if save_dst is None:
-        save_dst = os.path.join(os.getcwd(), str(time.time()).replace(".", "") + ".png")
-    else:
-        if ext := os.path.splitext(save_dst)[-1] not in IMAGE_FORMAT:
+    This function downloads an image from the provided URL. If a save destination is provided, the image is saved
+    to the specified path. If no save destination is provided, the image is temporarily saved, opened, and returned
+    as a PIL Image object.
+
+    Parameters
+    ----------
+    url : str
+        The URL of the image to be downloaded.
+    save_dst : str, optional
+        The file path where the image should be saved. If not provided, the image is temporarily saved and returned as a PIL Image object.
+
+    Returns
+    -------
+    None or Image.Image
+        If `save_dst` is provided, the function returns None after saving the image.
+        If `save_dst` is not provided, the function returns the image as a PIL Image object.
+
+    Raises
+    ------
+    AssertionError
+        If the file extension of `save_dst` is not one of the supported formats: 'png', 'jpg', 'jpeg', 'tif'.
+
+    Notes
+    -----
+    The supported image formats are defined in the `IMAGE_FORMAT` list.
+
+    Examples
+    --------
+    Download and save an image:
+    >>> image_from_url('https://example.com/image.png', 'downloaded_image.png')
+
+    Download an image and return it as a PIL Image object:
+    >>> img = image_from_url('https://example.com/image.png')
+    >>> img.show()
+
+    """
+    
+    if save_dst is not None:
+        # Saving mode
+        if ext := os.path.splitext(save_dst)[-1][1:].lower() not in IMAGE_FORMAT:
             raise AssertionError(f'Invalid extension. Expect one of {IMAGE_FORMAT}, but receive "{ext}".')
-    urllib.request.urlretrieve(url, save_dst)
-    if save_mode:
-        return
+        urllib.request.urlretrieve(url, save_dst)
+        return None
     else:
-        img = Image.open(save_dst)
-        os.remove(save_dst)
-        return img
+        # Return Image without saving.
+        with urllib.request.urlopen(url) as response:
+            img_data = response.read()
+        return Image.open(BytesIO(img_data))
 
 
 def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
