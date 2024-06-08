@@ -7,9 +7,11 @@
 
 <p align="center">
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/build_test.yml/badge.svg">
+    <!-- <img src="https://github.com/zae-park/zae-engine/actions/workflows/document_deploy.yml/badge.svg", alt="https://zae-park.github.io/zae-engine"> -->
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/unittest_badge.yml/badge.svg">
-    <img src="https://codecov.io/gh/zae-park/zae-engine/graph/badge.svg?token=4BENXZJHPF"/>
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/wandb_test.yml/badge.svg">
+    </br>
+    <img src="https://codecov.io/gh/zae-park/zae-engine/graph/badge.svg?token=4BENXZJHPF"/>
   <br />
 </p>
 
@@ -28,9 +30,19 @@ AI 프로젝트의 quick-start를 위한 package. </br>
 - [ ] flax
 
 # Install 
+
+## PIP
+
 ```bash
 pip install zae-engine 
 # or
 pip install git+https://github.com/zae-park/zae-engine.git
 ```
 
+## Poetry
+
+```bash
+poetry add zae-engine 
+# or
+poetry add git+https://github.com/zae-park/zae-engine.git
+```
