@@ -29,8 +29,6 @@ rich = "^13.5.2"
 termcolor = "2.2.0"
 
 [tool.poetry.group.dev.dependencies]
-python = ">=3.10.0,<3.12"
-
 typeguard = "^4.1.2"
 einops = "^0.6.1"
 
