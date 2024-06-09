@@ -3,7 +3,7 @@ import shutil
 
 import click
 
-from tree_builder import TreeBuilder
+from .tree_builder import TreeBuilder
 
 
 # Package structure will be changed in the future.
