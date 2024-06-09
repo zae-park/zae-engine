@@ -14,7 +14,7 @@ packages = [
 #    {version = "<0.1.4", python = ">=3.10.0,<3.12"},
 #    {version = "^0.1.4", python = ">=3.10.0"}
 #]
-python = "^3.10.0,<3.12"
+python = "^3.10"
 
 psutil = "^5.9.5"
 future = "^0.18.3"
