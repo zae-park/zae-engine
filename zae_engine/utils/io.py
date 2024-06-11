@@ -5,6 +5,7 @@ import nibabel.arrayproxy
 from PIL import Image
 import urllib.request
 from typing import Union, Tuple
+from io import BytesIO
 
 import wfdb
 import numpy as np
@@ -54,7 +55,7 @@ def image_from_url(url: str, save_dst: str = None) -> Union[None, Image.Image]:
     >>> img.show()
 
     """
-    
+
     if save_dst is not None:
         # Saving mode
         if ext := os.path.splitext(save_dst)[-1][1:].lower() not in IMAGE_FORMAT:
@@ -122,11 +123,11 @@ def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
     if beat_idx is None:
         label = np.zeros_like(recording, dtype=np.int32)
         for i_qrs in np.arange(len(sym))[1::3]:
-            label[samp[i_qrs - 1]: samp[i_qrs + 1]] = lookup[s] if (s := sym[i_qrs]) in lookup.keys() else 3
+            label[samp[i_qrs - 1] : samp[i_qrs + 1]] = lookup[s] if (s := sym[i_qrs]) in lookup.keys() else 3
         return recording, label
     else:
         assert beat_idx < n_qrs, f"The maximum value os beat_idx is {n_qrs}. But {beat_idx} was provided."
-        qrs_chunk = recording[samp[3 * beat_idx]: samp[3 * beat_idx + 2]]
+        qrs_chunk = recording[samp[3 * beat_idx] : samp[3 * beat_idx + 2]]
         sym = sym[3 * beat_idx + 1]
         qrs_loc = samp[3 * beat_idx + 1] - samp[3 * beat_idx]
         return qrs_chunk, qrs_loc, sym
