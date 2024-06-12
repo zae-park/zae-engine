@@ -12,62 +12,62 @@ EPS = torch.finfo(torch.float32).eps
 
 def rms(signal: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
     """
-        Compute the root mean square (RMS) of a signal.
+    Compute the root mean square (RMS) of a signal.
 
-        This function calculates the RMS value of the input signal, which is a measure of the magnitude of the signal.
+    This function calculates the RMS value of the input signal, which is a measure of the magnitude of the signal.
 
-        Parameters
-        ----------
-        signal : Union[np.ndarray, torch.Tensor]
-            The input signal, either as a numpy array or a torch tensor.
+    Parameters
+    ----------
+    signal : Union[np.ndarray, torch.Tensor]
+        The input signal, either as a numpy array or a torch tensor.
 
-        Returns
-        -------
-        Union[np.ndarray, torch.Tensor]
-            The RMS value of the signal, with the same type as the input.
+    Returns
+    -------
+    Union[np.ndarray, torch.Tensor]
+        The RMS value of the signal, with the same type as the input.
 
-        Examples
-        --------
-        >>> signal = np.array([1, 2, 3, 4, 5])
-        >>> rms(signal)
-        3.3166247903554
-        >>> signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
-        >>> rms(signal)
-        tensor(3.3166)
-        """
-    return (signal ** 2).mean() ** 0.5
+    Examples
+    --------
+    >>> signal = np.array([1, 2, 3, 4, 5])
+    >>> rms(signal)
+    3.3166247903554
+    >>> signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
+    >>> rms(signal)
+    tensor(3.3166)
+    """
+    return (signal**2).mean() ** 0.5
 
 
 @deco.np2torch(torch.float)
-def mse(signal1: Union[np.ndarray, torch.Tensor], signal2:Union[np.ndarray, torch.Tensor]):
+def mse(signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, torch.Tensor]):
     """
-        Compute the mean squared error (MSE) between two signals.
+    Compute the mean squared error (MSE) between two signals.
 
-        This function calculates the MSE between two input signals, which is a measure of the average squared difference between the signals.
+    This function calculates the MSE between two input signals, which is a measure of the average squared difference between the signals.
 
-        Parameters
-        ----------
-        signal1 : Union[np.ndarray, torch.Tensor]
-            The first input signal, either as a numpy array or a torch tensor.
-        signal2 : Union[np.ndarray, torch.Tensor]
-            The second input signal, either as a numpy array or a torch tensor.
+    Parameters
+    ----------
+    signal1 : Union[np.ndarray, torch.Tensor]
+        The first input signal, either as a numpy array or a torch tensor.
+    signal2 : Union[np.ndarray, torch.Tensor]
+        The second input signal, either as a numpy array or a torch tensor.
 
-        Returns
-        -------
-        torch.Tensor
-            The MSE value as a torch tensor.
+    Returns
+    -------
+    torch.Tensor
+        The MSE value as a torch tensor.
 
-        Examples
-        --------
-        >>> signal1 = np.array([1, 2, 3, 4, 5])
-        >>> signal2 = np.array([1, 2, 3, 4, 6])
-        >>> mse(signal1, signal2)
-        tensor(0.2000)
-        >>> signal1 = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
-        >>> signal2 = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float)
-        >>> mse(signal1, signal2)
-        tensor(0.2000)
-        """
+    Examples
+    --------
+    >>> signal1 = np.array([1, 2, 3, 4, 5])
+    >>> signal2 = np.array([1, 2, 3, 4, 6])
+    >>> mse(signal1, signal2)
+    tensor(0.2000)
+    >>> signal1 = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
+    >>> signal2 = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float)
+    >>> mse(signal1, signal2)
+    tensor(0.2000)
+    """
     return ((signal1 - signal2) ** 2).mean()
 
 
