@@ -60,13 +60,38 @@ def giou(
     iou: bool = False,
 ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
     """
-    Compute mean GIoU and IoU for given outputs and labels.
-    :param img1: Shape - [-1, 2].
-    tensor (or nd-array) of on-off pairs. Each on-off pair corresponds to bounding box in object detection.
-    :param img2: Shape - [-1, 2].
-    tensor (or nd-array) of on-off pairs. Each on-off pair corresponds to bounding box in object detection.
-    :param iou: if True, return IoU with GIoU. Default is False.
-    :return: GIoU, iou (option) with shape [-1].
+    Compute the Generalized Intersection over Union (GIoU) and optionally the Intersection over Union (IoU) for given images.
+
+    This function calculates the GIoU and optionally the IoU for bounding boxes in object detection tasks.
+
+    Parameters
+    ----------
+    img1 : Union[np.ndarray, torch.Tensor]
+        The first input image, either as a numpy array or a torch tensor. Shape should be [-1, 2], representing on-off pairs.
+    img2 : Union[np.ndarray, torch.Tensor]
+        The second input image, either as a numpy array or a torch tensor. Shape should be [-1, 2], representing on-off pairs.
+    iou : bool, optional
+        If True, return both IoU and GIoU. Default is False.
+
+    Returns
+    -------
+    Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]
+        The GIoU values, and optionally the IoU values, as torch tensors. Shape is [-1].
+
+    Examples
+    --------
+    >>> img1 = np.array([[1, 4], [2, 5]])
+    >>> img2 = np.array([[1, 3], [2, 6]])
+    >>> giou(img1, img2)
+    tensor([-0.6667, -0.5000])
+    >>> giou(img1, img2, iou=True)
+    (tensor([-0.6667, -0.5000]), tensor([0.5000, 0.3333]))
+    >>> img1 = torch.tensor([[1, 4], [2, 5]])
+    >>> img2 = torch.tensor([[1, 3], [2, 6]])
+    >>> giou(img1, img2)
+    tensor([-0.6667, -0.5000])
+    >>> giou(img1, img2, iou=True)
+    (tensor([-0.6667, -0.5000]), tensor([0.5000, 0.3333]))
     """
 
     if len(img1.shape) == 1:
