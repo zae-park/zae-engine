@@ -5,18 +5,39 @@ import torch
 
 from ..utils import deco
 
-
 @deco.np2torch(dtype=torch.int)
 @deco.shape_check(2)
-def miou(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> torch.Tensor:
+def miou1d(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> torch.Tensor:
     """
-    Compute mean IoU for each value in given images(arguments).
-    TODO: this function works for 1-dimensional arrays or tensors, 2 or greater dimensional mode will be update.
-    :param img1: Shape - [-1, dim]. tensor (or nd-array) of model's outputs.
-    :param img2: Shape - [-1, dim]. tensor (or nd-array) of labels.
-    :return: mIoU with shape [-1].
-    """
+    Compute the mean Intersection over Union (mIoU) for each value in the given images.
 
+    This function calculates the mIoU for 1-dimensional arrays or tensors.
+    Future updates will extend support for higher-dimensional arrays or tensors.
+
+    Parameters
+    ----------
+    img1 : Union[np.ndarray, torch.Tensor]
+        The first input image, either as a numpy array or a torch tensor. Shape should be [-1, dim].
+    img2 : Union[np.ndarray, torch.Tensor]
+        The second input image, either as a numpy array or a torch tensor. Shape should be [-1, dim].
+
+    Returns
+    -------
+    torch.Tensor
+        The mIoU values for each class, as a torch tensor. Shape is [-1].
+
+    Examples
+    --------
+    >>> img1 = np.array([0, 1, 1, 2, 2])
+    >>> img2 = np.array([0, 1, 1, 2, 1])
+    >>> miou(img1, img2)
+    tensor([1.0000, 0.6667, 0.0000])
+    >>> img1 = torch.tensor([0, 1, 1, 2, 2])
+    >>> img2 = torch.tensor([0, 1, 1, 2, 1])
+    >>> miou(img1, img2)
+    tensor([1.0000, 0.6667, 0.0000])
+    """
+    # TODO: this function works for 1-dimensional arrays or tensors, 2 or greater dimensional mode will be update.
     if len(img1.shape) == 1:
         img1 = img1.clone().reshape(1, -1)
         img2 = img2.clone().reshape(1, -1)
