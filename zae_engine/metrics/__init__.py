@@ -3,11 +3,11 @@ from .count import f_beta
 from .count import f_beta_from_mat
 from .confusion import confusion_matrix
 from .confusion import print_confusion_matrix
-from .signal import rms
-from .signal import mse
-from .signal import signal_to_noise
-from .signal import peak_signal_to_noise
-from .iou import miou
+from .signals import rms
+from .signals import mse
+from .signals import signal_to_noise
+from .signals import peak_signal_to_noise
+from .iou import miou1d
 from .iou import giou
 
 # from .signal import cpsc2021
