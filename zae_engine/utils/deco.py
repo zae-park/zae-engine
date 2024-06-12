@@ -29,12 +29,15 @@ def np2torch(dtype: torch.dtype):
     ...     return x
     >>> example_func(np.array([1, 2, 3]))  # This will be converted to a torch tensor.
     """
+
     def deco(func):
         def wrapper(*args: Union[np.ndarray, torch.Tensor, bool, int, float], **kwargs):
             args = tuple(a if isinstance(a, torch.Tensor) else torch.tensor(a, dtype=dtype) for a in args)
             kwargs = {k: v if isinstance(v, torch.Tensor) else torch.tensor(v, dtype=dtype) for k, v in kwargs.items()}
             return func(*args, **kwargs)
+
         return wrapper
+
     return deco
 
 
@@ -83,9 +86,10 @@ def shape_check(*keys):
             if len(set(shape_list)) != 1:
                 raise AssertionError("Shape of given args is not same.")
             return func(*args, **kwargs)
-        return wrapper
-    return deco
 
+        return wrapper
+
+    return deco
 
 
 def tictoc(func):
@@ -111,12 +115,14 @@ def tictoc(func):
     ...     time.sleep(1)
     >>> example_func()  # This will print the elapsed time.
     """
+
     def wrapper(*args, **kwargs):
         import time
+
         kickoff = time.time()
         out = func(*args, **kwargs)
         elapsed_time = time.time() - kickoff
         print(f"Elapsed time [sec]: {elapsed_time}")
         return out
-    return wrapper
 
+    return wrapper
