@@ -13,6 +13,34 @@ def accuracy(
     true: Union[np.ndarray, torch.Tensor],
     predict: Union[np.ndarray, torch.Tensor],
 ):
+    """
+    Compute the accuracy of predictions.
+
+    This function compares the true labels with the predicted labels and calculates the accuracy.
+
+    Parameters
+    ----------
+    true : Union[np.ndarray, torch.Tensor]
+        The true labels, either as a numpy array or a torch tensor. Shape should be [-1, dim].
+    predict : Union[np.ndarray, torch.Tensor]
+        The predicted labels, either as a numpy array or a torch tensor. Shape should be [-1, dim].
+
+    Returns
+    -------
+    torch.Tensor
+        The accuracy of the predictions as a torch tensor.
+
+    Examples
+    --------
+    >>> true = np.array([1, 2, 3, 4])
+    >>> predict = np.array([1, 2, 2, 4])
+    >>> accuracy(true, predict)
+    tensor(0.7500)
+    >>> true = torch.tensor([1, 2, 3, 4])
+    >>> predict = torch.tensor([1, 2, 2, 4])
+    >>> accuracy(true, predict)
+    tensor(0.7500)
+    """
     correct = torch.eq(true, predict)
     return sum(correct) / len(correct)
 
@@ -20,11 +48,11 @@ def accuracy(
 @deco.np2torch(dtype=torch.int)
 @deco.shape_check(2)
 def f_beta(
-        pred: np.ndarray | torch.Tensor,
-        true: np.ndarray | torch.Tensor,
-        beta: float,
-        num_classes: int,
-        average: str = "micro"
+    pred: np.ndarray | torch.Tensor,
+    true: np.ndarray | torch.Tensor,
+    beta: float,
+    num_classes: int,
+    average: str = "micro",
 ):
     """
     Compute f-beta score using given confusion matrix (args#1 with asterisk).
