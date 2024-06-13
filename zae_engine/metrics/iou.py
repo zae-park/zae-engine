@@ -5,9 +5,10 @@ import torch
 
 from ..utils import deco
 
+
 @deco.np2torch(dtype=torch.int)
 @deco.shape_check(2)
-def miou1d(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> torch.Tensor:
+def miou(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> torch.Tensor:
     """
     Compute the mean Intersection over Union (mIoU) for each value in the given images.
 
@@ -54,9 +55,10 @@ def miou1d(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> 
 
 
 @deco.np2torch(dtype=torch.int)
-@deco.shape_check('img1', 'img2')
+@deco.shape_check("img1", "img2")
 def giou(
-    img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor,
+    img1: np.ndarray | torch.Tensor,
+    img2: np.ndarray | torch.Tensor,
     iou: bool = False,
 ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
     """

@@ -7,7 +7,7 @@ from .signals import rms
 from .signals import mse
 from .signals import signal_to_noise
 from .signals import peak_signal_to_noise
-from .iou import miou1d
+from .iou import miou
 from .iou import giou
 
 # from .signal import cpsc2021
