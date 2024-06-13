@@ -260,10 +260,24 @@ class Trainer(ABC):
     @abstractmethod
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         """
-        Unused dummy function yet exist to provide I/O format information.
-        The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
+        Perform a training step.
+
+        This method must be implemented by subclasses.
+        This unused dummy function exists to provide I/O format information.
+
+        The batch is a part of the dataset in the dataloader fetched via the `__getitem__` method.
         The dictionary consists of {'str': torch.tensor(value)}, and must include 'loss'.
-        Note that this function work only in 'train' mode, hence back() method in nn.Module is necessary.
+        Note that this function works only in 'train' mode, hence the `backward()` method in `nn.Module` is necessary.
+
+        Parameters
+        ----------
+        batch : Union[tuple, dict]
+            A batch of data.
+
+        Returns
+        -------
+        Dict[str, torch.Tensor]
+            A dictionary containing the results of the training step, including the loss.
         """
         x, y, fn = batch  # or x, y, fn = batch['x'], batch['y'] batch['fn']
         outputs = self.model(x)
@@ -273,10 +287,24 @@ class Trainer(ABC):
     @abstractmethod
     def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         """
-        Unused dummy function yet exist to provide I/O format information.
-        The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
+        Perform a testing step.
+
+        This method must be implemented by subclasses.
+        This unused dummy function exists to provide I/O format information.
+
+        The batch is a part of the dataset in the dataloader fetched via the `__getitem__` method.
         The dictionary consists of {'str': torch.tensor(value)}, and must include 'loss'.
-        Note that this function work only in 'test' mode.
+        Note that this function works only in 'test' mode, and the `backward()` method is not necessary.
+
+        Parameters
+        ----------
+        batch : Union[tuple, dict]
+            A batch of data.
+
+        Returns
+        -------
+        Dict[str, torch.Tensor]
+            A dictionary containing the results of the testing step, including the loss.
         """
         x, y, fn = batch  # or x, y, fn = batch['x'], batch['y'] batch['fn']
         outputs = self.model(x)
