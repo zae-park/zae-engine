@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>zae_engine.metrics.signal &mdash; zae-engine  documentation</title>
+  <title>zae_engine.metrics.signals &mdash; zae-engine  documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
 
@@ -60,7 +60,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">zae_engine.metrics.signal</li>
+      <li class="breadcrumb-item active">zae_engine.metrics.signals</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -69,7 +69,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for zae_engine.metrics.signal</h1><div class="highlight"><pre>
+  <h1>Source code for zae_engine.metrics.signals</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -83,21 +83,98 @@
 
 
 <div class="viewcode-block" id="rms">
-<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signal.rms">[docs]</a>
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.rms">[docs]</a>
 <span class="k">def</span> <span class="nf">rms</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">signal</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">**</span> <span class="mf">0.5</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the root mean square (RMS) of a signal.</span>
+
+<span class="sd">    This function calculates the RMS value of the input signal, which is a measure of the magnitude of the signal.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal : Union[np.ndarray, torch.Tensor]</span>
+<span class="sd">        The input signal, either as a numpy array or a torch tensor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Union[np.ndarray, torch.Tensor]</span>
+<span class="sd">        The RMS value of the signal, with the same type as the input.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; signal = np.array([1, 2, 3, 4, 5])</span>
+<span class="sd">    &gt;&gt;&gt; rms(signal)</span>
+<span class="sd">    3.3166247903554</span>
+<span class="sd">    &gt;&gt;&gt; signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; rms(signal)</span>
+<span class="sd">    tensor(3.3166)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">signal</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">**</span> <span class="mf">0.5</span></div>
 
 
 
 <span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">mse</span><span class="p">(</span><span class="n">signal1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">signal2</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]):</span>
+<span class="k">def</span> <span class="nf">mse</span><span class="p">(</span><span class="n">signal1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">signal2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the mean squared error (MSE) between two signals.</span>
+
+<span class="sd">    This function calculates the MSE between two input signals, which is a measure of the average squared difference between the signals.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal1 : Union[np.ndarray, torch.Tensor]</span>
+<span class="sd">        The first input signal, either as a numpy array or a torch tensor.</span>
+<span class="sd">    signal2 : Union[np.ndarray, torch.Tensor]</span>
+<span class="sd">        The second input signal, either as a numpy array or a torch tensor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.Tensor</span>
+<span class="sd">        The MSE value as a torch tensor.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; signal1 = np.array([1, 2, 3, 4, 5])</span>
+<span class="sd">    &gt;&gt;&gt; signal2 = np.array([1, 2, 3, 4, 6])</span>
+<span class="sd">    &gt;&gt;&gt; mse(signal1, signal2)</span>
+<span class="sd">    tensor(0.2000)</span>
+<span class="sd">    &gt;&gt;&gt; signal1 = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; signal2 = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; mse(signal1, signal2)</span>
+<span class="sd">    tensor(0.2000)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">((</span><span class="n">signal1</span> <span class="o">-</span> <span class="n">signal2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
 
 <span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">signal_to_noise</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">noise</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute signal-to-noise ratio.</span>
+<span class="sd">    Compute the signal-to-noise ratio (SNR).</span>
+
+<span class="sd">    This function calculates the SNR, which is a measure of the ratio of the power of a signal to the power of background noise.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The input signal, either as a torch tensor or a numpy array.</span>
+<span class="sd">    noise : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The noise signal, either as a torch tensor or a numpy array.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.Tensor</span>
+<span class="sd">        The SNR value in decibels (dB) as a torch tensor.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; signal = np.array([1, 2, 3, 4, 5])</span>
+<span class="sd">    &gt;&gt;&gt; noise = np.array([0.1, 0.2, 0.3, 0.4, 0.5])</span>
+<span class="sd">    &gt;&gt;&gt; signal_to_noise(signal, noise)</span>
+<span class="sd">    tensor(20.0000)</span>
+<span class="sd">    &gt;&gt;&gt; signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; noise = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; signal_to_noise(signal, noise)</span>
+<span class="sd">    tensor(20.0000)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">signal_eff</span><span class="p">,</span> <span class="n">noise_eff</span> <span class="o">=</span> <span class="n">rms</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">signal</span><span class="p">),</span> <span class="n">rms</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">noise</span><span class="p">)</span>
     <span class="n">db</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">signal_eff</span> <span class="o">/</span> <span class="p">(</span><span class="n">noise_eff</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">))</span>
@@ -108,8 +185,37 @@
 <span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">peak_signal_to_noise</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">peak</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute peak-signal-to-noise ratio.</span>
-<span class="sd">    If peak is not given, use maximum value is signal instead.</span>
+<span class="sd">    Compute the peak signal-to-noise ratio (PSNR).</span>
+
+<span class="sd">    This function calculates the PSNR, which is a measure of the ratio of the peak signal power to the power of background noise.</span>
+<span class="sd">    If peak is not given, the maximum value in the signal is used as the peak value.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The input signal, either as a torch tensor or a numpy array.</span>
+<span class="sd">    noise : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The noise signal, either as a torch tensor or a numpy array.</span>
+<span class="sd">    peak : Union[bool, int, float], optional</span>
+<span class="sd">        The peak value to be used in the calculation. If not provided, the maximum value in the signal is used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.Tensor</span>
+<span class="sd">        The PSNR value in decibels (dB) as a torch tensor.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; signal = np.array([1, 2, 3, 4, 5])</span>
+<span class="sd">    &gt;&gt;&gt; noise = np.array([0.1, 0.2, 0.3, 0.4, 0.5])</span>
+<span class="sd">    &gt;&gt;&gt; peak_signal_to_noise(signal, noise)</span>
+<span class="sd">    tensor(24.0824)</span>
+<span class="sd">    &gt;&gt;&gt; signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; noise = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; peak_signal_to_noise(signal, noise)</span>
+<span class="sd">    tensor(24.0824)</span>
+<span class="sd">    &gt;&gt;&gt; peak_signal_to_noise(signal, noise, peak=5)</span>
+<span class="sd">    tensor(24.0824)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">peak</span><span class="p">:</span>
         <span class="n">peak</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>

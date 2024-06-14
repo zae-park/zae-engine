@@ -28,10 +28,10 @@ zae\_engine.metrics.iou module
    :undoc-members:
    :show-inheritance:
 
-zae\_engine.metrics.signal module
----------------------------------
+zae\_engine.metrics.signals module
+----------------------------------
 
-.. automodule:: zae_engine.metrics.signal
+.. automodule:: zae_engine.metrics.signals
    :members:
    :undoc-members:
    :show-inheritance:

@@ -118,19 +118,45 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.beat.Trainer_stg1.test_step">
 <span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/beat.html#Trainer_stg1.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.beat.Trainer_stg1.test_step" title="Link to this definition">¶</a></dt>
-<dd><p>Unused dummy function yet exist to provide I/O format information.
-The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
+<dd><p>Perform a testing step.</p>
+<p>This method must be implemented by subclasses.
+This unused dummy function exists to provide I/O format information.</p>
+<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
 The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
-Note that this function work only in ‘test’ mode.</p>
+Note that this function works only in ‘test’ mode, and the <cite>backward()</cite> method is not necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the results of the testing step, including the loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.beat.Trainer_stg1.train_step">
 <span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/beat.html#Trainer_stg1.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.beat.Trainer_stg1.train_step" title="Link to this definition">¶</a></dt>
-<dd><p>Unused dummy function yet exist to provide I/O format information.
-The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
+<dd><p>Perform a training step.</p>
+<p>This method must be implemented by subclasses.
+This unused dummy function exists to provide I/O format information.</p>
+<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
 The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
-Note that this function work only in ‘train’ mode, hence back() method in nn.Module is necessary.</p>
+Note that this function works only in ‘train’ mode, hence the <cite>backward()</cite> method in <cite>nn.Module</cite> is necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the results of the training step, including the loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -190,19 +216,45 @@ Note that this function work only in ‘train’ mode, hence back() method in nn
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Trainer.test_step">
 <span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/sec10.html#Sec10Trainer.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Trainer.test_step" title="Link to this definition">¶</a></dt>
-<dd><p>Unused dummy function yet exist to provide I/O format information.
-The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
+<dd><p>Perform a testing step.</p>
+<p>This method must be implemented by subclasses.
+This unused dummy function exists to provide I/O format information.</p>
+<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
 The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
-Note that this function work only in ‘test’ mode.</p>
+Note that this function works only in ‘test’ mode, and the <cite>backward()</cite> method is not necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the results of the testing step, including the loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.inference.sec10.Sec10Trainer.train_step">
 <span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/inference/sec10.html#Sec10Trainer.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.sec10.Sec10Trainer.train_step" title="Link to this definition">¶</a></dt>
-<dd><p>Unused dummy function yet exist to provide I/O format information.
-The batch is a part of the dataset in the dataloader fetched via  __getitem__ method.
+<dd><p>Perform a training step.</p>
+<p>This method must be implemented by subclasses.
+This unused dummy function exists to provide I/O format information.</p>
+<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
 The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
-Note that this function work only in ‘train’ mode, hence back() method in nn.Module is necessary.</p>
+Note that this function works only in ‘train’ mode, hence the <cite>backward()</cite> method in <cite>nn.Module</cite> is necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the results of the training step, including the loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
