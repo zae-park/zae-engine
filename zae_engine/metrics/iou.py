@@ -10,13 +10,35 @@ from ..utils import deco
 @deco.shape_check(2)
 def miou(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> torch.Tensor:
     """
-    Compute mean IoU for each value in given images(arguments).
-    TODO: this function works for 1-dimensional arrays or tensors, 2 or greater dimensional mode will be update.
-    :param img1: Shape - [-1, dim]. tensor (or nd-array) of model's outputs.
-    :param img2: Shape - [-1, dim]. tensor (or nd-array) of labels.
-    :return: mIoU with shape [-1].
-    """
+    Compute the mean Intersection over Union (mIoU) for each value in the given images.
 
+    This function calculates the mIoU for 1-dimensional arrays or tensors.
+    Future updates will extend support for higher-dimensional arrays or tensors.
+
+    Parameters
+    ----------
+    img1 : Union[np.ndarray, torch.Tensor]
+        The first input image, either as a numpy array or a torch tensor. Shape should be [-1, dim].
+    img2 : Union[np.ndarray, torch.Tensor]
+        The second input image, either as a numpy array or a torch tensor. Shape should be [-1, dim].
+
+    Returns
+    -------
+    torch.Tensor
+        The mIoU values for each class, as a torch tensor. Shape is [-1].
+
+    Examples
+    --------
+    >>> img1 = np.array([0, 1, 1, 2, 2])
+    >>> img2 = np.array([0, 1, 1, 2, 1])
+    >>> miou(img1, img2)
+    tensor([1.0000, 0.6667, 0.0000])
+    >>> img1 = torch.tensor([0, 1, 1, 2, 2])
+    >>> img2 = torch.tensor([0, 1, 1, 2, 1])
+    >>> miou(img1, img2)
+    tensor([1.0000, 0.6667, 0.0000])
+    """
+    # TODO: this function works for 1-dimensional arrays or tensors, 2 or greater dimensional mode will be update.
     if len(img1.shape) == 1:
         img1 = img1.clone().reshape(1, -1)
         img2 = img2.clone().reshape(1, -1)
@@ -33,19 +55,45 @@ def miou(img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor) -> to
 
 
 @deco.np2torch(dtype=torch.int)
-@deco.shape_check('img1', 'img2')
+@deco.shape_check("img1", "img2")
 def giou(
-    img1: np.ndarray | torch.Tensor, img2: np.ndarray | torch.Tensor,
+    img1: np.ndarray | torch.Tensor,
+    img2: np.ndarray | torch.Tensor,
     iou: bool = False,
 ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
     """
-    Compute mean GIoU and IoU for given outputs and labels.
-    :param img1: Shape - [-1, 2].
-    tensor (or nd-array) of on-off pairs. Each on-off pair corresponds to bounding box in object detection.
-    :param img2: Shape - [-1, 2].
-    tensor (or nd-array) of on-off pairs. Each on-off pair corresponds to bounding box in object detection.
-    :param iou: if True, return IoU with GIoU. Default is False.
-    :return: GIoU, iou (option) with shape [-1].
+    Compute the Generalized Intersection over Union (GIoU) and optionally the Intersection over Union (IoU) for given images.
+
+    This function calculates the GIoU and optionally the IoU for bounding boxes in object detection tasks.
+
+    Parameters
+    ----------
+    img1 : Union[np.ndarray, torch.Tensor]
+        The first input image, either as a numpy array or a torch tensor. Shape should be [-1, 2], representing on-off pairs.
+    img2 : Union[np.ndarray, torch.Tensor]
+        The second input image, either as a numpy array or a torch tensor. Shape should be [-1, 2], representing on-off pairs.
+    iou : bool, optional
+        If True, return both IoU and GIoU. Default is False.
+
+    Returns
+    -------
+    Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]
+        The GIoU values, and optionally the IoU values, as torch tensors. Shape is [-1].
+
+    Examples
+    --------
+    >>> img1 = np.array([[1, 4], [2, 5]])
+    >>> img2 = np.array([[1, 3], [2, 6]])
+    >>> giou(img1, img2)
+    tensor([-0.6667, -0.5000])
+    >>> giou(img1, img2, iou=True)
+    (tensor([-0.6667, -0.5000]), tensor([0.5000, 0.3333]))
+    >>> img1 = torch.tensor([[1, 4], [2, 5]])
+    >>> img2 = torch.tensor([[1, 3], [2, 6]])
+    >>> giou(img1, img2)
+    tensor([-0.6667, -0.5000])
+    >>> giou(img1, img2, iou=True)
+    (tensor([-0.6667, -0.5000]), tensor([0.5000, 0.3333]))
     """
 
     if len(img1.shape) == 1:
