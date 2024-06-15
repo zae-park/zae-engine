@@ -28,7 +28,7 @@ def resnet_deco(n):
     return wrapper
 
 
-def weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [OrderedDict | dict]):
+def __weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [OrderedDict | dict]):
 
     for k, v in src_weight.items():
 
@@ -55,7 +55,7 @@ def resnet18(pretrained=False):
     model = CNNBase(ch_in=3, ch_out=1000, width=64, groups=1, dilation=1, **res_map[18])
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet18_Weights.IMAGENET1K_V1.get_state_dict(True)
-        dst_weight = weight_mapper(src_weight, model.state_dict())
+        dst_weight = __weight_mapper(src_weight, model.state_dict())
         model.load_state_dict(dst_weight, strict=True)
     return model
 
@@ -64,7 +64,7 @@ def resnet34(pretrained=False):
     model = CNNBase(ch_in=3, ch_out=1000, width=64, groups=1, dilation=1, **res_map[34])
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet34_Weights.IMAGENET1K_V1.get_state_dict(True)
-        dst_weight = weight_mapper(src_weight, model.state_dict())
+        dst_weight = __weight_mapper(src_weight, model.state_dict())
         model.load_state_dict(dst_weight, strict=True)
     return model
 
@@ -73,7 +73,7 @@ def resnet50(pretrained=False):
     model = CNNBase(ch_in=3, ch_out=1000, width=64, groups=1, dilation=1, **res_map[50])
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet50_Weights.IMAGENET1K_V1.get_state_dict(True)
-        dst_weight = weight_mapper(src_weight, model.state_dict())
+        dst_weight = __weight_mapper(src_weight, model.state_dict())
         model.load_state_dict(dst_weight, strict=True)
     return model
 
@@ -82,7 +82,7 @@ def resnet101(pretrained=False):
     model = CNNBase(ch_in=3, ch_out=1000, width=64, groups=1, dilation=1, **res_map[101])
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet101_Weights.IMAGENET1K_V1.get_state_dict(True)
-        dst_weight = weight_mapper(src_weight, model.state_dict())
+        dst_weight = __weight_mapper(src_weight, model.state_dict())
         model.load_state_dict(dst_weight, strict=True)
     return model
 
@@ -91,7 +91,7 @@ def resnet152(pretrained=False):
     model = CNNBase(ch_in=3, ch_out=1000, width=64, groups=1, dilation=1, **res_map[152])
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet152_Weights.IMAGENET1K_V1.get_state_dict(True)
-        dst_weight = weight_mapper(src_weight, model.state_dict())
+        dst_weight = __weight_mapper(src_weight, model.state_dict())
         model.load_state_dict(dst_weight, strict=True)
     return model
 

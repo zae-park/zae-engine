@@ -21,7 +21,7 @@ unet_map = {
 }
 
 
-def brain_weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [OrderedDict | dict]):
+def __brain_weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [OrderedDict | dict]):
     for k, v in src_weight.items():
         if k.startswith(prefix := "encoder"):
             k = (
@@ -61,6 +61,6 @@ def unet(pretrained: bool = False):
     model = AutoEncoder(block=UNetBlock, ch_in=3, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True)
     if pretrained:
         src_weight = torch.hub.load_state_dict_from_url(checkpoint_map["brain"], progress=True)
-        dst_weight = brain_weight_mapper(src_weight, model.state_dict())
+        dst_weight = __brain_weight_mapper(src_weight, model.state_dict())
         model.load_state_dict(dst_weight, strict=True)
     return model
