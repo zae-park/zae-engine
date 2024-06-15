@@ -95,7 +95,7 @@ def unet(pretrained: bool = False) -> autoencoder.AutoEncoder:
     zae_engine.models.autoencoder.AutoEncoder
         An instance of the AutoEncoder model with U-Net architecture.
     """
-    model = AutoEncoder(block=blocks.UNetBlock, ch_in=3, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True)
+    model = autoencoder.AutoEncoder(block=blocks.UNetBlock, ch_in=3, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True)
     if pretrained:
         src_weight = torch.hub.load_state_dict_from_url(checkpoint_map["brain"], progress=True)
         dst_weight = __brain_weight_mapper(src_weight, model.state_dict())
