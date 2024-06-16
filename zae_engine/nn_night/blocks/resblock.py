@@ -1,13 +1,34 @@
-from functools import partial
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import Callable
 
 import torch
 import torch.nn as nn
-from torch import Tensor
 
 
 class BasicBlock(nn.Module):
-    """Basic residual block."""
+    """
+    Basic residual block.
+
+    Parameters
+    ----------
+    ch_in : int
+        Number of input channels.
+    ch_out : int
+        Number of output channels.
+    stride : int, optional
+        Stride of the convolution. Default is 1.
+    groups : int, optional
+        Number of groups for the convolution. Default is 1.
+    dilation : int, optional
+        Dilation for the convolution. Default is 1.
+    norm_layer : Callable[..., nn.Module], optional
+        Normalization layer to use. Default is nn.BatchNorm2d.
+
+    References
+    ----------
+    He, K., Zhang, X., Ren, S., & Sun, J. (2016).
+    Deep residual learning for image recognition.
+    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).
+    """
 
     expansion: int = 1
 
@@ -44,7 +65,7 @@ class BasicBlock(nn.Module):
         else:
             self.downsample = None
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         out = self.conv1(x)
         out = self.norm1(out)
@@ -62,7 +83,30 @@ class BasicBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
-    """Bottleneck residual block."""
+    """
+    Bottleneck residual block.
+
+    Parameters
+    ----------
+    ch_in : int
+        Number of input channels.
+    ch_out : int
+        Number of output channels.
+    stride : int, optional
+        Stride of the convolution. Default is 1.
+    groups : int, optional
+        Number of groups for the convolution. Default is 1.
+    dilation : int, optional
+        Dilation for the convolution. Default is 1.
+    norm_layer : Callable[..., nn.Module], optional
+        Normalization layer to use. Default is nn.BatchNorm2d.
+
+    References
+    ----------
+    He, K., Zhang, X., Ren, S., & Sun, J. (2016).
+    Deep residual learning for image recognition.
+    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).
+    """
 
     expansion: int = 4
 
@@ -108,7 +152,7 @@ class Bottleneck(nn.Module):
         else:
             self.downsample = None
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         out = self.conv1(x)
         out = self.norm1(out)

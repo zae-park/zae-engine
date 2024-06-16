@@ -6,13 +6,24 @@ from torch.nn.common_types import _size_1_t
 
 class SE1d(nn.Module):
     """
-    Generalized version of Squeeze and Excitation module (https://arxiv.org/abs/1709.01507).
-    If spatial argument is False, this work equivalent to SE module.
-    :param ch: int
-    The channels-wise dimension of input tensor.
-    :param reduction: int
-    The Squeeze and Excitation ratio. Note that it must be a divisor of ch.
-    :param bias: bool
+    Squeeze and Excitation module for 1D inputs.
+
+    This module implements the Squeeze and Excitation (SE) block.
+
+    Parameters
+    ----------
+    ch_in : int
+        The channel-wise dimension of the input tensor.
+    reduction : int, optional
+        The reduction ratio for the SE block. Default is 8. Must be a divisor of ch_in.
+    bias : bool, optional
+        Whether to use bias in the fully connected layers. Default is False.
+
+    References
+    ----------
+    .. [1] Hu, J., Shen, L., & Sun, G. (2018). Squeeze-and-Excitation Networks.
+           In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).
+           https://arxiv.org/abs/1709.01507
     """
 
     def __init__(self, ch_in: int, reduction: int = 8, bias: bool = False, *args, **kwargs):
@@ -37,18 +48,28 @@ class SE1d(nn.Module):
 
 class CBAM1d(nn.Module):
     """
-    Generalized version of Convolutional Block Attention Module (https://arxiv.org/abs/1807.06521).
-    Inherit SE module for channel-wise attention, and operates spatial-wise attention serially.
-    The spatial-wise operation consists of pooling and channel aggregation.
-    If `conv_pool` option is False, channel aggregation works with MAX & AVG pooled tensor.
-    If `conv_pool` option is True, channel aggregation works with parametric pooled (convolution).
+    Convolutional Block Attention Module for 1D inputs.
 
-    :param ch: int
-        The channels-wise dimension of input tensor.
-    :param reduction: int
-        The Squeeze and Excitation ratio. Note that it must be a divisor of ch.
-    :param bias: bool
-    :param conv_pool: bool
+    This module implements the Convolutional Block Attention Module (CBAM).
+
+    Parameters
+    ----------
+    ch_in : int
+        The channel-wise dimension of the input tensor.
+    kernel_size : _size_1_t, optional
+        The kernel size for the convolutional layer. Default is 7.
+    reduction : int, optional
+        The reduction ratio for the SE block. Default is 8. Must be a divisor of ch_in.
+    bias : bool, optional
+        Whether to use bias in the convolutional and fully connected layers. Default is False.
+    conv_pool : bool, optional
+        If True, use convolutional pooling for the spatial attention mechanism. Default is False.
+
+    References
+    ----------
+    .. [1] Woo, S., Park, J., Lee, J.-Y., & Kweon, I. S. (2018). CBAM: Convolutional Block Attention Module.
+           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+           https://arxiv.org/abs/1807.06521
     """
 
     def __init__(
