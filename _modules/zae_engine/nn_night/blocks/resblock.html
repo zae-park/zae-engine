@@ -70,18 +70,39 @@
            <div itemprop="articleBody">
              
   <h1>Source code for zae_engine.nn_night.blocks.resblock</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 
 
 <div class="viewcode-block" id="BasicBlock">
 <a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.resblock.BasicBlock">[docs]</a>
 <span class="k">class</span> <span class="nc">BasicBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Basic residual block.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Basic residual block.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ch_in : int</span>
+<span class="sd">        Number of input channels.</span>
+<span class="sd">    ch_out : int</span>
+<span class="sd">        Number of output channels.</span>
+<span class="sd">    stride : int, optional</span>
+<span class="sd">        Stride of the convolution. Default is 1.</span>
+<span class="sd">    groups : int, optional</span>
+<span class="sd">        Number of groups for the convolution. Default is 1.</span>
+<span class="sd">    dilation : int, optional</span>
+<span class="sd">        Dilation for the convolution. Default is 1.</span>
+<span class="sd">    norm_layer : Callable[..., nn.Module], optional</span>
+<span class="sd">        Normalization layer to use. Default is nn.BatchNorm2d.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">expansion</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -120,7 +141,7 @@
 
 <div class="viewcode-block" id="BasicBlock.forward">
 <a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.resblock.BasicBlock.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm1</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
@@ -142,7 +163,30 @@
 <div class="viewcode-block" id="Bottleneck">
 <a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.resblock.Bottleneck">[docs]</a>
 <span class="k">class</span> <span class="nc">Bottleneck</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bottleneck residual block.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Bottleneck residual block.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ch_in : int</span>
+<span class="sd">        Number of input channels.</span>
+<span class="sd">    ch_out : int</span>
+<span class="sd">        Number of output channels.</span>
+<span class="sd">    stride : int, optional</span>
+<span class="sd">        Stride of the convolution. Default is 1.</span>
+<span class="sd">    groups : int, optional</span>
+<span class="sd">        Number of groups for the convolution. Default is 1.</span>
+<span class="sd">    dilation : int, optional</span>
+<span class="sd">        Dilation for the convolution. Default is 1.</span>
+<span class="sd">    norm_layer : Callable[..., nn.Module], optional</span>
+<span class="sd">        Normalization layer to use. Default is nn.BatchNorm2d.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">expansion</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
 
@@ -190,7 +234,7 @@
 
 <div class="viewcode-block" id="Bottleneck.forward">
 <a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.resblock.Bottleneck.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm1</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>

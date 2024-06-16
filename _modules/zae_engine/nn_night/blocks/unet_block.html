@@ -83,6 +83,39 @@
 <div class="viewcode-block" id="UNetBlock">
 <a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.unet_block.UNetBlock">[docs]</a>
 <span class="k">class</span> <span class="nc">UNetBlock</span><span class="p">(</span><span class="n">resblock</span><span class="o">.</span><span class="n">BasicBlock</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Residual block for UNet architecture.</span>
+
+<span class="sd">    This module is a modified version of the BasicBlock used in ResNet, adapted for the UNet architecture.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ch_in : int</span>
+<span class="sd">        The number of input channels.</span>
+<span class="sd">    ch_out : int</span>
+<span class="sd">        The number of output channels.</span>
+<span class="sd">    stride : int, optional</span>
+<span class="sd">        The stride of the convolution. Default is 1.</span>
+<span class="sd">    groups : int, optional</span>
+<span class="sd">        The number of groups for the convolution. Default is 1.</span>
+<span class="sd">    norm_layer : Callable[..., nn.Module], optional</span>
+<span class="sd">        The normalization layer to use. Default is `nn.BatchNorm2d`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    expansion : int</span>
+<span class="sd">        The expansion factor of the block, set to 1.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016). Deep Residual Learning for Image Recognition.</span>
+<span class="sd">           In Proceedings of the IEEE conference on computer vision and pattern recognition (CVPR) (pp. 770-778).</span>
+<span class="sd">           https://arxiv.org/abs/1512.03385</span>
+<span class="sd">    .. [2] Ronneberger, O., Fischer, P., &amp; Brox, T. (2015). U-Net: Convolutional Networks for Biomedical Image Segmentation.</span>
+<span class="sd">           In International Conference on Medical image computing and computer-assisted intervention (pp. 234-241).</span>
+<span class="sd">           https://arxiv.org/abs/1505.04597</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">expansion</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -101,6 +134,19 @@
 <div class="viewcode-block" id="UNetBlock.forward">
 <a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.unet_block.UNetBlock.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for the UNetBlock.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : Tensor</span>
+<span class="sd">            Input tensor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tensor</span>
+<span class="sd">            Output tensor after applying the block operations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm1</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu1</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
