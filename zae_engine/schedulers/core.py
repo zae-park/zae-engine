@@ -4,6 +4,37 @@ from torch.optim import lr_scheduler, Optimizer
 
 
 class SchedulerBase(lr_scheduler.LRScheduler, ABC):
+    """
+    Base class for learning rate schedulers.
+
+    This class extends PyTorch's LRScheduler and adds additional functionality
+    for custom learning rate scheduling.
+
+    Parameters
+    ----------
+    optimizer : Optimizer
+        The optimizer for which to schedule the learning rate.
+    total_iters : int
+        The total number of iterations for the scheduler.
+    eta_min : float
+        The minimum learning rate.
+    last_epoch : int, optional
+        The index of the last epoch. Default is -1.
+
+    Attributes
+    ----------
+    optimizer : Optimizer
+        The optimizer being used.
+    total_iters : int
+        The total number of iterations for the scheduler.
+    eta_min : float
+        The minimum learning rate.
+    last_epoch : int
+        The index of the last epoch.
+    _step_count : int
+        The step count for the scheduler.
+    """
+
     def __init__(self, optimizer: Optimizer, total_iters: int, eta_min: float, last_epoch: int = -1):
         """
         optimizer: Adam, AdamW, ...
@@ -20,6 +51,14 @@ class SchedulerBase(lr_scheduler.LRScheduler, ABC):
 
     @abstractmethod
     def get_lr(self):
+        """
+        Get the learning rate for the current epoch.
+
+        Returns
+        -------
+        float
+            The learning rate for the current epoch.
+        """
         return 1.0
 
 
