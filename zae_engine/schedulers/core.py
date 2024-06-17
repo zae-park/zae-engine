@@ -63,6 +63,31 @@ class SchedulerBase(lr_scheduler.LRScheduler, ABC):
 
 
 class SchedulerChain(SchedulerBase):
+    """
+    Chain multiple learning rate schedulers together.
+
+    This class allows you to chain multiple learning rate schedulers so that
+    they are applied sequentially.
+
+    Parameters
+    ----------
+    *schedulers : SchedulerBase
+        The schedulers to chain together.
+
+    Attributes
+    ----------
+    schedulers : list of SchedulerBase
+        The list of chained schedulers.
+    optimizer : Optimizer
+        The optimizer being used.
+    next_iters : list of int
+        The iteration counts at which to switch to the next scheduler.
+    total_iters : int
+        The total number of iterations for the entire chain of schedulers.
+    i_scheduler : int
+        The index of the current scheduler in the chain.
+    """
+
     def __init__(self, *schedulers: SchedulerBase):
         self.schedulers = schedulers
         self.optimizer = self.sanity_check()
@@ -75,6 +100,19 @@ class SchedulerChain(SchedulerBase):
         lr_scheduler.LRScheduler.__init__(self, optimizer=self.optimizer, last_epoch=-1)
 
     def sanity_check(self):
+        """
+        Check that all schedulers use the same optimizer.
+
+        Returns
+        -------
+        Optimizer
+            The common optimizer used by all schedulers.
+
+        Raises
+        ------
+        AssertionError
+            If multiple optimizers are detected.
+        """
         # Check given schedulers for same optimizer
         opts = [s.optimizer for s in self.schedulers]
         cnt = len(set([id(o) for o in opts]))
@@ -85,10 +123,26 @@ class SchedulerChain(SchedulerBase):
         return opts[0]
 
     def step(self, epoch=None):
+        """
+        Perform a step of the scheduler.
+
+        Parameters
+        ----------
+        epoch : int, optional
+            The current epoch. If None, use the internal step count.
+        """
         if self._step_count in self.next_iters:
             self.i_scheduler += 1
         self.schedulers[self.i_scheduler].step(epoch)
         self._step_count += 1
 
     def get_lr(self):
+        """
+        Get the learning rate for the current epoch.
+
+        Returns
+        -------
+        float
+            The learning rate for the current epoch.
+        """
         return self.schedulers[self.i_scheduler].get_lr()
