@@ -78,6 +78,37 @@
 <div class="viewcode-block" id="SchedulerBase">
 <a class="viewcode-back" href="../../../zae_engine.schedulers.html#zae_engine.schedulers.core.SchedulerBase">[docs]</a>
 <span class="k">class</span> <span class="nc">SchedulerBase</span><span class="p">(</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">LRScheduler</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for learning rate schedulers.</span>
+
+<span class="sd">    This class extends PyTorch&#39;s LRScheduler and adds additional functionality</span>
+<span class="sd">    for custom learning rate scheduling.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    optimizer : Optimizer</span>
+<span class="sd">        The optimizer for which to schedule the learning rate.</span>
+<span class="sd">    total_iters : int</span>
+<span class="sd">        The total number of iterations for the scheduler.</span>
+<span class="sd">    eta_min : float</span>
+<span class="sd">        The minimum learning rate.</span>
+<span class="sd">    last_epoch : int, optional</span>
+<span class="sd">        The index of the last epoch. Default is -1.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    optimizer : Optimizer</span>
+<span class="sd">        The optimizer being used.</span>
+<span class="sd">    total_iters : int</span>
+<span class="sd">        The total number of iterations for the scheduler.</span>
+<span class="sd">    eta_min : float</span>
+<span class="sd">        The minimum learning rate.</span>
+<span class="sd">    last_epoch : int</span>
+<span class="sd">        The index of the last epoch.</span>
+<span class="sd">    _step_count : int</span>
+<span class="sd">        The step count for the scheduler.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">,</span> <span class="n">total_iters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">eta_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">last_epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        optimizer: Adam, AdamW, ...</span>
@@ -96,6 +127,14 @@
 <a class="viewcode-back" href="../../../zae_engine.schedulers.html#zae_engine.schedulers.core.SchedulerBase.get_lr">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_lr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the learning rate for the current epoch.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The learning rate for the current epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="mf">1.0</span></div>
 </div>
 
@@ -104,6 +143,31 @@
 <div class="viewcode-block" id="SchedulerChain">
 <a class="viewcode-back" href="../../../zae_engine.schedulers.html#zae_engine.schedulers.core.SchedulerChain">[docs]</a>
 <span class="k">class</span> <span class="nc">SchedulerChain</span><span class="p">(</span><span class="n">SchedulerBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Chain multiple learning rate schedulers together.</span>
+
+<span class="sd">    This class allows you to chain multiple learning rate schedulers so that</span>
+<span class="sd">    they are applied sequentially.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    *schedulers : SchedulerBase</span>
+<span class="sd">        The schedulers to chain together.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schedulers : list of SchedulerBase</span>
+<span class="sd">        The list of chained schedulers.</span>
+<span class="sd">    optimizer : Optimizer</span>
+<span class="sd">        The optimizer being used.</span>
+<span class="sd">    next_iters : list of int</span>
+<span class="sd">        The iteration counts at which to switch to the next scheduler.</span>
+<span class="sd">    total_iters : int</span>
+<span class="sd">        The total number of iterations for the entire chain of schedulers.</span>
+<span class="sd">    i_scheduler : int</span>
+<span class="sd">        The index of the current scheduler in the chain.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">schedulers</span><span class="p">:</span> <span class="n">SchedulerBase</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">schedulers</span> <span class="o">=</span> <span class="n">schedulers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanity_check</span><span class="p">()</span>
@@ -118,6 +182,19 @@
 <div class="viewcode-block" id="SchedulerChain.sanity_check">
 <a class="viewcode-back" href="../../../zae_engine.schedulers.html#zae_engine.schedulers.core.SchedulerChain.sanity_check">[docs]</a>
     <span class="k">def</span> <span class="nf">sanity_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check that all schedulers use the same optimizer.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Optimizer</span>
+<span class="sd">            The common optimizer used by all schedulers.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        AssertionError</span>
+<span class="sd">            If multiple optimizers are detected.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Check given schedulers for same optimizer</span>
         <span class="n">opts</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">optimizer</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedulers</span><span class="p">]</span>
         <span class="n">cnt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="nb">id</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">]))</span>
@@ -131,6 +208,14 @@
 <div class="viewcode-block" id="SchedulerChain.step">
 <a class="viewcode-back" href="../../../zae_engine.schedulers.html#zae_engine.schedulers.core.SchedulerChain.step">[docs]</a>
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a step of the scheduler.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        epoch : int, optional</span>
+<span class="sd">            The current epoch. If None, use the internal step count.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step_count</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_iters</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">i_scheduler</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">schedulers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i_scheduler</span><span class="p">]</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
@@ -140,6 +225,14 @@
 <div class="viewcode-block" id="SchedulerChain.get_lr">
 <a class="viewcode-back" href="../../../zae_engine.schedulers.html#zae_engine.schedulers.core.SchedulerChain.get_lr">[docs]</a>
     <span class="k">def</span> <span class="nf">get_lr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the learning rate for the current epoch.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The learning rate for the current epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedulers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">i_scheduler</span><span class="p">]</span><span class="o">.</span><span class="n">get_lr</span><span class="p">()</span></div>
 </div>
 
