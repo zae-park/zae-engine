@@ -205,10 +205,19 @@ def onoff_to_label(onoff: Union[np.ndarray, torch.Tensor], length: int = 2500) -
 
 def find_nearest(arr: Union[np.ndarray, torch.Tensor], value: int):
     """
-    Find the nearest value and its index.
-    :param arr: 1d-array.
-    :param value: reference value.
-    :return: index of nearest, value of nearest
+    Find the nearest value and its index in the array.
+
+    Parameters
+    ----------
+    arr : Union[np.ndarray, torch.Tensor]
+        The input array.
+    value : int
+        The reference value.
+
+    Returns
+    -------
+    Tuple[int, int]
+        The index and value of the nearest element.
     """
     if isinstance(arr, torch.Tensor):
         arr = arr.numpy()
