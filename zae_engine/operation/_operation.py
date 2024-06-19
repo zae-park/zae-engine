@@ -90,28 +90,29 @@ def label_to_onoff(
     labels: Union[np.ndarray, torch.Tensor], sense: int = 2, middle_only: bool = False, outside_idx: Optional = True
 ) -> list:
     """
-    Convert label sequence to onoff array.
-    Receive the label(sequence of annotation for each point), return the on-off array.
-    On-off array consists of [on, off, class] for exist beats. If there is no beat, return [].
+    Convert label sequence to on-off array.
 
-    Input args:
-        label: np.nd-array
-                Sequence of annotation for each point
-                Expected shape is [N, points] or [points] where N is number of data.
-        sense: int
-                The sensitivity value.
-                Ignore beat if the (off - on) is less than sensitivity value.
-        middle_only: bool
-                Ignore both the left-most & right-most beats.
-        outside_idx: int or float(nan)
-                Outside index (default is np.nan).
-                Fill on (or off) if beat is incomplete. only use for left-most or right-most.
-                If middle_only is False, outside_idx is not used.
+    This function receives the label sequence and returns an on-off array.
+    The on-off array consists of [on, off, label] for every existing upper-step and lower-step.
+    If there is no label changing and only single label is in input, it returns an empty list.
 
-    Output args:
-        Beat info matrix:
-                Shape of matrix is (N, # of beats, 3) or (# of beats, 3) where N is number of data.
-                Length of last dimension is 3 consists of [on, off, cls].
+    Parameters
+    ----------
+    labels : Union[np.ndarray, torch.Tensor]
+        Sequence of annotation for each point. Expected shape is [N, points] or [points] where N is number of data.
+    sense : int
+        The sensitivity value. Ignore on-off if the (off - on) is less than sensitivity value.
+    middle_only : bool
+        Ignore both the left-most & right-most on-off.
+    outside_idx : Optional[int or float]
+        Outside index (default is np.nan). Fill on (or off) if beat is incomplete. Only use for left-most or right-most.
+        If middle_only is False, outside_idx is not used.
+
+    Returns
+    -------
+    list
+        On-off matrix: Shape of matrix is (N, # of on-offs, 3) or (# of on-offs, 3) where N is number of data.
+        Length of last dimension is 3 and consists of [on, off, label].
     """
     SINGLE = False
     if isinstance(labels, torch.Tensor):
