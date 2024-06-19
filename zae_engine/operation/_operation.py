@@ -163,13 +163,23 @@ def label_to_onoff(
 
 def onoff_to_label(onoff: Union[np.ndarray, torch.Tensor], length: int = 2500) -> np.ndarray:
     """
-    Return label sequence using onoff(arg #1).
-    Receive the label(sequence of annotation for each point), return the on-off array.
-    On-off array consists of [on, off, class] for exist beats. If there is no beat, return [].
+    Convert on-off array to label sequence.
 
-    :param onoff: np.nd-array. Array of on-off. Expected shape is [N, [on, off, cls]] where N is number of beats.
-    :param length: int. Length of label sequence. This value should be larger than maximum of onoff.
-    :return: label
+    This function receives an on-off array and returns the label sequence.
+    The on-off array consists of [on, off, label] for existing on-off pairs.
+    If there is no beat, it returns an empty array.
+
+    Parameters
+    ----------
+    onoff : Union[np.ndarray, torch.Tensor]
+        Array of on-off. Expected shape is [N, [on, off, cls]] where N is number of on-off pairs.
+    length : int
+        Length of label sequence. This value should be larger than maximum of onoff.
+
+    Returns
+    -------
+    np.ndarray
+        The label sequence.
     """
     if isinstance(onoff, torch.Tensor):
         onoff = onoff.detach().numpy()
