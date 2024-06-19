@@ -7,6 +7,26 @@ import torch.nn as nn
 
 
 class MorphologicalLayer(nn.Module):
+    """
+    Morphological operation layer for 1D tensors.
+
+    This layer applies a series of morphological operations such as dilation
+    and erosion on the input tensor.
+
+    Parameters
+    ----------
+    ops : str
+        A string where each character represents an operation: 'c' for closing
+        (dilation followed by erosion) and 'o' for opening (erosion followed by dilation).
+    window_size : List[int]
+        A list of window sizes for each operation in `ops`.
+
+    Attributes
+    ----------
+    post : nn.Sequential
+        The sequence of morphological operations.
+    """
+
     def __init__(self, ops: str, window_size: List[int]):
         super(MorphologicalLayer, self).__init__()
         try:
@@ -27,6 +47,19 @@ class MorphologicalLayer(nn.Module):
                 self.conv.weight.data = kernel
 
             def forward(self, x):
+                """
+                Apply morphological operations to the input tensor.
+
+                Parameters
+                ----------
+                x : torch.Tensor
+                    The input tensor.
+
+                Returns
+                -------
+                torch.Tensor
+                    The tensor after morphological operations.
+                """
                 x = self.conv(x)
                 if self.morph_type == "erosion":
                     return torch.min(x, 1)[0].unsqueeze(1)
