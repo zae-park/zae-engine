@@ -60,7 +60,7 @@
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.utils.html">zae_engine.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-zae_engine">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -98,47 +98,20 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.metrics.confusion">
-<span id="zae-engine-metrics-confusion-module"></span><h2>zae_engine.metrics.confusion module<a class="headerlink" href="#module-zae_engine.metrics.confusion" title="Link to this heading">¶</a></h2>
+<section id="zae-engine-metrics-confusion-module">
+<h2>zae_engine.metrics.confusion module<a class="headerlink" href="#zae-engine-metrics-confusion-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.metrics.count">
-<span id="zae-engine-metrics-count-module"></span><h2>zae_engine.metrics.count module<a class="headerlink" href="#module-zae_engine.metrics.count" title="Link to this heading">¶</a></h2>
+<section id="zae-engine-metrics-count-module">
+<h2>zae_engine.metrics.count module<a class="headerlink" href="#zae-engine-metrics-count-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.metrics.iou">
-<span id="zae-engine-metrics-iou-module"></span><h2>zae_engine.metrics.iou module<a class="headerlink" href="#module-zae_engine.metrics.iou" title="Link to this heading">¶</a></h2>
+<section id="zae-engine-metrics-iou-module">
+<h2>zae_engine.metrics.iou module<a class="headerlink" href="#zae-engine-metrics-iou-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.metrics.signals">
-<span id="zae-engine-metrics-signals-module"></span><h2>zae_engine.metrics.signals module<a class="headerlink" href="#module-zae_engine.metrics.signals" title="Link to this heading">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.metrics.signals.rms">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.metrics.signals.</span></span><span class="sig-name descname"><span class="pre">rms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/metrics/signals.html#rms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.metrics.signals.rms" title="Link to this definition">¶</a></dt>
-<dd><p>Compute the root mean square (RMS) of a signal.</p>
-<p>This function calculates the RMS value of the input signal, which is a measure of the magnitude of the signal.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>signal</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>torch.Tensor</em><em>]</em>) – The input signal, either as a numpy array or a torch tensor.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The RMS value of the signal, with the same type as the input.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[np.ndarray, torch.Tensor]</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rms</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
-<span class="go">3.3166247903554</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">signal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rms</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
-<span class="go">tensor(3.3166)</span>
-</pre></div>
-</div>
-</dd></dl>
-
+<section id="zae-engine-metrics-signals-module">
+<h2>zae_engine.metrics.signals module<a class="headerlink" href="#zae-engine-metrics-signals-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.metrics">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.metrics" title="Link to this heading">¶</a></h2>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 </section>
 </section>
 

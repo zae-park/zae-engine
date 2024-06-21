@@ -60,7 +60,7 @@
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.utils.html">zae_engine.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-zae_engine">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -140,7 +140,7 @@ registered hooks while the latter silently ignores them.</p>
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.involution.Inv1d">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.involution.</span></span><span class="sig-name descname"><span class="pre">Inv1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/involution.html#Inv1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.involution.Inv1d" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<p>The involution layer for 1D input <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
+<p>The involution layer for 1D input <a href="#id4"><span class="problematic" id="id1">[1]_</span></a>.</p>
 <p>…
 :param ch: Number of channels in the input tensor (signal or 1D arr)
 :type ch: int
@@ -163,7 +163,7 @@ registered hooks while the latter silently ignores them.</p>
 <p class="rubric">References</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id2" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
 <p>Li, Duo, et al.
 “Involution: Inverting the inherence of convolution for visual recognition.”
 Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 2021.</p>
@@ -214,15 +214,35 @@ As nn.Sequential, receive modules but connect the output tensor to an input tens
 <span id="zae-engine-nn-night-layers-selective-kernel-conv-module"></span><h2>zae_engine.nn_night.layers.selective_kernel_conv module<a class="headerlink" href="#module-zae_engine.nn_night.layers.selective_kernel_conv" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.selective_kernel_conv.</span></span><span class="sig-name descname"><span class="pre">SKConv1D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(3,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatten</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.selective_kernel_conv.</span></span><span class="sig-name descname"><span class="pre">SKConv1D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(3,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<p>TODO
-fill description
-add test case
-optimize</p>
+<p>Selective Kernel Convolution for 1D inputs.</p>
+<p>This module performs selective kernel convolutions with different kernel sizes,
+followed by a selection mechanism to fuse the features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_in</strong> (<em>int</em>) – Number of input channels.</p></li>
+<li><p><strong>ch_out</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of output channels. If None, it will be set to the same as <cite>ch_in</cite>.</p></li>
+<li><p><strong>kernels</strong> (<em>list</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – List of kernel sizes to be used in the convolution layers. Default is (3, 5).</p></li>
+<li><p><strong>out_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Output size for adaptive average pooling. If None, no pooling is applied.</p></li>
+<li><p><strong>ch_ratio</strong> (<em>int</em><em>, </em><em>optional</em>) – Reduction ratio for the intermediate channels in the fuse layer. Default is 2.</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em>, </em><em>optional</em>) – Stride size for the convolution layers. Default is 1.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Li, X., Wang, W., Hu, X., &amp; Yang, J. (2019). Selective kernel networks.
+In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (pp. 510-519).
+Available at: <a class="reference external" href="https://arxiv.org/abs/1903.06586">https://arxiv.org/abs/1903.06586</a></p>
+</aside>
+</aside>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.forward" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.forward" title="Link to this definition">¶</a></dt>
 <dd><p>Defines the computation performed at every call.</p>
 <p>Should be overridden by all subclasses.</p>
 <div class="admonition note">
@@ -236,7 +256,7 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.fuse">
-<span class="sig-name descname"><span class="pre">fuse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D.fuse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.fuse" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">fuse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Sequential</span></span></span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D.fuse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.fuse" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -246,81 +266,9 @@ registered hooks while the latter silently ignores them.</p>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.selective_kernel_conv.</span></span><span class="sig-name descname"><span class="pre">ZaeClass</span></span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#ZaeClass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Summary line.</p>
-<p>Extended description of class</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass.attr1">
-<span class="sig-name descname"><span class="pre">attr1</span></span><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass.attr1" title="Link to this definition">¶</a></dt>
-<dd><p>Description of attr1</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass.attr2">
-<span class="sig-name descname"><span class="pre">attr2</span></span><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.ZaeClass.attr2" title="Link to this definition">¶</a></dt>
-<dd><p>Description of attr2</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.func_zae_google">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.selective_kernel_conv.</span></span><span class="sig-name descname"><span class="pre">func_zae_google</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#func_zae_google"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.func_zae_google" title="Link to this definition">¶</a></dt>
-<dd><p>Summary line.</p>
-<p>Extended description of function.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>arg1</strong> (<em>int</em>) – Description of arg1</p></li>
-<li><p><strong>arg2</strong> (<em>str</em>) – Description of arg2</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Description of return value</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.func_zae_numpy">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.selective_kernel_conv.</span></span><span class="sig-name descname"><span class="pre">func_zae_numpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#func_zae_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.func_zae_numpy" title="Link to this definition">¶</a></dt>
-<dd><p>Summary line.</p>
-<p>Extended description of function.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>arg1</strong> (<em>int</em>) – Description of arg1</p></li>
-<li><p><strong>arg2</strong> (<em>str</em>) – Description of arg2</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Description of return value</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
-<section id="module-zae_engine.nn_night.layers">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.nn_night.layers" title="Link to this heading">¶</a></h2>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 </section>
 </section>
 

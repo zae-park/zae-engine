@@ -60,7 +60,7 @@
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.utils.html">zae_engine.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-zae_engine">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -99,102 +99,17 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.models.builds.autoencoder">
-<span id="zae-engine-models-builds-autoencoder-module"></span><h2>zae_engine.models.builds.autoencoder module<a class="headerlink" href="#module-zae_engine.models.builds.autoencoder" title="Link to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.autoencoder.</span></span><span class="sig-name descname"><span class="pre">AutoEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">block:</span> <span class="pre">~typing.Type[~zae_engine.nn_night.blocks.unet_block.UNetBlock</span> <span class="pre">|</span> <span class="pre">~torch.nn.modules.module.Module],</span> <span class="pre">ch_in:</span> <span class="pre">int,</span> <span class="pre">ch_out:</span> <span class="pre">int,</span> <span class="pre">width:</span> <span class="pre">int,</span> <span class="pre">layers:</span> <span class="pre">~typing.Tuple[int]</span> <span class="pre">|</span> <span class="pre">~typing.List[int],</span> <span class="pre">groups:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">dilation:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">norm_layer:</span> <span class="pre">~typing.Callable[[...],</span> <span class="pre">~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.batchnorm.BatchNorm2d'&gt;,</span> <span class="pre">skip_connect:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.feature_hook">
-<span class="sig-name descname"><span class="pre">feature_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder.feature_hook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.feature_hook" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.feature_output_hook">
-<span class="sig-name descname"><span class="pre">feature_output_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder.feature_output_hook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.feature_output_hook" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
+<section id="zae-engine-models-builds-autoencoder-module">
+<h2>zae_engine.models.builds.autoencoder module<a class="headerlink" href="#zae-engine-models-builds-autoencoder-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.models.builds.cnn">
-<span id="zae-engine-models-builds-cnn-module"></span><h2>zae_engine.models.builds.cnn module<a class="headerlink" href="#module-zae_engine.models.builds.cnn" title="Link to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.models.builds.cnn.CNNBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.cnn.</span></span><span class="sig-name descname"><span class="pre">CNNBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">block:</span> <span class="pre">~typing.Type[~zae_engine.nn_night.blocks.resblock.BasicBlock</span> <span class="pre">|</span> <span class="pre">~zae_engine.nn_night.blocks.resblock.Bottleneck</span> <span class="pre">|</span> <span class="pre">~torch.nn.modules.module.Module],</span> <span class="pre">ch_in:</span> <span class="pre">int,</span> <span class="pre">ch_out:</span> <span class="pre">int,</span> <span class="pre">width:</span> <span class="pre">int,</span> <span class="pre">layers:</span> <span class="pre">~typing.Tuple[int]</span> <span class="pre">|</span> <span class="pre">~typing.List[int],</span> <span class="pre">groups:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">dilation:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">norm_layer:</span> <span class="pre">~typing.Callable[[...],</span> <span class="pre">~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.batchnorm.BatchNorm2d'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/cnn.html#CNNBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.cnn.CNNBase" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.cnn.CNNBase.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/models/builds/cnn.html#CNNBase.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.cnn.CNNBase.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.cnn.CNNBase.initializer">
-<span class="sig-name descname"><span class="pre">initializer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/cnn.html#CNNBase.initializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.cnn.CNNBase.initializer" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.cnn.CNNBase.make_body">
-<span class="sig-name descname"><span class="pre">make_body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blocks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.resblock.BasicBlock" title="zae_engine.nn_night.blocks.resblock.BasicBlock"><span class="pre">BasicBlock</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.resblock.Bottleneck" title="zae_engine.nn_night.blocks.resblock.Bottleneck"><span class="pre">Bottleneck</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.resblock.BasicBlock" title="zae_engine.nn_night.blocks.resblock.BasicBlock"><span class="pre">BasicBlock</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.resblock.Bottleneck" title="zae_engine.nn_night.blocks.resblock.Bottleneck"><span class="pre">Bottleneck</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Sequential</span></span></span><a class="reference internal" href="_modules/zae_engine/models/builds/cnn.html#CNNBase.make_body"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.cnn.CNNBase.make_body" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.cnn.CNNBase.zero_initializer">
-<span class="sig-name descname"><span class="pre">zero_initializer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/cnn.html#CNNBase.zero_initializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.cnn.CNNBase.zero_initializer" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<section id="zae-engine-models-builds-cnn-module">
+<h2>zae_engine.models.builds.cnn module<a class="headerlink" href="#zae-engine-models-builds-cnn-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.models.builds.legacy">
-<span id="zae-engine-models-builds-legacy-module"></span><h2>zae_engine.models.builds.legacy module<a class="headerlink" href="#module-zae_engine.models.builds.legacy" title="Link to this heading">¶</a></h2>
+<section id="zae-engine-models-builds-legacy-module">
+<h2>zae_engine.models.builds.legacy module<a class="headerlink" href="#zae-engine-models-builds-legacy-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.models.builds">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.models.builds" title="Link to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.models.builds.DummyModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.</span></span><span class="sig-name descname"><span class="pre">DummyModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds.html#DummyModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.DummyModel" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.DummyModel.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds.html#DummyModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.DummyModel.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 </section>
 </section>
 
