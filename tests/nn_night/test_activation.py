@@ -42,47 +42,41 @@ class TestClippedReLU(unittest.TestCase):
 
 class TestClippedReLU_GPT(unittest.TestCase):
     def setUp(self):
-        self.lower = 0.0
-        self.upper = 1.0
-        self.activation = ClippedReLU(upper=self.upper, lower=self.lower)
-        self.tensors = [
-            torch.tensor([-2.0, -1.0, 0.0, 0.5, 1.0, 1.5, 2.0]),
-            torch.tensor([-0.5, 0.0, 0.5]),
-            torch.tensor([0.0, 0.5, 1.0]),
-        ]
+        self.clipped_relu_default = ClippedReLU()
+        self.clipped_relu_custom = ClippedReLU(upper=2.0, lower=-1.0)
 
-    def test_clipped_relu_output(self):
-        expected_outputs = [
-            torch.tensor([0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0]),
-            torch.tensor([0.0, 0.0, 0.5]),
-            torch.tensor([0.0, 0.5, 1.0]),
-        ]
-        for tensor, expected in zip(self.tensors, expected_outputs):
-            with self.subTest(tensor=tensor):
-                output = self.activation(tensor)
-                self.assertTrue(torch.allclose(output, expected), f"Failed for input: {tensor}")
+    def test_default_thresholds(self):
+        x = torch.tensor([-2.0, -1.0, 0.0, 0.5, 1.0, 1.5, 2.0])
+        expected_output = torch.tensor([0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0])
+        output = self.clipped_relu_default(x)
+        self.assertTrue(torch.equal(output, expected_output))
 
-    def test_clipped_relu_grad(self):
-        for tensor in self.tensors:
-            tensor.requires_grad_(True)
-            output = self.activation(tensor)
-            output.sum().backward()
-            grad = tensor.grad
-            expected_grad = torch.ones_like(tensor)
-            expected_grad[(tensor < self.lower) | (tensor > self.upper)] = 0
-            with self.subTest(tensor=tensor):
-                self.assertTrue(torch.allclose(grad, expected_grad), f"Gradient check failed for input: {tensor}")
+    def test_custom_thresholds(self):
+        x = torch.tensor([-2.0, -1.0, 0.0, 0.5, 1.0, 1.5, 2.0])
+        expected_output = torch.tensor([-1.0, -1.0, 0.0, 0.5, 1.0, 1.5, 2.0])
+        output = self.clipped_relu_custom(x)
+        self.assertTrue(torch.equal(output, expected_output))
 
-    def test_clipped_relu_invalid_bounds(self):
+    def test_gradient(self):
+        x = torch.tensor([-2.0, -1.0, 0.0, 0.5, 1.0, 1.5, 2.0], requires_grad=True)
+        output = self.clipped_relu_default(x)
+        output.sum().backward()
+        expected_grad = torch.tensor([0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0])
+        self.assertTrue(torch.equal(x.grad, expected_grad))
+
+    def test_invalid_thresholds(self):
         with self.assertRaises(AssertionError):
             ClippedReLU(upper=0.0, lower=1.0)
 
-    def test_clipped_relu_lower_bound(self):
-        activation = ClippedReLU(upper=2.0, lower=1.0)
-        tensor = torch.tensor([0.0, 1.0, 1.5, 2.0, 3.0])
-        expected = torch.tensor([1.0, 1.0, 1.5, 2.0, 2.0])
-        output = activation(tensor)
-        self.assertTrue(torch.allclose(output, expected), f"Failed for input: {tensor}")
+    def test_forward_shape(self):
+        x = torch.randn(10, 20)
+        output = self.clipped_relu_default(x)
+        self.assertEqual(output.shape, x.shape)
+
+    def test_forward_dtype(self):
+        x = torch.randn(10, 20, dtype=torch.float32)
+        output = self.clipped_relu_default(x)
+        self.assertEqual(output.dtype, x.dtype)
 
 
 if __name__ == "__main__":
