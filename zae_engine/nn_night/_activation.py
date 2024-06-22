@@ -37,7 +37,8 @@ class ClippedReLU(nn.Module):
         )
         self.upper = upper
         self.lower = lower
-        self.act = nn.ReLU()
+        self.upper_act = nn.ReLU()
+        self.lower_act = nn.ReLU()
 
     def forward(self, x):
         """
@@ -56,4 +57,4 @@ class ClippedReLU(nn.Module):
         torch.Tensor
             The output tensor after applying the ClippedReLU function.
         """
-        return self.lower + self.upper - x + self.act(x - self.lower) - self.act(self.upper - x)
+        return self.lower + self.upper - x + self.lower_act(x - self.lower) - self.upper_act(self.upper - x)
