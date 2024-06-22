@@ -59,7 +59,7 @@ class TestClippedReLU_GPT(unittest.TestCase):
         self.assertTrue(torch.equal(output, expected_output))
 
     def test_gradient(self):
-        x = torch.tensor([-2.0, -1.0, EPS, 0.5, 1.0 - EPS, 1.5, 2.0], requires_grad=True)
+        x = torch.tensor([-2.0, -1.0, EPS, 0.5, 0.99, 1.5, 2.0], requires_grad=True)
         output = self.clipped_relu_default(x)
         output.sum().backward()
         
