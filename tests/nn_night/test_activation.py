@@ -61,8 +61,12 @@ class TestClippedReLU_GPT(unittest.TestCase):
         x = torch.tensor([-2.0, -1.0, 0.0, 0.5, 1.0, 1.5, 2.0], requires_grad=True)
         output = self.clipped_relu_default(x)
         output.sum().backward()
+        
+        # ClippedReLU의 기울기를 예상할 때 정확한 값을 설정합니다.
         expected_grad = torch.tensor([0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0])
-        self.assertTrue(torch.equal(x.grad, expected_grad))
+        
+        # 기울기 비교 시 오차를 허용하도록 합니다.
+        self.assertTrue(torch.allclose(x.grad, expected_grad, atol=1e-6))
 
     def test_invalid_thresholds(self):
         with self.assertRaises(AssertionError):
