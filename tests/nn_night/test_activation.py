@@ -5,6 +5,7 @@ import unittest
 import torch
 
 from zae_engine.nn_night import ClippedReLU
+from zae_engine.utils import EPS
 
 
 class TestClippedReLU(unittest.TestCase):
