@@ -1,6 +1,6 @@
 import unittest
 import torch
-from .zae_engine.nn_night import selective_kernel_conv as skconv
+from zae_engine.nn_night import selective_kernel_conv as skconv
 
 
 class TestSKConv1D(unittest.TestCase):
