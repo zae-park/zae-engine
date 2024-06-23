@@ -195,7 +195,7 @@ applied to ensure the ratio remains discrete.</p>
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.involution.Inv1d">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.involution.</span></span><span class="sig-name descname"><span class="pre">Inv1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/involution.html#Inv1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.involution.Inv1d" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<p>The involution layer for 1D input <a href="#id5"><span class="problematic" id="id2">[1]_</span></a>.</p>
+<p>The involution layer for 1D input <a href="#id6"><span class="problematic" id="id2">[1]_</span></a>.</p>
 <p>…
 :param ch: Number of channels in the input tensor (signal or 1D arr)
 :type ch: int
@@ -252,14 +252,39 @@ registered hooks while the latter silently ignores them.</p>
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.residual_connection.Residual">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.residual_connection.</span></span><span class="sig-name descname"><span class="pre">Residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/residual_connection.html#Residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.residual_connection.Residual" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequential</span></code></p>
-<p>Residual connection.
-As nn.Sequential, receive modules but connect the output tensor to an input tensor.</p>
+<p>Residual connection module.</p>
+<p>This module extends nn.Sequential to implement a residual connection. The input tensor is added
+to the output tensor of the sequence of modules provided during initialization, similar to a
+residual block in ResNet architectures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*args</strong> (<em>nn.Module</em>) – Sequence of PyTorch modules to be applied to the input tensor.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.residual_connection.Residual.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/residual_connection.html#Residual.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.residual_connection.Residual.forward" title="Link to this definition">¶</a></dt>
-<dd><p>The ‘module’ is sequence of arguments provides in __init__.
-:param x: Input tensor
-:return: Sum of input tensor and output of sequence.</p>
+<dd><p>Applies the sequence of modules to the input tensor and returns the sum of the input tensor
+and the output tensor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/residual_connection.html#Residual.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the residual block.</p>
+<p>Applies the sequence of modules to the input tensor and returns the sum of the input tensor
+and the output tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sum of the input tensor and the output of the sequence of modules.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -288,7 +313,7 @@ followed by a selection mechanism to fuse the features.</p>
 </dl>
 <p class="rubric">References</p>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id4" role="doc-footnote">
+<aside class="footnote brackets" id="id5" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
 <p>Li, X., Wang, W., Hu, X., &amp; Yang, J. (2019). Selective kernel networks.
 In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (pp. 510-519).
