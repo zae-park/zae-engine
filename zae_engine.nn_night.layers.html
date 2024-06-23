@@ -105,30 +105,85 @@
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.dynamic_pool.</span></span><span class="sig-name descname"><span class="pre">DynOPool</span></span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<p><a class="reference external" href="https://arxiv.org/abs/2205.15254">https://arxiv.org/abs/2205.15254</a>
-.. todo:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">fill</span> <span class="n">description</span>
-<span class="o">-</span> <span class="n">add</span> <span class="n">test</span> <span class="n">case</span>
-<span class="o">-</span> <span class="n">optimize</span>
-</pre></div>
-</div>
+<p>Dynamic Pooling Layer using Gumbel Softmax trick for discrete pooling ratios.</p>
+<p>This layer dynamically adjusts the pooling ratio using a learnable parameter,
+allowing for adaptive pooling during training. The Gumbel Softmax trick is
+applied to ensure the ratio remains discrete.</p>
+<dl class="simple">
+<dt>Reference:</dt><dd><ul class="simple">
+<li><p>DynOPool: Dynamic Optimization Pooling, <a class="reference external" href="https://arxiv.org/abs/2205.15254">https://arxiv.org/abs/2205.15254</a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool.ratio">
+<span class="sig-name descname"><span class="pre">ratio</span></span><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.ratio" title="Link to this definition">¶</a></dt>
+<dd><p>Learnable parameter representing the pooling ratio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool.trick">
+<span class="sig-name descname"><span class="pre">trick</span></span><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.trick" title="Link to this definition">¶</a></dt>
+<dd><p>Function to apply the Gumbel Softmax trick.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>function</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool.bilinear_interpolation">
 <span class="sig-name descname"><span class="pre">bilinear_interpolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_dim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool.bilinear_interpolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.bilinear_interpolation" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Performs bilinear interpolation on the input tensor to the specified dimension.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dd><p>Forward pass for the DynOPool layer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">bilinear_interpolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_dim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool.bilinear_interpolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Perform bilinear interpolation on the input tensor to the specified dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, channels, depth).</p></li>
+<li><p><strong>to_dim</strong> (<em>torch.Tensor</em>) – Target dimension after interpolation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Interpolated tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for the DynOPool layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, channels, depth).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pooled tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -140,7 +195,7 @@ registered hooks while the latter silently ignores them.</p>
 <dt class="sig sig-object py" id="zae_engine.nn_night.layers.involution.Inv1d">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.involution.</span></span><span class="sig-name descname"><span class="pre">Inv1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/involution.html#Inv1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.involution.Inv1d" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<p>The involution layer for 1D input <a href="#id4"><span class="problematic" id="id1">[1]_</span></a>.</p>
+<p>The involution layer for 1D input <a href="#id5"><span class="problematic" id="id2">[1]_</span></a>.</p>
 <p>…
 :param ch: Number of channels in the input tensor (signal or 1D arr)
 :type ch: int
@@ -162,7 +217,7 @@ registered hooks while the latter silently ignores them.</p>
 </dl>
 <p class="rubric">References</p>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id2" role="doc-footnote">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
 <p>Li, Duo, et al.
 “Involution: Inverting the inherence of convolution for visual recognition.”
@@ -233,7 +288,7 @@ followed by a selection mechanism to fuse the features.</p>
 </dl>
 <p class="rubric">References</p>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id3" role="doc-footnote">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
 <p>Li, X., Wang, W., Hu, X., &amp; Yang, J. (2019). Selective kernel networks.
 In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (pp. 510-519).
