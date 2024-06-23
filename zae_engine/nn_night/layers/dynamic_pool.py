@@ -34,7 +34,7 @@ class DynOPool(nn.Module):
         super(DynOPool, self).__init__()
         self.ratio = nn.Parameter(torch.empty(1, dtype=torch.float32, requires_grad=True))
         nn.init.constant_(self.ratio, 1)
-        self.trick = _backward.GumbelRound.apply
+        self.trick = _gumbel_sotfmax.GumbelSoftMax.apply
 
     def bilinear_interpolation(self, x, to_dim):
         """
