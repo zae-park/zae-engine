@@ -51,6 +51,7 @@ codecov = "^2.1.13"
 [tool.poetry.group.web_log.dependencies]
 neptune = "^1.8.2"
 wandb = "^0.16.2"
+numpy = "~1"
 
 [tool.poetry.group.document.dependencies]
 sphinx = "^7.2.6"
