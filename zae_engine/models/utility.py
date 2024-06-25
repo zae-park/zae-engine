@@ -57,7 +57,7 @@ def initializer(m):
     For BatchNorm layer, weights are initialized following uniform distribution.
     For LayerNorm layer, weights are not initialized.
     For others, weights are initialized following kaiming method based on normal distribution.
-        (https://arxiv.org/abs/1502.01852v1)
+    (https://arxiv.org/abs/1502.01852v1)
 
     :param m:
         The member of model.
@@ -78,7 +78,7 @@ def transformer_option(m):
     """
     Used to protect the weight against the initializer.
     :param m:
-        The member of model.
+    The member of model.
     """
     m.option = True
 

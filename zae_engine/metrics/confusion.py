@@ -15,13 +15,38 @@ def confusion_matrix(
     y_hat: Union[np.ndarray, torch.Tensor], y_true: Union[np.ndarray, torch.Tensor], num_classes: int
 ) -> torch.Tensor:
     """
-    Compute confusion matrix.
-    Both the y_true and y_hat have data type as integer, and match in shape.
+    Compute the confusion matrix for classification predictions.
 
-    :param y_true: Union[np.nd-array, torch.Tensor]
-    :param y_hat: Union[np.nd-array, torch.Tensor]
-    :param num_classes: int
-    :return: confusion matrix with 2-D nd-array.
+    This function calculates the confusion matrix, comparing the predicted labels (y_hat) with the true labels (y_true).
+
+    Parameters
+    ----------
+    y_hat : Union[np.ndarray, torch.Tensor]
+        The predicted labels, either as a numpy array or a torch tensor.
+    y_true : Union[np.ndarray, torch.Tensor]
+        The true labels, either as a numpy array or a torch tensor.
+    num_classes : int
+        The number of classes in the classification task.
+
+    Returns
+    -------
+    torch.Tensor
+        The confusion matrix as a 2-D tensor of shape (num_classes, num_classes).
+
+    Examples
+    --------
+    >>> y_true = np.array([0, 1, 2, 2, 1])
+    >>> y_hat = np.array([0, 2, 2, 2, 0])
+    >>> confusion_matrix(y_hat, y_true, 3)
+    tensor([[1., 0., 0.],
+            [1., 0., 0.],
+            [0., 1., 2.]])
+    >>> y_true = torch.tensor([0, 1, 2, 2, 1])
+    >>> y_hat = torch.tensor([0, 2, 2, 2, 0])
+    >>> confusion_matrix(y_hat, y_true, 3)
+    tensor([[1., 0., 0.],
+            [1., 0., 0.],
+            [0., 1., 2.]])
     """
     canvas = torch.zeros((num_classes, num_classes))
 
@@ -39,15 +64,31 @@ def print_confusion_matrix(
     frame: Optional[bool] = True,
 ):
     """
-    Printing given confusion matrix.
-    Printing width is customizable with cell_width, but height is not.
-    The names of rows and columns are customizable with class_name.
-    Note that the length of class_name must be matched with the length of the confusion matrix.
-    :param conf_mat: np.nd-array or torch.Tensor
-    :param cell_width: int, optional
-    :param class_name: Union[List[str], Tuple[str]], optional
-    :param frame: bool, optional
-    :return:
+    Print the confusion matrix in a formatted table.
+
+    This function prints the given confusion matrix using the rich library for better visualization. The cell width and class names are customizable.
+
+    Parameters
+    ----------
+    conf_mat : Union[np.ndarray, torch.Tensor]
+        The confusion matrix, either as a numpy array or a torch tensor.
+    cell_width : Optional[int], default=4
+        The width of each cell in the printed table.
+    class_name : Union[List[str], Tuple[str]], optional
+        The names of the classes. If provided, must match the number of classes in the confusion matrix.
+    frame : Optional[bool], default=True
+        Whether to include a frame around the table.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> conf_mat = np.array([[5, 2], [1, 3]])
+    >>> print_confusion_matrix(conf_mat, class_name=['Class 0', 'Class 1'])
+    >>> conf_mat = torch.tensor([[5, 2], [1, 3]])
+    >>> print_confusion_matrix(conf_mat, class_name=['Class 0', 'Class 1'])
     """
     box_frame = box.SIMPLE if frame else None
 

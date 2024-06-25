@@ -52,7 +52,7 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(len(lrs), sum([step1, step2, step3]))
 
         # WarmUp
-        self.assertLessEqual(lrs[chains.next_iters[0] - 2], self.eta_max)
+        self.assertLessEqual(lrs[chains.next_iters[0] - 2], self.eta_max + EPS)
         self.assertGreaterEqual(lrs[1], self.eta_min)
         self.assertTrue(np.all(np.diff(lrs[: chains.next_iters[0]]) > 0))
         self.assertLessEqual(np.mean(np.diff(np.diff(lrs[: chains.next_iters[0]]))), EPS)

@@ -1,50 +1,107 @@
 import os
 import time
+
+import nibabel.arrayproxy
 from PIL import Image
 import urllib.request
 from typing import Union, Tuple
+from io import BytesIO
 
 import wfdb
 import numpy as np
 import nibabel as nib
 from nibabel.testing import data_path
 
-
 IMAGE_FORMAT = ["png", "jpg", "jpeg", "til"]
 
 
 def image_from_url(url: str, save_dst: str = None) -> Union[None, Image.Image]:
+    """
+    Download an image from a URL and optionally save it to a specified path.
 
-    save_mode = False if save_dst is None else True
+    This function downloads an image from the provided URL. If a save destination is provided, the image is saved
+    to the specified path. If no save destination is provided, the image is temporarily saved, opened, and returned
+    as a PIL Image object.
 
-    if save_dst is None:
-        save_dst = os.path.join(os.getcwd(), str(time.time()).replace(".", "") + ".png")
-    else:
-        if ext := os.path.splitext(save_dst)[-1] not in IMAGE_FORMAT:
+    Parameters
+    ----------
+    url : str
+        The URL of the image to be downloaded.
+    save_dst : str, optional
+        The file path where the image should be saved. If not provided, the image is temporarily saved and returned as a PIL Image object.
+
+    Returns
+    -------
+    None or Image.Image
+        If `save_dst` is provided, the function returns None after saving the image.
+        If `save_dst` is not provided, the function returns the image as a PIL Image object.
+
+    Raises
+    ------
+    AssertionError
+        If the file extension of `save_dst` is not one of the supported formats: 'png', 'jpg', 'jpeg', 'tif'.
+
+    Notes
+    -----
+    The supported image formats are defined in the `IMAGE_FORMAT` list.
+
+    Examples
+    --------
+    Download and save an image:
+    >>> image_from_url('https://example.com/image.png', 'downloaded_image.png')
+
+    Download an image and return it as a PIL Image object:
+    >>> img = image_from_url('https://example.com/image.png')
+    >>> img.show()
+
+    """
+
+    if save_dst is not None:
+        # Saving mode
+        if ext := os.path.splitext(save_dst)[-1][1:].lower() not in IMAGE_FORMAT:
             raise AssertionError(f'Invalid extension. Expect one of {IMAGE_FORMAT}, but receive "{ext}".')
-    urllib.request.urlretrieve(url, save_dst)
-    if save_mode:
-        return
+        urllib.request.urlretrieve(url, save_dst)
+        return None
     else:
-        img = Image.open(save_dst)
-        os.remove(save_dst)
-        return img
+        # Return Image without saving.
+        with urllib.request.urlopen(url) as response:
+            img_data = response.read()
+        return Image.open(BytesIO(img_data))
 
 
 def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
     """
-    Load 10 second ecg recording & annotation from example data with sampling frequency 250Hz.
-    The example data from LUDB(https://www.physionet.org/content/ludb/1.0.1/).
-    The '*.zea' file includes QRS complex information.
-    If argument 'beat_idx' is None(default), return the 10 second recording and label sequence.
-    If not, return the recording, r-peak index, and beat type for beat_idx'th beat.
-    :param beat_idx: int, optional
-        The index of beat in data.
-        Note that the value cannot be more than maximum index of beats in data (12).
-        If this parameter is not specified, run for 10 second data.
-    :return:
-        If beat_idx was given, return recording, r-peak index, and beat type for beat_idx'th beat.
-        If not, return recording, label sequence for 10 sec data.
+    Load a 10-second ECG recording and annotation from LUDB dataset [1], which has a sampling frequency of 250Hz.
+
+    The '*.zae' file in package contains QRS complex information from raw data[1] and beat locations via algorithm.
+    If the argument 'beat_idx' is None (default), the function returns the 10-second recording and label sequence.
+    If 'beat_idx' is specified, the function returns the segment of the recording, the location, and the symbol of beat.
+
+    Parameters
+    ----------
+    beat_idx : int, optional
+        The index of the beat in the data.
+        The value cannot be greater than the maximum index of beats in the data (12).
+        If this parameter is not specified, the function returns the 10-second data.
+
+    Returns
+    -------
+    signal : np.ndarray
+        The 10-second ECG recording.
+        If 'beat_idx' is specified, this is the segment of the recording around the specified beat.
+    label : np.ndarray or int
+        If 'beat_idx' is None, this is the label sequence for the 10-second data.
+        If 'beat_idx' is specified, this is the type of the specified beat.
+    loc : None or int
+        The location of the specified beat if 'beat_idx' is specified.
+        Otherwise, this is None.
+
+    References
+    ----------
+    .. [1]  Kalyakulina, A., Yusipov, I., Moskalenko, V., et al.
+            Lobachevsky University Electrocardiography Database (version 1.0.0). PhysioNet. (2020).
+            https://doi.org/10.13026/qweb-sr17.
+
     """
     lookup = {"N": 1, "A": 2}
 
@@ -76,7 +133,44 @@ def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
         return qrs_chunk, qrs_loc, sym
 
 
-def example_mri() -> np.ndarray:
+def example_mri() -> nibabel.arrayproxy.ArrayProxy:
+    """
+    Load a 4D MRI scan .
+
+    This function loads an MRI scan stored in a NIfTI file ('.nii.gz') and returns the image data as an ArrayProxy object.
+    The MRI scan is expected to be a 4-dimensional array.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    nibabel.arrayproxy.ArrayProxy
+        The 4-dimensional MRI scan data as an ArrayProxy object. The dimensions represent:
+        - Frequency encoding
+        - Phase encoding
+        - Slice
+        - Complex component (real and imaginary)
+
+    Notes
+    -----
+    This function assumes that the file 'example4d.nii.gz' exists in the 'data_path' directory provided by nibabel's testing module.
+    The NIfTI file format is commonly used for storing MRI data, and this function uses the nibabel library to read it.
+    If the 'get_fdata' method is available in the loaded object, the function returns the image data directly from
+    the data object.
+
+    Examples
+    --------
+    >>> mri_data = example_mri()
+    >>> print(mri_data.shape)
+    (128, 96, 24, 2)  # Example output, actual dimensions may vary
+
+    References
+    ----------
+    The NIfTI file format: https://nifti.nimh.nih.gov/nifti-1
+    The nibabel library documentation: https://nipy.org/nibabel/
+    """
     example_path = os.path.join(data_path, "example4d.nii.gz")
     proxy = nib.load(example_path)
     if "get_fdata" in proxy.__dir__():

@@ -11,18 +11,95 @@ EPS = torch.finfo(torch.float32).eps
 
 
 def rms(signal: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
-    return (signal ** 2).mean() ** 0.5
+    """
+    Compute the root mean square (RMS) of a signal.
+
+    This function calculates the RMS value of the input signal, which is a measure of the magnitude of the signal.
+
+    Parameters
+    ----------
+    signal : Union[np.ndarray, torch.Tensor]
+        The input signal, either as a numpy array or a torch tensor.
+
+    Returns
+    -------
+    Union[np.ndarray, torch.Tensor]
+        The RMS value of the signal, with the same type as the input.
+
+    Examples
+    --------
+    >>> signal = np.array([1, 2, 3, 4, 5])
+    >>> rms(signal)
+    3.3166247903554
+    >>> signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
+    >>> rms(signal)
+    tensor(3.3166)
+    """
+    return (signal**2).mean() ** 0.5
 
 
 @deco.np2torch(torch.float)
-def mse(signal1: Union[np.ndarray, torch.Tensor], signal2:Union[np.ndarray, torch.Tensor]):
+def mse(signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, torch.Tensor]):
+    """
+    Compute the mean squared error (MSE) between two signals.
+
+    This function calculates the MSE between two input signals, which is a measure of the average squared difference between the signals.
+
+    Parameters
+    ----------
+    signal1 : Union[np.ndarray, torch.Tensor]
+        The first input signal, either as a numpy array or a torch tensor.
+    signal2 : Union[np.ndarray, torch.Tensor]
+        The second input signal, either as a numpy array or a torch tensor.
+
+    Returns
+    -------
+    torch.Tensor
+        The MSE value as a torch tensor.
+
+    Examples
+    --------
+    >>> signal1 = np.array([1, 2, 3, 4, 5])
+    >>> signal2 = np.array([1, 2, 3, 4, 6])
+    >>> mse(signal1, signal2)
+    tensor(0.2000)
+    >>> signal1 = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
+    >>> signal2 = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float)
+    >>> mse(signal1, signal2)
+    tensor(0.2000)
+    """
     return ((signal1 - signal2) ** 2).mean()
 
 
 @deco.np2torch(torch.float)
 def signal_to_noise(signal: Union[torch.Tensor | np.ndarray], noise: Union[torch.Tensor | np.ndarray]):
     """
-    Compute signal-to-noise ratio.
+    Compute the signal-to-noise ratio (SNR).
+
+    This function calculates the SNR, which is a measure of the ratio of the power of a signal to the power of background noise.
+
+    Parameters
+    ----------
+    signal : Union[torch.Tensor, np.ndarray]
+        The input signal, either as a torch tensor or a numpy array.
+    noise : Union[torch.Tensor, np.ndarray]
+        The noise signal, either as a torch tensor or a numpy array.
+
+    Returns
+    -------
+    torch.Tensor
+        The SNR value in decibels (dB) as a torch tensor.
+
+    Examples
+    --------
+    >>> signal = np.array([1, 2, 3, 4, 5])
+    >>> noise = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
+    >>> signal_to_noise(signal, noise)
+    tensor(20.0000)
+    >>> signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
+    >>> noise = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float)
+    >>> signal_to_noise(signal, noise)
+    tensor(20.0000)
     """
     signal_eff, noise_eff = rms(signal=signal), rms(signal=noise)
     db = 20 * torch.log10(signal_eff / (noise_eff + EPS))
@@ -33,8 +110,37 @@ def signal_to_noise(signal: Union[torch.Tensor | np.ndarray], noise: Union[torch
 @deco.np2torch(torch.float)
 def peak_signal_to_noise(signal, noise, peak: Union[bool | int | float] = False):
     """
-    Compute peak-signal-to-noise ratio.
-    If peak is not given, use maximum value is signal instead.
+    Compute the peak signal-to-noise ratio (PSNR).
+
+    This function calculates the PSNR, which is a measure of the ratio of the peak signal power to the power of background noise.
+    If peak is not given, the maximum value in the signal is used as the peak value.
+
+    Parameters
+    ----------
+    signal : Union[torch.Tensor, np.ndarray]
+        The input signal, either as a torch tensor or a numpy array.
+    noise : Union[torch.Tensor, np.ndarray]
+        The noise signal, either as a torch tensor or a numpy array.
+    peak : Union[bool, int, float], optional
+        The peak value to be used in the calculation. If not provided, the maximum value in the signal is used.
+
+    Returns
+    -------
+    torch.Tensor
+        The PSNR value in decibels (dB) as a torch tensor.
+
+    Examples
+    --------
+    >>> signal = np.array([1, 2, 3, 4, 5])
+    >>> noise = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
+    >>> peak_signal_to_noise(signal, noise)
+    tensor(24.0824)
+    >>> signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
+    >>> noise = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float)
+    >>> peak_signal_to_noise(signal, noise)
+    tensor(24.0824)
+    >>> peak_signal_to_noise(signal, noise, peak=5)
+    tensor(24.0824)
     """
     if not peak:
         peak = signal.max()

@@ -7,6 +7,26 @@ import torch.nn as nn
 
 
 class MorphologicalLayer(nn.Module):
+    """
+    Morphological operation layer for 1D tensors.
+
+    This layer applies a series of morphological operations such as dilation
+    and erosion on the input tensor.
+
+    Parameters
+    ----------
+    ops : str
+        A string where each character represents an operation: 'c' for closing
+        (dilation followed by erosion) and 'o' for opening (erosion followed by dilation).
+    window_size : List[int]
+        A list of window sizes for each operation in `ops`.
+
+    Attributes
+    ----------
+    post : nn.Sequential
+        The sequence of morphological operations.
+    """
+
     def __init__(self, ops: str, window_size: List[int]):
         super(MorphologicalLayer, self).__init__()
         try:
@@ -27,6 +47,19 @@ class MorphologicalLayer(nn.Module):
                 self.conv.weight.data = kernel
 
             def forward(self, x):
+                """
+                Apply morphological operations to the input tensor.
+
+                Parameters
+                ----------
+                x : torch.Tensor
+                    The input tensor.
+
+                Returns
+                -------
+                torch.Tensor
+                    The tensor after morphological operations.
+                """
                 x = self.conv(x)
                 if self.morph_type == "erosion":
                     return torch.min(x, 1)[0].unsqueeze(1)
@@ -57,28 +90,29 @@ def label_to_onoff(
     labels: Union[np.ndarray, torch.Tensor], sense: int = 2, middle_only: bool = False, outside_idx: Optional = True
 ) -> list:
     """
-    Convert label sequence to onoff array.
-    Receive the label(sequence of annotation for each point), return the on-off array.
-    On-off array consists of [on, off, class] for exist beats. If there is no beat, return [].
+    Convert label sequence to on-off array.
 
-    Input args:
-        label: np.nd-array
-                Sequence of annotation for each point
-                Expected shape is [N, points] or [points] where N is number of data.
-        sense: int
-                The sensitivity value.
-                Ignore beat if the (off - on) is less than sensitivity value.
-        middle_only: bool
-                Ignore both the left-most & right-most beats.
-        outside_idx: int or float(nan)
-                Outside index (default is np.nan).
-                Fill on (or off) if beat is incomplete. only use for left-most or right-most.
-                If middle_only is False, outside_idx is not used.
+    This function receives the label sequence and returns an on-off array.
+    The on-off array consists of [on, off, label] for every existing upper-step and lower-step.
+    If there is no label changing and only single label is in input, it returns an empty list.
 
-    Output args:
-        Beat info matrix:
-                Shape of matrix is (N, # of beats, 3) or (# of beats, 3) where N is number of data.
-                Length of last dimension is 3 consists of [on, off, cls].
+    Parameters
+    ----------
+    labels : Union[np.ndarray, torch.Tensor]
+        Sequence of annotation for each point. Expected shape is [N, points] or [points] where N is number of data.
+    sense : int
+        The sensitivity value. Ignore on-off if the (off - on) is less than sensitivity value.
+    middle_only : bool
+        Ignore both the left-most & right-most on-off.
+    outside_idx : Optional[int or float]
+        Outside index (default is np.nan). Fill on (or off) if beat is incomplete. Only use for left-most or right-most.
+        If middle_only is False, outside_idx is not used.
+
+    Returns
+    -------
+    list
+        On-off matrix: Shape of matrix is (N, # of on-offs, 3) or (# of on-offs, 3) where N is number of data.
+        Length of last dimension is 3 and consists of [on, off, label].
     """
     SINGLE = False
     if isinstance(labels, torch.Tensor):
@@ -129,13 +163,23 @@ def label_to_onoff(
 
 def onoff_to_label(onoff: Union[np.ndarray, torch.Tensor], length: int = 2500) -> np.ndarray:
     """
-    Return label sequence using onoff(arg #1).
-    Receive the label(sequence of annotation for each point), return the on-off array.
-    On-off array consists of [on, off, class] for exist beats. If there is no beat, return [].
+    Convert on-off array to label sequence.
 
-    :param onoff: np.nd-array. Array of on-off. Expected shape is [N, [on, off, cls]] where N is number of beats.
-    :param length: int. Length of label sequence. This value should be larger than maximum of onoff.
-    :return: label
+    This function receives an on-off array and returns the label sequence.
+    The on-off array consists of [on, off, label] for existing on-off pairs.
+    If there is no beat, it returns an empty array.
+
+    Parameters
+    ----------
+    onoff : Union[np.ndarray, torch.Tensor]
+        Array of on-off. Expected shape is [N, [on, off, cls]] where N is number of on-off pairs.
+    length : int
+        Length of label sequence. This value should be larger than maximum of onoff.
+
+    Returns
+    -------
+    np.ndarray
+        The label sequence.
     """
     if isinstance(onoff, torch.Tensor):
         onoff = onoff.detach().numpy()
@@ -161,10 +205,19 @@ def onoff_to_label(onoff: Union[np.ndarray, torch.Tensor], length: int = 2500) -
 
 def find_nearest(arr: Union[np.ndarray, torch.Tensor], value: int):
     """
-    Find the nearest value and its index.
-    :param arr: 1d-array.
-    :param value: reference value.
-    :return: index of nearest, value of nearest
+    Find the nearest value and its index in the array.
+
+    Parameters
+    ----------
+    arr : Union[np.ndarray, torch.Tensor]
+        The input array.
+    value : int
+        The reference value.
+
+    Returns
+    -------
+    Tuple[int, int]
+        The index and value of the nearest element.
     """
     if isinstance(arr, torch.Tensor):
         arr = arr.numpy()

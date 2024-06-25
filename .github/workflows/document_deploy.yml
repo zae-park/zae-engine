@@ -1,0 +1,123 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - chore
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - dev
+      - chore
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Install poetry
+        run: |
+          python3 -m pip install --upgrade pip
+          curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="$HOME/.local/bin:$PATH"  # 실행 파일이 설치된 경로를 PATH에 추가
+          poetry --version  # 설치된 poetry 버전 확인
+
+      - name: Install project dependencies
+        run: |
+          poetry install --no-root
+
+      - name: Install Sphinx on Ubuntu
+        run: |
+          sudo apt-get install python3-sphinx
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx-rtd-theme
+
+      - name: Build documentation
+        run: |
+          poetry run sphinx-apidoc -o docs/source/ ./zae_engine
+          cd docs
+          poetry run make html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.PAT_GITHUB }}
+          publish_branch: docs
+          publish_dir: docs/build/html
+
+
+#name: Docs
+#
+#on:
+#  push:
+#    branches: [main, dev]
+#  pull_request:
+#    branches: [main, dev]
+#
+#
+#jobs:
+#  html_build:
+#    name: "Build docs"
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: write
+#      id-token: write
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#
+#      - name: Set up Python
+#        uses: actions/setup-python@v4
+#        with:
+#          python-version: "3.10"
+#
+#      - name: Create requirements
+#        run: |
+#          echo "sphinx_rtd_theme" >> ./docs/requirements.txt
+#          echo "sphinxcontrib-napoleon" >> ./docs/requirements.txt
+#          echo ./docs/requirements.txt
+#          echo ${{ github.ref }}
+#          echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+#
+#      - name: Install Packages & Build HTML
+##        uses: ammaraskar/sphinx-action@master
+#        uses: tbarbette/sphinx-action@master
+#        with:
+#          docs-folder: "docs"
+#
+#      - name: Build napoleon
+#        run : |
+#          sudo apt-get install python3-sphinx
+#          sphinx-apidoc -f -o docs/source docs/build
+#
+#      - name: Upload artifacts
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: html-docs
+#          path: docs/build/html/
+#
+#      - name: Deploy
+#        uses: peaceiris/actions-gh-pages@v3
+#        if:
+#          contains('
+#          refs/heads/main
+#          refs/heads/dev
+#          ',
+#          github.ref)
+#        with:
+#          github_token: ${{ secrets.PAT_GITHUB }}
+#          publish_branch: docs
+#          publish_dir: docs/build/html
+#

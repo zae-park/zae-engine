@@ -13,6 +13,34 @@ def accuracy(
     true: Union[np.ndarray, torch.Tensor],
     predict: Union[np.ndarray, torch.Tensor],
 ):
+    """
+    Compute the accuracy of predictions.
+
+    This function compares the true labels with the predicted labels and calculates the accuracy.
+
+    Parameters
+    ----------
+    true : Union[np.ndarray, torch.Tensor]
+        The true labels, either as a numpy array or a torch tensor. Shape should be [-1, dim].
+    predict : Union[np.ndarray, torch.Tensor]
+        The predicted labels, either as a numpy array or a torch tensor. Shape should be [-1, dim].
+
+    Returns
+    -------
+    torch.Tensor
+        The accuracy of the predictions as a torch tensor.
+
+    Examples
+    --------
+    >>> true = np.array([1, 2, 3, 4])
+    >>> predict = np.array([1, 2, 2, 4])
+    >>> accuracy(true, predict)
+    tensor(0.7500)
+    >>> true = torch.tensor([1, 2, 3, 4])
+    >>> predict = torch.tensor([1, 2, 2, 4])
+    >>> accuracy(true, predict)
+    tensor(0.7500)
+    """
     correct = torch.eq(true, predict)
     return sum(correct) / len(correct)
 
@@ -20,25 +48,45 @@ def accuracy(
 @deco.np2torch(dtype=torch.int)
 @deco.shape_check(2)
 def f_beta(
-        pred: np.ndarray | torch.Tensor,
-        true: np.ndarray | torch.Tensor,
-        beta: float,
-        num_classes: int,
-        average: str = "micro"
+    pred: np.ndarray | torch.Tensor,
+    true: np.ndarray | torch.Tensor,
+    beta: float,
+    num_classes: int,
+    average: str = "micro",
 ):
     """
-    Compute f-beta score using given confusion matrix (args#1 with asterisk).
-    If the first argument is a tuple of length 2, i.e. true and prediction, then compute confusion matrix first.
-    Support two average methods to calculate precision or recall, i.e. micro- and macro-.
+    Compute the F-beta score.
 
-    :param pred:
-    :param true:
-        For compute confusion matrix
-    :param beta: float
-    :param num_classes: int
-    :param average: str
-        If 'micro', precision and recall are derived using TP and FP for all classes.
-        If 'macro', precision and recall are derived using precision and recall for each class.
+    This function calculates the F-beta score for the given predictions and true labels, supporting both micro and macro averaging.
+
+    Parameters
+    ----------
+    pred : Union[np.ndarray, torch.Tensor]
+        The predicted labels, either as a numpy array or a torch tensor.
+    true : Union[np.ndarray, torch.Tensor]
+        The true labels, either as a numpy array or a torch tensor.
+    beta : float
+        The beta value for the F-beta score calculation.
+    num_classes : int
+        The number of classes in the classification task.
+    average : str
+        The averaging method for the F-beta score calculation. Either 'micro' or 'macro'.
+
+    Returns
+    -------
+    torch.Tensor
+        The F-beta score as a torch tensor.
+
+    Examples
+    --------
+    >>> pred = np.array([1, 2, 3, 4])
+    >>> true = np.array([1, 2, 2, 4])
+    >>> f_beta(pred, true, beta=1.0, num_classes=5, average='micro')
+    tensor(0.8000)
+    >>> pred = torch.tensor([1, 2, 3, 4])
+    >>> true = torch.tensor([1, 2, 2, 4])
+    >>> f_beta(pred, true, beta=1.0, num_classes=5, average='micro')
+    tensor(0.8000)
     """
 
     conf = confusion.confusion_matrix(pred, true, num_classes=num_classes)
@@ -48,17 +96,34 @@ def f_beta(
 @deco.np2torch(dtype=torch.int)
 def f_beta_from_mat(conf_mat: np.ndarray | torch.Tensor, beta: float, num_classes: int, average: str = "micro"):
     """
-    Compute f-beta score using given confusion matrix (args#1 with asterisk).
-    If the first argument is a tuple of length 2, i.e. true and prediction, then compute confusion matrix first.
-    Support two average methods to calculate precision or recall, i.e. micro- and macro-.
+    Compute the F-beta score from a given confusion matrix.
 
-    :param conf_mat:
-        Confusion matrix
-    :param beta: float
-    :param num_classes: int
-    :param average: str
-        If 'micro', precision and recall are derived using TP and FP for all classes.
-        If 'macro', precision and recall are derived using precision and recall for each class.
+    This function calculates the F-beta score using the provided confusion matrix, supporting both micro and macro averaging.
+
+    Parameters
+    ----------
+    conf_mat : Union[np.ndarray, torch.Tensor]
+        The confusion matrix, either as a numpy array or a torch tensor.
+    beta : float
+        The beta value for the F-beta score calculation.
+    num_classes : int
+        The number of classes in the classification task.
+    average : str
+        The averaging method for the F-beta score calculation. Either 'micro' or 'macro'.
+
+    Returns
+    -------
+    torch.Tensor
+        The F-beta score as a torch tensor.
+
+    Examples
+    --------
+    >>> conf_mat = np.array([[5, 2], [1, 3]])
+    >>> f_beta_from_mat(conf_mat, beta=1.0, num_classes=2, average='micro')
+    tensor(0.7273)
+    >>> conf_mat = torch.tensor([[5, 2], [1, 3]])
+    >>> f_beta_from_mat(conf_mat, beta=1.0, num_classes=2, average='micro')
+    tensor(0.7273)
     """
 
     tp_set = conf_mat.diagonal()

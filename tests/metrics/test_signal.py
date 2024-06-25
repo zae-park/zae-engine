@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from zae_engine.metrics.signal import rms, mse, signal_to_noise, peak_signal_to_noise
+from zae_engine.metrics.signals import rms, mse, signal_to_noise, peak_signal_to_noise
 
 
 class TestSignal(unittest.TestCase):
