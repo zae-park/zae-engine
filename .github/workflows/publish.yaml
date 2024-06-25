@@ -58,4 +58,5 @@ jobs:
         if: steps.version_check.outputs.version_changed == 'true'
         run: |
           poetry build
-          poetry publish -u __token__ -p ${{ secrets.PYPI_TOKEN }}
+          poetry config http-basic.pypi __token__ ${{ secrets.PYPI_TOKEN }}
+          poetry publish
