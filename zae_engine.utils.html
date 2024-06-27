@@ -59,7 +59,7 @@
 <li class="toctree-l4 current"><a class="current reference internal" href="#">zae_engine.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-zae_engine">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="zae_engine.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -97,202 +97,14 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.utils.deco">
-<span id="zae-engine-utils-deco-module"></span><h2>zae_engine.utils.deco module<a class="headerlink" href="#module-zae_engine.utils.deco" title="Link to this heading">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.utils.deco.np2torch">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.deco.</span></span><span class="sig-name descname"><span class="pre">np2torch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtype</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/utils/deco.html#np2torch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.deco.np2torch" title="Link to this definition">¶</a></dt>
-<dd><p>Convert numpy arrays to torch tensors with a specified dtype.</p>
-<p>This decorator converts all numpy array arguments of a function to torch tensors with the specified dtype.
-If an argument is already a torch tensor, it is not converted.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>dtype</strong> (<em>torch.dtype</em>) – The desired dtype for the torch tensors.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The decorated function with numpy array arguments converted to torch tensors.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>func</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">def</span> <span class="nf">example_func</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">example_func</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]))</span>  <span class="c1"># This will be converted to a torch tensor.</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.utils.deco.shape_check">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.deco.</span></span><span class="sig-name descname"><span class="pre">shape_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/utils/deco.html#shape_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.deco.shape_check" title="Link to this definition">¶</a></dt>
-<dd><p>Ensure that the shapes of specified arguments are the same.</p>
-<p>This decorator checks that the shapes of the specified arguments (either positional or keyword arguments) are the same.
-If the shapes do not match, an AssertionError is raised.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>keys</strong> (<em>int</em><em> or </em><em>str</em>) – If a single integer is provided, it checks the shapes of the first ‘keys’ positional arguments.
-If multiple strings are provided, it checks the shapes of the corresponding keyword arguments.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The decorated function with shape checks on the specified arguments.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>func</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">def</span> <span class="nf">example_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nd">@shape_check</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">def</span> <span class="nf">example_func</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.utils.deco.tictoc">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.deco.</span></span><span class="sig-name descname"><span class="pre">tictoc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/utils/deco.html#tictoc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.deco.tictoc" title="Link to this definition">¶</a></dt>
-<dd><p>Measure and print the elapsed time of a function execution.</p>
-<p>This decorator measures the time it takes to execute the decorated function and prints the elapsed time in seconds.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>function</em>) – The function to be timed.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The decorated function with timing functionality.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>func</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@tictoc</span>
-<span class="gp">... </span><span class="k">def</span> <span class="nf">example_func</span><span class="p">():</span>
-<span class="gp">... </span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">example_func</span><span class="p">()</span>  <span class="c1"># This will print the elapsed time.</span>
-</pre></div>
-</div>
-</dd></dl>
-
+<section id="zae-engine-utils-deco-module">
+<h2>zae_engine.utils.deco module<a class="headerlink" href="#zae-engine-utils-deco-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.utils.io">
-<span id="zae-engine-utils-io-module"></span><h2>zae_engine.utils.io module<a class="headerlink" href="#module-zae_engine.utils.io" title="Link to this heading">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.utils.io.example_ecg">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.io.</span></span><span class="sig-name descname"><span class="pre">example_ecg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beat_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/utils/io.html#example_ecg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.io.example_ecg" title="Link to this definition">¶</a></dt>
-<dd><p>Load a 10-second ECG recording and annotation from LUDB dataset [1], which has a sampling frequency of 250Hz.</p>
-<p>The ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.zae’ file in package contains QRS complex information from raw data[1] and beat locations via algorithm.
-If the argument ‘beat_idx’ is None (default), the function returns the 10-second recording and label sequence.
-If ‘beat_idx’ is specified, the function returns the segment of the recording, the location, and the symbol of beat.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>beat_idx</strong> (<em>int</em><em>, </em><em>optional</em>) – The index of the beat in the data.
-The value cannot be greater than the maximum index of beats in the data (12).
-If this parameter is not specified, the function returns the 10-second data.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>signal</strong> (<em>np.ndarray</em>) – The 10-second ECG recording.
-If ‘beat_idx’ is specified, this is the segment of the recording around the specified beat.</p></li>
-<li><p><strong>label</strong> (<em>np.ndarray or int</em>) – If ‘beat_idx’ is None, this is the label sequence for the 10-second data.
-If ‘beat_idx’ is specified, this is the type of the specified beat.</p></li>
-<li><p><strong>loc</strong> (<em>None or int</em>) – The location of the specified beat if ‘beat_idx’ is specified.
-Otherwise, this is None.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-<p class="rubric">References</p>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id3" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
-<p>Kalyakulina, A., Yusipov, I., Moskalenko, V., et al.
-Lobachevsky University Electrocardiography Database (version 1.0.0). PhysioNet. (2020).
-<a class="reference external" href="https://doi.org/10.13026/qweb-sr17">https://doi.org/10.13026/qweb-sr17</a>.</p>
-</aside>
-</aside>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.utils.io.example_mri">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.io.</span></span><span class="sig-name descname"><span class="pre">example_mri</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrayProxy</span></span></span><a class="reference internal" href="_modules/zae_engine/utils/io.html#example_mri"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.io.example_mri" title="Link to this definition">¶</a></dt>
-<dd><p>Load a 4D MRI scan .</p>
-<p>This function loads an MRI scan stored in a NIfTI file (‘.nii.gz’) and returns the image data as an ArrayProxy object.
-The MRI scan is expected to be a 4-dimensional array.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>None</strong></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The 4-dimensional MRI scan data as an ArrayProxy object. The dimensions represent:
-- Frequency encoding
-- Phase encoding
-- Slice
-- Complex component (real and imaginary)</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>nibabel.arrayproxy.ArrayProxy</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>This function assumes that the file ‘example4d.nii.gz’ exists in the ‘data_path’ directory provided by nibabel’s testing module.
-The NIfTI file format is commonly used for storing MRI data, and this function uses the nibabel library to read it.
-If the ‘get_fdata’ method is available in the loaded object, the function returns the image data directly from
-the data object.</p>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mri_data</span> <span class="o">=</span> <span class="n">example_mri</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">mri_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="go">(128, 96, 24, 2)  # Example output, actual dimensions may vary</span>
-</pre></div>
-</div>
-<p class="rubric">References</p>
-<p>The NIfTI file format: <a class="reference external" href="https://nifti.nimh.nih.gov/nifti-1">https://nifti.nimh.nih.gov/nifti-1</a>
-The nibabel library documentation: <a class="reference external" href="https://nipy.org/nibabel/">https://nipy.org/nibabel/</a></p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.utils.io.image_from_url">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.utils.io.</span></span><span class="sig-name descname"><span class="pre">image_from_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dst</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Image</span></span></span><a class="reference internal" href="_modules/zae_engine/utils/io.html#image_from_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.utils.io.image_from_url" title="Link to this definition">¶</a></dt>
-<dd><p>Download an image from a URL and optionally save it to a specified path.</p>
-<p>This function downloads an image from the provided URL. If a save destination is provided, the image is saved
-to the specified path. If no save destination is provided, the image is temporarily saved, opened, and returned
-as a PIL Image object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>url</strong> (<em>str</em>) – The URL of the image to be downloaded.</p></li>
-<li><p><strong>save_dst</strong> (<em>str</em><em>, </em><em>optional</em>) – The file path where the image should be saved. If not provided, the image is temporarily saved and returned as a PIL Image object.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>If <cite>save_dst</cite> is provided, the function returns None after saving the image.
-If <cite>save_dst</cite> is not provided, the function returns the image as a PIL Image object.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None or Image.Image</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>AssertionError</strong> – If the file extension of <cite>save_dst</cite> is not one of the supported formats: ‘png’, ‘jpg’, ‘jpeg’, ‘tif’.</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>The supported image formats are defined in the <cite>IMAGE_FORMAT</cite> list.</p>
-<p class="rubric">Examples</p>
-<p>Download and save an image:
-&gt;&gt;&gt; image_from_url(’<a class="reference external" href="https://example.com/image.png">https://example.com/image.png</a>’, ‘downloaded_image.png’)</p>
-<p>Download an image and return it as a PIL Image object:
-&gt;&gt;&gt; img = image_from_url(’<a class="reference external" href="https://example.com/image.png">https://example.com/image.png</a>’)
-&gt;&gt;&gt; img.show()</p>
-</dd></dl>
-
+<section id="zae-engine-utils-io-module">
+<h2>zae_engine.utils.io module<a class="headerlink" href="#zae-engine-utils-io-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.utils">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.utils" title="Link to this heading">¶</a></h2>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 </section>
 </section>
 
