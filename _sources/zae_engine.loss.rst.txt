@@ -4,6 +4,14 @@ zae\_engine.loss package
 Submodules
 ----------
 
+zae\_engine.loss.angular module
+-------------------------------
+
+.. automodule:: zae_engine.loss.angular
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 zae\_engine.loss.iou module
 ---------------------------
 
