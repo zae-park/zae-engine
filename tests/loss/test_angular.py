@@ -8,9 +8,9 @@ class TestArcFaceLoss(unittest.TestCase):
     def setUp(self):
         self.in_features = 128
         self.out_features = 10
-        self.model = ArcFaceLoss(self.in_features, self.out_features).cuda()
-        self.features = torch.randn(32, self.in_features).cuda()
-        self.labels = torch.randint(0, self.out_features, (32,)).cuda()
+        self.model = ArcFaceLoss(self.in_features, self.out_features)
+        self.features = torch.randn(32, self.in_features)
+        self.labels = torch.randint(0, self.out_features, (32,))
 
     def test_forward(self):
         logits = self.model(self.features, self.labels)
