@@ -1,4 +1,5 @@
 from .cnn import CNNBase
+from .transformer import TimeAwareTransformer
 
 # from .legacy import ResNet1D, Regressor1D, Segmentor, CNNBaseLegacy
 
