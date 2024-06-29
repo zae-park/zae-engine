@@ -2,25 +2,61 @@ import unittest
 
 import numpy as np
 
+import unittest
+import numpy as np
+import torch
 from zae_engine.metrics.signals import rms, mse, signal_to_noise, peak_signal_to_noise
+from zae_engine.utils.io import example_ecg
 
 
-class TestSignal(unittest.TestCase):
-    def setUp(self) -> None:
-        self.x_ex = np.array([0] * 500 + [1] * 500 + [0] * 1500)
-        self.y_ex = np.array([0] * 600 + [1] * 400 + [0] * 1500)
+class TestMetrics(unittest.TestCase):
 
     def test_rms(self):
-        pass
+        signal_np = np.array([1, 2, 3, 4, 5])
+        signal_torch = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float32)
+
+        expected_rms = 3.3166247903554
+
+        self.assertAlmostEqual(rms(signal_np), expected_rms, places=6)
+        self.assertAlmostEqual(rms(signal_torch).item(), expected_rms, places=6)
 
     def test_mse(self):
-        pass
+        signal1_np = np.array([1, 2, 3, 4, 5])
+        signal2_np = np.array([1, 2, 3, 4, 6])
+        signal1_torch = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float32)
+        signal2_torch = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float32)
 
-    def test_snr(self):
-        pass
+        expected_mse = 0.2
 
-    def test_psnr(self):
-        pass
+        self.assertAlmostEqual(mse(signal1_np, signal2_np).item(), expected_mse, places=6)
+        self.assertAlmostEqual(mse(signal1_torch, signal2_torch).item(), expected_mse, places=6)
+
+    def test_signal_to_noise(self):
+        signal_np = example_ecg()
+        noise_np = np.random.randn(*signal_np)
+        signal_torch = torch.tensor(signal_np, dtype=torch.float32)
+        noise_torch = torch.tensor(noise_np, dtype=torch.float32)
+
+        expected_snr = 20.0
+
+        self.assertAlmostEqual(signal_to_noise(signal_np, noise_np).item(), expected_snr, places=6)
+        self.assertAlmostEqual(signal_to_noise(signal_torch, noise_torch).item(), expected_snr, places=6)
+
+    def test_peak_signal_to_noise(self):
+        signal_np = np.array([1, 2, 3, 4, 5])
+        noise_np = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
+        signal_torch = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float32)
+        noise_torch = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float32)
+
+        expected_psnr = 24.0824
+
+        self.assertAlmostEqual(peak_signal_to_noise(signal_np, noise_np).item(), expected_psnr, places=4)
+        self.assertAlmostEqual(peak_signal_to_noise(signal_torch, noise_torch).item(), expected_psnr, places=4)
+
+        peak_value = 5
+        self.assertAlmostEqual(
+            peak_signal_to_noise(signal_torch, noise_torch, peak=peak_value).item(), expected_psnr, places=4
+        )
 
     # def test_iec(self):
     #     d0 = {"sample": [100, 200, 300, 400, 500], "rhythm": ["(N", "(N", "(AF", "(AF", "(N"]}  # 300~500
