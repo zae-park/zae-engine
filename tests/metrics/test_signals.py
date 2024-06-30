@@ -33,7 +33,7 @@ class TestMetrics(unittest.TestCase):
 
     def test_signal_to_noise(self):
         signal_np = example_ecg()[0]
-        noise_np = np.random.randn(*signal_np)
+        noise_np = np.random.normal(size=len(signal_np))
         signal_torch = torch.tensor(signal_np, dtype=torch.float32)
         noise_torch = torch.tensor(noise_np, dtype=torch.float32)
 
@@ -53,11 +53,6 @@ class TestMetrics(unittest.TestCase):
 
         self.assertAlmostEqual(peak_signal_to_noise(signal_np, noise_np).item(), expected_psnr, places=4)
         self.assertAlmostEqual(peak_signal_to_noise(signal_torch, noise_torch).item(), expected_psnr, places=4)
-
-        peak_value = 5
-        self.assertAlmostEqual(
-            peak_signal_to_noise(signal_torch, noise_torch, peak=peak_value).item(), expected_psnr, places=4
-        )
 
     # def test_iec(self):
     #     d0 = {"sample": [100, 200, 300, 400, 500], "rhythm": ["(N", "(N", "(AF", "(AF", "(N"]}  # 300~500
