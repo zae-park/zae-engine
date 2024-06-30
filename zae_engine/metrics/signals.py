@@ -144,7 +144,10 @@ def peak_signal_to_noise(signal, noise, peak: Union[bool | int | float] = False)
     """
     if not peak:
         peak = signal.max()
-    db = 20 * torch.log10(peak / mse(signal1=signal, signal2=noise))
+
+    mse_value = mse(signal1=signal, signal2=noise)
+    db = 20 * torch.log10(peak / torch.sqrt(mse_value + EPS))
+    # db = 20 * torch.log10(peak / mse(signal1=signal, signal2=noise))
     return db
 
 
