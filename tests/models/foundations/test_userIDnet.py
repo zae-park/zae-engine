@@ -10,12 +10,12 @@ class TestUserIdentificationModel(unittest.TestCase):
         self.nhead = 8
         self.num_layers = 6
         self.num_classes = 1000
-        self.model = UserIdentificationModel(self.d_model, self.nhead, self.num_layers, self.num_classes).cuda()
+        self.model = UserIdentificationModel(self.d_model, self.nhead, self.num_layers, self.num_classes)
         self.batch_size = 16
         self.seq_len = 10
-        self.event_vecs = torch.randn(self.seq_len, self.batch_size, 128).cuda()
-        self.time_vecs = torch.randint(0, 512, (self.seq_len, self.batch_size)).cuda()
-        self.labels = torch.randint(0, self.num_classes, (self.batch_size,)).cuda()
+        self.event_vecs = torch.randn(self.seq_len, self.batch_size, 128)
+        self.time_vecs = torch.randint(0, 512, (self.seq_len, self.batch_size))
+        self.labels = torch.randint(0, self.num_classes, (self.batch_size,))
 
     def test_forward(self):
         logits, features = self.model(self.event_vecs, self.time_vecs, self.labels)
@@ -36,8 +36,8 @@ class TestUserIdentificationModel(unittest.TestCase):
         self.assertEqual(features.size(), (self.batch_size, self.d_model))
 
     def test_variable_sequence_length(self):
-        event_vecs = torch.randn(5, self.batch_size, 128).cuda()
-        time_vecs = torch.randint(0, 512, (5, self.batch_size)).cuda()
+        event_vecs = torch.randn(5, self.batch_size, 128)
+        time_vecs = torch.randint(0, 512, (5, self.batch_size))
         logits, features = self.model(event_vecs, time_vecs, self.labels)
         self.assertEqual(logits.size(), (self.batch_size, self.num_classes))
         self.assertEqual(features.size(), (self.batch_size, self.d_model))
