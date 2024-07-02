@@ -4,13 +4,13 @@ import torch
 from zae_engine.models import UserIdModel
 
 
-class TestUserIdentificationModel(unittest.TestCase):
+class TestUserIdModel(unittest.TestCase):
     def setUp(self):
         self.d_model = 128
         self.nhead = 8
         self.num_layers = 6
         self.num_classes = 1000
-        self.model = UserIdentificationModel(self.d_model, self.nhead, self.num_layers, self.num_classes)
+        self.model = UserIdModel(self.d_model, self.nhead, self.num_layers, self.num_classes)
         self.batch_size = 16
         self.seq_len = 10
         self.event_vecs = torch.randn(self.seq_len, self.batch_size, 128)
