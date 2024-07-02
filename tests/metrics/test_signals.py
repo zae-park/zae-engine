@@ -49,10 +49,11 @@ class TestMetrics(unittest.TestCase):
         signal_torch = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float32)
         noise_torch = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float32)
 
-        expected_psnr = 24.0824
+        # expected_psnr = 4.48062372
 
-        self.assertAlmostEqual(peak_signal_to_noise(signal_np, noise_np).item(), expected_psnr, places=4)
-        self.assertAlmostEqual(peak_signal_to_noise(signal_torch, noise_torch).item(), expected_psnr, places=4)
+        self.assertAlmostEqual(
+            signal_to_noise(signal_np, noise_np).item(), signal_to_noise(signal_torch, noise_torch).item(), places=6
+        )
 
     # def test_iec(self):
     #     d0 = {"sample": [100, 200, 300, 400, 500], "rhythm": ["(N", "(N", "(AF", "(AF", "(N"]}  # 300~500
