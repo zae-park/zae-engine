@@ -37,11 +37,14 @@ class CollatorBase(ABC):
     def __iter__(self) -> Iterator:
         return iter(self._fn.values())
 
-    def io_check(self, fn: Callable) -> None:
+    def io_check(self, sample_data: Union[dict, OrderedDict]) -> None:
+        self.set_batch(sample_data)  # Update the sample_batch with the provided sample_data
         keys = self.sample_batch.keys()
-        updated = fn(self.sample_batch)
-        assert isinstance(updated, type(self.sample_batch))
-        assert set(keys).issubset(updated.keys())
+        updated = self.sample_batch
+        for fn in self._fn.values():
+            updated = fn(updated)
+        assert isinstance(updated, type(self.sample_batch)), "The functions changed the type of the batch."
+        assert set(keys).issubset(updated.keys()), "The functions changed the keys of the batch."
 
     def set_batch(self, batch: Union[dict, OrderedDict]) -> None:
         self.sample_batch = batch
