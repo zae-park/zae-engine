@@ -14,32 +14,51 @@ from zae_engine.operation import label_to_onoff
 
 class CollatorBase(ABC):
     """
-    Base class for data collators which preprocess input data in a predefined order.
+    Base class for collating and processing batches of data using a sequence of functions.
 
-    This class accepts a list of functions or an OrderedDict of functions during initialization.
-    These functions are then applied to the input data in the specified order when the instance is called.
-
-    Attributes
-    ----------
-    _fn : OrderedDict[str, Callable]
-        An ordered dictionary that stores the preprocessing functions.
-    sample_batch : dict
-        A sample batch used for input-output structure validation.
+    This class allows you to define a sequence of preprocessing functions that will be applied
+    to data batches in the specified order. It supports initialization with either an OrderedDict
+    or a list of functions.
 
     Methods
     -------
     __len__():
-        Returns the number of preprocessing functions.
+        Returns the number of functions in the collator.
     __iter__():
-        Returns an iterator over the preprocessing functions.
-    io_check(sample_data):
-        Checks if the registered functions maintain the structure of the sample batch.
-    set_batch(batch):
-        Sets the sample batch to be used for input-output structure validation.
-    add_fn(name, fn):
-        Adds a new preprocessing function to the pipeline after validation.
-    __call__(batch):
-        Applies the preprocessing functions to the input batch in order.
+        Returns an iterator over the functions in the collator.
+    io_check(sample_data: Union[dict, OrderedDict]) -> None:
+        Checks if the registered functions maintain the structure of the sample data.
+    set_batch(batch: Union[dict, OrderedDict]) -> None:
+        Sets the sample batch for structure checking.
+    add_fn(name: str, fn: Callable) -> None:
+        Adds a function to the collator with the given name.
+    __call__(batch: Union[dict, OrderedDict]) -> Union[dict, OrderedDict]:
+        Applies the registered functions to the input batch in sequence.
+
+    Usage
+    -----
+    Example 1: Initialization with a list of functions
+    >>> def fn1(batch):
+    >>>     # Function to process batch
+    >>>     return batch
+    >>> def fn2(batch):
+    >>>     # Another function to process batch
+    >>>     return batch
+    >>> collator = CollatorBase(fn1, fn2)
+    >>> batch = {'data': [1, 2, 3]}
+    >>> processed_batch = collator(batch)
+
+    Example 2: Initialization with an OrderedDict
+    >>> from collections import OrderedDict
+    >>> functions = OrderedDict([('fn1', fn1), ('fn2', fn2)])
+    >>> collator = CollatorBase(functions)
+    >>> processed_batch = collator(batch)
+
+    Example 3: Checking input-output consistency
+    >>> sample_data = {'data': [1, 2, 3]}
+    >>> collator.io_check(sample_data)
+    >>> collator.set_batch(sample_data)
+    >>> collator.add_fn('fn3', fn3)  # This will check if fn3 maintains the structure of sample_data
     """
 
     _fn: OrderedDict[str, Callable]
