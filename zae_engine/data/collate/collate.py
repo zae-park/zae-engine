@@ -13,7 +13,36 @@ from zae_engine.operation import label_to_onoff
 
 
 class CollatorBase(ABC):
-    _fn: OrderedDict[str, Callable]  # type: ignore[assignment]
+    """
+    Base class for data collators which preprocess input data in a predefined order.
+
+    This class accepts a list of functions or an OrderedDict of functions during initialization.
+    These functions are then applied to the input data in the specified order when the instance is called.
+
+    Attributes
+    ----------
+    _fn : OrderedDict[str, Callable]
+        An ordered dictionary that stores the preprocessing functions.
+    sample_batch : dict
+        A sample batch used for input-output structure validation.
+
+    Methods
+    -------
+    __len__():
+        Returns the number of preprocessing functions.
+    __iter__():
+        Returns an iterator over the preprocessing functions.
+    io_check(sample_data):
+        Checks if the registered functions maintain the structure of the sample batch.
+    set_batch(batch):
+        Sets the sample batch to be used for input-output structure validation.
+    add_fn(name, fn):
+        Adds a new preprocessing function to the pipeline after validation.
+    __call__(batch):
+        Applies the preprocessing functions to the input batch in order.
+    """
+
+    _fn: OrderedDict[str, Callable]
 
     @overload
     def __init__(self, *args: Callable) -> None: ...
@@ -23,6 +52,7 @@ class CollatorBase(ABC):
 
     def __init__(self, *args):
         super().__init__()
+        self._fn = OrderedDict()  # Initialize the ordered dictionary
         if len(args) == 1 and isinstance(args[0], OrderedDict):
             for key, module in args[0].items():
                 self.add_fn(key, module)
@@ -38,6 +68,22 @@ class CollatorBase(ABC):
         return iter(self._fn.values())
 
     def io_check(self, sample_data: Union[dict, OrderedDict]) -> None:
+        """
+        Checks if the registered functions maintain the structure of the sample batch.
+
+        Parameters
+        ----------
+        sample_data : Union[dict, OrderedDict]
+            The sample data to test the functions with.
+
+        Raises
+        ------
+        AssertionError
+            If any function changes the structure of the sample data.
+        """
+        if not sample_data:
+            raise ValueError("Sample data cannot be empty for io_check.")
+
         self.set_batch(sample_data)  # Update the sample_batch with the provided sample_data
         keys = self.sample_batch.keys()
         updated = self.sample_batch
@@ -47,16 +93,46 @@ class CollatorBase(ABC):
         assert set(keys).issubset(updated.keys()), "The functions changed the keys of the batch."
 
     def set_batch(self, batch: Union[dict, OrderedDict]) -> None:
+        """
+        Sets the sample batch to be used for input-output structure validation.
+
+        Parameters
+        ----------
+        batch : Union[dict, OrderedDict]
+            The sample batch.
+        """
         self.sample_batch = batch
 
     def add_fn(self, name: str, fn: Callable) -> None:
-        self.io_check(fn)
+        """
+        Adds a new preprocessing function to the pipeline after validation.
+
+        Parameters
+        ----------
+        name : str
+            The name of the function.
+        fn : Callable
+            The preprocessing function.
+        """
+        self.io_check(self.sample_batch)
         self._fn[name] = fn
 
     def __call__(self, batch: Union[dict, OrderedDict]) -> Union[dict, OrderedDict]:
-        for fn in self:
-            batch = fn(batch)
+        """
+        Applies the preprocessing functions to the input batch in order.
 
+        Parameters
+        ----------
+        batch : Union[dict, OrderedDict]
+            The input batch to be processed.
+
+        Returns
+        -------
+        Union[dict, OrderedDict]
+            The processed batch.
+        """
+        for fn in self._fn.values():
+            batch = fn(batch)
         return batch
 
 
