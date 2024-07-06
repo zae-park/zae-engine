@@ -12,7 +12,7 @@ from einops import repeat, reduce
 from zae_engine.operation import label_to_onoff
 
 
-class CollatorBase(ABC):
+class CollateBase(ABC):
     """
     Base class for collating and processing batches of data using a sequence of functions.
 
@@ -44,14 +44,14 @@ class CollatorBase(ABC):
     >>> def fn2(batch):
     >>>     # Another function to process batch
     >>>     return batch
-    >>> collator = CollatorBase(fn1, fn2)
+    >>> collator = CollateBase(fn1, fn2)
     >>> batch = {'data': [1, 2, 3]}
     >>> processed_batch = collator(batch)
 
     Example 2: Initialization with an OrderedDict
     >>> from collections import OrderedDict
     >>> functions = OrderedDict([('fn1', fn1), ('fn2', fn2)])
-    >>> collator = CollatorBase(functions)
+    >>> collator = CollateBase(functions)
     >>> processed_batch = collator(batch)
 
     Example 3: Checking input-output consistency
