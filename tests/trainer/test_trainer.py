@@ -102,6 +102,15 @@ class TestTrainer(unittest.TestCase):
                 self.trainer.run(n_epoch=test_epoch, loader=self.loader)
         else:
             self.trainer.run(n_epoch=test_epoch, loader=self.loader)
+    
+    def test_single_epoch_run(self):
+        self.trainer.run(n_epoch=1, loader=self.loader)
+        # test logging
+        log_a, log_b = self.trainer.log_train, self.trainer.log_test
+        if self.trainer.mode == "test":
+            log_a, log_b = log_b, log_a
+
+        self.assertEqual(len(log_a), 1)
 
     def test_steps(self):
         dummy_sample = [randint(0, 128)] * randint(0, 128)
