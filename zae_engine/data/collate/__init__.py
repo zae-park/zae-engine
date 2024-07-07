@@ -1,2 +1,2 @@
-from .collate import BeatCollateSeq
-from .collate import Collate_seq
+from .modules import BeatCollateSeq
+from .modules import Collate_seq

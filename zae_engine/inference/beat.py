@@ -10,7 +10,7 @@ from zae_engine.models.builds import autoencoder
 from zae_engine.models.converter import dim_converter
 from zae_engine.trainer import Trainer
 from zae_engine.schedulers import CosineAnnealingScheduler
-from zae_engine.data.collate.collate import BeatCollateSeq as Col
+from zae_engine.data.collate.modules import BeatCollateSeq as Col
 
 
 def core(x: Union[np.ndarray, torch.Tensor]):
