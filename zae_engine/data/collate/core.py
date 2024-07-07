@@ -143,3 +143,13 @@ class CollateBase(ABC):
         for fn in self._fn.values():
             batch = fn(batch)
         return batch
+
+    def wrap(self, func: Callable = None):
+        if func is None:
+            func = self.__call__
+
+        @wraps(func)
+        def wrapped_func(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        return wrapped_func
