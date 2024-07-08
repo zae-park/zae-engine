@@ -52,6 +52,6 @@ def compute_gram_matrix(batch: torch.Tensor, reduce: bool = True) -> torch.Tenso
     gram_matrix = torch.mm(normalized, normalized.t())  # [batch, batch]
 
     if reduce:
-        return gram_matrix
-    else:
         return gram_matrix.mean()
+    else:
+        return gram_matrix

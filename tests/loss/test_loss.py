@@ -50,8 +50,10 @@ class TestComputeGram(unittest.TestCase):
         batch = torch.tensor([[1.0, 2.0], [3.0, 4.0]], dtype=torch.float32)
         norm1 = torch.norm(batch[0])
         norm2 = torch.norm(batch[1])
+
         expected_output = torch.tensor(
-            [[1.0, (1 * 3 + 2 * 4) / (norm1 * norm2)], [(1 * 3 + 2 * 4) / (norm1 * norm2), 1.0]], dtype=torch.float32
+            [(1.0 + (1 * 3 + 2 * 4) / (norm1 * norm2) + (1 * 3 + 2 * 4) / (norm1 * norm2) + 1.0) / 4],
+            dtype=torch.float32,
         )
 
         output = compute_gram_matrix(batch)
@@ -62,19 +64,19 @@ class TestComputeGram(unittest.TestCase):
         norm1 = torch.norm(batch[0])
         norm2 = torch.norm(batch[1])
         expected_output = torch.tensor(
-            [(1.0 + (1 * 3 + 2 * 4) / (norm1 * norm2) + (1 * 3 + 2 * 4) / (norm1 * norm2) + 1.0) / 4],
-            dtype=torch.float32,
+            [[1.0, (1 * 3 + 2 * 4) / (norm1 * norm2)], [(1 * 3 + 2 * 4) / (norm1 * norm2), 1.0]], dtype=torch.float32
         )
 
         output = compute_gram_matrix(batch, reduce=False)
-        self.assertAlmostEqual(output.item(), expected_output.item(), places=4)
+        for o, e in zip(output.view(-1).tolist(), expected_output.view(-1).tolist()):
+            self.assertAlmostEqual(o, e, places=4)
 
     def test_gram_mat_with_different_vectors(self):
         batch = torch.tensor([[1.0, 0.0], [0.0, 1.0]], dtype=torch.float32)
         expected_output = torch.tensor([[1.0, 0.0], [0.0, 1.0]], dtype=torch.float32)
 
         output = compute_gram_matrix(batch)
-        self.assertTrue(torch.allclose(output, expected_output, atol=1e-4))
+        self.assertTrue(torch.allclose(output, expected_output.mean(), atol=1e-4))
 
 
 if __name__ == "__main__":
