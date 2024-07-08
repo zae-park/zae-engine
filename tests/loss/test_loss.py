@@ -4,7 +4,7 @@ import torch
 import numpy as np
 from random import randint, choice
 
-from zae_engine.loss._loss import cross_entropy, batch_wise_dot
+from zae_engine.loss import cross_entropy, compute_gram_matrix
 from zae_engine import utils
 
 
@@ -39,9 +39,42 @@ class TestLoss(unittest.TestCase):
     def test_batch_dot(self):
         feat_len = randint(1, 512)
         samples = torch.randn(size=(10, feat_len))
-        dot_mat = batch_wise_dot(samples, reduce=False)
+        dot_mat = compute_gram_matrix(samples, reduce=False)
         self.assertLessEqual((1 - torch.diag(dot_mat)).mean(), utils.EPS * feat_len)
         self.assertLessEqual((torch.transpose(dot_mat, 0, 1) - dot_mat).mean(), utils.EPS)
+
+
+class TestComputeGram(unittest.TestCase):
+
+    def test_gram_mat(self):
+        batch = torch.tensor([[1.0, 2.0], [3.0, 4.0]], dtype=torch.float32)
+        norm1 = torch.norm(batch[0])
+        norm2 = torch.norm(batch[1])
+        expected_output = torch.tensor(
+            [[1.0, (1 * 3 + 2 * 4) / (norm1 * norm2)], [(1 * 3 + 2 * 4) / (norm1 * norm2), 1.0]], dtype=torch.float32
+        )
+
+        output = compute_gram_matrix(batch)
+        self.assertTrue(torch.allclose(output, expected_output, atol=1e-4))
+
+    def test_gram_mat_reduce_false(self):
+        batch = torch.tensor([[1.0, 2.0], [3.0, 4.0]], dtype=torch.float32)
+        norm1 = torch.norm(batch[0])
+        norm2 = torch.norm(batch[1])
+        expected_output = torch.tensor(
+            [(1.0 + (1 * 3 + 2 * 4) / (norm1 * norm2) + (1 * 3 + 2 * 4) / (norm1 * norm2) + 1.0) / 4],
+            dtype=torch.float32,
+        )
+
+        output = compute_gram_matrix(batch, reduce=False)
+        self.assertAlmostEqual(output.item(), expected_output.item(), places=4)
+
+    def test_gram_mat_with_different_vectors(self):
+        batch = torch.tensor([[1.0, 0.0], [0.0, 1.0]], dtype=torch.float32)
+        expected_output = torch.tensor([[1.0, 0.0], [0.0, 1.0]], dtype=torch.float32)
+
+        output = compute_gram_matrix(batch)
+        self.assertTrue(torch.allclose(output, expected_output, atol=1e-4))
 
 
 if __name__ == "__main__":
