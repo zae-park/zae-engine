@@ -69,69 +69,6 @@ def split(batch):
     return batch
 
 
-class Collate_seq(ABC):
-    """
-    TBD.
-
-    # usage
-        train_loader = torch.utils.data.DataLoader(train_set, batch_size=cfg.run.batch_train, shuffle=True,
-                                                   pin_memory=True, collate_fn=Collate_seq(sequence=seq_list))
-    """
-
-    def __init__(self, sequence: Union[list, tuple] = tuple([None]), n: int = 10, n_cls: int = 2, th: float = 0.5):
-        self.sequence = sequence
-        self.n = n
-        self.n_cls = n_cls
-        self.th = th
-
-    @abstractmethod
-    def chunk(self, batch):
-        x, y, fn = batch
-        x = repeat(x, "(n dim) -> n dim", n=self.n)
-        y = reduce(y, "(n dim) -> n", n=self.n, reduction="mean") > self.th
-        fn = [fn] * self.n
-        return x, y, fn
-
-    @abstractmethod
-    def hot(self, batch):
-        x, y, fn = batch
-        return x, np.squeeze(np.eye(self.n_cls)[y.astype(int).reshape(-1)].transpose()), fn
-
-        # hot = F.one_hot(batch[1], num_classes=self.n_cls)
-        # return tuple([batch[0], hot, batch[2]])
-
-    @staticmethod
-    def sanity_check(batch):
-        x, y, fn = batch
-        x = torch.tensor(x, dtype=torch.float32)
-        y = torch.tensor(y, dtype=torch.int32)
-
-        # Guarantee the x and y have 3-dimension shape.
-        if len(x.shape) == 1:
-            x = x.unsqueeze(0).unsqueeze(0)  # [dim] -> [1, 1, dim]
-        elif len(x.shape) == 2:
-            x = x.unsqueeze(1)  # [N, dim] -> [N, 1, dim]
-        if len(y.shape) == 1:
-            y = y.unsqueeze(1).unsqueeze(1)  # [dim] -> [1, 1, dim]
-        elif len(y.shape) == 2:
-            y = y.unsqueeze(0)  # [ch, dim] -> [N, 1, dim]
-        return x, y, fn
-
-    def __call__(self, batch):
-        x, y, fn = [], [], []
-        for b in batch:
-            for seq in self.sequence:
-                if seq == "chunk":
-                    b = self.chunk(b)
-                elif seq == "hot":
-                    b = self.hot(b)
-                else:
-                    pass
-            b = self.sanity_check(b)
-            x.append(b[0]), y.append(b[1]), fn.append(b[2])
-        return torch.cat(x), torch.cat(y), fn
-
-
 class BeatCollateSeq:
     def __init__(self, sequence: Union[list, tuple] = tuple([None]), **kwargs):
         self.sequence = sequence
