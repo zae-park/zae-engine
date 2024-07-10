@@ -78,15 +78,65 @@ class HotEncoder:
     #     return x, y, fn
 
 
-def signal_filter(batch):
-    # TODO: Fn wrapper with cutoff frequency fs
-    nyq = fs / 2
-    length = batch["x"].shape[-1]
-    x = np.concatenate([batch["x"].squeeze()] * 3)
-    x = signal.filtfilt(*signal.butter(2, [0.5 / nyq, 50 / nyq], btype="bandpass"), x, method="gust")
-    x = signal.filtfilt(*signal.butter(2, [59.9 / nyq, 60.1 / nyq], btype="bandstop"), x, method="gust")
-    batch["x"] = torch.tensor(x[length : 2 * length].reshape(1, -1).copy(), dtype=torch.float32)
-    return batch
+class SignalFilter:
+    """
+    Class for filtering signals in the batch.
+
+    Parameters
+    ----------
+    fs : float
+        Sampling frequency of the signal.
+    method : str
+        Filtering method to apply. Options are 'bandpass', 'bandstop', 'lowpass', 'highpass'.
+    lowcut : float, optional
+        Low cut-off frequency for bandpass and bandstop filters.
+    highcut : float, optional
+        High cut-off frequency for bandpass and bandstop filters.
+    cutoff : float, optional
+        Cut-off frequency for lowpass and highpass filters.
+
+    Methods
+    -------
+    __call__(batch: dict) -> dict:
+        Apply the specified filter to the signal in the batch.
+    """
+
+    def __init__(self, fs: float, method: str, lowcut: float = None, highcut: float = None, cutoff: float = None):
+        self.fs = fs
+        self.method = method
+        self.lowcut = lowcut
+        self.highcut = highcut
+        self.cutoff = cutoff
+
+    def __call__(self, batch):
+        nyq = self.fs / 2
+        length = batch["x"].shape[-1]
+        x = np.concatenate([batch["x"].squeeze()] * 3)
+
+        if self.method == "bandpass":
+            if self.lowcut is None or self.highcut is None:
+                raise ValueError("Lowcut and highcut frequencies must be specified for bandpass filter.")
+            b, a = signal.butter(2, [self.lowcut / nyq, self.highcut / nyq], btype="bandpass")
+        elif self.method == "bandstop":
+            if self.lowcut is None or self.highcut is None:
+                raise ValueError("Lowcut and highcut frequencies must be specified for bandstop filter.")
+            b, a = signal.butter(2, [self.lowcut / nyq, self.highcut / nyq], btype="bandstop")
+        elif self.method == "lowpass":
+            if self.cutoff is None:
+                raise ValueError("Cutoff frequency must be specified for lowpass filter.")
+            b, a = signal.butter(2, self.cutoff / nyq, btype="low")
+        elif self.method == "highpass":
+            if self.cutoff is None:
+                raise ValueError("Cutoff frequency must be specified for highpass filter.")
+            b, a = signal.butter(2, self.cutoff / nyq, btype="high")
+        else:
+            raise ValueError(
+                f"Invalid method: {self.method}. Choose from 'bandpass', 'bandstop', 'lowpass', 'highpass'."
+            )
+
+        x = signal.filtfilt(b, a, x, method="gust")
+        batch["x"] = torch.tensor(x[length : 2 * length].reshape(1, -1).copy(), dtype=torch.float32)
+        return batch
 
 
 def split(batch):
