@@ -9,19 +9,56 @@ from einops import repeat, reduce
 from zae_engine.operation import label_to_onoff
 
 
-def chunk(batch):
-    # TODO: Fn wrapper with chunk size n & th
-    x, y, fn = batch
-    x = repeat(x, "(n dim) -> n dim", n=n)
-    y = reduce(y, "(n dim) -> n", n=n, reduction="mean") > th
-    fn = [fn] * n
-    return x, y, fn
+class Chunker:
+    """
+    Class for chunking the data in the batch.
+
+    Parameters
+    ----------
+    n : int
+        Number of chunks.
+    th : float
+        Threshold for binarization.
+
+    Methods
+    -------
+    __call__(batch: Tuple[torch.Tensor, torch.Tensor, Any]) -> Tuple[torch.Tensor, torch.Tensor, Any]:
+        Chunk the data in the batch.
+    """
+
+    def __init__(self, n: int, th: float):
+        self.n = n
+        self.th = th
+
+    def __call__(self, batch):
+        x, y, fn = batch
+        x = repeat(x, "(n dim) -> n dim", n=self.n)
+        y = reduce(y, "(n dim) -> n", n=self.n, reduction="mean") > self.th
+        fn = [fn] * self.n
+        return x, y, fn
 
 
-def hot(batch):
-    # TODO: Fn wrapper with num_classes n_cls
-    x, y, fn = batch
-    return x, np.squeeze(np.eye(n_cls)[y.astype(int).reshape(-1)].transpose()), fn
+class HotEncoder:
+    """
+    Class for converting labels to one-hot encoded format.
+
+    Parameters
+    ----------
+    n_cls : int
+        Number of classes for one-hot encoding.
+
+    Methods
+    -------
+    __call__(batch: Tuple[torch.Tensor, torch.Tensor, Any]) -> Tuple[torch.Tensor, torch.Tensor, Any]:
+        Apply one-hot encoding to the labels in the batch.
+    """
+
+    def __init__(self, n_cls: int):
+        self.n_cls = n_cls
+
+    def __call__(self, batch):
+        x, y, fn = batch
+        return x, np.squeeze(np.eye(self.n_cls)[y.astype(int).reshape(-1)].transpose()), fn
 
     # def sanity_check(batch):
     #     # replaced with io_check method of CollateBase
