@@ -43,9 +43,9 @@ class TestScheduler(unittest.TestCase):
             base = core.SchedulerBase(self.optimizer, total_iters=randint(0, 1024), eta_min=self.eta_min)
 
     def test_chain(self):
-        schedule0 = scheduler.WarmUpScheduler(self.optimizer, step1 := randint(0, 1024), eta_min=self.eta_min)
-        schedule1 = scheduler.CosineAnnealingScheduler(self.optimizer, step2 := randint(0, 1024), eta_min=self.eta_min)
-        schedule2 = scheduler.CosineAnnealingScheduler(self.optimizer, step3 := randint(0, 1024), eta_min=self.eta_min)
+        schedule0 = scheduler.WarmUpScheduler(self.optimizer, step1 := randint(1, 1024), eta_min=self.eta_min)
+        schedule1 = scheduler.CosineAnnealingScheduler(self.optimizer, step2 := randint(1, 1024), eta_min=self.eta_min)
+        schedule2 = scheduler.CosineAnnealingScheduler(self.optimizer, step3 := randint(1, 1024), eta_min=self.eta_min)
         chains = core.SchedulerChain(schedule0, schedule1, schedule2)
         lrs = self.sweep_lrs(chains)
 
