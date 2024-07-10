@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.data.collate.core &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">zae_engine</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">zae_engine.data.collate.core</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.data.collate.core</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">overload</span><span class="p">,</span> <span class="n">Iterator</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+
+<div class="viewcode-block" id="CollateBase">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase">[docs]</a>
+<span class="k">class</span> <span class="nc">CollateBase</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for collating and processing batches of data using a sequence of functions.</span>
+
+<span class="sd">    This class allows you to define a sequence of preprocessing functions that will be applied</span>
+<span class="sd">    to data batches in the specified order. It supports initialization with either an OrderedDict</span>
+<span class="sd">    or a list of functions.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    __len__():</span>
+<span class="sd">        Returns the number of functions in the collator.</span>
+<span class="sd">    __iter__():</span>
+<span class="sd">        Returns an iterator over the functions in the collator.</span>
+<span class="sd">    io_check(sample_data: Union[dict, OrderedDict]) -&gt; None:</span>
+<span class="sd">        Checks if the registered functions maintain the structure of the sample data.</span>
+<span class="sd">    set_batch(batch: Union[dict, OrderedDict]) -&gt; None:</span>
+<span class="sd">        Sets the sample batch for structure checking.</span>
+<span class="sd">    add_fn(name: str, fn: Callable) -&gt; None:</span>
+<span class="sd">        Adds a function to the collator with the given name.</span>
+<span class="sd">    __call__(batch: Union[dict, OrderedDict]) -&gt; Union[dict, OrderedDict]:</span>
+<span class="sd">        Applies the registered functions to the input batch in sequence.</span>
+
+<span class="sd">    Usage</span>
+<span class="sd">    -----</span>
+<span class="sd">    Example 1: Initialization with a list of functions</span>
+<span class="sd">    &gt;&gt;&gt; def fn1(batch):</span>
+<span class="sd">    &gt;&gt;&gt;     # Function to process batch</span>
+<span class="sd">    &gt;&gt;&gt;     return batch</span>
+<span class="sd">    &gt;&gt;&gt; def fn2(batch):</span>
+<span class="sd">    &gt;&gt;&gt;     # Another function to process batch</span>
+<span class="sd">    &gt;&gt;&gt;     return batch</span>
+<span class="sd">    &gt;&gt;&gt; collator = CollateBase(fn1, fn2)</span>
+<span class="sd">    &gt;&gt;&gt; batch = {&#39;data&#39;: [1, 2, 3]}</span>
+<span class="sd">    &gt;&gt;&gt; processed_batch = collator(batch)</span>
+
+<span class="sd">    Example 2: Initialization with an OrderedDict</span>
+<span class="sd">    &gt;&gt;&gt; from collections import OrderedDict</span>
+<span class="sd">    &gt;&gt;&gt; functions = OrderedDict([(&#39;fn1&#39;, fn1), (&#39;fn2&#39;, fn2)])</span>
+<span class="sd">    &gt;&gt;&gt; collator = CollateBase(functions)</span>
+<span class="sd">    &gt;&gt;&gt; processed_batch = collator(batch)</span>
+
+<span class="sd">    Example 3: Checking input-output consistency</span>
+<span class="sd">    &gt;&gt;&gt; sample_data = {&#39;data&#39;: [1, 2, 3]}</span>
+<span class="sd">    &gt;&gt;&gt; collator.io_check(sample_data)</span>
+<span class="sd">    &gt;&gt;&gt; collator.set_batch(sample_data)</span>
+<span class="sd">    &gt;&gt;&gt; collator.add_fn(&#39;fn3&#39;, fn3)  # This will check if fn3 maintains the structure of sample_data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_fn</span><span class="p">:</span> <span class="n">OrderedDict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">:</span> <span class="s2">&quot;OrderedDict[str, Callable]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>  <span class="c1"># Initialize the ordered dictionary</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">OrderedDict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_fn</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_fn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="n">module</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_batch</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+<div class="viewcode-block" id="CollateBase.io_check">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.io_check">[docs]</a>
+    <span class="k">def</span> <span class="nf">io_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the registered functions maintain the structure of the sample batch.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sample_data : Union[dict, OrderedDict]</span>
+<span class="sd">            The sample data to test the functions with.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        AssertionError</span>
+<span class="sd">            If any function changes the structure of the sample data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sample data cannot be empty for io_check.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_batch</span><span class="p">(</span><span class="n">sample_data</span><span class="p">)</span>  <span class="c1"># Update the sample_batch with the provided sample_data</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_batch</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">updated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_batch</span>
+        <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">updated</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">updated</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">updated</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_batch</span><span class="p">)),</span> <span class="s2">&quot;The functions changed the type of the batch.&quot;</span>
+        <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">updated</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="s2">&quot;The functions changed the keys of the batch.&quot;</span></div>
+
+
+<div class="viewcode-block" id="CollateBase.set_batch">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.set_batch">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the sample batch to be used for input-output structure validation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        batch : Union[dict, OrderedDict]</span>
+<span class="sd">            The sample batch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_batch</span> <span class="o">=</span> <span class="n">batch</span></div>
+
+
+<div class="viewcode-block" id="CollateBase.add_fn">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.add_fn">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a new preprocessing function to the pipeline after validation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            The name of the function.</span>
+<span class="sd">        fn : Callable</span>
+<span class="sd">            The preprocessing function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">io_check</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_batch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn</span></div>
+
+
+<div class="viewcode-block" id="CollateBase.__call__">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.__call__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies the preprocessing functions to the input batch in order.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        batch : Union[dict, OrderedDict]</span>
+<span class="sd">            The input batch to be processed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[dict, OrderedDict]</span>
+<span class="sd">            The processed batch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">batch</span></div>
+
+
+<div class="viewcode-block" id="CollateBase.wrap">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.wrap">[docs]</a>
+    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span>
+
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">wrapped_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wrapped_func</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
