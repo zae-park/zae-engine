@@ -8,7 +8,7 @@ from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import Dataset, DataLoader
 
 from zae_engine.trainer import Trainer
-from zae_engine.data import Collate_seq
+
 from zae_engine.schedulers import CosineAnnealingScheduler
 from zae_engine.models.builds.cnn import CNNBase
 from zae_engine.models.converter import dim_converter
@@ -51,7 +51,7 @@ class Sec10Trainer(Trainer):
         return {"loss": 0, "output": out}
 
 
-class Sec10Collate(Collate_seq):
+class Sec10Collate:
     def __init__(
         self,
         sequence: Optional[tuple] = ("chunk", "filtering", "scaling"),
@@ -60,7 +60,9 @@ class Sec10Collate(Collate_seq):
         sampling_rate: Optional[int] = 250,
         hot: Optional[bool] = True,
     ):
-        super().__init__(sequence, n_cls)
+        super().__init__()
+        self.sequence = sequence
+        self.n_cls = n_cls
         self.sampling_rate = sampling_rate
         self.cutoff = cutoff
         self.is_hot = hot
@@ -168,5 +170,5 @@ def core(x: np.ndarray, batch_size: int):
 
 
 if __name__ == "__main__":
-    x = np.zeros((1, 2500))
-    core(x, batch_size=10)
+    sample = np.zeros((1, 2500))
+    core(sample, batch_size=10)
