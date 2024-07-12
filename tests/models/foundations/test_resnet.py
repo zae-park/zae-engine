@@ -70,6 +70,31 @@ class TestResnet(unittest.TestCase):
         output = model(self.test_sample)
         self.assertEqual(output.size(), torch.Size([2, 1000]))
 
+    def test_seresnet18(self):
+        model = foundations.cbamresnet18()
+        output = model(self.test_sample)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
+
+    def test_seresnet34(self):
+        model = foundations.cbamresnet34()
+        output = model(self.test_sample)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
+
+    def test_seresnet50(self):
+        model = foundations.cbamresnet50()
+        output = model(self.test_sample)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
+
+    def test_seresnet101(self):
+        model = foundations.cbamresnet101()
+        output = model(self.test_sample)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
+
+    def test_seresnet152(self):
+        model = foundations.cbamresnet152()
+        output = model(self.test_sample)
+        self.assertEqual(output.size(), torch.Size([2, 1000]))
+
 
 if __name__ == "__main__":
     unittest.main()
