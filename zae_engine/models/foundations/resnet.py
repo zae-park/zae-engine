@@ -403,3 +403,143 @@ def seresnet152(pretrained=False) -> cnn.CNNBase:
         print("No pretrained weight for SE module.")
     model = se_injection(model)
     return model
+
+
+def cbamresnet18(pretrained=False) -> cnn.CNNBase:
+    """
+    Create a CBAM-ResNet-18 model with the option to load pre-trained weights.
+
+    Parameters
+    ----------
+    pretrained : bool, optional
+        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.
+
+    Returns
+    -------
+    cnn.CNNBase
+        An instance of the CBAM-ResNet-18 model.
+
+    References
+    ----------
+    .. [1] Woo, S., Park, J., Lee, J.-Y., & Kweon, I. S. (2018).
+           CBAM: Convolutional Block Attention Module.
+           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+           https://arxiv.org/abs/1807.06521
+    """
+    model = resnet18(pretrained=pretrained)
+    if pretrained:
+        print("No pretrained weight for CBAM module.")
+    model = cbam_injection(model)
+    return model
+
+
+def cbamresnet34(pretrained=False) -> cnn.CNNBase:
+    """
+    Create a CBAM-ResNet-34 model with the option to load pre-trained weights.
+
+    Parameters
+    ----------
+    pretrained : bool, optional
+        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.
+
+    Returns
+    -------
+    cnn.CNNBase
+        An instance of the CBAM-ResNet-34 model.
+
+    References
+    ----------
+    .. [1] Woo, S., Park, J., Lee, J.-Y., & Kweon, I. S. (2018).
+           CBAM: Convolutional Block Attention Module.
+           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+           https://arxiv.org/abs/1807.06521
+    """
+    model = resnet34(pretrained=pretrained)
+    if pretrained:
+        print("No pretrained weight for CBAM module.")
+    model = cbam_injection(model)
+    return model
+
+
+def cbamresnet50(pretrained=False) -> cnn.CNNBase:
+    """
+    Create a CBAM-ResNet-50 model with the option to load pre-trained weights.
+
+    Parameters
+    ----------
+    pretrained : bool, optional
+        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.
+
+    Returns
+    -------
+    cnn.CNNBase
+        An instance of the CBAM-ResNet-50 model.
+
+    References
+    ----------
+    .. [1] Woo, S., Park, J., Lee, J.-Y., & Kweon, I. S. (2018).
+           CBAM: Convolutional Block Attention Module.
+           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+           https://arxiv.org/abs/1807.06521
+    """
+    model = resnet50(pretrained=pretrained)
+    if pretrained:
+        print("No pretrained weight for CBAM module.")
+    model = cbam_injection(model)
+    return model
+
+
+def cbamresnet101(pretrained=False) -> cnn.CNNBase:
+    """
+    Create a CBAM-ResNet-101 model with the option to load pre-trained weights.
+
+    Parameters
+    ----------
+    pretrained : bool, optional
+        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.
+
+    Returns
+    -------
+    cnn.CNNBase
+        An instance of the CBAM-ResNet-101 model.
+
+    References
+    ----------
+    .. [1] Woo, S., Park, J., Lee, J.-Y., & Kweon, I. S. (2018).
+           CBAM: Convolutional Block Attention Module.
+           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+           https://arxiv.org/abs/1807.06521
+    """
+    model = resnet101(pretrained=pretrained)
+    if pretrained:
+        print("No pretrained weight for CBAM module.")
+    model = cbam_injection(model)
+    return model
+
+
+def cbamresnet152(pretrained=False) -> cnn.CNNBase:
+    """
+    Create a CBAM-ResNet-152 model with the option to load pre-trained weights.
+
+    Parameters
+    ----------
+    pretrained : bool, optional
+        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.
+
+    Returns
+    -------
+    cnn.CNNBase
+        An instance of the CBAM-ResNet-152 model.
+
+    References
+    ----------
+    .. [1] Woo, S., Park, J., Lee, J.-Y., & Kweon, I. S. (2018).
+           CBAM: Convolutional Block Attention Module.
+           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+           https://arxiv.org/abs/1807.06521
+    """
+    model = resnet152(pretrained=pretrained)
+    if pretrained:
+        print("No pretrained weight for CBAM module.")
+    model = cbam_injection(model)
+    return model
