@@ -92,11 +92,11 @@ def resnet18(pretrained=False) -> cnn.CNNBase:
     -------
     cnn.CNNBase
         An instance of the ResNet-18 model.
-    
+
     References
     ----------
-    He, K., Zhang, X., Ren, S., & Sun, J. (2016). 
-    Deep residual learning for image recognition. 
+    He, K., Zhang, X., Ren, S., & Sun, J. (2016).
+    Deep residual learning for image recognition.
     In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).
     """
     model = cnn.CNNBase(ch_in=3, ch_out=1000, width=64, groups=1, dilation=1, **res_map[18])
@@ -120,11 +120,11 @@ def resnet34(pretrained=False) -> cnn.CNNBase:
     -------
     cnn.CNNBase
         An instance of the ResNet-34 model.
-    
+
     References
     ----------
-    He, K., Zhang, X., Ren, S., & Sun, J. (2016). 
-    Deep residual learning for image recognition. 
+    He, K., Zhang, X., Ren, S., & Sun, J. (2016).
+    Deep residual learning for image recognition.
     In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).
     """
     model = cnn.CNNBase(ch_in=3, ch_out=1000, width=64, groups=1, dilation=1, **res_map[34])
@@ -148,14 +148,14 @@ def resnet50(pretrained=False) -> cnn.CNNBase:
     -------
     cnn.CNNBase
         An instance of the ResNet-50 model.
-    
+
     References
     ----------
-    He, K., Zhang, X., Ren, S., & Sun, J. (2016). 
-    Deep residual learning for image recognition. 
+    He, K., Zhang, X., Ren, S., & Sun, J. (2016).
+    Deep residual learning for image recognition.
     In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).
     """
-    
+
     model = cnn.CNNBase(ch_in=3, ch_out=1000, width=64, groups=1, dilation=1, **res_map[50])
     if pretrained:
         src_weight = import_module("torchvision.models").ResNet50_Weights.IMAGENET1K_V1.get_state_dict(True)
@@ -177,11 +177,11 @@ def resnet101(pretrained=False) -> cnn.CNNBase:
     -------
     cnn.CNNBase
         An instance of the ResNet-50 model.
-    
+
     References
     ----------
-    He, K., Zhang, X., Ren, S., & Sun, J. (2016). 
-    Deep residual learning for image recognition. 
+    He, K., Zhang, X., Ren, S., & Sun, J. (2016).
+    Deep residual learning for image recognition.
     In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).
     """
 
@@ -206,11 +206,11 @@ def resnet152(pretrained=False) -> cnn.CNNBase:
     -------
     cnn.CNNBase
         An instance of the ResNet-50 model.
-    
+
     References
     ----------
-    He, K., Zhang, X., Ren, S., & Sun, J. (2016). 
-    Deep residual learning for image recognition. 
+    He, K., Zhang, X., Ren, S., & Sun, J. (2016).
+    Deep residual learning for image recognition.
     In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).
     """
 
@@ -245,6 +245,29 @@ def se_injection(model: cnn.CNNBase) -> cnn.CNNBase:
     return model
 
 
+def cbam_injection(model: cnn.CNNBase) -> cnn.CNNBase:
+    """
+    Inject CBAM modules into the given ResNet model.
+
+    Parameters
+    ----------
+    model : cnn.CNNBase
+        The ResNet model to inject CBAM modules into.
+
+    Returns
+    -------
+    cnn.CNNBase
+        The ResNet model with SE modules injected.
+    """
+    for i, b in enumerate(model.body):
+        for ii, blk in enumerate(b):
+            if isinstance(blk, (blocks.BasicBlock, blocks.Bottleneck)):
+                cvtr = dim_converter.DimConverter(blocks.CBAM1d(ch_in=blk.ch_out * blk.expansion))
+                cbam_module = cvtr.convert("1d -> 2d")
+                model.body[i][ii] = nn.Sequential(blk, cbam_module)
+    return model
+
+
 def seresnet18(pretrained=False) -> cnn.CNNBase:
     """
     Create an SE-ResNet-18 model with the option to load pre-trained weights.
@@ -261,8 +284,8 @@ def seresnet18(pretrained=False) -> cnn.CNNBase:
 
     References
     ----------
-    Hu, J., Shen, L., & Sun, G. (2018). 
-    Squeeze-and-excitation networks. 
+    Hu, J., Shen, L., & Sun, G. (2018).
+    Squeeze-and-excitation networks.
     In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).
     """
     model = resnet18(pretrained=pretrained)
@@ -288,8 +311,8 @@ def seresnet34(pretrained=False) -> cnn.CNNBase:
 
     References
     ----------
-    Hu, J., Shen, L., & Sun, G. (2018). 
-    Squeeze-and-excitation networks. 
+    Hu, J., Shen, L., & Sun, G. (2018).
+    Squeeze-and-excitation networks.
     In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).
     """
     model = resnet34(pretrained=pretrained)
@@ -315,8 +338,8 @@ def seresnet50(pretrained=False) -> cnn.CNNBase:
 
     References
     ----------
-    Hu, J., Shen, L., & Sun, G. (2018). 
-    Squeeze-and-excitation networks. 
+    Hu, J., Shen, L., & Sun, G. (2018).
+    Squeeze-and-excitation networks.
     In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).
     """
 
@@ -343,8 +366,8 @@ def seresnet101(pretrained=False) -> cnn.CNNBase:
 
     References
     ----------
-    Hu, J., Shen, L., & Sun, G. (2018). 
-    Squeeze-and-excitation networks. 
+    Hu, J., Shen, L., & Sun, G. (2018).
+    Squeeze-and-excitation networks.
     In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).
     """
 
@@ -371,8 +394,8 @@ def seresnet152(pretrained=False) -> cnn.CNNBase:
 
     References
     ----------
-    Hu, J., Shen, L., & Sun, G. (2018). 
-    Squeeze-and-excitation networks. 
+    Hu, J., Shen, L., & Sun, G. (2018).
+    Squeeze-and-excitation networks.
     In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).
     """
     model = resnet152(pretrained=pretrained)
