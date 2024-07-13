@@ -26,31 +26,32 @@ def cross_entropy(logit: torch.Tensor, y_hot: torch.Tensor, class_weights: Union
     return loss
 
 
-def batch_wise_dot(batch: torch.Tensor, reduce: bool = True) -> torch.Tensor:
+def compute_gram_matrix(batch: torch.Tensor, reduce: bool = True) -> torch.Tensor:
     """
-    Compute the dot-product for all combinations of vectors in a batch.
+    Compute the dot-product for all combinations of vectors in a batch (Gram matrix).
 
     Parameters
     ----------
     batch : torch.Tensor
         The input batch tensor with shape [Batch, N] where N is the length of each vector.
     reduce : bool, optional
-        If True, returns a matrix with dot-product values for each vector combination in the batch.
+        If True, returns a matrix with dot-product values for each vector combination in the batch (Gram matrix).
         If False, returns the average of the dot-product values.
 
     Returns
     -------
     torch.Tensor
         If reduce is True, returns a tensor of shape [Batch, Batch] where each value represents
-        the dot-product between two vectors.
+        the dot-product between two vectors (Gram matrix).
         If reduce is False, returns a tensor representing the average of the dot-product values.
     """
     norm = torch.norm(batch, dim=1, keepdim=True)
-    normalized = (batch / norm).unsqueeze(1)  # [batch, 1, N]
+    normalized = batch / norm  # [batch, N]
 
-    mat1 = normalized.permute(2, 0, 1)  # [N, batch, 1]
-    mat2 = normalized.permute(2, 1, 0)  # [N, 1, batch]
-    squared_mat = torch.bmm(mat1, mat2)  # [N, batch, batch]. 1st dimension represents element-wise product vector
+    # Compute the Gram matrix
+    gram_matrix = torch.mm(normalized, normalized.t())  # [batch, batch]
 
-    dot_mat = squared_mat.sum(None if reduce else 0)
-    return dot_mat
+    if reduce:
+        return gram_matrix.mean()
+    else:
+        return gram_matrix
