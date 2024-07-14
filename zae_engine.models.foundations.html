@@ -167,6 +167,158 @@
 <section id="module-zae_engine.models.foundations.resnet">
 <span id="zae-engine-models-foundations-resnet-module"></span><h2>zae_engine.models.foundations.resnet module<a class="headerlink" href="#module-zae_engine.models.foundations.resnet" title="Link to this heading">¶</a></h2>
 <dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbam_injection">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbam_injection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbam_injection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbam_injection" title="Link to this definition">¶</a></dt>
+<dd><p>Inject CBAM modules into the given ResNet model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><em>cnn.CNNBase</em></a>) – The ResNet model to inject CBAM modules into.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The ResNet model with SE modules injected.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbamresnet101">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbamresnet101</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbamresnet101"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbamresnet101" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CBAM-ResNet-101 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the CBAM-ResNet-101 model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).
+CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbamresnet152">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbamresnet152</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbamresnet152"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbamresnet152" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CBAM-ResNet-152 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the CBAM-ResNet-152 model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).
+CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbamresnet18">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbamresnet18</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbamresnet18"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbamresnet18" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CBAM-ResNet-18 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the CBAM-ResNet-18 model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).
+CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbamresnet34">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbamresnet34</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbamresnet34"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbamresnet34" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CBAM-ResNet-34 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the CBAM-ResNet-34 model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).
+CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbamresnet50">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbamresnet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbamresnet50"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbamresnet50" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CBAM-ResNet-50 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the CBAM-ResNet-50 model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).
+CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.resnet101">
 <span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">resnet101</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#resnet101"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.resnet101" title="Link to this definition">¶</a></dt>
 <dd><p>Create a ResNet-101 model with the option to load pre-trained weights.</p>
@@ -420,7 +572,7 @@ In Proceedings of the IEEE conference on computer vision and pattern recognition
 <p>The U-Net model is a type of convolutional neural network developed for biomedical image segmentation.</p>
 <p class="rubric">References</p>
 <aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id1" role="doc-footnote">
+<aside class="footnote brackets" id="id6" role="doc-footnote">
 <span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
 <p>Olaf Ronneberger, Philipp Fischer, and Thomas Brox, “U-Net: Convolutional Networks for Biomedical Image Segmentation,”
 in MICCAI 2015. (<a class="reference external" href="https://arxiv.org/abs/1505.04597">https://arxiv.org/abs/1505.04597</a>)</p>

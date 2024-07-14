@@ -169,11 +169,11 @@
 <span class="sd">    -------</span>
 <span class="sd">    cnn.CNNBase</span>
 <span class="sd">        An instance of the ResNet-18 model.</span>
-<span class="sd">    </span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016). </span>
-<span class="sd">    Deep residual learning for image recognition. </span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
 <span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">res_map</span><span class="p">[</span><span class="mi">18</span><span class="p">])</span>
@@ -200,11 +200,11 @@
 <span class="sd">    -------</span>
 <span class="sd">    cnn.CNNBase</span>
 <span class="sd">        An instance of the ResNet-34 model.</span>
-<span class="sd">    </span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016). </span>
-<span class="sd">    Deep residual learning for image recognition. </span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
 <span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">res_map</span><span class="p">[</span><span class="mi">34</span><span class="p">])</span>
@@ -231,14 +231,14 @@
 <span class="sd">    -------</span>
 <span class="sd">    cnn.CNNBase</span>
 <span class="sd">        An instance of the ResNet-50 model.</span>
-<span class="sd">    </span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016). </span>
-<span class="sd">    Deep residual learning for image recognition. </span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
 <span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="n">model</span> <span class="o">=</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">res_map</span><span class="p">[</span><span class="mi">50</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
         <span class="n">src_weight</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;torchvision.models&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ResNet50_Weights</span><span class="o">.</span><span class="n">IMAGENET1K_V1</span><span class="o">.</span><span class="n">get_state_dict</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
@@ -263,11 +263,11 @@
 <span class="sd">    -------</span>
 <span class="sd">    cnn.CNNBase</span>
 <span class="sd">        An instance of the ResNet-50 model.</span>
-<span class="sd">    </span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016). </span>
-<span class="sd">    Deep residual learning for image recognition. </span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
 <span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -295,11 +295,11 @@
 <span class="sd">    -------</span>
 <span class="sd">    cnn.CNNBase</span>
 <span class="sd">        An instance of the ResNet-50 model.</span>
-<span class="sd">    </span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016). </span>
-<span class="sd">    Deep residual learning for image recognition. </span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
 <span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -338,6 +338,32 @@
 
 
 
+<div class="viewcode-block" id="cbam_injection">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbam_injection">[docs]</a>
+<span class="k">def</span> <span class="nf">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inject CBAM modules into the given ResNet model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : cnn.CNNBase</span>
+<span class="sd">        The ResNet model to inject CBAM modules into.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        The ResNet model with SE modules injected.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">body</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">blk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blk</span><span class="p">,</span> <span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">BasicBlock</span><span class="p">,</span> <span class="n">blocks</span><span class="o">.</span><span class="n">Bottleneck</span><span class="p">)):</span>
+                <span class="n">cvtr</span> <span class="o">=</span> <span class="n">dim_converter</span><span class="o">.</span><span class="n">DimConverter</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">CBAM1d</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="n">blk</span><span class="o">.</span><span class="n">ch_out</span> <span class="o">*</span> <span class="n">blk</span><span class="o">.</span><span class="n">expansion</span><span class="p">))</span>
+                <span class="n">cbam_module</span> <span class="o">=</span> <span class="n">cvtr</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1d -&gt; 2d&quot;</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">blk</span><span class="p">,</span> <span class="n">cbam_module</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
 <div class="viewcode-block" id="seresnet18">
 <a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.seresnet18">[docs]</a>
 <span class="k">def</span> <span class="nf">seresnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
@@ -356,8 +382,8 @@
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018). </span>
-<span class="sd">    Squeeze-and-excitation networks. </span>
+<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018).</span>
+<span class="sd">    Squeeze-and-excitation networks.</span>
 <span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
@@ -386,8 +412,8 @@
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018). </span>
-<span class="sd">    Squeeze-and-excitation networks. </span>
+<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018).</span>
+<span class="sd">    Squeeze-and-excitation networks.</span>
 <span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">resnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
@@ -416,8 +442,8 @@
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018). </span>
-<span class="sd">    Squeeze-and-excitation networks. </span>
+<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018).</span>
+<span class="sd">    Squeeze-and-excitation networks.</span>
 <span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -447,8 +473,8 @@
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018). </span>
-<span class="sd">    Squeeze-and-excitation networks. </span>
+<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018).</span>
+<span class="sd">    Squeeze-and-excitation networks.</span>
 <span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -478,14 +504,169 @@
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018). </span>
-<span class="sd">    Squeeze-and-excitation networks. </span>
+<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018).</span>
+<span class="sd">    Squeeze-and-excitation networks.</span>
 <span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">resnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for SE module.&quot;</span><span class="p">)</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">se_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbamresnet18">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbamresnet18">[docs]</a>
+<span class="k">def</span> <span class="nf">cbamresnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a CBAM-ResNet-18 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the CBAM-ResNet-18 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).</span>
+<span class="sd">           CBAM: Convolutional Block Attention Module.</span>
+<span class="sd">           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).</span>
+<span class="sd">           https://arxiv.org/abs/1807.06521</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for CBAM module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbamresnet34">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbamresnet34">[docs]</a>
+<span class="k">def</span> <span class="nf">cbamresnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a CBAM-ResNet-34 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the CBAM-ResNet-34 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).</span>
+<span class="sd">           CBAM: Convolutional Block Attention Module.</span>
+<span class="sd">           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).</span>
+<span class="sd">           https://arxiv.org/abs/1807.06521</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for CBAM module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbamresnet50">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbamresnet50">[docs]</a>
+<span class="k">def</span> <span class="nf">cbamresnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a CBAM-ResNet-50 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the CBAM-ResNet-50 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).</span>
+<span class="sd">           CBAM: Convolutional Block Attention Module.</span>
+<span class="sd">           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).</span>
+<span class="sd">           https://arxiv.org/abs/1807.06521</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for CBAM module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbamresnet101">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbamresnet101">[docs]</a>
+<span class="k">def</span> <span class="nf">cbamresnet101</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a CBAM-ResNet-101 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the CBAM-ResNet-101 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).</span>
+<span class="sd">           CBAM: Convolutional Block Attention Module.</span>
+<span class="sd">           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).</span>
+<span class="sd">           https://arxiv.org/abs/1807.06521</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet101</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for CBAM module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbamresnet152">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbamresnet152">[docs]</a>
+<span class="k">def</span> <span class="nf">cbamresnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a CBAM-ResNet-152 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the CBAM-ResNet-152 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).</span>
+<span class="sd">           CBAM: Convolutional Block Attention Module.</span>
+<span class="sd">           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).</span>
+<span class="sd">           https://arxiv.org/abs/1807.06521</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for CBAM module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model</span></div>
 
 </pre></div>
