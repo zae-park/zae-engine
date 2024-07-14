@@ -1,21 +1,23 @@
 import time
 
-from typing import Union, Iterable
+from typing import Union, Iterable, Callable
 import numpy as np
 import torch
 
 
-def np2torch(dtype: torch.dtype):
+def np2torch(dtype: torch.dtype, n: int = None) -> Callable:
     """
     Convert numpy arrays to torch tensors with a specified dtype.
 
     This decorator converts all numpy array arguments of a function to torch tensors with the specified dtype.
-    If an argument is already a torch tensor, it is not converted.
+    If an argument is already a torch tensor, it is not converted. If n is not specified, all numpy array arguments are converted.
 
     Parameters
     ----------
     dtype : torch.dtype
         The desired dtype for the torch tensors.
+    n : int, optional
+        The number of initial arguments to convert. If None, all numpy array arguments are converted.
 
     Returns
     -------
@@ -24,17 +26,28 @@ def np2torch(dtype: torch.dtype):
 
     Examples
     --------
-    >>> @np2torch(torch.float32)
-    ... def example_func(x):
-    ...     return x
-    >>> example_func(np.array([1, 2, 3]))  # This will be converted to a torch tensor.
+    >>> @np2torch(torch.float32, n=2)
+    ... def example_func(x, y, z):
+    ...     return x, y, z
+    >>> example_func(np.array([1, 2, 3]), np.array([4, 5, 6]), np.array([7, 8, 9]))
+    # This will convert only the first two numpy arrays to torch tensors.
     """
 
-    def deco(func):
+    def deco(func: Callable) -> Callable:
         def wrapper(*args: Union[np.ndarray, torch.Tensor, bool, int, float], **kwargs):
-            args = tuple(a if isinstance(a, torch.Tensor) else torch.tensor(a, dtype=dtype) for a in args)
-            kwargs = {k: v if isinstance(v, torch.Tensor) else torch.tensor(v, dtype=dtype) for k, v in kwargs.items()}
-            return func(*args, **kwargs)
+            if n is None:
+                n_args = len(args)
+            else:
+                n_args = min(n, len(args))
+
+            converted_args = tuple(
+                torch.tensor(a, dtype=dtype) if isinstance(a, np.ndarray) and i < n_args else a
+                for i, a in enumerate(args)
+            )
+
+            kwargs = {k: torch.tensor(v, dtype=dtype) if isinstance(v, np.ndarray) else v for k, v in kwargs.items()}
+
+            return func(*converted_args, **kwargs)
 
         return wrapper
 

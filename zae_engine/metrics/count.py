@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 from . import confusion
-from ..utils import deco
+from ..utils import deco, EPS
 
 
 @deco.np2torch(dtype=torch.int)
@@ -45,7 +45,7 @@ def accuracy(
     return sum(correct) / len(correct)
 
 
-@deco.np2torch(dtype=torch.int)
+@deco.np2torch(dtype=torch.int, n=2)
 @deco.shape_check(2)
 def f_beta(
     pred: np.ndarray | torch.Tensor,
@@ -93,7 +93,7 @@ def f_beta(
     return f_beta_from_mat(conf, beta=beta, num_classes=num_classes, average=average)
 
 
-@deco.np2torch(dtype=torch.int)
+@deco.np2torch(dtype=torch.int, n=1)
 def f_beta_from_mat(conf_mat: np.ndarray | torch.Tensor, beta: float, num_classes: int, average: str = "micro"):
     """
     Compute the F-beta score from a given confusion matrix.
@@ -135,18 +135,18 @@ def f_beta_from_mat(conf_mat: np.ndarray | torch.Tensor, beta: float, num_classe
         micro_fn = (row - tp_set).sum()
         micro_fp = (col - tp_set).sum()
 
-        recall = micro_tp / (micro_tp + micro_fn + deco.EPS)
-        precision = micro_tp / (micro_tp + micro_fp + deco.EPS)
+        recall = micro_tp / (micro_tp + micro_fn + EPS)
+        precision = micro_tp / (micro_tp + micro_fp + EPS)
 
-        micro_f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + deco.EPS)
+        micro_f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + EPS)
         return micro_f1
 
     elif average == "macro":
         macro_f1 = 0
         for tp, r, c in zip(tp_set, row, col):
-            precision = tp / (c + deco.EPS)
-            recall = tp / (r + deco.EPS)
-            f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + deco.EPS)
+            precision = tp / (c + EPS)
+            recall = tp / (r + EPS)
+            f1 = (1 + beta**2) * recall * precision / ((beta**2) * precision + recall + EPS)
             macro_f1 += f1
 
         return macro_f1 / num_classes
