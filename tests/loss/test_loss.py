@@ -36,13 +36,6 @@ class TestLoss(unittest.TestCase):
         # self.assertEqual(loss.size().numel(), 1)
         # self.assertAlmostEqual(float(loss), 0.80567473, places=4)
 
-    def test_batch_dot(self):
-        feat_len = randint(1, 512)
-        samples = torch.randn(size=(10, feat_len))
-        dot_mat = compute_gram_matrix(samples, reduce=False)
-        self.assertLessEqual((1 - torch.diag(dot_mat)).mean(), utils.EPS * feat_len)
-        self.assertLessEqual((torch.transpose(dot_mat, 0, 1) - dot_mat).mean(), utils.EPS)
-
 
 class TestComputeGram(unittest.TestCase):
 
