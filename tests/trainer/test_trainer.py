@@ -107,7 +107,7 @@ class TestTrainer(unittest.TestCase):
         self.trainer.run(n_epoch=1, loader=self.loader)
         # test logging
         log_a, log_b = self.trainer.log_train, self.trainer.log_test
-        print(f"Tested in {mode} mode.")
+        print(f"Tested in {self.trainer.mode} mode.")
         print(f"Length of log_a: {len(log_a)}")
         print(f"Length of log_a: {len(log_b)}")
         if self.trainer.mode == "test":
