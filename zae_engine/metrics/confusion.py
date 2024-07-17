@@ -56,7 +56,6 @@ def confusion_matrix(
     return canvas
 
 
-@deco.np2torch(dtype=torch.int)
 def print_confusion_matrix(
     conf_mat: np.ndarray | torch.Tensor,
     cell_width: Optional[int] = 4,
@@ -107,8 +106,8 @@ def print_confusion_matrix(
 
     if class_name is not None:
         assert (
-            len(class_name) == confusion_matrix.shape[-1]
-        ), f"Unmatched classes number class_name {len(class_name)} =/= number of class {confusion_matrix.shape[-1]}"
+            len(class_name) == conf_mat.shape[-1]
+        ), f"Unmatched classes number class_name {len(class_name)} =/= number of class {conf_mat.shape[-1]}"
 
         class_name = [""] + class_name
         for i, name in enumerate(class_name):
@@ -123,7 +122,7 @@ def print_confusion_matrix(
             table.add_row(*row_with_index)
 
     else:
-        for col in range(confusion_matrix.shape[-1] + 1):
+        for col in range(conf_mat.shape[-1] + 1):
             if col == 0:
                 table.add_column("", justify="center", style="green", min_width=cell_width, max_width=cell_width)
             else:
