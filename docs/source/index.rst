@@ -11,26 +11,32 @@ zae-engine은 딥러닝 프로젝트의 quick start를 돕기 위한 파이썬 �
 아래의 명령어를 통해 설치 확인 및 각 기능을 지원 예정입니다.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Command:
 
 .. code-block:: console
 
-   zae hello
-   zae example
-   zae tree
+   zae hello   >> 안녕하세요
+   zae example >> 예제 파일 생성
+   zae tree    >> 패키지 구조 출력
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 4
    :caption: Contents:
 
-   data_pipeline/zae_engine.data_pipeline.rst
-   inference/zae_engine.inference.rst
+   modules
+
+..   zae_engine
+
+..   inference/zae_engine.inference.rst
+
+..   data/zae_engine.data.rst
    loss/zae_engine.loss.rst
-   measure/zae_engine.measure.rst
+   metrics/zae_engine.metrics.rst
    models/zae_engine.models.rst
    nn_night/zae_engine.nn_night.rst
    operation/zae_engine.operation.rst
+   schedulers/zae_engine.schedulers.rst
    trainer/zae_engine.trainer.rst
    utils/zae_engine.utils.rst
 

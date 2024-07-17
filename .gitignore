@@ -3,7 +3,8 @@
 *.pt
 *.pth
 *.lock
+.python-version
 .idea/
 dist/
-docs/build/
 **/wandb/
+__pycache__

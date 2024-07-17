@@ -7,8 +7,6 @@ from torchvision.transforms import Resize
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 import torch.nn.functional as F
 from tqdm import tqdm
-import onnx
-import tf2onnx
 
 import os
 import numpy as np
@@ -19,7 +17,7 @@ from PIL import Image
 from tensorflow import keras
 from keras import layers
 
-from zae_engine import trainer, models, measure, data_pipeline
+from zae_engine import trainer, models, metrics
 from zae_engine.utils.io import image_from_url
 
 LOOKUP = {k: v for k, v in enumerate("0123456789abcdefghijklmnopqrstuvwxyz")}
@@ -87,7 +85,7 @@ class CaptchaTrainer(trainer.Trainer):
         out = self.model(x).softmax(1)
         prediction = out.argmax(1)
         loss = F.cross_entropy(out, y)
-        acc = measure.accuracy(self._to_cpu(y.argmax(1)), self._to_cpu(prediction))
+        acc = metrics.accuracy(self._to_cpu(y.argmax(1)), self._to_cpu(prediction))
         return {"loss": loss, "output": out, "acc": acc}
 
     def test_step(self, batch):
@@ -100,7 +98,7 @@ class CaptchaTrainer(trainer.Trainer):
         out = self.model(x).softmax(1)
         prediction = out.argmax(1)
         loss = F.cross_entropy(out, y)
-        acc = measure.accuracy(self._to_cpu(y.argmax(1)), self._to_cpu(prediction))
+        acc = metrics.accuracy(self._to_cpu(y.argmax(1)), self._to_cpu(prediction))
         return {"loss": loss, "output": out, "acc": acc}
 
 

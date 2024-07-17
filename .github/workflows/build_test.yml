@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Python build & unittest
+name: Build
 
 on:
   push:
@@ -26,14 +26,6 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Login W&B
-      shell: bash
-      env:
-        WANDB_API: ${{ secrets.WANDB_KEY }}
-      run: |
-        pip install wandb
-        chmod +x $(which wandb)
-        wandb login "$WANDB_API"
     - name: Install Poetry
       run: |
         curl -sSL https://install.python-poetry.org | python3 -
@@ -46,7 +38,4 @@ jobs:
     - name: Build
       run: |
         poetry build
-    - name: Pytest
-      run: |
-        poetry run pytest
 

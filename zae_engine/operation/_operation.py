@@ -4,12 +4,29 @@ from itertools import groupby
 import numpy as np
 import torch
 import torch.nn as nn
-from rich import box
-from rich.console import Console
-from rich.table import Table
 
 
 class MorphologicalLayer(nn.Module):
+    """
+    Morphological operation layer for 1D tensors.
+
+    This layer applies a series of morphological operations such as dilation
+    and erosion on the input tensor.
+
+    Parameters
+    ----------
+    ops : str
+        A string where each character represents an operation: 'c' for closing
+        (dilation followed by erosion) and 'o' for opening (erosion followed by dilation).
+    window_size : List[int]
+        A list of window sizes for each operation in `ops`.
+
+    Attributes
+    ----------
+    post : nn.Sequential
+        The sequence of morphological operations.
+    """
+
     def __init__(self, ops: str, window_size: List[int]):
         super(MorphologicalLayer, self).__init__()
         try:
@@ -30,6 +47,19 @@ class MorphologicalLayer(nn.Module):
                 self.conv.weight.data = kernel
 
             def forward(self, x):
+                """
+                Apply morphological operations to the input tensor.
+
+                Parameters
+                ----------
+                x : torch.Tensor
+                    The input tensor.
+
+                Returns
+                -------
+                torch.Tensor
+                    The tensor after morphological operations.
+                """
                 x = self.conv(x)
                 if self.morph_type == "erosion":
                     return torch.min(x, 1)[0].unsqueeze(1)
@@ -60,28 +90,29 @@ def label_to_onoff(
     labels: Union[np.ndarray, torch.Tensor], sense: int = 2, middle_only: bool = False, outside_idx: Optional = True
 ) -> list:
     """
-    Convert label sequence to onoff array.
-    Receive the label(sequence of annotation for each point), return the on-off array.
-    On-off array consists of [on, off, class] for exist beats. If there is no beat, return [].
+    Convert label sequence to on-off array.
 
-    Input args:
-        label: np.nd-array
-                Sequence of annotation for each point
-                Expected shape is [N, points] or [points] where N is number of data.
-        sense: int
-                The sensitivity value.
-                Ignore beat if the (off - on) is less than sensitivity value.
-        middle_only: bool
-                Ignore both the left-most & right-most beats.
-        outside_idx: int or float(nan)
-                Outside index (default is np.nan).
-                Fill on (or off) if beat is incomplete. only use for left-most or right-most.
-                If middle_only is False, outside_idx is not used.
+    This function receives the label sequence and returns an on-off array.
+    The on-off array consists of [on, off, label] for every existing upper-step and lower-step.
+    If there is no label changing and only single label is in input, it returns an empty list.
 
-    Output args:
-        Beat info matrix:
-                Shape of matrix is (N, # of beats, 3) or (# of beats, 3) where N is number of data.
-                Length of last dimension is 3 consists of [on, off, cls].
+    Parameters
+    ----------
+    labels : Union[np.ndarray, torch.Tensor]
+        Sequence of annotation for each point. Expected shape is [N, points] or [points] where N is number of data.
+    sense : int
+        The sensitivity value. Ignore on-off if the (off - on) is less than sensitivity value.
+    middle_only : bool
+        Ignore both the left-most & right-most on-off.
+    outside_idx : Optional[int or float]
+        Outside index (default is np.nan). Fill on (or off) if beat is incomplete. Only use for left-most or right-most.
+        If middle_only is False, outside_idx is not used.
+
+    Returns
+    -------
+    list
+        On-off matrix: Shape of matrix is (N, # of on-offs, 3) or (# of on-offs, 3) where N is number of data.
+        Length of last dimension is 3 and consists of [on, off, label].
     """
     SINGLE = False
     if isinstance(labels, torch.Tensor):
@@ -132,13 +163,23 @@ def label_to_onoff(
 
 def onoff_to_label(onoff: Union[np.ndarray, torch.Tensor], length: int = 2500) -> np.ndarray:
     """
-    Return label sequence using onoff(arg #1).
-    Receive the label(sequence of annotation for each point), return the on-off array.
-    On-off array consists of [on, off, class] for exist beats. If there is no beat, return [].
+    Convert on-off array to label sequence.
 
-    :param onoff: np.nd-array. Array of on-off. Expected shape is [N, [on, off, cls]] where N is number of beats.
-    :param length: int. Length of label sequence. This value should be larger than maximum of onoff.
-    :return: label
+    This function receives an on-off array and returns the label sequence.
+    The on-off array consists of [on, off, label] for existing on-off pairs.
+    If there is no beat, it returns an empty array.
+
+    Parameters
+    ----------
+    onoff : Union[np.ndarray, torch.Tensor]
+        Array of on-off. Expected shape is [N, [on, off, cls]] where N is number of on-off pairs.
+    length : int
+        Length of label sequence. This value should be larger than maximum of onoff.
+
+    Returns
+    -------
+    np.ndarray
+        The label sequence.
     """
     if isinstance(onoff, torch.Tensor):
         onoff = onoff.detach().numpy()
@@ -164,10 +205,19 @@ def onoff_to_label(onoff: Union[np.ndarray, torch.Tensor], length: int = 2500) -
 
 def find_nearest(arr: Union[np.ndarray, torch.Tensor], value: int):
     """
-    Find the nearest value and its index.
-    :param arr: 1d-array.
-    :param value: reference value.
-    :return: index of nearest, value of nearest
+    Find the nearest value and its index in the array.
+
+    Parameters
+    ----------
+    arr : Union[np.ndarray, torch.Tensor]
+        The input array.
+    value : int
+        The reference value.
+
+    Returns
+    -------
+    Tuple[int, int]
+        The index and value of the nearest element.
     """
     if isinstance(arr, torch.Tensor):
         arr = arr.numpy()
@@ -184,91 +234,3 @@ def find_nearest(arr: Union[np.ndarray, torch.Tensor], value: int):
             return i_gap - 1, left
         else:
             return i_gap, right
-
-
-def draw_confusion_matrix(
-    y_true: Union[np.ndarray, torch.Tensor], y_hat: Union[np.ndarray, torch.Tensor], num_classes: int
-):
-    """
-    Compute confusion matrix.
-    Both the y_true and y_hat have data type as integer, and match in shape.
-
-    :param y_true: Union[np.nd-array, torch.Tensor]
-    :param y_hat: Union[np.nd-array, torch.Tensor]
-    :param num_classes: int
-    :return: confusion matrix with 2-D nd-array.
-    """
-
-    assert len(y_true) == len(y_hat), f"length unmatched: arg #1 {len(y_true)} =/= arg #2 {len(y_hat)}"
-    canvas = np.zeros((num_classes, num_classes))
-
-    for true, hat in zip(y_true, y_hat):
-        canvas[true, hat] += 1
-
-    return canvas
-
-
-def print_confusion_matrix(
-    confusion_matrix: np.ndarray,
-    cell_width: Optional[int] = 4,
-    class_name: Union[List, Tuple] = None,
-    frame: Optional[bool] = True,
-):
-    """
-    Printing given confusion matrix.
-    Printing width is customizable with cell_width, but height is not.
-    The names of rows and columns are customizable with class_name.
-    Note that the length of class_name must be matched with the length of the confusion matrix.
-    :param confusion_matrix: np.nd-array
-    :param cell_width: int, optional
-    :param class_name: Union[List[str], Tuple[str]], optional
-    :param frame: bool, optional
-    :return:
-    """
-    box_frame = box.SIMPLE if frame else None
-
-    table = Table(
-        show_header=True,
-        header_style="bold magenta",
-        box=box_frame,
-        leading=1,
-        show_edge=True,
-        show_lines=True,
-        min_width=64,
-    )
-
-    console = Console()
-    table.title = "\n confusion_matrix"
-
-    if class_name is not None:
-        assert (
-            len(class_name) == confusion_matrix.shape[-1]
-        ), f"Unmatched classes number class_name {len(class_name)} =/= number of class {confusion_matrix.shape[-1]}"
-
-        class_name = [""] + class_name
-        for i, name in enumerate(class_name):
-            if i == 0:
-                table.add_column("", justify="center", style="green", min_width=cell_width, max_width=cell_width)
-            else:
-                table.add_column(name, justify="center", min_width=cell_width, max_width=cell_width)
-
-        for i, row in enumerate(confusion_matrix):
-            row_with_index = [class_name[i + 1]] + list(map(lambda x: str(int(x)), row.tolist()))
-            row_with_index[i + 1] = f"[bold cyan]{row_with_index[i + 1]}[bold cyan]"
-            table.add_row(*row_with_index)
-
-    else:
-        for col in range(confusion_matrix.shape[-1] + 1):
-            if col == 0:
-                table.add_column("", justify="center", style="green", min_width=cell_width, max_width=cell_width)
-            else:
-                table.add_column("P" + str(col - 1), justify="center", min_width=cell_width, max_width=cell_width)
-
-        for i, row in enumerate(confusion_matrix):
-            row_with_index = [f"T{i}"] + list(map(lambda x: str(int(x)), row.tolist()))
-            row_with_index[i + 1] = f"[bold cyan]{row_with_index[i + 1]}[bold cyan]"
-            table.add_row(*row_with_index)
-
-    table.caption = "row : [green]Actual[/green] column : [purple]Prediction[/purple]"
-
-    console.print(table)
