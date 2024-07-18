@@ -14,7 +14,7 @@ class TestMetrics(unittest.TestCase):
         expected_rms = 3.3166247903554
 
         self.assertAlmostEqual(rms(signal_np), expected_rms, places=6)
-        self.assertAlmostEqual(rms(signal_torch).item(), expected_rms, places=6)
+        self.assertAlmostEqual(rms(signal_torch), expected_rms, places=6)
 
     def test_mse(self):
         signal1_np = np.array([1, 2, 3, 4, 5])
@@ -24,8 +24,8 @@ class TestMetrics(unittest.TestCase):
 
         expected_mse = 0.2
 
-        self.assertAlmostEqual(mse(signal1_np, signal2_np).item(), expected_mse, places=6)
-        self.assertAlmostEqual(mse(signal1_torch, signal2_torch).item(), expected_mse, places=6)
+        self.assertAlmostEqual(mse(signal1_np, signal2_np), expected_mse, places=6)
+        self.assertAlmostEqual(mse(signal1_torch, signal2_torch), expected_mse, places=6)
 
     def test_signal_to_noise(self):
         signal_np = example_ecg()[0]
@@ -36,7 +36,7 @@ class TestMetrics(unittest.TestCase):
         # expected_snr = 20.0
 
         self.assertAlmostEqual(
-            signal_to_noise(signal_np, noise_np).item(), signal_to_noise(signal_torch, noise_torch).item(), places=6
+            signal_to_noise(signal_np, noise_np), signal_to_noise(signal_torch, noise_torch), places=6
         )
 
     def test_peak_signal_to_noise(self):
@@ -48,7 +48,7 @@ class TestMetrics(unittest.TestCase):
         # expected_psnr = 4.48062372
 
         self.assertAlmostEqual(
-            signal_to_noise(signal_np, noise_np).item(), signal_to_noise(signal_torch, noise_torch).item(), places=6
+            signal_to_noise(signal_np, noise_np), signal_to_noise(signal_torch, noise_torch), places=6
         )
 
     # def test_iec(self):
