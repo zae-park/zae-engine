@@ -211,7 +211,8 @@ def qilv(
     index2 = (2 * std_l_vars1 * std_l_vars2) / (std_l_vars1**2 + std_l_vars2**2 + np.finfo(np.float32).eps)
     index3 = covar_l_vars / (std_l_vars1 * std_l_vars2 + np.finfo(np.float32).eps)
 
-    return (index1 * index2 * index3).item()
+    qilv_value = index1 * index2 * index3
+    return max(0.0, min(1.0, qilv_value))
 
 
 # def iec_60601(true: dict, predict: dict, data_length: int, criteria: str) -> Tuple[float, float]:
