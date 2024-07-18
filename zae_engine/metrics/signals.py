@@ -39,7 +39,9 @@ def rms(signal: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tens
 
 
 @deco.np2torch(torch.float)
-def mse(signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, torch.Tensor]):
+def mse(
+    signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, torch.Tensor]
+) -> Union[np.ndarray, torch.Tensor]:
     """
     Compute the mean squared error (MSE) between two signals.
 
@@ -54,8 +56,8 @@ def mse(signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, tor
 
     Returns
     -------
-    torch.Tensor
-        The MSE value as a torch tensor.
+    Union[np.ndarray, torch.Tensor]
+        The MSE value of the signal, with the same type as the input.
 
     Examples
     --------
