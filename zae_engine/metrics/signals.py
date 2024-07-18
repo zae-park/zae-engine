@@ -1,3 +1,4 @@
+import math
 from typing import Union, Optional, List
 
 import numpy as np
@@ -72,7 +73,7 @@ def mse(signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, tor
 
 
 @deco.np2torch(torch.float)
-def signal_to_noise(signal: Union[torch.Tensor | np.ndarray], noise: Union[torch.Tensor | np.ndarray]):
+def signal_to_noise(signal: Union[torch.Tensor, np.ndarray], noise: Union[torch.Tensor, np.ndarray]) -> float:
     """
     Compute the signal-to-noise ratio (SNR).
 
@@ -87,28 +88,31 @@ def signal_to_noise(signal: Union[torch.Tensor | np.ndarray], noise: Union[torch
 
     Returns
     -------
-    torch.Tensor
-        The SNR value in decibels (dB) as a torch tensor.
+    float
+        The SNR value in decibels (dB).
 
     Examples
     --------
     >>> signal = np.array([1, 2, 3, 4, 5])
     >>> noise = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
     >>> signal_to_noise(signal, noise)
-    tensor(20.0000)
+    20.0
     >>> signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
     >>> noise = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float)
     >>> signal_to_noise(signal, noise)
-    tensor(20.0000)
+    20.0
     """
     signal_eff, noise_eff = rms(signal=signal), rms(signal=noise)
-    db = 20 * torch.log10(signal_eff / (noise_eff + EPS))
-
+    db = 20 * math.log10(signal_eff / (noise_eff + EPS))
     return db
 
 
 @deco.np2torch(torch.float)
-def peak_signal_to_noise(signal, noise, peak: Union[bool | int | float] = False):
+def peak_signal_to_noise(
+    signal: Union[torch.Tensor, np.ndarray],
+    noise: Union[torch.Tensor, np.ndarray],
+    peak: Union[bool, int, float] = False,
+) -> float:
     """
     Compute the peak signal-to-noise ratio (PSNR).
 
@@ -126,28 +130,27 @@ def peak_signal_to_noise(signal, noise, peak: Union[bool | int | float] = False)
 
     Returns
     -------
-    torch.Tensor
-        The PSNR value in decibels (dB) as a torch tensor.
+    float
+        The PSNR value in decibels (dB).
 
     Examples
     --------
     >>> signal = np.array([1, 2, 3, 4, 5])
     >>> noise = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
     >>> peak_signal_to_noise(signal, noise)
-    tensor(24.0824)
+    24.0824
     >>> signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
     >>> noise = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float)
     >>> peak_signal_to_noise(signal, noise)
-    tensor(24.0824)
+    24.0824
     >>> peak_signal_to_noise(signal, noise, peak=5)
-    tensor(24.0824)
+    24.0824
     """
     if not peak:
         peak = signal.max()
 
     mse_value = mse(signal1=signal, signal2=noise)
-    db = 20 * torch.log10(peak / torch.sqrt(mse_value + EPS))
-    # db = 20 * torch.log10(peak / mse(signal1=signal, signal2=noise))
+    db = 20 * math.log10(peak / math.sqrt(mse_value + EPS))
     return db
 
 
