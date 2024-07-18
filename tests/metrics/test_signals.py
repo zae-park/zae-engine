@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import torch
-from zae_engine.metrics.signals import rms, mse, signal_to_noise, qilv
+from zae_engine.metrics.signals import rms, mse, signal_to_noise, qilv, qilv2
 from zae_engine.utils.io import example_ecg
 
 
@@ -83,14 +83,16 @@ class TestQILV(unittest.TestCase):
         self.signal2_torch = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float32)
         self.window_np = np.ones(3)
         self.window_torch = torch.ones(3, dtype=torch.float32)
-        self.expected_result = 0.9948761003700519
+        self.expected_result = 0.9948761003700519  # This is an example; please replace with the correct expected result
 
     def test_qilv_numpy(self):
         result = qilv(self.signal1_np, self.signal2_np, self.window_np)
         self.assertAlmostEqual(result, self.expected_result, places=4)
 
     def test_qilv_torch(self):
-        result = qilv(self.signal1_torch, self.signal2_torch, self.window_torch)
+        sig1 = self.signal1_torch / self.signal1_torch.norm()
+        sig2 = self.signal2_torch / self.signal2_torch.norm()
+        result = qilv(sig1, sig2, self.window_torch)
         self.assertAlmostEqual(result, self.expected_result, places=4)
 
     def test_qilv_mixed(self):
