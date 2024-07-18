@@ -154,43 +154,65 @@ def peak_signal_to_noise(
     return db
 
 
-# def qilv(signal1, signal2, window):
-#     """
-#     Quality Index based on Local Variance (QILV) - Santiago Aja Fernandez (santi @ bwh.harhard.edu)
-#     Ref - "Image quality assessment based on local variance", EMBC 2006
-#     ------------------------------------------------------------------
-#     Calculate a global compatibility metrics between two images, based on their local variance distribution.
-#     TODO: Seems not valid.
-#
-#     INPUT:
-#         signal1, signal2: Two signals for calculation.
-#         window_size: size of window to define range of local.
-#         window_type: Type of window to define coefficient of window.
-#     OUTPUT:
-#         qi: Quality index. bounded into [0, 1].
-#     USAGE:
-#         qi = qilv1D(sig1, sig2, 7)
-#     """
-#     window_ = window / np.sum(window)  # normalized
-#
-#     # Local statistics
-#     l_means1 = np.convolve(signal1, window_, "valid")
-#     l_means2 = np.convolve(signal2, window_, "valid")
-#     l_vars1 = np.convolve(signal1**2, window_, "valid") - l_means1**2
-#     l_vars2 = np.convolve(signal2**2, window_, "valid") - l_means2**2
-#
-#     # Global statistics
-#     mean_l_vars1, mean_l_vars2 = np.mean(l_vars1), np.mean(l_vars2)
-#     std_l_vars1, std_l_vars2 = np.std(l_vars1), np.std(l_vars2)
-#     covar_l_vars = np.mean((l_vars1 - mean_l_vars1) * (l_vars2 - mean_l_vars2))
-#
-#     index1 = (2 * mean_l_vars1 * mean_l_vars2) / (mean_l_vars1**2 + mean_l_vars2**2 + torch.finfo(torch.float32).eps)
-#     index2 = (2 * std_l_vars1 * std_l_vars2) / (std_l_vars1**2 + std_l_vars2**2 + torch.finfo(torch.float32).eps)
-#     index3 = covar_l_vars / (std_l_vars1 * std_l_vars2 + torch.finfo(torch.float32).eps)
-#
-#     return index1 * index2 * index3
-#
-#
+@deco.torch2np(np.float32)
+def qilv(
+    signal1: Union[torch.Tensor, np.ndarray],
+    signal2: Union[torch.Tensor, np.ndarray],
+    window: Union[torch.Tensor, np.ndarray],
+) -> float:
+    """
+    Calculate the Quality Index based on Local Variance (QILV) for two signals.
+
+    This function computes a global compatibility metric between two signals based on their local variance distribution.
+
+    Parameters
+    ----------
+    signal1 : Union[torch.Tensor, np.ndarray]
+        The first input signal.
+    signal2 : Union[torch.Tensor, np.ndarray]
+        The second input signal.
+    window : Union[torch.Tensor, np.ndarray]
+        The window used to define the local region for variance calculation.
+
+    Returns
+    -------
+    float
+        The QILV value, bounded between [0, 1].
+
+    References
+    ----------
+    .. [1] Santiago Aja-Fernández et al. "Image quality assessment based on local variance", EMBC 2006.
+           https://ieeexplore.ieee.org/document/4481769
+
+    Examples
+    --------
+    >>> signal1 = np.array([1, 2, 3, 4, 5])
+    >>> signal2 = np.array([1, 2, 3, 4, 6])
+    >>> window = np.ones(3)
+    >>> qilv(signal1, signal2, window)
+    0.9948761003700519
+    """
+    # Normalize the window
+    window_ = window / np.sum(window)
+
+    # Local statistics
+    l_means1 = np.convolve(signal1, window_, "valid")
+    l_means2 = np.convolve(signal2, window_, "valid")
+    l_vars1 = np.convolve(signal1**2, window_, "valid") - l_means1**2
+    l_vars2 = np.convolve(signal2**2, window_, "valid") - l_means2**2
+
+    # Global statistics
+    mean_l_vars1, mean_l_vars2 = np.mean(l_vars1), np.mean(l_vars2)
+    std_l_vars1, std_l_vars2 = np.std(l_vars1), np.std(l_vars2)
+    covar_l_vars = np.mean((l_vars1 - mean_l_vars1) * (l_vars2 - mean_l_vars2))
+
+    # Calculate indices
+    index1 = (2 * mean_l_vars1 * mean_l_vars2) / (mean_l_vars1**2 + mean_l_vars2**2 + np.finfo(np.float32).eps)
+    index2 = (2 * std_l_vars1 * std_l_vars2) / (std_l_vars1**2 + std_l_vars2**2 + np.finfo(np.float32).eps)
+    index3 = covar_l_vars / (std_l_vars1 * std_l_vars2 + np.finfo(np.float32).eps)
+
+    return (index1 * index2 * index3).item()
+
 
 # def iec_60601(true: dict, predict: dict, data_length: int, criteria: str) -> Tuple[float, float]:
 #     """
