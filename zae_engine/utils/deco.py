@@ -54,6 +54,54 @@ def np2torch(dtype: torch.dtype, n: int = None) -> Callable:
     return deco
 
 
+def torch2np(dtype: np.dtype, n: int = None) -> Callable:
+    """
+    Convert torch tensors to numpy arrays with a specified dtype.
+
+    This decorator converts all torch tensor arguments of a function to numpy arrays with the specified dtype.
+    If an argument is already a numpy array, it is not converted. If n is not specified, all torch tensor arguments are converted.
+
+    Parameters
+    ----------
+    dtype : np.dtype
+        The desired dtype for the numpy arrays.
+    n : int, optional
+        The number of initial arguments to convert. If None, all torch tensor arguments are converted.
+
+    Returns
+    -------
+    func
+        The decorated function with torch tensor arguments converted to numpy arrays.
+
+    Examples
+    --------
+    >>> @torch2np(np.float32, n=2)
+    ... def example_func(x, y, z):
+    ...     return x, y, z
+    >>> example_func(torch.tensor([1, 2, 3]), torch.tensor([4, 5, 6]), torch.tensor([7, 8, 9]))
+    # This will convert only the first two torch tensors to numpy arrays.
+    """
+
+    def deco(func: Callable) -> Callable:
+        def wrapper(*args: Union[np.ndarray, torch.Tensor, bool, int, float], **kwargs):
+            if n is None:
+                n_args = len(args)
+            else:
+                n_args = min(n, len(args))
+
+            converted_args = tuple(
+                a.numpy().astype(dtype) if isinstance(a, torch.Tensor) and i < n_args else a for i, a in enumerate(args)
+            )
+
+            kwargs = {k: v.numpy().astype(dtype) if isinstance(v, torch.Tensor) else v for k, v in kwargs.items()}
+
+            return func(*converted_args, **kwargs)
+
+        return wrapper
+
+    return deco
+
+
 def shape_check(*keys):
     """
     Ensure that the shapes of specified arguments are the same.
