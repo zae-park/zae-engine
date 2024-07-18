@@ -1,11 +1,7 @@
 import unittest
-
-import numpy as np
-
-import unittest
 import numpy as np
 import torch
-from zae_engine.metrics.signals import rms, mse, signal_to_noise, peak_signal_to_noise
+from zae_engine.metrics.signals import rms, mse, signal_to_noise, qilv
 from zae_engine.utils.io import example_ecg
 
 
@@ -77,6 +73,31 @@ class TestMetrics(unittest.TestCase):
     #     predict3 = [6, 16, 36, 52, 90, 140]
     #     self.assertEqual(_measure.cpsc2021(true, predict2), _measure.cpsc2021(true, predict))
     #     self.assertGreater(_measure.cpsc2021(true, predict2), _measure.cpsc2021(true, predict3))
+
+
+class TestQILV(unittest.TestCase):
+    def setUp(self):
+        self.signal1_np = np.array([1, 2, 3, 4, 5])
+        self.signal2_np = np.array([1, 2, 3, 4, 6])
+        self.signal1_torch = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float32)
+        self.signal2_torch = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float32)
+        self.window_np = np.ones(3)
+        self.window_torch = torch.ones(3, dtype=torch.float32)
+
+    def test_qilv_numpy(self):
+        result = qilv(self.signal1_np, self.signal2_np, self.window_np)
+        expected_result = 0.9948761003700519  # Expected result based on the example in the docstring
+        self.assertAlmostEqual(result, expected_result, places=6)
+
+    def test_qilv_torch(self):
+        result = qilv(self.signal1_torch, self.signal2_torch, self.window_torch)
+        expected_result = 0.9948761003700519  # Expected result based on the example in the docstring
+        self.assertAlmostEqual(result, expected_result, places=6)
+
+    def test_qilv_mixed(self):
+        result = qilv(self.signal1_np, self.signal2_torch, self.window_np)
+        expected_result = 0.9948761003700519  # Expected result based on the example in the docstring
+        self.assertAlmostEqual(result, expected_result, places=6)
 
 
 if __name__ == "__main__":
