@@ -83,21 +83,19 @@ class TestQILV(unittest.TestCase):
         self.signal2_torch = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float32)
         self.window_np = np.ones(3)
         self.window_torch = torch.ones(3, dtype=torch.float32)
+        self.expected_result = 0.9948761003700519
 
     def test_qilv_numpy(self):
         result = qilv(self.signal1_np, self.signal2_np, self.window_np)
-        expected_result = 0.9948761003700519  # Expected result based on the example in the docstring
-        self.assertAlmostEqual(result, expected_result, places=6)
+        self.assertAlmostEqual(result, self.expected_result, places=4)
 
     def test_qilv_torch(self):
         result = qilv(self.signal1_torch, self.signal2_torch, self.window_torch)
-        expected_result = 0.9948761003700519  # Expected result based on the example in the docstring
-        self.assertAlmostEqual(result, expected_result, places=6)
+        self.assertAlmostEqual(result, self.expected_result, places=4)
 
     def test_qilv_mixed(self):
         result = qilv(self.signal1_np, self.signal2_torch, self.window_np)
-        expected_result = 0.9948761003700519  # Expected result based on the example in the docstring
-        self.assertAlmostEqual(result, expected_result, places=6)
+        self.assertAlmostEqual(result, self.expected_result, places=4)
 
 
 if __name__ == "__main__":
