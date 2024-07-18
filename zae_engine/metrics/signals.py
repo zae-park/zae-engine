@@ -10,7 +10,7 @@ from ..utils import deco
 EPS = torch.finfo(torch.float32).eps
 
 
-def rms(signal: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
+def rms(signal: Union[np.ndarray, torch.Tensor]) -> float:
     """
     Compute the root mean square (RMS) of a signal.
 
@@ -23,8 +23,8 @@ def rms(signal: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tens
 
     Returns
     -------
-    Union[np.ndarray, torch.Tensor]
-        The RMS value of the signal, with the same type as the input.
+    float
+        The RMS value of the signal.
 
     Examples
     --------
@@ -33,15 +33,13 @@ def rms(signal: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tens
     3.3166247903554
     >>> signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
     >>> rms(signal)
-    tensor(3.3166)
+    3.3166247901916504
     """
-    return (signal**2).mean() ** 0.5
+    return ((signal**2).mean() ** 0.5).item()
 
 
 @deco.np2torch(torch.float)
-def mse(
-    signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, torch.Tensor]
-) -> Union[np.ndarray, torch.Tensor]:
+def mse(signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, torch.Tensor]) -> float:
     """
     Compute the mean squared error (MSE) between two signals.
 
@@ -56,21 +54,21 @@ def mse(
 
     Returns
     -------
-    Union[np.ndarray, torch.Tensor]
-        The MSE value of the signal, with the same type as the input.
+    float
+        The MSE value of the signal.
 
     Examples
     --------
     >>> signal1 = np.array([1, 2, 3, 4, 5])
     >>> signal2 = np.array([1, 2, 3, 4, 6])
     >>> mse(signal1, signal2)
-    tensor(0.2000)
+    0.20000000298023224
     >>> signal1 = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)
     >>> signal2 = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float)
     >>> mse(signal1, signal2)
-    tensor(0.2000)
+    0.20000000298023224
     """
-    return ((signal1 - signal2) ** 2).mean()
+    return ((signal1 - signal2) ** 2).mean().item()
 
 
 @deco.np2torch(torch.float)
