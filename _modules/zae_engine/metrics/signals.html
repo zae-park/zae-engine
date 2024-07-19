@@ -70,7 +70,8 @@
            <div itemprop="articleBody">
              
   <h1>Source code for zae_engine.metrics.signals</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -84,7 +85,7 @@
 
 <div class="viewcode-block" id="rms">
 <a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.rms">[docs]</a>
-<span class="k">def</span> <span class="nf">rms</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">rms</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the root mean square (RMS) of a signal.</span>
 
@@ -97,8 +98,8 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    Union[np.ndarray, torch.Tensor]</span>
-<span class="sd">        The RMS value of the signal, with the same type as the input.</span>
+<span class="sd">    float</span>
+<span class="sd">        The RMS value of the signal.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -107,14 +108,14 @@
 <span class="sd">    3.3166247903554</span>
 <span class="sd">    &gt;&gt;&gt; signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
 <span class="sd">    &gt;&gt;&gt; rms(signal)</span>
-<span class="sd">    tensor(3.3166)</span>
+<span class="sd">    3.3166247901916504</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">signal</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">**</span> <span class="mf">0.5</span></div>
+    <span class="k">return</span> <span class="p">((</span><span class="n">signal</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
 
 
 
 <span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">mse</span><span class="p">(</span><span class="n">signal1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">signal2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]):</span>
+<span class="k">def</span> <span class="nf">mse</span><span class="p">(</span><span class="n">signal1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">signal2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the mean squared error (MSE) between two signals.</span>
 
@@ -129,25 +130,25 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    torch.Tensor</span>
-<span class="sd">        The MSE value as a torch tensor.</span>
+<span class="sd">    float</span>
+<span class="sd">        The MSE value of the signal.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; signal1 = np.array([1, 2, 3, 4, 5])</span>
 <span class="sd">    &gt;&gt;&gt; signal2 = np.array([1, 2, 3, 4, 6])</span>
 <span class="sd">    &gt;&gt;&gt; mse(signal1, signal2)</span>
-<span class="sd">    tensor(0.2000)</span>
+<span class="sd">    0.20000000298023224</span>
 <span class="sd">    &gt;&gt;&gt; signal1 = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
 <span class="sd">    &gt;&gt;&gt; signal2 = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float)</span>
 <span class="sd">    &gt;&gt;&gt; mse(signal1, signal2)</span>
-<span class="sd">    tensor(0.2000)</span>
+<span class="sd">    0.20000000298023224</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">((</span><span class="n">signal1</span> <span class="o">-</span> <span class="n">signal2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">signal1</span> <span class="o">-</span> <span class="n">signal2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
 
 <span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">signal_to_noise</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">noise</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
+<span class="k">def</span> <span class="nf">signal_to_noise</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">noise</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the signal-to-noise ratio (SNR).</span>
 
@@ -162,28 +163,31 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    torch.Tensor</span>
-<span class="sd">        The SNR value in decibels (dB) as a torch tensor.</span>
+<span class="sd">    float</span>
+<span class="sd">        The SNR value in decibels (dB).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; signal = np.array([1, 2, 3, 4, 5])</span>
 <span class="sd">    &gt;&gt;&gt; noise = np.array([0.1, 0.2, 0.3, 0.4, 0.5])</span>
 <span class="sd">    &gt;&gt;&gt; signal_to_noise(signal, noise)</span>
-<span class="sd">    tensor(20.0000)</span>
+<span class="sd">    20.0</span>
 <span class="sd">    &gt;&gt;&gt; signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
 <span class="sd">    &gt;&gt;&gt; noise = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float)</span>
 <span class="sd">    &gt;&gt;&gt; signal_to_noise(signal, noise)</span>
-<span class="sd">    tensor(20.0000)</span>
+<span class="sd">    20.0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">signal_eff</span><span class="p">,</span> <span class="n">noise_eff</span> <span class="o">=</span> <span class="n">rms</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">signal</span><span class="p">),</span> <span class="n">rms</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">noise</span><span class="p">)</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">signal_eff</span> <span class="o">/</span> <span class="p">(</span><span class="n">noise_eff</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">))</span>
-
+    <span class="n">db</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">signal_eff</span> <span class="o">/</span> <span class="p">(</span><span class="n">noise_eff</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">db</span>
 
 
 <span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">peak_signal_to_noise</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">peak</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">peak_signal_to_noise</span><span class="p">(</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">noise</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">peak</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the peak signal-to-noise ratio (PSNR).</span>
 
@@ -201,68 +205,90 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    torch.Tensor</span>
-<span class="sd">        The PSNR value in decibels (dB) as a torch tensor.</span>
+<span class="sd">    float</span>
+<span class="sd">        The PSNR value in decibels (dB).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; signal = np.array([1, 2, 3, 4, 5])</span>
 <span class="sd">    &gt;&gt;&gt; noise = np.array([0.1, 0.2, 0.3, 0.4, 0.5])</span>
 <span class="sd">    &gt;&gt;&gt; peak_signal_to_noise(signal, noise)</span>
-<span class="sd">    tensor(24.0824)</span>
+<span class="sd">    24.0824</span>
 <span class="sd">    &gt;&gt;&gt; signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
 <span class="sd">    &gt;&gt;&gt; noise = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float)</span>
 <span class="sd">    &gt;&gt;&gt; peak_signal_to_noise(signal, noise)</span>
-<span class="sd">    tensor(24.0824)</span>
+<span class="sd">    24.0824</span>
 <span class="sd">    &gt;&gt;&gt; peak_signal_to_noise(signal, noise, peak=5)</span>
-<span class="sd">    tensor(24.0824)</span>
+<span class="sd">    24.0824</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">peak</span><span class="p">:</span>
         <span class="n">peak</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
 
     <span class="n">mse_value</span> <span class="o">=</span> <span class="n">mse</span><span class="p">(</span><span class="n">signal1</span><span class="o">=</span><span class="n">signal</span><span class="p">,</span> <span class="n">signal2</span><span class="o">=</span><span class="n">noise</span><span class="p">)</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">peak</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse_value</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">))</span>
-    <span class="c1"># db = 20 * torch.log10(peak / mse(signal1=signal, signal2=noise))</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">peak</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse_value</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">db</span>
 
 
-<span class="c1"># def qilv(signal1, signal2, window):</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     Quality Index based on Local Variance (QILV) - Santiago Aja Fernandez (santi @ bwh.harhard.edu)</span>
-<span class="c1">#     Ref - &quot;Image quality assessment based on local variance&quot;, EMBC 2006</span>
-<span class="c1">#     ------------------------------------------------------------------</span>
-<span class="c1">#     Calculate a global compatibility metrics between two images, based on their local variance distribution.</span>
-<span class="c1">#     TODO: Seems not valid.</span>
-<span class="c1">#</span>
-<span class="c1">#     INPUT:</span>
-<span class="c1">#         signal1, signal2: Two signals for calculation.</span>
-<span class="c1">#         window_size: size of window to define range of local.</span>
-<span class="c1">#         window_type: Type of window to define coefficient of window.</span>
-<span class="c1">#     OUTPUT:</span>
-<span class="c1">#         qi: Quality index. bounded into [0, 1].</span>
-<span class="c1">#     USAGE:</span>
-<span class="c1">#         qi = qilv1D(sig1, sig2, 7)</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     window_ = window / np.sum(window)  # normalized</span>
-<span class="c1">#</span>
-<span class="c1">#     # Local statistics</span>
-<span class="c1">#     l_means1 = np.convolve(signal1, window_, &quot;valid&quot;)</span>
-<span class="c1">#     l_means2 = np.convolve(signal2, window_, &quot;valid&quot;)</span>
-<span class="c1">#     l_vars1 = np.convolve(signal1**2, window_, &quot;valid&quot;) - l_means1**2</span>
-<span class="c1">#     l_vars2 = np.convolve(signal2**2, window_, &quot;valid&quot;) - l_means2**2</span>
-<span class="c1">#</span>
-<span class="c1">#     # Global statistics</span>
-<span class="c1">#     mean_l_vars1, mean_l_vars2 = np.mean(l_vars1), np.mean(l_vars2)</span>
-<span class="c1">#     std_l_vars1, std_l_vars2 = np.std(l_vars1), np.std(l_vars2)</span>
-<span class="c1">#     covar_l_vars = np.mean((l_vars1 - mean_l_vars1) * (l_vars2 - mean_l_vars2))</span>
-<span class="c1">#</span>
-<span class="c1">#     index1 = (2 * mean_l_vars1 * mean_l_vars2) / (mean_l_vars1**2 + mean_l_vars2**2 + torch.finfo(torch.float32).eps)</span>
-<span class="c1">#     index2 = (2 * std_l_vars1 * std_l_vars2) / (std_l_vars1**2 + std_l_vars2**2 + torch.finfo(torch.float32).eps)</span>
-<span class="c1">#     index3 = covar_l_vars / (std_l_vars1 * std_l_vars2 + torch.finfo(torch.float32).eps)</span>
-<span class="c1">#</span>
-<span class="c1">#     return index1 * index2 * index3</span>
-<span class="c1">#</span>
-<span class="c1">#</span>
+<span class="nd">@deco</span><span class="o">.</span><span class="n">torch2np</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">qilv</span><span class="p">(</span>
+    <span class="n">signal1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">signal2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the Quality Index based on Local Variance (QILV) for two signals.</span>
+
+<span class="sd">    This function computes a global compatibility metric between two signals based on their local variance distribution.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal1 : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The first input signal.</span>
+<span class="sd">    signal2 : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The second input signal.</span>
+<span class="sd">    window : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The window used to define the local region for variance calculation.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The QILV value, bounded between [0, 1].</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Santiago Aja-Fernández et al. &quot;Image quality assessment based on local variance&quot;, EMBC 2006.</span>
+<span class="sd">           https://ieeexplore.ieee.org/document/4481769</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; signal1 = np.array([1, 2, 3, 4, 5])</span>
+<span class="sd">    &gt;&gt;&gt; signal2 = np.array([1, 2, 3, 4, 6])</span>
+<span class="sd">    &gt;&gt;&gt; window = np.ones(3)</span>
+<span class="sd">    &gt;&gt;&gt; qilv(signal1, signal2, window)</span>
+<span class="sd">    0.9948761003700519</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Normalize the window</span>
+    <span class="n">window_</span> <span class="o">=</span> <span class="n">window</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+
+    <span class="c1"># Local statistics</span>
+    <span class="n">l_means1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">signal1</span><span class="p">,</span> <span class="n">window_</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+    <span class="n">l_means2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">signal2</span><span class="p">,</span> <span class="n">window_</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+    <span class="n">l_vars1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">signal1</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">l_means1</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">l_vars2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">signal2</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">l_means2</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="c1"># Global statistics</span>
+    <span class="n">mean_l_vars1</span><span class="p">,</span> <span class="n">mean_l_vars2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">l_vars1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">l_vars2</span><span class="p">)</span>
+    <span class="n">std_l_vars1</span><span class="p">,</span> <span class="n">std_l_vars2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">l_vars1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">l_vars2</span><span class="p">)</span>
+    <span class="n">covar_l_vars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">l_vars1</span> <span class="o">-</span> <span class="n">mean_l_vars1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l_vars2</span> <span class="o">-</span> <span class="n">mean_l_vars2</span><span class="p">))</span>
+
+    <span class="c1"># Calculate indices</span>
+    <span class="n">index1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">mean_l_vars1</span> <span class="o">*</span> <span class="n">mean_l_vars2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">mean_l_vars1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">mean_l_vars2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">index2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">std_l_vars1</span> <span class="o">*</span> <span class="n">std_l_vars2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">std_l_vars1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">std_l_vars2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">index3</span> <span class="o">=</span> <span class="n">covar_l_vars</span> <span class="o">/</span> <span class="p">(</span><span class="n">std_l_vars1</span> <span class="o">*</span> <span class="n">std_l_vars2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="n">qilv_value</span> <span class="o">=</span> <span class="n">index1</span> <span class="o">*</span> <span class="n">index2</span> <span class="o">*</span> <span class="n">index3</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">qilv_value</span><span class="p">))</span>
+
 
 <span class="c1"># def iec_60601(true: dict, predict: dict, data_length: int, criteria: str) -&gt; Tuple[float, float]:</span>
 <span class="c1">#     &quot;&quot;&quot;</span>
