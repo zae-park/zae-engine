@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import torch
-from zae_engine.metrics.signals import rms, mse, signal_to_noise, qilv, qilv2
+from zae_engine.metrics.signals import rms, mse, signal_to_noise, qilv
 from zae_engine.utils.io import example_ecg
 
 
