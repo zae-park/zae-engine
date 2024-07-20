@@ -7,34 +7,33 @@ class GumbelSoftMax(torch.autograd.Function):
 
     The Gumbel-Softmax trick allows for sampling from a categorical distribution
     in a differentiable manner, which is useful for incorporating categorical variables
-    into neural networks. This implementation follows the method described in [1]_.
+    into neural networks. This implementation follows the method described in [1]_ and [2]_.
 
     Methods
     -------
-    forward(ctx, *args)
+    forward(ctx, x)
         Computes the forward pass, returning a rounded tensor while retaining
         differentiability.
 
-    backward(ctx, *grad_outputs)
+    backward(ctx, grad_output)
         Computes the backward pass, returning the gradient of the input.
 
     Examples
     --------
     >>> import torch
     >>> tmp = torch.rand(10, dtype=torch.float64).clone().detach().requires_grad_(True)
-    >>> rounded = torch.round(tmp)
-    >>> stopped = tmp.detach()
     >>> output = GumbelSoftMax.apply(tmp)
     >>> output.backward(torch.ones_like(tmp))
 
     References
     ----------
     .. [1] https://blog.evjang.com/2016/11/tutorial-categorical-variational.html
+    .. [2] Eric Jang, Shixiang Gu, and Ben Poole. "Categorical Reparameterization with Gumbel-Softmax."
+           In International Conference on Learning Representations (ICLR), 2017. https://arxiv.org/abs/1611.01144
     """
 
-    # TODO: add test case & optimization
     @staticmethod
-    def forward(ctx, *args):
+    def forward(ctx, x):
         """
         Compute the forward pass for the Gumbel-Softmax trick.
 
@@ -42,23 +41,21 @@ class GumbelSoftMax(torch.autograd.Function):
         ----------
         ctx : torch.autograd.function
             Context object for storing information to be used in the backward pass.
-        *args : tuple
-            Expect the first argument to be a single tensor `x`.
+        x : torch.Tensor
+            Input tensor.
 
         Returns
         -------
         torch.Tensor
             The rounded tensor while retaining differentiability.
         """
-        # Expect input argument to be a single tensor.
-        x = args[0]
         rounded = torch.round(x)
         stopped = x.detach()
         ctx.save_for_backward(x, rounded, stopped)
-        return x + rounded - stopped  # returned rounded tensor.
+        return x + rounded - stopped
 
     @staticmethod
-    def backward(ctx, *grad_outputs):
+    def backward(ctx, *grad_output):
         """
         Compute the backward pass for the Gumbel-Softmax trick.
 
@@ -66,24 +63,12 @@ class GumbelSoftMax(torch.autograd.Function):
         ----------
         ctx : torch.autograd.function
             Context object containing saved tensors from the forward pass.
-        *grad_outputs : tuple
-            Gradients passed from the next layer.
+        grad_output : torch.Tensor
+            Gradient passed from the next layer.
 
         Returns
         -------
         torch.Tensor
             The gradient of the input tensor.
         """
-        grad = grad_outputs[0]
-        # return received gradient as is.
-        # Assume that the gradient of the rounded tensor has the same as that of the input.
-        return grad
-
-
-if __name__ == "__main__":
-
-    tmp = torch.rand(10, dtype=torch.float64).clone().detach().requires_grad_(True)
-    r = torch.round(tmp)
-    sg = tmp.detach()
-    torch.autograd.gradcheck(GumbelRound.apply, (tmp, r, sg))
-    torch.autograd.gradgradcheck(GumbelRound.apply, (tmp, r, sg))
+        return grad_output
