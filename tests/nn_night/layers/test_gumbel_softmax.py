@@ -8,25 +8,23 @@ from zae_engine.nn_night import GumbelSoftMax
 class TestGumbelSoftMax(unittest.TestCase):
 
     def setUp(self):
-        self.tmp = torch.rand(10, dtype=torch.float64).clone().detach().requires_grad_(True)
-        self.expected_grad = torch.ones_like(self.tmp)
+        self.logits = torch.rand(10, 3, dtype=torch.float64).clone().detach().requires_grad_(True)
+        self.temperature = 1.0
 
     def test_forward(self):
         # Test forward pass
-        output = GumbelSoftMax.apply(self.tmp)
-        rounded = torch.round(self.tmp)
-        expected_output = self.tmp + rounded - self.tmp.detach()
-        self.assertTrue(torch.equal(output, expected_output))
+        output = GumbelSoftMax.apply(self.logits, self.temperature)
+        self.assertEqual(output.shape, self.logits.shape)
 
     def test_backward(self):
         # Test backward pass
-        output = GumbelSoftMax.apply(self.tmp)
+        output = GumbelSoftMax.apply(self.logits, self.temperature)
         output.sum().backward()
-        self.assertTrue(torch.equal(self.tmp.grad, self.expected_grad))
+        self.assertIsNotNone(self.logits.grad)
 
     def test_gradcheck(self):
         # Test gradient check
-        self.assertTrue(autograd.gradcheck(GumbelSoftMax.apply, (self.tmp,)))
+        self.assertTrue(autograd.gradcheck(GumbelSoftMax.apply, (self.logits, self.temperature)))
 
 
 if __name__ == "__main__":
