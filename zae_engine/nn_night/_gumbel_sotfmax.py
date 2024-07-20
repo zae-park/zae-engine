@@ -1,5 +1,7 @@
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Function
 
 
 class GumbelSoftMax(torch.autograd.Function):
@@ -8,33 +10,33 @@ class GumbelSoftMax(torch.autograd.Function):
 
     The Gumbel-Softmax trick allows for sampling from a categorical distribution
     in a differentiable manner, which is useful for incorporating categorical variables
-    into neural networks. This implementation follows the method described in [1]_ and [2]_.
+    into neural networks. This implementation follows the method described in [1]_.
 
     Methods
     -------
-    forward(ctx, logits, temperature)
-        Computes the forward pass using the Gumbel-Softmax trick.
+    forward(ctx, *args)
+        Computes the forward pass, returning a rounded tensor while retaining
+        differentiability.
 
-    backward(ctx, grad_output)
+    backward(ctx, *grad_outputs)
         Computes the backward pass, returning the gradient of the input.
 
     Examples
     --------
     >>> import torch
-    >>> logits = torch.rand(10, 3, dtype=torch.float64).clone().detach().requires_grad_(True)
-    >>> temperature = 1.0
-    >>> output = GumbelSoftMax.apply(logits, temperature)
-    >>> output.backward(torch.ones_like(output))
+    >>> tmp = torch.rand(10, dtype=torch.float64).clone().detach().requires_grad_(True)
+    >>> rounded = torch.round(tmp)
+    >>> stopped = tmp.detach()
+    >>> output = GumbelSoftMax.apply(tmp)
+    >>> output.backward(torch.ones_like(tmp))
 
     References
     ----------
     .. [1] https://blog.evjang.com/2016/11/tutorial-categorical-variational.html
-    .. [2] Eric Jang, Shixiang Gu, and Ben Poole. "Categorical Reparameterization with Gumbel-Softmax."
-           In International Conference on Learning Representations (ICLR), 2017. https://arxiv.org/abs/1611.01144
     """
 
     @staticmethod
-    def forward(ctx, logits, temperature):
+    def forward(ctx, x):
         """
         Compute the forward pass for the Gumbel-Softmax trick.
 
@@ -42,25 +44,22 @@ class GumbelSoftMax(torch.autograd.Function):
         ----------
         ctx : torch.autograd.function
             Context object for storing information to be used in the backward pass.
-        logits : torch.Tensor
-            Input logits for the categorical distribution.
-        temperature : float
-            Temperature parameter for the Gumbel-Softmax distribution.
+        *args : tuple
+            Expect the first argument to be a single tensor `x`.
 
         Returns
         -------
         torch.Tensor
-            Sampled tensor from the Gumbel-Softmax distribution.
+            The rounded tensor while retaining differentiability.
         """
-        gumbels = -torch.empty_like(logits).exponential_().log()  # Sample from Gumbel(0, 1)
-        gumbel_logits = (logits + gumbels) / temperature
-        y_soft = F.softmax(gumbel_logits, dim=-1)
 
-        ctx.save_for_backward(y_soft)
-        return y_soft
+        activated = F.softmax(x)
+        stopped = x.detach()
+        ctx.save_for_backward(x, activated, stopped)
+        return x + activated - stopped  # returned rounded tensor.
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def backward(ctx, *grad_outputs):
         """
         Compute the backward pass for the Gumbel-Softmax trick.
 
@@ -68,14 +67,15 @@ class GumbelSoftMax(torch.autograd.Function):
         ----------
         ctx : torch.autograd.function
             Context object containing saved tensors from the forward pass.
-        grad_output : torch.Tensor
-            Gradient passed from the next layer.
+        *grad_outputs : tuple
+            Gradients passed from the next layer.
 
         Returns
         -------
         torch.Tensor
             The gradient of the input tensor.
         """
-        (y_soft,) = ctx.saved_tensors
-        grad_input = y_soft * (grad_output - (grad_output * y_soft).sum(dim=-1, keepdim=True))
-        return grad_input, None  # return None for temperature since it's a constant
+        grad = grad_outputs[0]
+        x, activated, stopped = ctx.saved_tensors
+        grad = torch.autograd.grad(x, x, grad)
+        return grad
