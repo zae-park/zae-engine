@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 
 
 class GumbelSoftMax(torch.autograd.Function):
@@ -11,9 +12,8 @@ class GumbelSoftMax(torch.autograd.Function):
 
     Methods
     -------
-    forward(ctx, x)
-        Computes the forward pass, returning a rounded tensor while retaining
-        differentiability.
+    forward(ctx, logits, temperature)
+        Computes the forward pass using the Gumbel-Softmax trick.
 
     backward(ctx, grad_output)
         Computes the backward pass, returning the gradient of the input.
@@ -21,9 +21,10 @@ class GumbelSoftMax(torch.autograd.Function):
     Examples
     --------
     >>> import torch
-    >>> tmp = torch.rand(10, dtype=torch.float64).clone().detach().requires_grad_(True)
-    >>> output = GumbelSoftMax.apply(tmp)
-    >>> output.backward(torch.ones_like(tmp))
+    >>> logits = torch.rand(10, 3, dtype=torch.float64).clone().detach().requires_grad_(True)
+    >>> temperature = 1.0
+    >>> output = GumbelSoftMax.apply(logits, temperature)
+    >>> output.backward(torch.ones_like(output))
 
     References
     ----------
@@ -33,7 +34,7 @@ class GumbelSoftMax(torch.autograd.Function):
     """
 
     @staticmethod
-    def forward(ctx, x):
+    def forward(ctx, logits, temperature):
         """
         Compute the forward pass for the Gumbel-Softmax trick.
 
@@ -41,21 +42,25 @@ class GumbelSoftMax(torch.autograd.Function):
         ----------
         ctx : torch.autograd.function
             Context object for storing information to be used in the backward pass.
-        x : torch.Tensor
-            Input tensor.
+        logits : torch.Tensor
+            Input logits for the categorical distribution.
+        temperature : float
+            Temperature parameter for the Gumbel-Softmax distribution.
 
         Returns
         -------
         torch.Tensor
-            The rounded tensor while retaining differentiability.
+            Sampled tensor from the Gumbel-Softmax distribution.
         """
-        rounded = torch.round(x)
-        stopped = x.detach()
-        ctx.save_for_backward(x, rounded, stopped)
-        return x + rounded - stopped
+        gumbels = -torch.empty_like(logits).exponential_().log()  # Sample from Gumbel(0, 1)
+        gumbel_logits = (logits + gumbels) / temperature
+        y_soft = F.softmax(gumbel_logits, dim=-1)
+
+        ctx.save_for_backward(y_soft)
+        return y_soft
 
     @staticmethod
-    def backward(ctx, *grad_output):
+    def backward(ctx, grad_output):
         """
         Compute the backward pass for the Gumbel-Softmax trick.
 
@@ -71,4 +76,6 @@ class GumbelSoftMax(torch.autograd.Function):
         torch.Tensor
             The gradient of the input tensor.
         """
-        return grad_output
+        (y_soft,) = ctx.saved_tensors
+        grad_input = y_soft * (grad_output - (grad_output * y_soft).sum(dim=-1, keepdim=True))
+        return grad_input, None  # return None for temperature since it's a constant
