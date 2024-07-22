@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    zae_engine.models.builds
+   zae_engine.models.converter
    zae_engine.models.foundations
 
 Submodules
