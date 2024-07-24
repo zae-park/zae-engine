@@ -70,14 +70,11 @@
            <div itemprop="articleBody">
              
   <h1>Source code for zae_engine.models.foundations.unet</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="kn">from</span> <span class="nn">..builds</span> <span class="kn">import</span> <span class="n">autoencoder</span>
-<span class="kn">from</span> <span class="nn">..converter</span> <span class="kn">import</span> <span class="n">dim_converter</span>
 <span class="kn">from</span> <span class="nn">...nn_night</span> <span class="kn">import</span> <span class="n">blocks</span>
 
 <span class="n">checkpoint_map</span> <span class="o">=</span> <span class="p">{</span>
@@ -88,8 +85,22 @@
 <span class="p">}</span>
 
 <span class="n">unet_map</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;brain&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;block&quot;</span><span class="p">:</span> <span class="n">blocks</span><span class="o">.</span><span class="n">UNetBlock</span><span class="p">,</span> <span class="s2">&quot;ch_in&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;ch_out&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;skip_connect&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-    <span class="s2">&quot;mask&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;block&quot;</span><span class="p">:</span> <span class="n">blocks</span><span class="o">.</span><span class="n">UNetBlock</span><span class="p">,</span> <span class="s2">&quot;ch_in&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;ch_out&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;skip_connect&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s2">&quot;brain&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;block&quot;</span><span class="p">:</span> <span class="n">blocks</span><span class="o">.</span><span class="n">UNetBlock</span><span class="p">,</span>
+        <span class="s2">&quot;ch_in&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;ch_out&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="s2">&quot;skip_connect&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;mask&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;block&quot;</span><span class="p">:</span> <span class="n">blocks</span><span class="o">.</span><span class="n">UNetBlock</span><span class="p">,</span>
+        <span class="s2">&quot;ch_in&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;ch_out&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+        <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="s2">&quot;skip_connect&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">},</span>
 <span class="p">}</span>
 
 
@@ -153,10 +164,10 @@
 <span class="sd">    Create a U-Net model with the option to load pre-trained weights.</span>
 
 <span class="sd">    The U-Net model is a type of convolutional neural network developed for biomedical image segmentation.</span>
-<span class="sd">    </span>
+
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    .. [1] Olaf Ronneberger, Philipp Fischer, and Thomas Brox, &quot;U-Net: Convolutional Networks for Biomedical Image Segmentation,&quot; </span>
+<span class="sd">    .. [1] Olaf Ronneberger, Philipp Fischer, and Thomas Brox, &quot;U-Net: Convolutional Networks for Biomedical Image Segmentation,&quot;</span>
 <span class="sd">       in MICCAI 2015. (https://arxiv.org/abs/1505.04597)</span>
 
 <span class="sd">    Parameters</span>
@@ -169,7 +180,9 @@
 <span class="sd">    zae_engine.models.autoencoder.AutoEncoder</span>
 <span class="sd">        An instance of the AutoEncoder model with U-Net architecture.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">autoencoder</span><span class="o">.</span><span class="n">AutoEncoder</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="n">blocks</span><span class="o">.</span><span class="n">UNetBlock</span><span class="p">,</span> <span class="n">ch_in</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">skip_connect</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">autoencoder</span><span class="o">.</span><span class="n">AutoEncoder</span><span class="p">(</span>
+        <span class="n">block</span><span class="o">=</span><span class="n">blocks</span><span class="o">.</span><span class="n">UNetBlock</span><span class="p">,</span> <span class="n">ch_in</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">skip_connect</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
         <span class="n">src_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">load_state_dict_from_url</span><span class="p">(</span><span class="n">checkpoint_map</span><span class="p">[</span><span class="s2">&quot;brain&quot;</span><span class="p">],</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">dst_weight</span> <span class="o">=</span> <span class="n">__brain_weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
