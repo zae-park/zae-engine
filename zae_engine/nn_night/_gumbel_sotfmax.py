@@ -1,4 +1,7 @@
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.autograd import Function
 
 
 class GumbelSoftMax(torch.autograd.Function):
@@ -32,9 +35,8 @@ class GumbelSoftMax(torch.autograd.Function):
     .. [1] https://blog.evjang.com/2016/11/tutorial-categorical-variational.html
     """
 
-    # TODO: add test case & optimization
     @staticmethod
-    def forward(ctx, *args):
+    def forward(ctx, x):
         """
         Compute the forward pass for the Gumbel-Softmax trick.
 
@@ -50,12 +52,11 @@ class GumbelSoftMax(torch.autograd.Function):
         torch.Tensor
             The rounded tensor while retaining differentiability.
         """
-        # Expect input argument to be a single tensor.
-        x = args[0]
-        rounded = torch.round(x)
+
+        activated = F.softmax(x)
         stopped = x.detach()
-        ctx.save_for_backward(x, rounded, stopped)
-        return x + rounded - stopped  # returned rounded tensor.
+        ctx.save_for_backward(x, activated, stopped)
+        return x + activated - stopped  # returned rounded tensor.
 
     @staticmethod
     def backward(ctx, *grad_outputs):
@@ -75,15 +76,6 @@ class GumbelSoftMax(torch.autograd.Function):
             The gradient of the input tensor.
         """
         grad = grad_outputs[0]
-        # return received gradient as is.
-        # Assume that the gradient of the rounded tensor has the same as that of the input.
+        x, activated, stopped = ctx.saved_tensors
+        grad = torch.autograd.grad(x, x, grad)
         return grad
-
-
-if __name__ == "__main__":
-
-    tmp = torch.rand(10, dtype=torch.float64).clone().detach().requires_grad_(True)
-    r = torch.round(tmp)
-    sg = tmp.detach()
-    torch.autograd.gradcheck(GumbelRound.apply, (tmp, r, sg))
-    torch.autograd.gradgradcheck(GumbelRound.apply, (tmp, r, sg))

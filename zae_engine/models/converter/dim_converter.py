@@ -10,6 +10,39 @@ from torch.nn import Module
 
 
 class DimConverter:
+    """
+    A class to convert the dimensionality of layers in a given PyTorch model from 1D to 2D, 2D to 3D, or vice versa.
+
+    This class identifies layers in a model that can be converted to different dimensions, such as Conv1d to Conv2d,
+    and adapts their weights and parameters accordingly.
+
+    Attributes
+    ----------
+    model : nn.Module
+        The original PyTorch model to be converted.
+    module_dict : dict
+        A dictionary storing the original layers of the model.
+    new_module_dict : dict
+        A dictionary storing the converted layers of the model.
+    layer_dict : dict
+        A dictionary mapping layer names to their respective modules.
+    param_dict : dict
+        A dictionary mapping parameter names to their respective tensors.
+
+    Methods
+    -------
+    find_convertable(model: nn.Module) -> tuple[dict, dict]:
+        Finds and returns layers and parameters in the model that can be converted.
+    dim_correction(reduce: bool):
+        Corrects the dimensionality of the layers identified for conversion.
+    const_getter(conv_module: nn.Module, reduce: bool) -> dict:
+        Retrieves and adjusts the constants of a given convolutional module.
+    apply_new_dict(base_module: nn.Module, name: str, module: nn.Module):
+        Applies the converted layers to a new model structure.
+    convert(pattern: str, *args, **kwargs) -> nn.Module:
+        Converts the dimensionality of the model based on the specified pattern.
+    """
+
     __convertable = (
         nn.modules.conv._ConvNd,
         nn.modules.conv._ConvTransposeNd,
@@ -39,56 +72,47 @@ class DimConverter:
     }  # default is expand mode
 
     def __init__(self, model: nn.Module):
+        """
+        Initialize the DimConverter with the given model.
+
+        Parameters
+        ----------
+        model : nn.Module
+            The PyTorch model to be converted.
+        """
         self.model = model
-        # self.model.apply(self.dim_checker)
-        # finding dimension-convertable layers
         self.module_dict = {}
         self.new_module_dict = {}
         self.layer_dict, self.param_dict = self.find_convertable(model)
 
-    def dim_checker(self, module: nn.Module):
-        """
-        DEPRECATED
-        """
-        if isinstance(module, self.__convertable):
-            module_dict = module.__dict__
-            if "kernel_size" in module_dict.keys():
-                if isinstance(module_dict["kernel_size"], int):
-                    module.dim_check = 1
-                else:
-                    module.dim_check = len(module_dict["kernel_size"])
-            elif "output_size" in module_dict.keys():
-                if isinstance(module_dict["output_size"], int):
-                    module.dim_check = 1
-                else:
-                    module.dim_check = len(module_dict["output_size"])
-
-            else:
-                print(f"Check unknown module {module}")
-                module.dim_check = None
-        else:
-            module.dim_check = None
-
     def find_convertable(self, model: nn.Module) -> tuple[dict, dict]:
         """
-        find dimension convertable layers in given model.
-        return dictionary which has 'layer path' as key, and tuple of layer api and weight tensor as value.
-        :param model:
-        :return: tuple[dict, dict]
+        Find dimension-convertable layers in the given model.
+
+        Parameters
+        ----------
+        model : nn.Module
+            The PyTorch model to be analyzed.
+
+        Returns
+        -------
+        tuple[dict, dict]
+            A tuple containing two dictionaries: layer_dict and param_dict.
+            layer_dict maps layer names to modules.
+            param_dict maps parameter names to tensors.
         """
         layer_dict = {}
         param_dict = {}
 
         self.module_dict = {}
-        for name, weight in model.named_modules():
-            module = model.get_submodule(name)
+        for name, module in model.named_modules():
             if isinstance(module, self.__convertable):
                 self.module_dict[name] = module
 
-        for name, weight in model.named_parameters():
-            param_dict[name] = weight
+        for name, param in model.named_parameters():
+            param_dict[name] = param
             if name.endswith(("weight", "bias")):
-                root, leaf = name.rsplit(".", 1)
+                root, _ = name.rsplit(".", 1)
                 module = model.get_submodule(root)
                 if isinstance(module, self.__convertable):
                     layer_dict[root] = module
@@ -96,6 +120,14 @@ class DimConverter:
         return layer_dict, param_dict
 
     def dim_correction(self, reduce: bool):
+        """
+        Correct the dimensionality of the layers identified for conversion.
+
+        Parameters
+        ----------
+        reduce : bool
+            Whether to reduce the dimensionality (e.g., 2D to 1D) or expand it (e.g., 1D to 2D).
+        """
         correction_map = {v: k for k, v in self.correction_map.items()} if reduce else self.correction_map
         correction_keys = tuple(correction_map.keys())
         for name, module in self.module_dict.items():
@@ -109,20 +141,23 @@ class DimConverter:
                 # weight = module.weight
                 # bias = module.bias
 
-        # for k, v in self.layer_dict.items():
-        #     corrected_layer = correction_map[type(v)]
-        #     if isinstance(v, nn.MaxPool2d):
-        #         print()
-        #     needs = corrected_layer.__init__.__annotations__
-        #     ready = {k: v for k, v in self.const_getter(v, reduce=reduce).items() if k in needs.keys()}
-        #     self.layer_dict[k] = corrected_layer(**ready)
-        #
-        # for k, v in self.param_dict.items():
-        #     if k.endswith("weight"):
-        #         self.param_dict[k] = v.mean(-1) if reduce else torch.mm(v.unsqueeze(-1), v.unsqueeze(-2))
-
     @staticmethod
-    def const_getter(conv_module: nn.Module, reduce: bool):
+    def const_getter(conv_module: nn.Module, reduce: bool) -> dict:
+        """
+        Retrieve and adjust the constants of a given convolutional module.
+
+        Parameters
+        ----------
+        conv_module : nn.Module
+            The convolutional module to be adjusted.
+        reduce : bool
+            Whether to reduce the dimensionality (e.g., 2D to 1D) or expand it (e.g., 1D to 2D).
+
+        Returns
+        -------
+        dict
+            A dictionary of adjusted constants.
+        """
         module_dict = conv_module.__dict__
         const = {}
         for k in conv_module.__constants__:
@@ -133,16 +168,39 @@ class DimConverter:
         return const
 
     def apply_new_dict(self, base_module: nn.Module, name: str, module: nn.Module):
+        """
+        Apply the converted layers to a new model structure.
+
+        Parameters
+        ----------
+        base_module : nn.Module
+            The base module to which the converted layers will be applied.
+        name : str
+            The name of the layer to be applied.
+        module : nn.Module
+            The converted module to be applied.
+        """
         n = name.split(".")
         if len(n) == 1:
             base_module.add_module(name, module)
         else:
             self.apply_new_dict(base_module=base_module.get_submodule(n[0]), name=".".join(n[1:]), module=module)
 
-    def convert(self, pattern: str, *args, **kwargs):
-        # 0. compare model's dimension with request pattern
+    def convert(self, pattern: str, *args, **kwargs) -> nn.Module:
+        """
+        Convert the dimensionality of the model based on the specified pattern.
+
+        Parameters
+        ----------
+        pattern : str
+            The conversion pattern (e.g., "1d -> 2d", "2d -> 3d").
+
+        Returns
+        -------
+        nn.Module
+            The converted PyTorch model.
+        """
         left, right = pattern.split("->")
-        # assert self.current_dim != left, f"Expect dimension {self.current_dim}, but receive {left}"
         left = left.strip()
         right = right.strip()
 
@@ -151,7 +209,6 @@ class DimConverter:
         if left == right:
             return new_model
 
-        # convert dim of layers to appropriately
         self.dim_correction(reduce=left > right)
 
         for k, v in self.new_module_dict.items():

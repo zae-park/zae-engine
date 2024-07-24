@@ -1,11 +1,7 @@
 import unittest
-
-import numpy as np
-
-import unittest
 import numpy as np
 import torch
-from zae_engine.metrics.signals import rms, mse, signal_to_noise, peak_signal_to_noise
+from zae_engine.metrics.signals import rms, mse, signal_to_noise, qilv
 from zae_engine.utils.io import example_ecg
 
 
@@ -18,7 +14,7 @@ class TestMetrics(unittest.TestCase):
         expected_rms = 3.3166247903554
 
         self.assertAlmostEqual(rms(signal_np), expected_rms, places=6)
-        self.assertAlmostEqual(rms(signal_torch).item(), expected_rms, places=6)
+        self.assertAlmostEqual(rms(signal_torch), expected_rms, places=6)
 
     def test_mse(self):
         signal1_np = np.array([1, 2, 3, 4, 5])
@@ -28,8 +24,8 @@ class TestMetrics(unittest.TestCase):
 
         expected_mse = 0.2
 
-        self.assertAlmostEqual(mse(signal1_np, signal2_np).item(), expected_mse, places=6)
-        self.assertAlmostEqual(mse(signal1_torch, signal2_torch).item(), expected_mse, places=6)
+        self.assertAlmostEqual(mse(signal1_np, signal2_np), expected_mse, places=6)
+        self.assertAlmostEqual(mse(signal1_torch, signal2_torch), expected_mse, places=6)
 
     def test_signal_to_noise(self):
         signal_np = example_ecg()[0]
@@ -40,7 +36,7 @@ class TestMetrics(unittest.TestCase):
         # expected_snr = 20.0
 
         self.assertAlmostEqual(
-            signal_to_noise(signal_np, noise_np).item(), signal_to_noise(signal_torch, noise_torch).item(), places=6
+            signal_to_noise(signal_np, noise_np), signal_to_noise(signal_torch, noise_torch), places=6
         )
 
     def test_peak_signal_to_noise(self):
@@ -52,7 +48,7 @@ class TestMetrics(unittest.TestCase):
         # expected_psnr = 4.48062372
 
         self.assertAlmostEqual(
-            signal_to_noise(signal_np, noise_np).item(), signal_to_noise(signal_torch, noise_torch).item(), places=6
+            signal_to_noise(signal_np, noise_np), signal_to_noise(signal_torch, noise_torch), places=6
         )
 
     # def test_iec(self):
@@ -77,6 +73,35 @@ class TestMetrics(unittest.TestCase):
     #     predict3 = [6, 16, 36, 52, 90, 140]
     #     self.assertEqual(_measure.cpsc2021(true, predict2), _measure.cpsc2021(true, predict))
     #     self.assertGreater(_measure.cpsc2021(true, predict2), _measure.cpsc2021(true, predict3))
+
+
+class TestQILV(unittest.TestCase):
+    def setUp(self):
+        self.signal1_np = np.array([1, 2, 3, 4, 5])
+        self.signal2_np = np.array([1, 2, 3, 4, 6])
+        self.signal1_torch = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float32)
+        self.signal2_torch = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float32)
+        self.window_np = np.ones(3)
+        self.window_torch = torch.ones(3, dtype=torch.float32)
+        self.expected_result = 0.9948761003700519  # This is an example; please replace with the correct expected result
+
+    def test_qilv_numpy(self):
+
+        result = qilv(self.signal1_np, self.signal2_np, self.window_np)
+        self.assertLessEqual(a=0.0, b=result)
+        self.assertGreaterEqual(a=1.0, b=result)
+
+    def test_qilv_torch(self):
+        sig1 = self.signal1_torch / self.signal1_torch.norm()
+        sig2 = self.signal2_torch / self.signal2_torch.norm()
+        result = qilv(sig1, sig2, self.window_torch)
+        self.assertLessEqual(a=0.0, b=result)
+        self.assertGreaterEqual(a=1.0, b=result)
+
+    def test_qilv_mixed(self):
+        result = qilv(self.signal1_np, self.signal2_torch, self.window_np)
+        self.assertLessEqual(a=0.0, b=result)
+        self.assertGreaterEqual(a=1.0, b=result)
 
 
 if __name__ == "__main__":

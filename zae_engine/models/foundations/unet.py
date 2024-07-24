@@ -1,11 +1,8 @@
-from importlib import import_module
-from typing import OrderedDict, Union, overload
+from typing import OrderedDict, Union
 
-import torch.nn as nn
 import torch
 
 from ..builds import autoencoder
-from ..converter import dim_converter
 from ...nn_night import blocks
 
 checkpoint_map = {
@@ -16,8 +13,22 @@ checkpoint_map = {
 }
 
 unet_map = {
-    "brain": {"block": blocks.UNetBlock, "ch_in": 3, "ch_out": 1, "width": 32, "layers": [1, 1, 1, 1], "skip_connect": True},
-    "mask": {"block": blocks.UNetBlock, "ch_in": 3, "ch_out": 2, "width": 64, "layers": [1, 1, 1, 1], "skip_connect": True},
+    "brain": {
+        "block": blocks.UNetBlock,
+        "ch_in": 3,
+        "ch_out": 1,
+        "width": 32,
+        "layers": [1, 1, 1, 1],
+        "skip_connect": True,
+    },
+    "mask": {
+        "block": blocks.UNetBlock,
+        "ch_in": 3,
+        "ch_out": 2,
+        "width": 64,
+        "layers": [1, 1, 1, 1],
+        "skip_connect": True,
+    },
 }
 
 
@@ -79,10 +90,10 @@ def unet(pretrained: bool = False) -> autoencoder.AutoEncoder:
     Create a U-Net model with the option to load pre-trained weights.
 
     The U-Net model is a type of convolutional neural network developed for biomedical image segmentation.
-    
+
     References
     ----------
-    .. [1] Olaf Ronneberger, Philipp Fischer, and Thomas Brox, "U-Net: Convolutional Networks for Biomedical Image Segmentation," 
+    .. [1] Olaf Ronneberger, Philipp Fischer, and Thomas Brox, "U-Net: Convolutional Networks for Biomedical Image Segmentation,"
        in MICCAI 2015. (https://arxiv.org/abs/1505.04597)
 
     Parameters
@@ -95,7 +106,9 @@ def unet(pretrained: bool = False) -> autoencoder.AutoEncoder:
     zae_engine.models.autoencoder.AutoEncoder
         An instance of the AutoEncoder model with U-Net architecture.
     """
-    model = autoencoder.AutoEncoder(block=blocks.UNetBlock, ch_in=3, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True)
+    model = autoencoder.AutoEncoder(
+        block=blocks.UNetBlock, ch_in=3, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True
+    )
     if pretrained:
         src_weight = torch.hub.load_state_dict_from_url(checkpoint_map["brain"], progress=True)
         dst_weight = __brain_weight_mapper(src_weight, model.state_dict())
