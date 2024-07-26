@@ -49,12 +49,14 @@ class Trainer(ABC):
         mode: str,
         optimizer: optim.Optimizer,
         scheduler: Optional[Union[optim.lr_scheduler.LRScheduler, core.SchedulerBase]],
+        *,
         log_bar: bool = True,
         callbacks: Iterable = (),
-        web_logger: Optional[dict[str, Union[object, dict]]] = None,
         scheduler_step_on_batch: bool = False,
+        web_logger: Optional[dict[str, Union[object, dict]]] = None,
+        gradient_clip: float = 0.0,
     ):
-        # Init with given args
+        # Init with given args (positional params)
         if "cuda" in device.type:
             torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
         self.device = device
@@ -62,12 +64,13 @@ class Trainer(ABC):
         self.mode = mode
         self.optimizer = optimizer
         self.scheduler = scheduler
+        # Init with given args (named params)
         self.log_bar = log_bar
-        self.progress_checker = ProgressChecker()
-
-        # Init with options
         self.callbacks = callbacks
         self.scheduler_step_on_batch = scheduler_step_on_batch
+        self.gradient_clip = gradient_clip
+
+        self.progress_checker = ProgressChecker()
 
         # Init vars
         self.log_train, self.log_test = defaultdict(list), defaultdict(list)
@@ -242,6 +245,8 @@ class Trainer(ABC):
             self.optimizer.zero_grad()
             step_dict = self.train_step(batch)
             step_dict["loss"].backward()
+            if self.gradient_clip:
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.gradient_clip)
             self.optimizer.step()
             if self.scheduler_step_on_batch:
                 self.scheduler.step(**kwargs)
