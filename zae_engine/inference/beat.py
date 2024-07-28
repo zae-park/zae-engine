@@ -6,12 +6,27 @@ import numpy as np
 from scipy import signal
 import torch
 from torch.utils.data import Dataset, DataLoader
+import torch.nn.functional as F
 
 from zae_engine.nn_night.blocks import UNetBlock
 from zae_engine.models.builds import autoencoder
 from zae_engine.models.converter import dim_converter
 from zae_engine.trainer import Trainer
 from zae_engine.schedulers import CosineAnnealingScheduler
+from zae_engine.data.collate import CollateBase
+
+
+def split(batch: dict):
+    raw_data = batch["x"].squeeze()
+    batch["raw"] = raw_data.tolist()
+    remain_length = (len(raw_data) - 2560) % (2560 - 560)
+    if remain_length != 0:
+        raw_data = F.pad(raw_data.unsqueeze(0), (0, 2560 - remain_length), mode="replicate").squeeze()
+    splited = raw_data.unfold(dimension=0, size=2560, step=2560 - 560)
+
+    batch["x"] = splited
+    batch["fn"] = [batch["fn"]] * len(splited)
+    return batch
 
 
 class BeatCollateSeq:
@@ -155,9 +170,11 @@ def core(x: Union[np.ndarray, torch.Tensor]):
     assert len(x.shape) == 1, f"Expect 1-D array, but receive {len(x.shape)}-D array."
     device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
     inference_dataset = ECG_dataset(x=x.reshape(1, -1))
-    inference_loader = DataLoader(
-        inference_dataset, batch_size=1, shuffle=False, collate_fn=BeatCollateSeq(sequence=["split"]).wrap()
-    )
+
+    collator = CollateBase(x_key=["x"], y_key=["y"], aux_key=["fn"])
+    collator.set_batch(inference_dataset[0])
+    collator.add_fn(name="split", fn=split)
+    inference_loader = DataLoader(inference_dataset, batch_size=1, shuffle=False, collate_fn=collator.wrap())
 
     # --------------------------------- Inference & Postprocess @ stage 1 --------------------------------- #
     model = autoencoder.AutoEncoder(
