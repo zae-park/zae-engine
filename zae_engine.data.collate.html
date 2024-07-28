@@ -103,14 +103,24 @@
 <span id="zae-engine-data-collate-core-module"></span><h2>zae_engine.data.collate.core module<a class="headerlink" href="#module-zae_engine.data.collate.core" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="zae_engine.data.collate.core.CollateBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.data.collate.core.</span></span><span class="sig-name descname"><span class="pre">CollateBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.data.collate.core.CollateBase" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.data.collate.core.</span></span><span class="sig-name descname"><span class="pre">CollateBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aux_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.data.collate.core.CollateBase" title="Link to this definition">¶</a></dt>
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.data.collate.core.</span></span><span class="sig-name descname"><span class="pre">CollateBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OrderedDict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.data.collate.core.</span></span><span class="sig-name descname"><span class="pre">CollateBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aux_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OrderedDict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
 <p>Base class for collating and processing batches of data using a sequence of functions.</p>
 <p>This class allows you to define a sequence of preprocessing functions that will be applied
 to data batches in the specified order. It supports initialization with either an OrderedDict
 or a list of functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_key</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – The key in the batch dictionary that represents the input data.</p></li>
+<li><p><strong>y_key</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – The key in the batch dictionary that represents the labels.</p></li>
+<li><p><strong>aux_key</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – The key in the batch dictionary that represents the auxiliary data.</p></li>
+<li><p><strong>args</strong> (<em>Union</em><em>[</em><em>OrderedDict</em><em>[</em><em>str</em><em>, </em><em>Callable</em><em>]</em><em>, </em><em>List</em><em>[</em><em>Callable</em><em>]</em><em>]</em>) – The functions to be applied to the batches in sequence.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">__len__():</span></span></dt>
@@ -145,6 +155,12 @@ or a list of functions.</p>
 <dt class="sig sig-object py" id="zae_engine.data.collate.core.CollateBase.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OrderedDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union[dict,</span> <span class="pre">OrderedDict]:</span></span></span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.data.collate.core.CollateBase.__call__" title="Link to this definition">¶</a></dt>
 <dd><p>Applies the registered functions to the input batch in sequence.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.data.collate.core.CollateBase.accumulate">
+<span class="sig-name descname"><span class="pre">accumulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict:</span></span></span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase.accumulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.data.collate.core.CollateBase.accumulate" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a list of dictionaries per data to a batch dictionary with list-type values.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -194,17 +210,17 @@ or a list of functions.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">collator</span> <span class="pre">=</span> <span class="pre">CollateBase(fn1,</span> <span class="pre">fn2)</span></span></dt>
+<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">collator</span> <span class="pre">=</span> <span class="pre">CollateBase(x_key=['x'],</span> <span class="pre">y_key=['y'],</span> <span class="pre">aux_key=['aux'],</span> <span class="pre">fn1,</span> <span class="pre">fn2)</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">batch</span> <span class="pre">=</span> <span class="pre">{'data':</span> <span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3]}</span></span></dt>
+<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">batch</span> <span class="pre">=</span> <span class="pre">{'data':</span> <span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3],</span> <span class="pre">'label':</span> <span class="pre">[1],</span> <span class="pre">'aux':</span> <span class="pre">[0.5],</span> <span class="pre">'filename':</span> <span class="pre">'sample.txt'}</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">processed_batch</span> <span class="pre">=</span> <span class="pre">collator(batch)</span></span></dt>
+<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">processed_batch</span> <span class="pre">=</span> <span class="pre">collator([batch,</span> <span class="pre">batch])</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -224,12 +240,12 @@ or a list of functions.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">collator</span> <span class="pre">=</span> <span class="pre">CollateBase(functions)</span></span></dt>
+<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">collator</span> <span class="pre">=</span> <span class="pre">CollateBase(x_key=['x'],</span> <span class="pre">y_key=['y'],</span> <span class="pre">aux_key=['aux'],</span> <span class="pre">functions)</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">processed_batch</span> <span class="pre">=</span> <span class="pre">collator(batch)</span></span></dt>
+<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">processed_batch</span> <span class="pre">=</span> <span class="pre">collator([batch,</span> <span class="pre">batch])</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -239,7 +255,7 @@ or a list of functions.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">sample_data</span> <span class="pre">=</span> <span class="pre">{'data':</span> <span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3]}</span></span></dt>
+<span class="sig-name descname"><span class="pre">&gt;&gt;&gt;</span> <span class="pre">sample_data</span> <span class="pre">=</span> <span class="pre">{'x':</span> <span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3],</span> <span class="pre">'y':</span> <span class="pre">[1],</span> <span class="pre">'aux':</span> <span class="pre">[0.5],</span> <span class="pre">'filename':</span> <span class="pre">'sample.txt'}</span></span></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -259,7 +275,24 @@ or a list of functions.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="id0">
-<span class="sig-name descname"><span class="pre">add_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase.add_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">accumulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase.accumulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a list of dictionaries per data to a batch dictionary with list-type values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batches</strong> (<em>Union</em><em>[</em><em>Tuple</em><em>, </em><em>List</em><em>]</em>) – A list of dictionaries, where each dictionary represents a data batch.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary where keys are batch attributes and values are lists or concatenated tensors.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">add_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase.add_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
 <dd><p>Adds a new preprocessing function to the pipeline after validation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -272,8 +305,8 @@ or a list of functions.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="id1">
-<span class="sig-name descname"><span class="pre">io_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OrderedDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase.io_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">io_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OrderedDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase.io_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition">¶</a></dt>
 <dd><p>Checks if the registered functions maintain the structure of the sample batch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -286,8 +319,8 @@ or a list of functions.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="id2">
-<span class="sig-name descname"><span class="pre">set_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OrderedDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase.set_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">set_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">OrderedDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/zae_engine/data/collate/core.html#CollateBase.set_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition">¶</a></dt>
 <dd><p>Sets the sample batch to be used for input-output structure validation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
