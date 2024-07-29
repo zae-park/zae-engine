@@ -1,6 +1,6 @@
 import time
 
-from typing import Union, Iterable, Callable
+from typing import Union, Type, Callable
 import numpy as np
 import torch
 
@@ -74,7 +74,7 @@ def np2torch(dtype: torch.dtype, *keys: str, n: int = None) -> Callable:
     return deco
 
 
-def torch2np(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
+def torch2np(dtype: Type[np.dtype], *keys: str, n: int = None) -> Callable:
     """
     Convert torch tensors to numpy arrays with a specified dtype.
 
