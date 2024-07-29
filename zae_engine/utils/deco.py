@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 
-def np2torch(dtype: torch.dtype, n: int = None, *keys: str) -> Callable:
+def np2torch(dtype: torch.dtype, *keys: str, n: int = None) -> Callable:
     """
     Convert numpy arrays to torch tensors with a specified dtype.
 
@@ -35,7 +35,7 @@ def np2torch(dtype: torch.dtype, n: int = None, *keys: str) -> Callable:
     >>> example_func(np.array([1, 2, 3]), np.array([4, 5, 6]), np.array([7, 8, 9]))
     # This will convert only the first two numpy arrays to torch tensors.
 
-    >>> @np2torch(torch.float32, key='x')
+    >>> @np2torch(torch.float32, "x")
     ... def example_func(batch):
     ...     return batch
     >>> example_func({'x': np.array([1, 2, 3]), 'y': [4, 5, 6]})
@@ -55,7 +55,7 @@ def np2torch(dtype: torch.dtype, n: int = None, *keys: str) -> Callable:
                 else:
                     n_args = min(n, len(args))
 
-                converted_args = tuple(
+                args = tuple(
                     torch.tensor(a, dtype=dtype) if isinstance(a, np.ndarray) and i < n_args else a
                     for i, a in enumerate(args)
                 )
@@ -71,7 +71,7 @@ def np2torch(dtype: torch.dtype, n: int = None, *keys: str) -> Callable:
     return deco
 
 
-def torch2np(dtype: np.dtype, n: int = None, *keys: str) -> Callable:
+def torch2np(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
     """
     Convert torch tensors to numpy arrays with a specified dtype.
 
@@ -121,7 +121,7 @@ def torch2np(dtype: np.dtype, n: int = None, *keys: str) -> Callable:
                 else:
                     n_args = min(n, len(args))
 
-                converted_args = tuple(
+                args = tuple(
                     a.numpy().astype(dtype) if isinstance(a, torch.Tensor) and i < n_args else a
                     for i, a in enumerate(args)
                 )
