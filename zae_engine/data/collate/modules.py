@@ -70,7 +70,7 @@ class HotEncoder:
 
     def __call__(self, batch):
         y = batch["y"]
-        batch["y"] = np.eye(self.n_cls)[y.int()]
+        batch["y"] = torch.eye(self.n_cls)[y.int()]
         return batch
 
 
