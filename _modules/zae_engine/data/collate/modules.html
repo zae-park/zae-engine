@@ -70,15 +70,14 @@
            <div itemprop="articleBody">
              
   <h1>Source code for zae_engine.data.collate.modules</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
 <span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">repeat</span><span class="p">,</span> <span class="n">reduce</span>
-
-<span class="kn">from</span> <span class="nn">zae_engine.operation</span> <span class="kn">import</span> <span class="n">label_to_onoff</span>
 
 
 <div class="viewcode-block" id="Chunker">
@@ -107,12 +106,28 @@
 <div class="viewcode-block" id="Chunker.__call__">
 <a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.modules.Chunker.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
-        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">repeat</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;(n dim) -&gt; n dim&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="s2">&quot;(n dim) -&gt; n&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">th</span>
         <span class="n">fn</span> <span class="o">=</span> <span class="p">[</span><span class="n">fn</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span></div>
 </div>
+
+
+
+<div class="viewcode-block" id="Chunk">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.modules.Chunk">[docs]</a>
+<span class="k">class</span> <span class="nc">Chunk</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+        <span class="n">modulo</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+        <span class="k">if</span> <span class="n">modulo</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="n">modulo</span><span class="p">]</span>
+        <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">batch</span></div>
 
 
 
@@ -139,27 +154,11 @@
 <div class="viewcode-block" id="HotEncoder.__call__">
 <a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.modules.HotEncoder.__call__">[docs]</a>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
-        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span>
-        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cls</span><span class="p">)[</span><span class="n">y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()),</span> <span class="n">fn</span></div>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+        <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cls</span><span class="p">)[</span><span class="n">y</span><span class="o">.</span><span class="n">int</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="n">batch</span></div>
 </div>
 
-
-    <span class="c1"># def sanity_check(batch):</span>
-    <span class="c1">#     # replaced with io_check method of CollateBase</span>
-    <span class="c1">#     x, y, fn = batch</span>
-    <span class="c1">#     x = torch.tensor(x, dtype=torch.float32)</span>
-    <span class="c1">#     y = torch.tensor(y, dtype=torch.int32)</span>
-    <span class="c1">#</span>
-    <span class="c1">#     # Guarantee the x and y have 3-dimension shape.</span>
-    <span class="c1">#     if len(x.shape) == 1:</span>
-    <span class="c1">#         x = x.unsqueeze(0).unsqueeze(0)  # [dim] -&gt; [1, 1, dim]</span>
-    <span class="c1">#     elif len(x.shape) == 2:</span>
-    <span class="c1">#         x = x.unsqueeze(1)  # [N, dim] -&gt; [N, 1, dim]</span>
-    <span class="c1">#     if len(y.shape) == 1:</span>
-    <span class="c1">#         y = y.unsqueeze(1).unsqueeze(1)  # [dim] -&gt; [1, 1, dim]</span>
-    <span class="c1">#     elif len(y.shape) == 2:</span>
-    <span class="c1">#         y = y.unsqueeze(0)  # [ch, dim] -&gt; [N, 1, dim]</span>
-    <span class="c1">#     return x, y, fn</span>
 
 
 <div class="viewcode-block" id="SignalFilter">
@@ -196,10 +195,9 @@
 
 <div class="viewcode-block" id="SignalFilter.__call__">
 <a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.modules.SignalFilter.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">list</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
         <span class="n">nyq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="mi">2</span>
-        <span class="n">length</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bandpass&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowcut</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">highcut</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -222,27 +220,82 @@
                 <span class="sa">f</span><span class="s2">&quot;Invalid method: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">. Choose from &#39;bandpass&#39;, &#39;bandstop&#39;, &#39;lowpass&#39;, &#39;highpass&#39;.&quot;</span>
             <span class="p">)</span>
 
-        <span class="n">x</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;gust&quot;</span><span class="p">)</span>
-        <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">length</span> <span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">length</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;gust&quot;</span><span class="p">)</span>
+        <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span> <span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">batch</span></div>
 </div>
 
 
 
-<div class="viewcode-block" id="split">
-<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.modules.split">[docs]</a>
-<span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
-    <span class="c1"># TODO: Fn wrapper with overlap length overlapped</span>
-    <span class="n">raw_data</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-    <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">remain_length</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2560</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2560</span> <span class="o">-</span> <span class="n">overlapped</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">remain_length</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">raw_data</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">raw_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2560</span> <span class="o">-</span> <span class="n">remain_length</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;replicate&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-    <span class="n">splited</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2560</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2560</span> <span class="o">-</span> <span class="n">overlapped</span><span class="p">)</span>
+<div class="viewcode-block" id="Spliter">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.modules.Spliter">[docs]</a>
+<span class="k">class</span> <span class="nc">Spliter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for splitting signals in the batch with overlapping.</span>
 
-    <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">splited</span>
-    <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">splited</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">batch</span></div>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    overlapped : int</span>
+<span class="sd">        The number of overlapping samples between adjacent segments.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    __call__(batch: dict) -&gt; dict:</span>
+<span class="sd">        Split the signal in the batch with the specified overlap.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overlapped</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overlapped</span> <span class="o">=</span> <span class="n">overlapped</span>
+
+<div class="viewcode-block" id="Spliter.__call__">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.modules.Spliter.__call__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">raw_data</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">remain_length</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2560</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2560</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlapped</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">remain_length</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">raw_data</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">raw_data</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2560</span> <span class="o">-</span> <span class="n">remain_length</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;replicate&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">splited</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span><span class="n">dimension</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2560</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2560</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlapped</span><span class="p">)</span>
+
+        <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">splited</span>
+        <span class="k">return</span> <span class="n">batch</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SignalScaler">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.modules.SignalScaler">[docs]</a>
+<span class="k">class</span> <span class="nc">SignalScaler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for scaling signals in the batch.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    __call__(batch: dict) -&gt; dict:</span>
+<span class="sd">        Apply MinMax scaling to the signal in the batch.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SignalScaler.__call__">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.modules.SignalScaler.__call__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+        <span class="n">scaled_batch</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">subset_x</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">subset_x</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">subset_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">subset_x</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+            <span class="n">scaled_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subset_x</span><span class="p">)</span>
+
+        <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scaled_batch</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">batch</span></div>
+</div>
 
 </pre></div>
 
