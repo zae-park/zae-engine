@@ -91,11 +91,11 @@ class TestDecorators(unittest.TestCase):
         self.torch_tensor1 = torch.tensor([1.0, 2.0, 3.0])
         self.torch_tensor2 = torch.tensor([4.0, 5.0, 6.0])
 
-    @np2torch(torch.float32, key="x")
+    @np2torch(torch.float32, "x")
     def func_np2torch(self, batch):
         return batch
 
-    @torch2np(np.float32, key="x")
+    @torch2np(np.float32, "x")
     def func_torch2np(self, batch):
         return batch
 
@@ -113,11 +113,11 @@ class TestDecorators(unittest.TestCase):
         self.assertTrue(isinstance(result["y"], torch.Tensor))
         self.assertTrue(result["x"].dtype, np.float32)
 
-    @np2torch(torch.float32, 2)
+    @np2torch(torch.float32, n=2)
     def func_np2torch_positional(self, x, y, z):
         return x, y, z
 
-    @torch2np(np.float32, 2)
+    @torch2np(np.float32, n=2)
     def func_torch2np_positional(self, x, y, z):
         return x, y, z
 
