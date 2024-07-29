@@ -47,7 +47,9 @@ def np2torch(dtype: torch.dtype, *keys: str, n: int = None) -> Callable:
             if keys:
                 if isinstance(args[0], dict):
                     args = (
-                        dict(args[0], **{k: torch.tensor(args[0][k], dtype=dtype) for k in keys if k in args[0]}),
+                        dict(
+                            args[0], **{k: torch.tensor(args[0][k].copy(), dtype=dtype) for k in keys if k in args[0]}
+                        ),
                     ) + args[1:]
             else:
                 if n is None:
@@ -56,12 +58,13 @@ def np2torch(dtype: torch.dtype, *keys: str, n: int = None) -> Callable:
                     n_args = min(n, len(args))
 
                 args = tuple(
-                    torch.tensor(a, dtype=dtype) if isinstance(a, np.ndarray) and i < n_args else a
+                    torch.tensor(a.copy(), dtype=dtype) if isinstance(a, np.ndarray) and i < n_args else a
                     for i, a in enumerate(args)
                 )
 
                 kwargs = {
-                    k: torch.tensor(v, dtype=dtype) if isinstance(v, np.ndarray) else v for k, v in kwargs.items()
+                    k: torch.tensor(v.copy(), dtype=dtype) if isinstance(v, np.ndarray) else v
+                    for k, v in kwargs.items()
                 }
 
             return func(*args, **kwargs)
@@ -113,7 +116,10 @@ def torch2np(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
             if keys:
                 if isinstance(args[0], dict):
                     args = (
-                        dict(args[0], **{k: args[0][k].numpy().astype(dtype) for k in keys if k in args[0]}),
+                        dict(
+                            args[0],
+                            **{k: args[0][k].clone().detach().numpy().astype(dtype) for k in keys if k in args[0]},
+                        ),
                     ) + args[1:]
             else:
                 if n is None:
@@ -122,11 +128,14 @@ def torch2np(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
                     n_args = min(n, len(args))
 
                 args = tuple(
-                    a.numpy().astype(dtype) if isinstance(a, torch.Tensor) and i < n_args else a
+                    a.clone().detach().numpy().astype(dtype) if isinstance(a, torch.Tensor) and i < n_args else a
                     for i, a in enumerate(args)
                 )
 
-                kwargs = {k: v.numpy().astype(dtype) if isinstance(v, torch.Tensor) else v for k, v in kwargs.items()}
+                kwargs = {
+                    k: v.clone().detach().numpy().astype(dtype) if isinstance(v, torch.Tensor) else v
+                    for k, v in kwargs.items()
+                }
 
             return func(*args, **kwargs)
 
