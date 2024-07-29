@@ -92,8 +92,8 @@ def core(x: Union[np.ndarray, torch.Tensor]):
     device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
 
-    # --------------------------------- Data Pipeline --------------------------------- #
     try:
+        # --------------------------------- Data Pipeline --------------------------------- #
         inference_dataset = InferenceDataset(x=x.reshape(1, -1))
 
         collator = CollateBase(x_key=["x"], y_key=["y"], aux_key=["fn"])
