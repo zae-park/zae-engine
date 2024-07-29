@@ -1,3 +1,5 @@
+from typing import Dict, Union
+
 import numpy as np
 import torch
 from torch.nn import functional as F
@@ -28,11 +30,24 @@ class Chunker:
         self.th = th
 
     def __call__(self, batch):
-        x, y, fn = batch
+        x, y, fn = batch["x"], batch["y"], batch["fn"]
         x = repeat(x, "(n dim) -> n dim", n=self.n)
         y = reduce(y, "(n dim) -> n", n=self.n, reduction="mean") > self.th
         fn = [fn] * self.n
         return x, y, fn
+
+
+class Chunk:
+    def __init__(self, n: int):
+        self.n = n
+
+    def __call__(self, batch: dict) -> Dict:
+        x = batch["x"]
+        modulo = x.shape[-1] % self.n
+        if modulo != 0:
+            x = x[:, :-modulo]
+        batch["x"] = x.reshape(-1, self.n)
+        return batch
 
 
 class HotEncoder:
@@ -54,8 +69,9 @@ class HotEncoder:
         self.n_cls = n_cls
 
     def __call__(self, batch):
-        x, y, fn = batch
-        return x, np.squeeze(np.eye(self.n_cls)[y.astype(int).reshape(-1)].transpose()), fn
+        y = batch["y"]
+        batch["y"] = np.eye(self.n_cls)[y.int()]
+        return batch
 
 
 class SignalFilter:
@@ -88,10 +104,9 @@ class SignalFilter:
         self.highcut = highcut
         self.cutoff = cutoff
 
-    def __call__(self, batch):
+    def __call__(self, batch: Dict[str, Union[torch.Tensor, list]]) -> Dict:
         nyq = self.fs / 2
-        length = batch["x"].shape[-1]
-        x = np.concatenate([batch["x"].squeeze()] * 3)
+        x = batch["x"].squeeze().numpy()
 
         if self.method == "bandpass":
             if self.lowcut is None or self.highcut is None:
@@ -114,8 +129,8 @@ class SignalFilter:
                 f"Invalid method: {self.method}. Choose from 'bandpass', 'bandstop', 'lowpass', 'highpass'."
             )
 
-        x = signal.filtfilt(b, a, x, method="gust")
-        batch["x"] = torch.tensor(x[length : 2 * length].reshape(1, -1).copy(), dtype=torch.float32)
+        x = signal.filtfilt(b, a, np.concatenate([x] * 3), method="gust")
+        batch["x"] = torch.tensor(x[len(x) // 3 : 2 * len(x) // 3].copy(), dtype=torch.float32).unsqueeze(0)
         return batch
 
 
@@ -153,21 +168,27 @@ class SignalScaler:
     """
     Class for scaling signals in the batch.
 
+    Parameters
+    ----------
+    None
+
     Methods
     -------
     __call__(batch: dict) -> dict:
-        Apply scaling to the signal in the batch.
+        Apply MinMax scaling to the signal in the batch.
     """
 
     def __init__(self):
         self.scaler = MinMaxScaler()
 
-    def __call__(self, batch: dict) -> dict:
-        x = batch["x"]
-        batch_scaled = []
+    def __call__(self, batch):
+        x = batch["x"].numpy() if isinstance(batch["x"], torch.Tensor) else batch["x"]
+        scaled_batch = []
+
         for subset_x in x:
             self.scaler.fit(np.expand_dims(subset_x, 1))
             subset_x = self.scaler.transform(np.expand_dims(subset_x, 1)).squeeze()
-            batch_scaled.append(subset_x)
-        batch["x"] = np.array(batch_scaled)
+            scaled_batch.append(subset_x)
+
+        batch["x"] = torch.tensor(np.array(scaled_batch), dtype=torch.float32)
         return batch
