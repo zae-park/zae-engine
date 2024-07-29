@@ -4,6 +4,7 @@ from functools import wraps
 from abc import ABC, abstractmethod
 
 import torch
+from zae_engine.utils import deco
 
 
 class CollateBase(ABC):
@@ -112,26 +113,31 @@ class CollateBase(ABC):
         AssertionError
             If any function changes the structure of the sample data.
         """
-        if not sample_data:
-            raise ValueError("Sample data cannot be empty for io_check.")
 
-        self.set_batch(sample_data)  # Update the sample_batch with the provided sample_data
-        keys = self.sample_batch.keys()
-        updated = self.sample_batch
-        for fn in self._fn.values():
-            updated = fn(updated)
-        assert isinstance(updated, type(self.sample_batch)), "The functions changed the type of the batch."
-        assert set(keys).issubset(updated.keys()), "The functions changed the keys of the batch."
+        @deco.np2torch(torch.float, *(self.x_key + self.y_key))
+        def check(sample_data_inner: Union[dict, OrderedDict]):
+            if not sample_data_inner:
+                raise ValueError("Sample data cannot be empty for io_check.")
 
-        for key in keys:
-            assert isinstance(
-                updated[key], type(self.sample_batch[key])
-            ), f"The type of value for key '{key}' has changed."
-            if isinstance(updated[key], list):
-                continue
-            assert (
-                updated[key].dtype == self.sample_batch[key].dtype
-            ), f"The dtype of value for key '{key}' has changed."
+            self.set_batch(sample_data_inner)  # Update the sample_batch with the provided sample_data
+            keys = self.sample_batch.keys()
+            updated = self.sample_batch.copy()
+            for fn in self._fn.values():
+                updated = fn(updated)
+            assert isinstance(updated, type(self.sample_batch)), "The functions changed the type of the batch."
+            assert set(keys).issubset(updated.keys()), "The functions changed the keys of the batch."
+
+            for key in keys:
+                assert isinstance(
+                    updated[key], type(self.sample_batch[key])
+                ), f"The type of value for key '{key}' has changed."
+
+                if not isinstance(updated[key], (list, str)):
+                    assert (
+                        updated[key].dtype == self.sample_batch[key].dtype
+                    ), f"The dtype of value for key '{key}' has changed."
+
+        check(sample_data)
 
     def set_batch(self, batch: Union[dict, OrderedDict]) -> None:
         """
@@ -155,8 +161,8 @@ class CollateBase(ABC):
         fn : Callable
             The preprocessing function.
         """
-        self.io_check(self.sample_batch)
         self._fn[name] = fn
+        self.io_check(self.sample_batch)
 
     def accumulate(self, batches: Union[Tuple, List]) -> Dict:
         """
