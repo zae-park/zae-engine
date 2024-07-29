@@ -1,3 +1,4 @@
+import logging
 from typing import Union
 
 import numpy as np
@@ -13,6 +14,9 @@ from zae_engine.data.collate import CollateBase
 from zae_engine.data.collate.modules import Spliter
 
 # ------------------------------- Custom ----------------------------------- #
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class InferenceDataset(Dataset):
@@ -86,24 +90,31 @@ def core(x: Union[np.ndarray, torch.Tensor]):
 
     assert len(x.shape) == 1, f"Expect 1-D array, but receive {len(x.shape)}-D array."
     device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
+    logger.info(f"Using device: {device}")
+
     # --------------------------------- Data Pipeline --------------------------------- #
-    inference_dataset = InferenceDataset(x=x.reshape(1, -1))
+    try:
+        inference_dataset = InferenceDataset(x=x.reshape(1, -1))
 
-    collator = CollateBase(x_key=["x"], y_key=["y"], aux_key=["fn"])
-    collator.set_batch(inference_dataset[0])
-    collator.add_fn(name="split", fn=Spliter(560))
+        collator = CollateBase(x_key=["x"], y_key=["y"], aux_key=["fn"])
+        collator.set_batch(inference_dataset[0])
+        collator.add_fn(name="split", fn=Spliter(560))
 
-    inference_loader = DataLoader(inference_dataset, batch_size=1, shuffle=False, collate_fn=collator.wrap())
+        inference_loader = DataLoader(inference_dataset, batch_size=1, shuffle=False, collate_fn=collator.wrap())
 
-    # --------------------------------- Setting --------------------------------- #
-    model = autoencoder.AutoEncoder(block=UNetBlock, ch_in=1, ch_out=4, width=16, layers=[1] * 4, skip_connect=True)
-    model = dim_converter.DimConverter(model).convert("2d -> 1d")
-    optimizer = torch.optim.Adam(model.parameters())
-    scheduler = CosineAnnealingScheduler(optimizer, total_iters=100)
-    trainer1 = InferenceTrainer(model=model, device=device, mode="test", optimizer=optimizer, scheduler=scheduler)
+        # --------------------------------- Setting --------------------------------- #
+        model = autoencoder.AutoEncoder(block=UNetBlock, ch_in=1, ch_out=4, width=16, layers=[1] * 4, skip_connect=True)
+        model = dim_converter.DimConverter(model).convert("2d -> 1d")
+        optimizer = torch.optim.Adam(model.parameters())
+        scheduler = CosineAnnealingScheduler(optimizer, total_iters=100)
+        trainer1 = InferenceTrainer(model=model, device=device, mode="test", optimizer=optimizer, scheduler=scheduler)
 
-    # --------------------------------- Inference --------------------------------- #
-    return np.concatenate(trainer1.inference(inference_loader)).argmax(1)
+        # --------------------------------- Inference --------------------------------- #
+        return np.concatenate(trainer1.inference(inference_loader)).argmax(1)
+
+    except Exception as e:
+        logger.error(f"An error occurred during inference: {e}")
+        raise
 
 
 if __name__ == "__main__":
