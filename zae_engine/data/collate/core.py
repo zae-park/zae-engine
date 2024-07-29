@@ -123,6 +123,16 @@ class CollateBase(ABC):
         assert isinstance(updated, type(self.sample_batch)), "The functions changed the type of the batch."
         assert set(keys).issubset(updated.keys()), "The functions changed the keys of the batch."
 
+        for key in keys:
+            assert isinstance(
+                updated[key], type(self.sample_batch[key])
+            ), f"The type of value for key '{key}' has changed."
+            if isinstance(updated[key], list):
+                continue
+            assert (
+                updated[key].dtype == self.sample_batch[key].dtype
+            ), f"The dtype of value for key '{key}' has changed."
+
     def set_batch(self, batch: Union[dict, OrderedDict]) -> None:
         """
         Sets the sample batch to be used for input-output structure validation.
@@ -177,8 +187,10 @@ class CollateBase(ABC):
                     pass
                 elif k in self.x_key:
                     accumulate_dict[k] = torch.cat(v, dim=0).unsqueeze(1) if v else []
-                else:
+                elif k in self.y_key:
                     accumulate_dict[k] = torch.cat(v, dim=0).squeeze()
+                else:
+                    accumulate_dict[k] = v
             except TypeError:
                 pass
         return accumulate_dict
