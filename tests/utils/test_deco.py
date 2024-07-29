@@ -81,3 +81,58 @@ class TestDecorators(unittest.TestCase):
         example_tictoc()
         end = time.time()
         self.assertTrue(end - start >= 1)
+
+
+class TestDecorators(unittest.TestCase):
+
+    def setUp(self):
+        self.np_array1 = np.array([1.0, 2.0, 3.0])
+        self.np_array2 = np.array([4.0, 5.0, 6.0])
+        self.torch_tensor1 = torch.tensor([1.0, 2.0, 3.0])
+        self.torch_tensor2 = torch.tensor([4.0, 5.0, 6.0])
+
+    @np2torch(torch.float32, key="x")
+    def func_np2torch(self, batch):
+        return batch
+
+    @torch2np(np.float32, key="x")
+    def func_torch2np(self, batch):
+        return batch
+
+    def test_np2torch(self):
+        batch = {"x": self.np_array1, "y": self.np_array2}
+        result = self.func_np2torch(batch)
+        self.assertTrue(isinstance(result["x"], torch.Tensor))
+        self.assertTrue(isinstance(result["y"], np.ndarray))
+        self.assertTrue(result["x"].dtype, torch.float32)
+
+    def test_torch2np(self):
+        batch = {"x": self.torch_tensor1, "y": self.torch_tensor2}
+        result = self.func_torch2np(batch)
+        self.assertTrue(isinstance(result["x"], np.ndarray))
+        self.assertTrue(isinstance(result["y"], torch.Tensor))
+        self.assertTrue(result["x"].dtype, np.float32)
+
+    @np2torch(torch.float32, 2)
+    def func_np2torch_positional(self, x, y, z):
+        return x, y, z
+
+    @torch2np(np.float32, 2)
+    def func_torch2np_positional(self, x, y, z):
+        return x, y, z
+
+    def test_np2torch_positional(self):
+        result = self.func_np2torch_positional(self.np_array1, self.np_array2, self.np_array1)
+        self.assertTrue(isinstance(result[0], torch.Tensor))
+        self.assertTrue(isinstance(result[1], torch.Tensor))
+        self.assertTrue(isinstance(result[2], np.ndarray))
+        self.assertTrue(result[0].dtype, torch.float32)
+        self.assertTrue(result[1].dtype, torch.float32)
+
+    def test_torch2np_positional(self):
+        result = self.func_torch2np_positional(self.torch_tensor1, self.torch_tensor2, self.torch_tensor1)
+        self.assertTrue(isinstance(result[0], np.ndarray))
+        self.assertTrue(isinstance(result[1], np.ndarray))
+        self.assertTrue(isinstance(result[2], torch.Tensor))
+        self.assertTrue(result[0].dtype, np.float32)
+        self.assertTrue(result[1].dtype, np.float32)
