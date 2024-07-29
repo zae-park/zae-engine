@@ -139,15 +139,31 @@ class SignalFilter:
         return batch
 
 
-def split(batch):
-    # TODO: Fn wrapper with overlap length overlapped
-    raw_data = batch["x"].squeeze()
-    batch["raw"] = raw_data.tolist()
-    remain_length = (len(raw_data) - 2560) % (2560 - overlapped)
-    if remain_length != 0:
-        raw_data = F.pad(raw_data.unsqueeze(0), (0, 2560 - remain_length), mode="replicate").squeeze()
-    splited = raw_data.unfold(dimension=0, size=2560, step=2560 - overlapped)
+class Spliter:
+    """
+    Class for splitting signals in the batch with overlapping.
 
-    batch["x"] = splited
-    batch["fn"] = [batch["fn"]] * len(splited)
-    return batch
+    Parameters
+    ----------
+    overlapped : int
+        The number of overlapping samples between adjacent segments.
+
+    Methods
+    -------
+    __call__(batch: dict) -> dict:
+        Split the signal in the batch with the specified overlap.
+    """
+
+    def __init__(self, overlapped: int):
+        self.overlapped = overlapped
+
+    def __call__(self, batch: dict) -> dict:
+        raw_data = batch["x"].squeeze()
+        batch["raw"] = raw_data.tolist()
+        remain_length = (len(raw_data) - 2560) % (2560 - self.overlapped)
+        if remain_length != 0:
+            raw_data = F.pad(raw_data.unsqueeze(0), (0, 2560 - remain_length), mode="replicate").squeeze()
+        splited = raw_data.unfold(dimension=0, size=2560, step=2560 - self.overlapped)
+
+        batch["x"] = splited
+        return batch
