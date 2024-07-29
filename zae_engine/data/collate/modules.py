@@ -1,12 +1,9 @@
-from abc import ABC, abstractmethod
-
 import numpy as np
-from scipy import signal
 import torch
 from torch.nn import functional as F
+from scipy import signal
+from sklearn.preprocessing import MinMaxScaler
 from einops import repeat, reduce
-
-from zae_engine.operation import label_to_onoff
 
 
 class Chunker:
@@ -59,23 +56,6 @@ class HotEncoder:
     def __call__(self, batch):
         x, y, fn = batch
         return x, np.squeeze(np.eye(self.n_cls)[y.astype(int).reshape(-1)].transpose()), fn
-
-    # def sanity_check(batch):
-    #     # replaced with io_check method of CollateBase
-    #     x, y, fn = batch
-    #     x = torch.tensor(x, dtype=torch.float32)
-    #     y = torch.tensor(y, dtype=torch.int32)
-    #
-    #     # Guarantee the x and y have 3-dimension shape.
-    #     if len(x.shape) == 1:
-    #         x = x.unsqueeze(0).unsqueeze(0)  # [dim] -> [1, 1, dim]
-    #     elif len(x.shape) == 2:
-    #         x = x.unsqueeze(1)  # [N, dim] -> [N, 1, dim]
-    #     if len(y.shape) == 1:
-    #         y = y.unsqueeze(1).unsqueeze(1)  # [dim] -> [1, 1, dim]
-    #     elif len(y.shape) == 2:
-    #         y = y.unsqueeze(0)  # [ch, dim] -> [N, 1, dim]
-    #     return x, y, fn
 
 
 class SignalFilter:
@@ -166,4 +146,28 @@ class Spliter:
         splited = raw_data.unfold(dimension=0, size=2560, step=2560 - self.overlapped)
 
         batch["x"] = splited
+        return batch
+
+
+class SignalScaler:
+    """
+    Class for scaling signals in the batch.
+
+    Methods
+    -------
+    __call__(batch: dict) -> dict:
+        Apply scaling to the signal in the batch.
+    """
+
+    def __init__(self):
+        self.scaler = MinMaxScaler()
+
+    def __call__(self, batch: dict) -> dict:
+        x = batch["x"]
+        batch_scaled = []
+        for subset_x in x:
+            self.scaler.fit(np.expand_dims(subset_x, 1))
+            subset_x = self.scaler.transform(np.expand_dims(subset_x, 1)).squeeze()
+            batch_scaled.append(subset_x)
+        batch["x"] = np.array(batch_scaled)
         return batch
