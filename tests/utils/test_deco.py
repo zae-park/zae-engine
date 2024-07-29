@@ -141,3 +141,7 @@ class TestDecorators(unittest.TestCase):
         self.assertIsInstance(x, np.ndarray)
         self.assertIsInstance(y, np.ndarray)
         self.assertIsInstance(z, torch.Tensor)
+
+
+if __name__ == "__main__":
+    unittest.main()
