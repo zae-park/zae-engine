@@ -63,24 +63,24 @@ class TestAcc(unittest.TestCase):
     def test_top1_accuracy_numpy(self):
         result = self.acc(self.true_np, self.predict_np)
         expected_result = accuracy(self.true_np, self.predict_np)
-        self.assertAlmostEqual(result.item(), expected_result.item(), places=4)
+        self.assertAlmostEqual(result, expected_result, places=4)
 
     def test_top1_accuracy_torch(self):
         result = self.acc(self.true_torch, self.predict_torch)
         expected_result = accuracy(self.true_torch, self.predict_torch)
-        self.assertAlmostEqual(result.item(), expected_result.item(), places=4)
+        self.assertAlmostEqual(result, expected_result, places=4)
 
     def test_topk_accuracy_numpy(self):
         result = self.acc(self.true_np, self.predict_np_topk)
-        self.assertAlmostEqual(result.item(), 0.5, places=4)
+        self.assertAlmostEqual(result, 0.5, places=4)
 
     def test_topk_accuracy_torch(self):
         result = self.acc(self.true_torch, self.predict_torch_topk)
-        self.assertAlmostEqual(result.item(), 0.5, places=4)
+        self.assertAlmostEqual(result, 0.5, places=4)
 
     def test_topk_accuracy_mixed(self):
         result = self.acc(self.true_np, self.predict_torch_topk)
-        self.assertAlmostEqual(result.item(), 0.5, places=4)
+        self.assertAlmostEqual(result, 0.5, places=4)
 
     def test_invalid_dimensions(self):
         with self.assertRaises(ValueError):
