@@ -1,4 +1,5 @@
 import time
+import inspect
 
 from typing import Callable, Union
 import numpy as np
@@ -43,30 +44,48 @@ def np2torch(dtype: torch.dtype, *keys: str, n: int = None) -> Callable:
     """
 
     def deco(func: Callable) -> Callable:
-        def wrapper(*args: Union[np.ndarray, torch.Tensor, bool, int, float], **kwargs):
-            if keys:
-                if isinstance(args[0], dict):
-                    args = (
-                        dict(
-                            args[0],
-                            **{k: torch.tensor(args[0][k], dtype=dtype).clone().detach() for k in keys if k in args[0]},
-                        ),
-                    ) + args[1:]
-            else:
-                if n is None:
-                    n_args = len(args)
-                else:
-                    n_args = min(n, len(args))
+        def wrapper(*args, **kwargs):
+            sig = inspect.signature(func)
+            params = list(sig.parameters.values())
 
-                args = tuple(
-                    torch.tensor(a, dtype=dtype).clone().detach() if isinstance(a, np.ndarray) and i < n_args else a
-                    for i, a in enumerate(args)
+            if params and params[0].name == "self":
+                # This is a method, skip the first parameter
+                args = (args[0],) + tuple(
+                    torch.tensor(a, dtype=dtype) if isinstance(a, np.ndarray) and (n is None or i < n) else a
+                    for i, a in enumerate(args[1:])
                 )
+            else:
+                # This is a function, process all parameters
+                if keys:
+                    if isinstance(args[0], dict):
+                        args = (
+                            dict(
+                                args[0],
+                                **{
+                                    k: (
+                                        torch.tensor(args[0][k], dtype=dtype)
+                                        if isinstance(args[0][k], np.ndarray)
+                                        else args[0][k]
+                                    )
+                                    for k in keys
+                                    if k in args[0]
+                                },
+                            ),
+                        ) + args[1:]
+                else:
+                    if n is None:
+                        n_args = len(args)
+                    else:
+                        n_args = min(n, len(args))
 
-                kwargs = {
-                    k: torch.tensor(v, dtype=dtype).clone().detach() if isinstance(v, np.ndarray) else v
-                    for k, v in kwargs.items()
-                }
+                    args = tuple(
+                        torch.tensor(a, dtype=dtype) if isinstance(a, np.ndarray) and i < n_args else a
+                        for i, a in enumerate(args)
+                    )
+
+                    kwargs = {
+                        k: torch.tensor(v, dtype=dtype) if isinstance(v, np.ndarray) else v for k, v in kwargs.items()
+                    }
 
             return func(*args, **kwargs)
 
@@ -113,30 +132,53 @@ def torch2np(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
     """
 
     def deco(func: Callable) -> Callable:
-        def wrapper(*args: Union[np.ndarray, torch.Tensor, bool, int, float], **kwargs):
-            if keys:
-                if isinstance(args[0], dict):
-                    args = (
-                        dict(
-                            args[0],
-                            **{k: args[0][k].clone().detach().numpy().astype(dtype) for k in keys if k in args[0]},
-                        ),
-                    ) + args[1:]
-            else:
-                if n is None:
-                    n_args = len(args)
-                else:
-                    n_args = min(n, len(args))
+        def wrapper(*args, **kwargs):
+            sig = inspect.signature(func)
+            params = list(sig.parameters.values())
 
-                args = tuple(
-                    a.clone().detach().numpy().astype(dtype) if isinstance(a, torch.Tensor) and i < n_args else a
-                    for i, a in enumerate(args)
+            if params and params[0].name == "self":
+                # This is a method, skip the first parameter
+                args = (args[0],) + tuple(
+                    (
+                        a.detach().cpu().numpy().astype(dtype)
+                        if isinstance(a, torch.Tensor) and (n is None or i < n)
+                        else a
+                    )
+                    for i, a in enumerate(args[1:])
                 )
+            else:
+                # This is a function, process all parameters
+                if keys:
+                    if isinstance(args[0], dict):
+                        args = (
+                            dict(
+                                args[0],
+                                **{
+                                    k: (
+                                        args[0][k].detach().cpu().numpy().astype(dtype)
+                                        if isinstance(args[0][k], torch.Tensor)
+                                        else args[0][k]
+                                    )
+                                    for k in keys
+                                    if k in args[0]
+                                },
+                            ),
+                        ) + args[1:]
+                else:
+                    if n is None:
+                        n_args = len(args)
+                    else:
+                        n_args = min(n, len(args))
 
-                kwargs = {
-                    k: v.clone().detach().numpy().astype(dtype) if isinstance(v, torch.Tensor) else v
-                    for k, v in kwargs.items()
-                }
+                    args = tuple(
+                        a.detach().cpu().numpy().astype(dtype) if isinstance(a, torch.Tensor) and i < n_args else a
+                        for i, a in enumerate(args)
+                    )
+
+                    kwargs = {
+                        k: v.detach().cpu().numpy().astype(dtype) if isinstance(v, torch.Tensor) else v
+                        for k, v in kwargs.items()
+                    }
 
             return func(*args, **kwargs)
 
