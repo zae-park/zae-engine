@@ -3,7 +3,6 @@ import unittest
 import numpy as np
 import torch
 
-
 from zae_engine.utils.deco import np2torch, torch2np, shape_check, tictoc
 
 
@@ -83,7 +82,7 @@ class TestDecorators(unittest.TestCase):
         self.assertTrue(end - start >= 1)
 
 
-class TestDecorators(unittest.TestCase):
+class TestDecoratorsWithDictAndTuple(unittest.TestCase):
 
     def setUp(self):
         self.dict_data = {

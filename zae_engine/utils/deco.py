@@ -1,10 +1,5 @@
 import time
 
-from typing import Union, Type, Callable
-import numpy as np
-import torch
-
-
 from typing import Callable, Union
 import numpy as np
 import torch
@@ -48,32 +43,32 @@ def np2torch(dtype: torch.dtype, *keys: str, n: int = None) -> Callable:
     """
 
     def deco(func: Callable) -> Callable:
-        def wrapper(*args, **kwargs):
-            # If the first argument is a dictionary and keys are specified
-            if keys and isinstance(args[0], dict):
-                updated_args = (
-                    dict(
-                        args[0],
-                        **{k: torch.tensor(args[0][k], dtype=dtype).clone().detach() for k in keys if k in args[0]},
-                    ),
-                ) + args[1:]
+        def wrapper(*args: Union[np.ndarray, torch.Tensor, bool, int, float], **kwargs):
+            if keys:
+                if isinstance(args[0], dict):
+                    args = (
+                        dict(
+                            args[0],
+                            **{k: torch.tensor(args[0][k], dtype=dtype).clone().detach() for k in keys if k in args[0]},
+                        ),
+                    ) + args[1:]
             else:
                 if n is None:
                     n_args = len(args)
                 else:
                     n_args = min(n, len(args))
 
-                updated_args = tuple(
+                args = tuple(
                     torch.tensor(a, dtype=dtype).clone().detach() if isinstance(a, np.ndarray) and i < n_args else a
                     for i, a in enumerate(args)
                 )
 
-            updated_kwargs = {
-                k: torch.tensor(v, dtype=dtype).clone().detach() if isinstance(v, np.ndarray) else v
-                for k, v in kwargs.items()
-            }
+                kwargs = {
+                    k: torch.tensor(v, dtype=dtype).clone().detach() if isinstance(v, np.ndarray) else v
+                    for k, v in kwargs.items()
+                }
 
-            return func(*updated_args, **updated_kwargs)
+            return func(*args, **kwargs)
 
         return wrapper
 
@@ -118,31 +113,32 @@ def torch2np(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
     """
 
     def deco(func: Callable) -> Callable:
-        def wrapper(*args, **kwargs):
-            # If the first argument is a dictionary and keys are specified
-            if keys and isinstance(args[0], dict):
-                updated_args = (
-                    dict(
-                        args[0], **{k: args[0][k].clone().detach().numpy().astype(dtype) for k in keys if k in args[0]}
-                    ),
-                ) + args[1:]
+        def wrapper(*args: Union[np.ndarray, torch.Tensor, bool, int, float], **kwargs):
+            if keys:
+                if isinstance(args[0], dict):
+                    args = (
+                        dict(
+                            args[0],
+                            **{k: args[0][k].clone().detach().numpy().astype(dtype) for k in keys if k in args[0]},
+                        ),
+                    ) + args[1:]
             else:
                 if n is None:
                     n_args = len(args)
                 else:
                     n_args = min(n, len(args))
 
-                updated_args = tuple(
+                args = tuple(
                     a.clone().detach().numpy().astype(dtype) if isinstance(a, torch.Tensor) and i < n_args else a
                     for i, a in enumerate(args)
                 )
 
-            updated_kwargs = {
-                k: v.clone().detach().numpy().astype(dtype) if isinstance(v, torch.Tensor) else v
-                for k, v in kwargs.items()
-            }
+                kwargs = {
+                    k: v.clone().detach().numpy().astype(dtype) if isinstance(v, torch.Tensor) else v
+                    for k, v in kwargs.items()
+                }
 
-            return func(*updated_args, **updated_kwargs)
+            return func(*args, **kwargs)
 
         return wrapper
 
