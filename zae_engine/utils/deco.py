@@ -43,7 +43,7 @@ def np2torch(dtype: torch.dtype, *keys: str, n: int = None) -> Callable:
     """
 
     def deco(func: Callable) -> Callable:
-        def wrapper(fn: Callable, *args):
+        def wrapper(fn: Callable, *args, **kwargs):
             if keys:
                 assert (len(args) == 1) and isinstance(args[0], dict)
                 args = [
@@ -59,8 +59,11 @@ def np2torch(dtype: torch.dtype, *keys: str, n: int = None) -> Callable:
                     torch.tensor(a, dtype=dtype) if isinstance(a, np.ndarray) and i < n_args else a
                     for i, a in enumerate(args)
                 )
+                kwargs = {
+                    k: torch.tensor(v, dtype=dtype) if isinstance(v, np.ndarray) else v for k, v in kwargs.items()
+                }
 
-            return func(fn, *args)
+            return func(fn, *args, **kwargs)
 
         return wrapper
 
@@ -105,7 +108,7 @@ def torch2np(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
     """
 
     def deco(func: Callable) -> Callable:
-        def wrapper(fn: Callable, *args):
+        def wrapper(fn: Callable, *args, **kwargs):
             if keys:
                 assert (len(args) == 1) and isinstance(args[0], dict)
                 args = (
@@ -125,8 +128,8 @@ def torch2np(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
                     a.clone().detach().numpy().astype(dtype) if isinstance(a, torch.Tensor) and i < n_args else a
                     for i, a in enumerate(args)
                 )
-
-            return func(fn, *args)
+                kwargs = {k: v.numpy().astype(dtype) if isinstance(v, torch.Tensor) else v for k, v in kwargs.items()}
+            return func(fn, *args, **kwargs)
 
         return wrapper
 
