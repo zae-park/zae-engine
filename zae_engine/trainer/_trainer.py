@@ -1,7 +1,7 @@
 import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Tuple, Dict, Union, Optional, Iterable
+from typing import Tuple, Dict, Union, Optional, Iterable, Type
 
 import tqdm
 import wandb
@@ -10,7 +10,7 @@ import torch
 from torch import optim
 from torch.utils import data as td
 
-from .add_on import NeptuneLogger
+from .add_on import AddOnBase, MultiGPUAddon, NeptuneLogger
 from ..schedulers import core
 
 
@@ -80,6 +80,30 @@ class Trainer(ABC):
 
         if web_logger:
             self.web_logger = self.check_web_logger(web_logger)
+
+    @classmethod
+    def add_on(cls, *add_on_cls: Type[AddOnBase]):
+        """
+        Install one or more add-ons to the Trainer class.
+
+        Parameters
+        ----------
+        add_on_cls : Type[AddOnBase]
+            One or more add-on classes to install.
+
+        Returns
+        -------
+        Type[Trainer]
+            The modified Trainer class with the add-ons applied.
+
+        Examples
+        --------
+        >>> trainer = Trainer.add_on(MultiGPUAddon, SomeOtherAddon)(model, [device1, device2], mode='train', scheduler=scheduler, optimizer=optimizer)
+        """
+        new_cls = cls
+        for addon in add_on_cls:
+            new_cls = addon.apply(new_cls)
+        return new_cls
 
     def _to_cpu(self, *args) -> Tuple[torch.Tensor, ...] or torch.Tensor:
         """
