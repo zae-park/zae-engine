@@ -66,7 +66,7 @@ class TestLogger(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        shutil.rmtree("./wandb")
+        shutil.rmtree("../wandb")
 
     @classmethod
     def get_attribute(cls):
@@ -91,7 +91,7 @@ class TestLogger(unittest.TestCase):
         self.runner = None
 
     def test_wandb_init(self):
-        self.assertIn("wandb", os.listdir("."))
+        self.assertIn("wandb", os.listdir(".."))
 
     def test_wandb_log(self):
         self.runner.log({"test": True})
