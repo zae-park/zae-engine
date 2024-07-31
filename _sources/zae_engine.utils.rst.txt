@@ -1,6 +1,14 @@
 zae\_engine.utils package
 =========================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   zae_engine.utils.decorators
+
 Submodules
 ----------
 

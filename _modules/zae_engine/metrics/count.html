@@ -76,11 +76,12 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">confusion</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">deco</span><span class="p">,</span> <span class="n">EPS</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">EPS</span>
+<span class="kn">from</span> <span class="nn">..utils.decorators</span> <span class="kn">import</span> <span class="n">np2torch</span><span class="p">,</span> <span class="n">shape_check</span>
 
 
-<span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
-<span class="nd">@deco</span><span class="o">.</span><span class="n">shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="nd">@shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span>
     <span class="n">true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
     <span class="n">predict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
@@ -167,8 +168,8 @@
             <span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
-    <span class="nd">@deco</span><span class="o">.</span><span class="n">shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+    <span class="nd">@shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span>
         <span class="n">true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">predict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
@@ -194,7 +195,7 @@
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">correct</span><span class="o">.</span><span class="n">float</span><span class="p">())</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">top_k_accuracy</span><span class="p">(</span>
         <span class="n">true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">predict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -254,8 +255,8 @@
 
 
 
-<span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="nd">@deco</span><span class="o">.</span><span class="n">shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="nd">@shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f_beta</span><span class="p">(</span>
     <span class="n">pred</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">true</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
@@ -302,7 +303,7 @@
     <span class="k">return</span> <span class="n">f_beta_from_mat</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="n">average</span><span class="p">)</span>
 
 
-<span class="nd">@deco</span><span class="o">.</span><span class="n">np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f_beta_from_mat</span><span class="p">(</span><span class="n">conf_mat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">average</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;micro&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the F-beta score from a given confusion matrix.</span>
