@@ -1,4 +1,4 @@
-import torch
+import torch.nn as nn
 
 from .core import AddOnBase
 
@@ -38,3 +38,8 @@ class MultiGPUAddon(AddOnBase):
                     self.model.to(self.device)
 
         return MultiGPUTrainer
+
+
+# class MultiGPUAddon(AddOnBase):
+#     def apply(self, trainer: Trainer):
+#         trainer.model = nn.DataParallel(trainer.model)

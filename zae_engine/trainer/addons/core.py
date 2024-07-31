@@ -1,7 +1,10 @@
+from typing import Type, TypeVar
 from abc import ABC, abstractmethod
 
+T = TypeVar("T", bound="Trainer")
 
-class AddOnBase:
+
+class AddOnBase(ABC):
     """
     Base class for add-ons that can be installed on the Trainer class.
 
@@ -12,7 +15,8 @@ class AddOnBase:
     """
 
     @classmethod
-    def apply(cls, base_cls):
+    @abstractmethod
+    def apply(cls, base_cls: Type[T]) -> Type[T]:
         """
         Applies the add-on modifications to the base class.
 

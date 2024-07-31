@@ -1,7 +1,7 @@
 import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Tuple, Dict, Union, Optional, Iterable, Type
+from typing import Tuple, Dict, Union, Optional, Iterable, Type, Sequence
 
 import tqdm
 import wandb
@@ -10,7 +10,7 @@ import torch
 from torch import optim
 from torch.utils import data as td
 
-from .add_on import AddOnBase, MultiGPUAddon, NeptuneLogger
+from .addons import AddOnBase, NeptuneLogger, core as co
 from ..schedulers import core
 
 
@@ -57,9 +57,8 @@ class Trainer(ABC):
         gradient_clip: float = 0.0,
     ):
         # Init with given args (positional params)
-        if "cuda" in device.type:
-            torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
-        self.device = device
+
+        self._set_device(device)
         self.model = self._to_device(model)
         self.mode = mode
         self.optimizer = optimizer
@@ -82,7 +81,7 @@ class Trainer(ABC):
             self.web_logger = self.check_web_logger(web_logger)
 
     @classmethod
-    def add_on(cls, *add_on_cls: Type[AddOnBase]):
+    def add_on(cls, *add_on_cls: Type[AddOnBase]) -> Type[co.T]:
         """
         Install one or more add-ons to the Trainer class.
 
@@ -100,10 +99,10 @@ class Trainer(ABC):
         --------
         >>> trainer = Trainer.add_on(MultiGPUAddon, SomeOtherAddon)(model, [device1, device2], mode='train', scheduler=scheduler, optimizer=optimizer)
         """
-        new_cls = cls
-        for addon in add_on_cls:
-            new_cls = addon.apply(new_cls)
-        return new_cls
+        base_cls = cls
+        for add_on in add_on_cls:
+            base_cls = add_on.apply(base_cls)
+        return base_cls
 
     def _to_cpu(self, *args) -> Tuple[torch.Tensor, ...] or torch.Tensor:
         """
@@ -126,6 +125,13 @@ class Trainer(ABC):
                 return a
         else:
             return tuple([self._to_cpu(a) for a in args])
+
+    def _set_device(self, device: Union[torch.device, Sequence[torch.device]]):
+        self.device = tuple(device)
+
+        for d in self.device:
+            if "cuda" in d.type:
+                torch.cuda.set_device(d)
 
     def _to_device(
         self, *args, **kwargs
@@ -286,7 +292,6 @@ class Trainer(ABC):
         self.progress_checker.update_step()
         self.run_callback()
 
-    @abstractmethod
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         """
         Perform a training step.
@@ -307,13 +312,17 @@ class Trainer(ABC):
         -------
         Dict[str, torch.Tensor]
             A dictionary containing the results of the training step, including the loss.
-        """
-        x, y, fn = batch  # or x, y, fn = batch['x'], batch['y'] batch['fn']
-        outputs = self.model(x)
-        loss = [0.0] * len(x)
-        return {"loss": loss, "mean": torch.mean(outputs)}
 
-    @abstractmethod
+        Examples
+        --------
+        >>> x, y, fn = batch['x'], batch['y'], batch['fn']  # or x, y, fn = batch
+        >>> outputs = self.model(x)
+        >>> loss = criteria(outputs)
+        >>> return {"loss": loss, "mean_output": torch.mean(outputs)}
+        """
+
+        raise NotImplementedError("train_step must be implemented by subclasses")
+
     def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         """
         Perform a testing step.
@@ -334,11 +343,16 @@ class Trainer(ABC):
         -------
         Dict[str, torch.Tensor]
             A dictionary containing the results of the testing step, including the loss.
+
+        Examples
+        --------
+        >>> x, y, fn = batch['x'], batch['y'], batch['fn']  # or x, y, fn = batch
+        >>> outputs = self.model(x)
+        >>> loss = criteria(outputs)
+        >>> return {"loss": loss, "mean_output": torch.mean(outputs)}
         """
-        x, y, fn = batch  # or x, y, fn = batch['x'], batch['y'] batch['fn']
-        outputs = self.model(x)
-        loss = [0.0] * len(x)
-        return {"loss": loss, "mean": torch.mean(outputs)}
+
+        raise NotImplementedError("test_step must be implemented by subclasses")
 
     def logging(self, step_dict: Dict[str, torch.Tensor]) -> None:
         """
