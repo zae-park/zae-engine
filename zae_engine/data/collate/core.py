@@ -4,7 +4,7 @@ from functools import wraps
 from abc import ABC, abstractmethod
 
 import torch
-from zae_engine.utils import deco
+from zae_engine.utils.decorators import np2torch
 
 
 class CollateBase(ABC):
@@ -114,7 +114,7 @@ class CollateBase(ABC):
             If any function changes the structure of the sample data.
         """
 
-        @deco.np2torch(torch.float, *(self.x_key + self.y_key))
+        @np2torch(torch.float, *(self.x_key + self.y_key))
         def check(sample_data_inner: Union[dict, OrderedDict]):
             if not sample_data_inner:
                 raise ValueError("Sample data cannot be empty for io_check.")
@@ -180,7 +180,7 @@ class CollateBase(ABC):
             A dictionary where keys are batch attributes and values are lists or concatenated tensors.
         """
 
-        @deco.np2torch(torch.float, *(self.x_key + self.y_key))
+        @np2torch(torch.float, *(self.x_key + self.y_key))
         def torch_sweep(**kwargs):
             return kwargs
 
