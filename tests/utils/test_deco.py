@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import torch
 
-from zae_engine.utils.deco import np2torch, torch2np, shape_check, tictoc
+from zae_engine.utils.decorators.np2torch import np2torch
 
 
 @np2torch(torch.float32, n=2)
