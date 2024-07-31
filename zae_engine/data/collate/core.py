@@ -80,10 +80,11 @@ class CollateBase(ABC):
     ) -> None: ...
 
     def __init__(
-        self, x_key: Sequence[str] = ["x"], y_key: Sequence[str] = ["y"], aux_key: Sequence[str] = ["aux"], *args
+        self, *args, x_key: Sequence[str] = ["x"], y_key: Sequence[str] = ["y"], aux_key: Sequence[str] = ["aux"]
     ):
         super().__init__()
         self.x_key, self.y_key, self.aux_key = x_key, y_key, aux_key
+        self.sample_batch = {}
         self._fn = OrderedDict()  # Initialize the ordered dictionary
         if len(args) == 1 and isinstance(args[0], OrderedDict):
             for key, module in args[0].items():
@@ -91,7 +92,6 @@ class CollateBase(ABC):
         else:
             for idx, module in enumerate(args):
                 self.add_fn(str(idx), module)
-        self.sample_batch = {}
 
     def __len__(self) -> int:
         return len(self._fn)
@@ -162,7 +162,8 @@ class CollateBase(ABC):
             The preprocessing function.
         """
         self._fn[name] = fn
-        self.io_check(self.sample_batch)
+        if self.sample_batch:
+            self.io_check(self.sample_batch)
 
     def accumulate(self, batches: Union[Tuple, List]) -> Dict:
         """
@@ -178,26 +179,25 @@ class CollateBase(ABC):
         Dict
             A dictionary where keys are batch attributes and values are lists or concatenated tensors.
         """
+
+        @deco.np2torch(torch.float, *(self.x_key + self.y_key))
+        def torch_sweep(**kwargs):
+            return kwargs
+
         accumulate_dict = defaultdict(list)
         for b in batches:
-            for k, v in b.items():
-                if isinstance(v, list):
-                    accumulate_dict[k] += v
-                else:
-                    accumulate_dict[k].append(v)
+            for k, v in torch_sweep(**b).items():
+                accumulate_dict[k].append(v)
         for k, v in accumulate_dict.items():
             try:
-                if set(v) == {None}:
-                    accumulate_dict[k] = None
-                elif k in self.aux_key:
-                    pass
-                elif k in self.x_key:
-                    accumulate_dict[k] = torch.cat(v, dim=0).unsqueeze(1) if v else []
+                if k in self.x_key:
+                    accumulate_dict[k] = torch.stack(v, dim=0).unsqueeze(1) if v else []
                 elif k in self.y_key:
-                    accumulate_dict[k] = torch.cat(v, dim=0).squeeze()
+                    accumulate_dict[k] = torch.stack(v, dim=0).squeeze()
                 else:
                     accumulate_dict[k] = v
-            except TypeError:
+            except TypeError as e:
+                print(e)
                 pass
         return accumulate_dict
 
