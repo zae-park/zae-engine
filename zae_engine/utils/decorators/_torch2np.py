@@ -3,18 +3,23 @@ import numpy as np
 import torch
 
 
+def getter(ts: torch.Tensor) -> np.ndarray:
+    return ts.detach().numpy()
+
+
 def torch2np_fn(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
     def decorator(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
             new_args = list(args)
             if keys:
                 for key in keys:
-                    if key in new_args[0]:
-                        new_args[0][key] = new_args[0][key].clone().detach().numpy().astype(dtype)
+                    v = new_args[0][key]
+                    new_args[0][key] = getter(v).astype(dtype) if isinstance(v, torch.Tensor) else v
+
             else:
                 for i in range(n or len(new_args)):
                     if isinstance(new_args[i], torch.Tensor):
-                        new_args[i] = new_args[i].clone().detach().numpy().astype(dtype)
+                        new_args[i] = getter(new_args[i]).astype(dtype)
             return func(*new_args, **kwargs)
 
         return wrapper
@@ -28,12 +33,13 @@ def torch2np_mtd(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
             new_args = list(args)
             if keys:
                 for key in keys:
-                    if key in new_args[0]:
-                        new_args[0][key] = new_args[0][key].clone().detach().numpy().astype(dtype)
+                    v = new_args[0][key]
+                    new_args[0][key] = getter(v).astype(dtype) if isinstance(v, torch.Tensor) else v
+
             else:
                 for i in range(n or len(new_args)):
                     if isinstance(new_args[i], torch.Tensor):
-                        new_args[i] = new_args[i].clone().detach().numpy().astype(dtype)
+                        new_args[i] = getter(new_args[i]).astype(dtype)
             return func(self, *new_args, **kwargs)
 
         return wrapper
