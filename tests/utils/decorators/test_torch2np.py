@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import torch
-from zae_engine.utils.decorators.torch2np import torch2np
+from zae_engine.utils.decorators import torch2np
 
 
 class TestTorch2NpDecorator(unittest.TestCase):

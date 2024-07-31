@@ -1,6 +1,6 @@
 import unittest
 import time
-from zae_engine.utils.decorators.tictoc import tictoc
+from zae_engine.utils.decorators import tictoc
 
 
 class TestTictocDecorator(unittest.TestCase):

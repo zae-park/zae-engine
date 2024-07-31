@@ -1,6 +1,6 @@
 import unittest
 import torch
-from zae_engine.utils.decorators.shape_check import shape_check
+from zae_engine.utils.decorators import shape_check
 
 
 class TestShapeCheckDecorator(unittest.TestCase):
