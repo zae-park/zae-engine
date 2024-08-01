@@ -6,10 +6,10 @@ import torch
 import torch.nn.functional as F
 
 from ..metrics import giou as _giou, miou as _miou
-from ..utils import deco
+from ..utils.decorators import shape_check
 
 
-@deco.shape_check(2)
+@shape_check(2)
 def mIoU(pred: torch.Tensor, true: torch.Tensor):
     """
     Compute mean Intersection over Union (mIoU) using the given predicted and true labels.
@@ -32,8 +32,7 @@ def mIoU(pred: torch.Tensor, true: torch.Tensor):
     return torch.mean(score)
 
 
-
-@deco.shape_check(2)
+@shape_check(2)
 def IoU(pred: torch.Tensor, true: torch.Tensor):
     """
     Compute mean Intersection over Union (IoU) using the given true and predicted labels.
@@ -56,8 +55,7 @@ def IoU(pred: torch.Tensor, true: torch.Tensor):
     return torch.mean(1 - iou)
 
 
-
-@deco.shape_check(2)
+@shape_check(2)
 def GIoU(true_onoff: Union[np.ndarray, torch.Tensor], pred_onoff: Union[np.ndarray, torch.Tensor]):
     """
     Compute mean Generalized Intersection over Union (GIoU) using the given true and predicted labels.
@@ -92,4 +90,3 @@ def GIoU(true_onoff: Union[np.ndarray, torch.Tensor], pred_onoff: Union[np.ndarr
 
     score = _giou(true_onoff=true_onoff, pred_onoff=pred_onoff)
     return torch.mean(1 - score)
-

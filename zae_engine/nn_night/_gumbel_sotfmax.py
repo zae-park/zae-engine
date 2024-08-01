@@ -53,7 +53,7 @@ class GumbelSoftMax(torch.autograd.Function):
             The rounded tensor while retaining differentiability.
         """
 
-        activated = F.softmax(x)
+        activated = F.softmax(x, dim=-1)
         stopped = x.detach()
         ctx.save_for_backward(x, activated, stopped)
         return x + activated - stopped  # returned rounded tensor.

@@ -1,11 +1,10 @@
 import math
-from typing import Union, Optional, List
+from typing import Union
 
 import numpy as np
 import torch
-from typeguard import typechecked
 
-from ..utils import deco
+from ..utils.decorators import np2torch, torch2np
 
 
 EPS = torch.finfo(torch.float32).eps
@@ -39,7 +38,7 @@ def rms(signal: Union[np.ndarray, torch.Tensor]) -> float:
     return ((signal**2).mean() ** 0.5).item()
 
 
-@deco.np2torch(torch.float)
+@np2torch(torch.float)
 def mse(signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, torch.Tensor]) -> float:
     """
     Compute the mean squared error (MSE) between two signals.
@@ -72,7 +71,7 @@ def mse(signal1: Union[np.ndarray, torch.Tensor], signal2: Union[np.ndarray, tor
     return ((signal1 - signal2) ** 2).mean().item()
 
 
-@deco.np2torch(torch.float)
+@np2torch(torch.float)
 def signal_to_noise(signal: Union[torch.Tensor, np.ndarray], noise: Union[torch.Tensor, np.ndarray]) -> float:
     """
     Compute the signal-to-noise ratio (SNR).
@@ -107,7 +106,7 @@ def signal_to_noise(signal: Union[torch.Tensor, np.ndarray], noise: Union[torch.
     return db
 
 
-@deco.np2torch(torch.float)
+@np2torch(torch.float)
 def peak_signal_to_noise(
     signal: Union[torch.Tensor, np.ndarray],
     noise: Union[torch.Tensor, np.ndarray],
@@ -154,7 +153,7 @@ def peak_signal_to_noise(
     return db
 
 
-@deco.torch2np(np.float32)
+@torch2np(np.float32)
 def qilv(
     signal1: Union[torch.Tensor, np.ndarray],
     signal2: Union[torch.Tensor, np.ndarray],
