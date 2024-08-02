@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from zae_engine.models import DummyModel
 from zae_engine.trainer import Trainer
+from zae_engine.trainer.addons import NeptuneLoggerAddon, WandBLoggerAddon
 
 
 class DummySet(Dataset):
@@ -97,6 +98,42 @@ class TestLogger(unittest.TestCase):
     def test_wandb_log(self):
         self.runner.log({"test": True})
         self.assertTrue(self.runner.summary["test"])
+
+    def test_neptune_init(self):
+        web_logger = {
+            "neptune": {
+                "project_name": "test_project",
+                "api_tkn": "your_neptune_api_token",
+            }
+        }
+        trainer_with_neptune = DummyTrainer.add_on(NeptuneLoggerAddon)
+        trainer = trainer_with_neptune(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+            web_logger=web_logger,
+        )
+        self.assertTrue(trainer.web_logger.is_live())
+
+    def test_combined_logger(self):
+        web_logger = {
+            "wandb": {
+                "project": "wandb-test",
+                "config": {"a": 1, "b": 2, "c": 3},
+            },
+            "neptune": {
+                "project_name": "test_project",
+                "api_tkn": "your_neptune_api_token",
+            },
+        }
+        trainer_with_loggers = DummyTrainer.add_on(WandBLoggerAddon, NeptuneLoggerAddon)
+        trainer = trainer_with_loggers(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+            web_logger=web_logger,
+        )
+        self.assertTrue(trainer.web_logger.is_live())
 
     # ------------------------------------- Legacy ------------------------------------- #
     # def test_result(self):
