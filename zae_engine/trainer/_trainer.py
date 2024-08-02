@@ -127,11 +127,16 @@ class Trainer(ABC):
             return tuple([self._to_cpu(a) for a in args])
 
     def _set_device(self, device: Union[torch.device, Sequence[torch.device]]):
-        self.device = tuple(device)
-
-        for d in self.device:
-            if "cuda" in d.type:
-                torch.cuda.set_device(d)
+        self.device = device
+        torch.cuda.set_device(device)
+        # if isinstance(device, torch.device):
+        #     self.device = device
+        #     torch.cuda.set_device(device)
+        # else:
+        #     self.device = tuple(device)
+        #     for d in self.device:
+        #         if "cuda" in d.type:
+        #             torch.cuda.set_device(d)
 
     def _to_device(
         self, *args, **kwargs
