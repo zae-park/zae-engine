@@ -281,7 +281,6 @@ class Trainer(ABC):
 
         self.logging(step_dict)
         self.progress_checker.update_step()
-        self.run_callback()
 
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         """
