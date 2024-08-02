@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   zae_engine.trainer.add_on
+   zae_engine.trainer.addons
 
 Submodules
 ----------
