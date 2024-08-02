@@ -83,7 +83,10 @@ class TestLogger(unittest.TestCase):
         self.model, self.optimizer, self.scheduler, self.train_loader, self.valid_loader = self.get_attribute()
         self.test_time_point = str(now.timestamp()).split(".")[0][:9]
         wandb.setup(wandb.Settings(program="test_callback.py", program_relpath="test_callback.py"))
-        self.runner = wandb.init(project="wandb-test", config={"a": 1, "b": 2, "c": 3})
+        try:
+            self.runner = wandb.init(project="wandb-test", config={"a": 1, "b": 2, "c": 3})
+        except wandb.errors.UsageError as e:
+            self.skipTest(e)
 
     def tearDown(self) -> None:
         self.step_check = None
