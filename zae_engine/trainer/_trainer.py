@@ -9,7 +9,7 @@ import torch
 from torch import optim
 from torch.utils import data as td
 
-from .addons import AddOnBase
+# from .addons import AddOnBase
 from ..schedulers import core
 
 T = TypeVar("T", bound="Trainer")
@@ -74,7 +74,7 @@ class Trainer(ABC):
         self.valid_loader, self.n_valid_data, self.valid_batch_size = None, None, None
 
     @classmethod
-    def add_on(cls, *add_on_cls: Type[AddOnBase]) -> Type[T]:
+    def add_on(cls, *add_on_cls: "Type[AddOnBase]") -> Type[T]:
         """
         Install one or more add-ons to the Trainer class.
 

@@ -1,7 +1,7 @@
 from typing import Type
 from abc import ABC, abstractmethod
 
-from .. import T
+from .._trainer import T
 
 
 class AddOnBase(ABC):
