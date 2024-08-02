@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import Union, Dict
 import unittest
 import torch
 import torch.nn as nn
