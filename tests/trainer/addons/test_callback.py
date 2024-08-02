@@ -49,6 +49,7 @@ class TestLogger(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        os.mkdir("../wandb")
         dummy = torch.randn(10, 1, 2560)
         train_set = DummySet(dummy)
         valid_set = DummySet(dummy)
