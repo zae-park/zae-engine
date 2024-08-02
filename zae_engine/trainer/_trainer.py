@@ -128,7 +128,8 @@ class Trainer(ABC):
 
     def _set_device(self, device: Union[torch.device, Sequence[torch.device]]):
         self.device = device
-        torch.cuda.set_device(device)
+        if "cuda" in device.type:
+            torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
         # if isinstance(device, torch.device):
         #     self.device = device
         #     torch.cuda.set_device(device)
