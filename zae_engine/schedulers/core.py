@@ -1,6 +1,10 @@
+from typing import TypeVar
 from abc import ABC, abstractmethod
 
 from torch.optim import lr_scheduler, Optimizer
+
+
+T = TypeVar("T", bound="SchedulerBase")
 
 
 class SchedulerBase(lr_scheduler.LRScheduler, ABC):

@@ -1,8 +1,6 @@
 from typing import Type, TypeVar
 from abc import ABC, abstractmethod
 
-T = TypeVar("T", bound="Trainer")
-
 
 class AddOnBase(ABC):
     """

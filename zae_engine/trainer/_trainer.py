@@ -1,7 +1,7 @@
 import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Tuple, Dict, Union, Optional, Iterable, Type, Sequence
+from typing import Tuple, Dict, Union, Optional, TypeVar, Type, Sequence
 
 import tqdm
 import numpy as np
@@ -9,8 +9,10 @@ import torch
 from torch import optim
 from torch.utils import data as td
 
-from .addons import AddOnBase, core as co
+from .addons import AddOnBase
 from ..schedulers import core
+
+T = TypeVar("T", bound="Trainer")
 
 
 class Trainer(ABC):
@@ -45,7 +47,7 @@ class Trainer(ABC):
         device: torch.device,
         mode: str,
         optimizer: optim.Optimizer,
-        scheduler: Optional[Union[optim.lr_scheduler.LRScheduler, core.SchedulerBase]],
+        scheduler: Optional[Union[optim.lr_scheduler.LRScheduler, core.T]],
         *,
         log_bar: bool = True,
         scheduler_step_on_batch: bool = False,
@@ -72,7 +74,7 @@ class Trainer(ABC):
         self.valid_loader, self.n_valid_data, self.valid_batch_size = None, None, None
 
     @classmethod
-    def add_on(cls, *add_on_cls: Type[AddOnBase]) -> Type[co.T]:
+    def add_on(cls, *add_on_cls: Type[AddOnBase]) -> Type[T]:
         """
         Install one or more add-ons to the Trainer class.
 
@@ -228,14 +230,6 @@ class Trainer(ABC):
                 if not self.scheduler_step_on_batch:
                     self.scheduler.step(**kwargs)
                 self.progress_checker.update_epoch()
-
-    def run_callback(self):
-        """
-        Execute all registered callbacks.
-        """
-        if self.callbacks:
-            for cb in self.callbacks:
-                cb(self)  # replace even
 
     def run_epoch(self, loader: td.DataLoader, **kwargs) -> None:
         """
