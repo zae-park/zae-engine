@@ -27,8 +27,8 @@ class DummySet(Dataset):
 
 
 class DummyTrainer(Trainer):
-    def __init__(self, model, optimizer=None, scheduler=None, mode="train", callbacks=None):
-        super(DummyTrainer, self).__init__(model, torch.device("cpu"), mode, optimizer, scheduler, callbacks=callbacks)
+    def __init__(self, model, optimizer=None, scheduler=None, mode="train"):
+        super(DummyTrainer, self).__init__(model, torch.device("cpu"), mode, optimizer, scheduler)
 
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         x = torch.concat(batch).unsqueeze(1)
