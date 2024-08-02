@@ -1,5 +1,7 @@
-from typing import Type, TypeVar
+from typing import Type
 from abc import ABC, abstractmethod
+
+from .. import T
 
 
 class AddOnBase(ABC):

@@ -8,7 +8,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DistributedSampler
 
 from .core import AddOnBase
-from .._trainer import T
+from .. import T
 
 
 class MultiGPUAddon(AddOnBase):
