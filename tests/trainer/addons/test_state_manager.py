@@ -10,7 +10,8 @@ from torch.utils.data import DataLoader, TensorDataset
 
 
 from zae_engine.trainer import Trainer
-from zae_engine.trainer.addons import StateSaverAddon
+from zae_engine.trainer.addons import StateManagerAddon
+
 
 class SimpleModel(nn.Module):
     def __init__(self):
@@ -19,6 +20,7 @@ class SimpleModel(nn.Module):
 
     def forward(self, x):
         return self.linear(x)
+
 
 class CustomTrainer(Trainer):
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
@@ -33,7 +35,8 @@ class CustomTrainer(Trainer):
         loss = torch.nn.functional.cross_entropy(outputs, y)
         return {"loss": loss}
 
-class TestCheckpointSaverAddon(unittest.TestCase):
+
+class TestStateManagerAddon(unittest.TestCase):
     def setUp(self):
         self.model = SimpleModel()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -50,9 +53,9 @@ class TestCheckpointSaverAddon(unittest.TestCase):
         dataset = TensorDataset(self.data, self.labels)
         self.loader = DataLoader(dataset, batch_size=10, shuffle=True)
 
-    def test_checkpoint_saving(self):
-        trainer_with_checkpoint = CustomTrainer.add_on(StateSaverAddon)
-        trainer = trainer_with_checkpoint(
+    def test_state_saving_loading(self):
+        trainer_with_saver = CustomTrainer.add_on(StateManagerAddon)
+        trainer = trainer_with_saver(
             model=self.model,
             device=self.device,
             mode="train",
@@ -66,6 +69,23 @@ class TestCheckpointSaverAddon(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.checkpoint_dir, "model_1.ckpt")))
         self.assertTrue(os.path.exists(os.path.join(self.checkpoint_dir, "optimizer.zae")))
         self.assertTrue(os.path.exists(os.path.join(self.checkpoint_dir, "scheduler.zae")))
+
+        # Create new Trainer instance & load state
+        new_trainer = trainer_with_saver(
+            model=self.model,
+            device=self.device,
+            mode="train",
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+            checkpoint_dir=self.checkpoint_dir,
+            save_model_format="ckpt",
+        )
+        new_trainer.load_state(epoch=1)
+
+        # Load model, optimizer, scheduler for instance of Trainer and check progress
+        new_trainer.run(n_epoch=1, loader=self.loader)
+        self.assertTrue(os.path.exists(os.path.join(self.checkpoint_dir, "model_2.ckpt")))
+
 
 if __name__ == "__main__":
     unittest.main()
