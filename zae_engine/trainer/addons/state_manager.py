@@ -42,6 +42,10 @@ class StateManagerAddon(AddOnBase):
                 with open(os.path.join(self.save_path, "scheduler.zae"), "wb") as f:
                     pickle.dump(self.scheduler.state_dict(), f)
 
+            def save_result(self) -> None:
+                # TODO: Save result for validation set (or test)
+                pass
+
             def save_state(self) -> None:
                 """
                 Save the state of the model, optimizer, and scheduler.
