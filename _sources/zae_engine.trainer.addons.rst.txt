@@ -20,6 +20,14 @@ zae\_engine.trainer.addons.mpu module
    :undoc-members:
    :show-inheritance:
 
+zae\_engine.trainer.addons.web\_logger module
+---------------------------------------------
+
+.. automodule:: zae_engine.trainer.addons.web_logger
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
