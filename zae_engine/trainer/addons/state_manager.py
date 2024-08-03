@@ -1,116 +1,74 @@
-from .core import AddOnBase, T
-
 import os
-import torch
 import pickle
-from torch.utils import data as td
-from typing import Type
+import torch
+import safetensors.torch
+from typing import Type, Union, Optional, Dict
+
+from .core import AddOnBase, T
 
 
 class StateManagerAddon(AddOnBase):
-    """
-    Add-on for saving and loading the state of the model, optimizer, and scheduler during training.
-
-    Methods
-    -------
-    apply(cls, base_cls)
-        Applies the state saving and loading modifications to the base class.
-    """
-
-    def __init__(self, checkpoint_dir: str, save_model_format: str = "ckpt"):
-        self.checkpoint_dir = checkpoint_dir
-        self.save_model_format = save_model_format
+    def __init__(self, save_path: str, save_format: str = "ckpt"):
+        self.save_path = save_path
+        self.save_format = save_format
 
     @classmethod
     def apply(cls, base_cls: Type[T]) -> Type[T]:
-        """
-        Applies the state saving and loading modifications to the base class.
-
-        Parameters
-        ----------
-        base_cls : Type[T]
-            The base class to which the state saving and loading modifications will be applied.
-
-        Returns
-        -------
-        Type[T]
-            The modified base class with state saving and loading support.
-        """
-
-        class StateManagerTrainer(base_cls):
-            def __init__(self, *args, checkpoint_dir: str, save_model_format: str = "ckpt", **kwargs):
+        class TrainerWithStateManager(base_cls):
+            def __init__(self, *args, **kwargs):
+                self.save_path = kwargs.pop("save_path")
+                self.save_format = kwargs.pop("save_format", "ckpt")
                 super().__init__(*args, **kwargs)
-                self.checkpoint_dir = checkpoint_dir
-                self.save_model_format = save_model_format
-                if not os.path.exists(self.checkpoint_dir):
-                    os.makedirs(self.checkpoint_dir)
+                if not os.path.exists(self.save_path):
+                    os.makedirs(self.save_path)
 
-            def save_state(self, epoch: int) -> None:
-                """
-                Save the model, optimizer, and scheduler state to the checkpoint directory.
+            def check_better(self, cur_epoch: int, cur_loss: float) -> bool:
+                is_better = super().check_better(cur_epoch, cur_loss)
+                if is_better:
+                    self.save_state()
+                return is_better
 
-                Parameters
-                ----------
-                epoch : int
-                    The current epoch number.
-                """
-                model_path = os.path.join(self.checkpoint_dir, f"model_{epoch}.{self.save_model_format}")
-                optimizer_path = os.path.join(self.checkpoint_dir, "optimizer.zae")
-                scheduler_path = os.path.join(self.checkpoint_dir, "scheduler.zae")
+            def save_model(self, filename: str) -> None:
+                if self.save_format == "ckpt":
+                    torch.save(self.model.state_dict(), filename)
+                elif self.save_format == "safetensor":
+                    safetensors.torch.save_file(self.model.state_dict(), filename)
 
-                if self.save_model_format == "ckpt":
-                    torch.save(self.model.state_dict(), model_path)
-                elif self.save_model_format == "safetensors":
-                    import safetensors.torch  # Ensure safetensors is installed
-
-                    safetensors.torch.save_file(self.model.state_dict(), model_path)
-                else:
-                    raise ValueError("Unsupported model save format. Use 'ckpt' or 'safetensors'.")
-
-                with open(optimizer_path, "wb") as f:
+            def save_optimizer(self) -> None:
+                with open(os.path.join(self.save_path, "optimizer.zae"), "wb") as f:
                     pickle.dump(self.optimizer.state_dict(), f)
 
-                with open(scheduler_path, "wb") as f:
+            def save_scheduler(self) -> None:
+                with open(os.path.join(self.save_path, "scheduler.zae"), "wb") as f:
                     pickle.dump(self.scheduler.state_dict(), f)
 
-            def load_state(self, epoch: int) -> None:
+            def save_state(self) -> None:
                 """
-                Load the model, optimizer, and scheduler state from the checkpoint directory.
-
-                Parameters
-                ----------
-                epoch : int
-                    The epoch number of the state to load.
+                Save the state of the model, optimizer, and scheduler.
                 """
-                model_path = os.path.join(self.checkpoint_dir, f"model_{epoch}.{self.save_model_format}")
-                optimizer_path = os.path.join(self.checkpoint_dir, "optimizer.zae")
-                scheduler_path = os.path.join(self.checkpoint_dir, "scheduler.zae")
+                self.save_model(os.path.join(self.save_path, f"model.{self.save_format}"))
+                self.save_optimizer()
+                self.save_scheduler()
 
-                if self.save_model_format == "ckpt":
-                    self.model.load_state_dict(torch.load(model_path, map_location=self.device))
-                elif self.save_model_format == "safetensors":
-                    import safetensors.torch  # Ensure safetensors is installed
-
-                    self.model.load_state_dict(safetensors.torch.load_file(model_path, device=self.device))
-                else:
-                    raise ValueError("Unsupported model save format. Use 'ckpt' or 'safetensors'.")
-
-                with open(optimizer_path, "rb") as f:
-                    self.optimizer.load_state_dict(pickle.load(f))
-
-                with open(scheduler_path, "rb") as f:
-                    self.scheduler.load_state_dict(pickle.load(f))
-
-            def run_epoch(self, loader: td.DataLoader, **kwargs) -> None:
+            def load_state(self) -> None:
                 """
-                Run the training/testing process for one epoch.
-
-                Parameters
-                ----------
-                loader : td.DataLoader
-                    The data loader for the training/testing data.
+                Load the state of the model, optimizer, and scheduler.
                 """
-                super().run_epoch(loader, **kwargs)
-                self.save_state(self.progress_checker.get_epoch())
+                model_file = os.path.join(self.save_path, f"model.{self.save_format}")
+                optimizer_file = os.path.join(self.save_path, "optimizer.zae")
+                scheduler_file = os.path.join(self.save_path, "scheduler.zae")
 
-        return StateManagerTrainer
+                if self.save_format == "ckpt" and os.path.exists(model_file):
+                    self.model.load_state_dict(torch.load(model_file))
+                elif self.save_format == "safetensor" and os.path.exists(model_file):
+                    self.model.load_state_dict(safetensors.torch.load_file(model_file))
+
+                if os.path.exists(optimizer_file):
+                    with open(optimizer_file, "rb") as f:
+                        self.optimizer.load_state_dict(pickle.load(f))
+
+                if os.path.exists(scheduler_file):
+                    with open(scheduler_file, "rb") as f:
+                        self.scheduler.load_state_dict(pickle.load(f))
+
+        return TrainerWithStateManager
