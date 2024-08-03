@@ -5,13 +5,13 @@ from typing import Union, Dict
 from datetime import datetime
 
 import wandb
+import neptune.new as neptune
+from neptune.new.exceptions import NeptuneInvalidApiTokenException
 import torch
 import numpy as np
 from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
 
-import neptune.new as neptune
-from neptune.new.exceptions import NeptuneInvalidApiTokenException
 
 from zae_engine.models import DummyModel
 from zae_engine.trainer import Trainer
@@ -85,40 +85,26 @@ class TestLogger(unittest.TestCase):
         self.epoch_check = np.random.randint(1, 3)
         self.model, self.optimizer, self.scheduler, self.train_loader, self.valid_loader = self.get_attribute()
         self.test_time_point = str(now.timestamp()).split(".")[0][:9]
-
-        # Initialize WandB
         wandb.setup(wandb.Settings(program="test_callback.py", program_relpath="test_callback.py"))
         try:
-            self.wandb_runner = wandb.init(project="wandb-test", config={"a": 1, "b": 2, "c": 3})
+            self.runner = wandb.init(project="wandb-test", config={"a": 1, "b": 2, "c": 3})
         except wandb.errors.UsageError as e:
-            self.skipTest(f"WandB initialization failed: {e}")
-
-        # Initialize Neptune
-        self.neptune_run = None
-        try:
-            self.neptune_run = neptune.init_run(project="test_project", api_token="your_neptune_api_token")
-        except NeptuneInvalidApiTokenException as e:
-            self.skipTest(f"Neptune initialization failed: {e}")
+            self.skipTest(e)
 
     def tearDown(self) -> None:
         self.step_check = None
         self.epoch_check = None
         self.test_time_point = None
-
-        if self.wandb_runner:
-            self.wandb_runner.finish()
-            self.wandb_runner = None
-
-        if self.neptune_run:
-            self.neptune_run.stop()
-            self.neptune_run = None
+        if self.runner:
+            self.runner.finish()
+        self.runner = None
 
     def test_wandb_init(self):
         self.assertIn("wandb", os.listdir(".."))
 
     def test_wandb_log(self):
-        self.wandb_runner.log({"test": True})
-        self.assertTrue(self.wandb_runner.summary["test"])
+        self.runner.log({"test": True})
+        self.assertTrue(self.runner.summary["test"])
 
     def test_neptune_init(self):
         web_logger = {
@@ -128,13 +114,17 @@ class TestLogger(unittest.TestCase):
             }
         }
         trainer_with_neptune = DummyTrainer.add_on(NeptuneLoggerAddon)
-        trainer = trainer_with_neptune(
-            model=self.model,
-            optimizer=self.optimizer,
-            scheduler=self.scheduler,
-            neptune_config=web_logger["neptune"],
-        )
-        self.assertTrue(trainer.neptune_run is not None)
+        try:
+            trainer = trainer_with_neptune(
+                model=self.model,
+                optimizer=self.optimizer,
+                scheduler=self.scheduler,
+                web_logger=web_logger,
+            )
+        except neptune.exceptions.NeptuneInvalidApiTokenException as e:
+            self.skipTest(e)
+        else:
+            self.assertTrue(trainer.web_logger["neptune"].is_live())
 
     def test_combined_logger(self):
         web_logger = {
@@ -153,102 +143,71 @@ class TestLogger(unittest.TestCase):
                 model=self.model,
                 optimizer=self.optimizer,
                 scheduler=self.scheduler,
-                wandb_config=web_logger["wandb"],
-                neptune_config=web_logger["neptune"],
+                web_logger=web_logger,
             )
-        except NeptuneInvalidApiTokenException as e:
-            self.skipTest(f"Neptune initialization failed: {e}")
+        except neptune.exceptions.NeptuneInvalidApiTokenException as e:
+            self.skipTest(e)
         else:
-            self.assertTrue(trainer.neptune_run is not None)
+            self.assertTrue(trainer.web_logger["neptune"].is_live())
+            self.assertTrue(trainer.web_logger["wandb"].is_live())
 
-    # ------------------------------------- Legacy ------------------------------------- #
-    # def test_result(self):
-    #     result_saver = ResultSaver(keys=['loss', 'acc'],
-    #                                callback_step=self.step_check,
-    #                                callback_epoch=self.epoch_check)
-    #     trainer = DummyTrainer(
-    #         self.model,
-    #         self.optimizer,
-    #         self.scheduler,
-    #         'train',
-    #         callbacks=[result_saver]
-    #     )
-    #     trainer.run(3, self.train_loader, self.valid_loader)
-    #
-    # def test_ckpt(self):
-    #
-    #     ckpt_saver = CKPTSaver('ckpt.pth', callback_step=self.step_check, callback_epoch=self.epoch_check)
-    #     trainer = DummyTrainer(
-    #         self.model,
-    #         self.optimizer,
-    #         self.scheduler,
-    #         'train',
-    #         callbacks=[ckpt_saver]
-    #     )
-    #     trainer.run(3, self.train_loader, self.valid_loader)
-    #     ckpt = torch.load('ckpt.pth')
-    #
-    #
-    # def test_chain(self):
-    #     result_saver = ResultSaver(keys=['loss'], callback_epoch=self.epoch_check, callback_step=self.step_check)
-    #     ckpt_saver = CKPTSaver('ckpt.pth', callback_epoch=self.epoch_check, callback_step=self.step_check)
-    #     trainer = DummyTrainer(
-    #         self.model,
-    #         self.optimizer,
-    #         self.scheduler,
-    #         mode='train',
-    #         callbacks=[result_saver, ckpt_saver]
-    #     )
-    #     trainer.run(3, self.train_loader, self.valid_loader)
+    def test_wandb_logging(self):
+        web_logger = {"wandb": {"project": "wandb-test", "config": {"a": 1, "b": 2, "c": 3}}}
+        trainer_with_wandb = DummyTrainer.add_on(WandBLoggerAddon)
+        trainer = trainer_with_wandb(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+            web_logger=web_logger,
+        )
+        trainer.log_train["loss"] = [0.1]
+        trainer.logging({"loss": torch.tensor(0.2)})
+        self.assertIn("loss", trainer.log_train)
 
-    # ------------------------------------- Legacy ------------------------------------- #
+    def test_neptune_logging(self):
+        web_logger = {"neptune": {"project_name": "test_project", "api_tkn": "your_neptune_api_token"}}
+        trainer_with_neptune = DummyTrainer.add_on(NeptuneLoggerAddon)
+        try:
+            trainer = trainer_with_neptune(
+                model=self.model,
+                optimizer=self.optimizer,
+                scheduler=self.scheduler,
+                web_logger=web_logger,
+            )
+        except neptune.exceptions.NeptuneInvalidApiTokenException as e:
+            self.skipTest(e)
+        else:
+            trainer.log_train["loss"] = [0.1]
+            trainer.logging({"loss": torch.tensor(0.2)})
+            self.assertIn("loss", trainer.log_train)
 
-    # def test_not_notated_epoch_step(self):
-    #     with self.assertRaises(ValueError):
-    #         CallbackInterface()
+    def test_wandb_del(self):
+        web_logger = {"wandb": {"project": "wandb-test", "config": {"a": 1, "b": 2, "c": 3}}}
+        trainer_with_wandb = DummyTrainer.add_on(WandBLoggerAddon)
+        trainer = trainer_with_wandb(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+            web_logger=web_logger,
+        )
+        del trainer
+        self.assertFalse(self.runner.is_running())
 
-    # def test_not_given(self):
-    #     trainer = DummyTrainer(model=self.model, optimizer=self.optimizer, scheduler=self.scheduler, mode="train")
-    #     trainer.run(3, self.train_loader, self.valid_loader)
-
-    # def test_NeptuneCallback(self):
-    #     neptune_callback = NeptuneCallback('acc', 'loss', callback_step=self.step_check)
-    #     trainer = DummyTrainer(
-    #         model=self.model,
-    #         optimizer=self.optimizer,
-    #         scheduler=self.scheduler,
-    #         mode='train',
-    #         callbacks=[neptune_callback]
-    #     )
-    #     trainer.init_tkn(
-    #         logging_step=self.step_check,
-    #         project_name='CI-test',
-    #         api_tkn=os.environ['NEPTUNE_API_TOKEN'],
-    #         key='T' + self.test_time_point,
-    #     )
-    #
-    #     trainer.run(3, self.train_loader, self.valid_loader)
-
-    # def test_progress_checker(self):
-    #     checker = EpochStepChecker(callback_step=self.step_check, callback_epoch=self.epoch_check)
-    #     trainer = DummyTrainer(
-    #         model=self.model, optimizer=self.optimizer, scheduler=self.scheduler, mode="train", callbacks=[checker]
-    #     )
-    #     trainer.run(3, self.train_loader, self.valid_loader)
-
-    # def test_log_stopped(self):
-    #     checker = EpochStepChecker(self.step_check, self.epoch_check)
-    #     trainer = DummyTrainer(
-    #         model=self.model,
-    #         optimizer=self.optimizer,
-    #         scheduler=self.scheduler,
-    #         mode='train',
-    #         callbacks=[checker]
-    #     )
-    #     trainer.init_tkn(project_name='CI-test', api_tkn='API_token')
-    #     trainer.run(1, self.train_loader, self.valid_loader)
-    #     trainer.web_logger.log('train/acc', 1)
-    #     trainer.inference(self.valid_loader)
+    def test_neptune_del(self):
+        web_logger = {"neptune": {"project_name": "test_project", "api_tkn": "your_neptune_api_token"}}
+        trainer_with_neptune = DummyTrainer.add_on(NeptuneLoggerAddon)
+        try:
+            trainer = trainer_with_neptune(
+                model=self.model,
+                optimizer=self.optimizer,
+                scheduler=self.scheduler,
+                web_logger=web_logger,
+            )
+        except neptune.exceptions.NeptuneInvalidApiTokenException as e:
+            self.skipTest(e)
+        else:
+            del trainer
+            self.assertFalse(self.runner.is_running())
 
 
 if __name__ == "__main__":
