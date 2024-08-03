@@ -1,12 +1,13 @@
 import os
 import torch
 import pickle
-from torch import nn, optim
+from torch.utils import data as td
 from typing import Type
 
 import safetensors.torch  # Ensure safetensors is installed
 
 from .core import AddOnBase, T
+
 
 class StateSaverAddon(AddOnBase):
     """
@@ -37,7 +38,7 @@ class StateSaverAddon(AddOnBase):
         Type[T]
             The modified base class with checkpoint saving support.
         """
-        
+
         class StateSaverTrainer(base_cls):
             def __init__(self, *args, checkpoint_dir: str, save_model_format: str = "ckpt", **kwargs):
                 super().__init__(*args, **kwargs)
@@ -62,15 +63,15 @@ class StateSaverAddon(AddOnBase):
                 if self.save_model_format == "ckpt":
                     torch.save(self.model.state_dict(), model_path)
                 elif self.save_model_format == "safetensors":
-                    
+
                     safetensors.torch.save_file(self.model.state_dict(), model_path)
                 else:
                     raise ValueError("Unsupported model save format. Use 'ckpt' or 'safetensors'.")
 
-                with open(optimizer_path, 'wb') as f:
+                with open(optimizer_path, "wb") as f:
                     pickle.dump(self.optimizer.state_dict(), f)
 
-                with open(scheduler_path, 'wb') as f:
+                with open(scheduler_path, "wb") as f:
                     pickle.dump(self.scheduler.state_dict(), f)
 
             def run_epoch(self, loader: td.DataLoader, **kwargs) -> None:
