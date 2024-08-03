@@ -9,17 +9,6 @@ Subpackages
 
    zae_engine.trainer.addons
 
-Submodules
-----------
-
-zae\_engine.trainer.mpu\_utils module
--------------------------------------
-
-.. automodule:: zae_engine.trainer.mpu_utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

@@ -20,14 +20,6 @@ zae\_engine.models.builds.cnn module
    :undoc-members:
    :show-inheritance:
 
-zae\_engine.models.builds.legacy module
----------------------------------------
-
-.. automodule:: zae_engine.models.builds.legacy
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 zae\_engine.models.builds.transformer module
 --------------------------------------------
 
