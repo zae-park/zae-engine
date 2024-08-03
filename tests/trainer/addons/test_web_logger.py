@@ -11,7 +11,7 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
 
 import neptune.new as neptune
-from neptune.new.exceptions import InvalidApiToken
+from neptune.new.exceptions import NeptuneInvalidApiTokenException
 
 from zae_engine.models import DummyModel
 from zae_engine.trainer import Trainer
@@ -85,7 +85,7 @@ class TestLogger(unittest.TestCase):
         self.epoch_check = np.random.randint(1, 3)
         self.model, self.optimizer, self.scheduler, self.train_loader, self.valid_loader = self.get_attribute()
         self.test_time_point = str(now.timestamp()).split(".")[0][:9]
-        
+
         # Initialize WandB
         wandb.setup(wandb.Settings(program="test_callback.py", program_relpath="test_callback.py"))
         try:
@@ -96,10 +96,7 @@ class TestLogger(unittest.TestCase):
         # Initialize Neptune
         self.neptune_run = None
         try:
-            self.neptune_run = neptune.init(
-                project="test_project",
-                api_token="your_neptune_api_token"
-            )
+            self.neptune_run = neptune.init(project="test_project", api_token="your_neptune_api_token")
         except InvalidApiToken as e:
             self.skipTest(f"Neptune initialization failed: {e}")
 
@@ -107,11 +104,11 @@ class TestLogger(unittest.TestCase):
         self.step_check = None
         self.epoch_check = None
         self.test_time_point = None
-        
+
         if self.wandb_runner:
             self.wandb_runner.finish()
             self.wandb_runner = None
-        
+
         if self.neptune_run:
             self.neptune_run.stop()
             self.neptune_run = None
@@ -159,7 +156,7 @@ class TestLogger(unittest.TestCase):
                 wandb_config=web_logger["wandb"],
                 neptune_config=web_logger["neptune"],
             )
-        except InvalidApiToken as e:
+        except NeptuneInvalidApiTokenException as e:
             self.skipTest(f"Neptune initialization failed: {e}")
         else:
             self.assertTrue(trainer.neptune_run is not None)
