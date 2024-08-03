@@ -1,12 +1,12 @@
 import os
 import shutil
 import unittest
+import gc
 from typing import Union, Dict
 from datetime import datetime
 
 import wandb
-import neptune.new as neptune
-from neptune.new.exceptions import NeptuneInvalidApiTokenException
+from neptune.exceptions import NeptuneInvalidApiTokenException
 import torch
 import numpy as np
 from torch.optim import Adam
@@ -121,7 +121,7 @@ class TestLogger(unittest.TestCase):
                 scheduler=self.scheduler,
                 web_logger=web_logger,
             )
-        except neptune.exceptions.NeptuneInvalidApiTokenException as e:
+        except NeptuneInvalidApiTokenException as e:
             self.skipTest(e)
         else:
             self.assertTrue(trainer.web_logger["neptune"].is_live())
@@ -145,7 +145,7 @@ class TestLogger(unittest.TestCase):
                 scheduler=self.scheduler,
                 web_logger=web_logger,
             )
-        except neptune.exceptions.NeptuneInvalidApiTokenException as e:
+        except NeptuneInvalidApiTokenException as e:
             self.skipTest(e)
         else:
             self.assertTrue(trainer.web_logger["neptune"].is_live())
@@ -174,7 +174,7 @@ class TestLogger(unittest.TestCase):
                 scheduler=self.scheduler,
                 web_logger=web_logger,
             )
-        except neptune.exceptions.NeptuneInvalidApiTokenException as e:
+        except NeptuneInvalidApiTokenException as e:
             self.skipTest(e)
         else:
             trainer.log_train["loss"] = [0.1]
@@ -190,8 +190,9 @@ class TestLogger(unittest.TestCase):
             scheduler=self.scheduler,
             web_logger=web_logger,
         )
+        trainer_id = id(trainer)
         del trainer
-        self.assertFalse(self.runner.is_running())
+        self.assertNotIn(trainer_id, [id(obj) for obj in gc.get_objects()])
 
     def test_neptune_del(self):
         web_logger = {"neptune": {"project_name": "test_project", "api_tkn": "your_neptune_api_token"}}
@@ -203,11 +204,12 @@ class TestLogger(unittest.TestCase):
                 scheduler=self.scheduler,
                 web_logger=web_logger,
             )
-        except neptune.exceptions.NeptuneInvalidApiTokenException as e:
+        except NeptuneInvalidApiTokenException as e:
             self.skipTest(e)
         else:
+            trainer_id = id(trainer)
             del trainer
-            self.assertFalse(self.runner.is_running())
+            self.assertNotIn(trainer_id, [id(obj) for obj in gc.get_objects()])
 
 
 if __name__ == "__main__":
