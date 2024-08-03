@@ -376,7 +376,7 @@ class Trainer(ABC):
         else:
             self.mode = "test" if self.mode == "train" else "train"
 
-    def check_better(self, cur_epoch: int, cur_loss: float) -> None:
+    def check_better(self, cur_epoch: int, cur_loss: float) -> bool:
         """
         Compare the current model and the in-buffer model to determine if the current model is better.
         The criterion is loss.
@@ -389,10 +389,11 @@ class Trainer(ABC):
             The current loss value.
         """
         if cur_loss >= self.loss_buffer:
-            return
+            return False
         self.weight_buffer["epoch"].append(cur_epoch)
         self.weight_buffer["weight"].append(self.model.state_dict())
         self.loss_buffer = cur_loss
+        return True
 
     def log_reset(self) -> None:
         """
