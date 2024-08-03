@@ -4,11 +4,12 @@ import numpy as np
 import torch
 
 from . import confusion
-from ..utils import deco, EPS
+from ..utils import EPS
+from ..utils.decorators import np2torch, shape_check
 
 
-@deco.np2torch(dtype=torch.int)
-@deco.shape_check(2)
+@np2torch(dtype=torch.int)
+@shape_check(2)
 def accuracy(
     true: Union[np.ndarray, torch.Tensor],
     predict: Union[np.ndarray, torch.Tensor],
@@ -93,12 +94,12 @@ class Acc:
             )
 
     @staticmethod
-    @deco.np2torch(dtype=torch.int)
-    @deco.shape_check(2)
+    @np2torch(dtype=torch.int)
+    @shape_check(2)
     def accuracy(
         true: Union[np.ndarray, torch.Tensor],
         predict: Union[np.ndarray, torch.Tensor],
-    ) -> torch.Tensor:
+    ) -> float:
         """
         Compute the top-1 accuracy of predictions.
 
@@ -117,13 +118,13 @@ class Acc:
             The top-1 accuracy of the predictions as a torch tensor.
         """
         correct = torch.eq(true, predict)
-        return torch.mean(correct.float())
+        return torch.mean(correct.float()).item()
 
     @staticmethod
-    @deco.np2torch(dtype=torch.float32)
+    @np2torch(dtype=torch.float32)
     def top_k_accuracy(
         true: Union[np.ndarray, torch.Tensor], predict: Union[np.ndarray, torch.Tensor], k: int
-    ) -> torch.Tensor:
+    ) -> float:
         """
         Compute the top-k accuracy of predictions.
 
@@ -148,7 +149,7 @@ class Acc:
 
         topk = torch.topk(predict, k, dim=1).indices
         correct = topk.eq(true.view(-1, 1).expand_as(topk))
-        return correct.float().sum() / true.size(0)
+        return (correct.float().sum() / len(true)).item()
 
     def _check_inputs(
         self, true: Union[np.ndarray, torch.Tensor], predict: Union[np.ndarray, torch.Tensor]
@@ -179,8 +180,8 @@ class Acc:
         return true, predict
 
 
-@deco.np2torch(dtype=torch.int, n=2)
-@deco.shape_check(2)
+@np2torch(dtype=torch.int, n=2)
+@shape_check(2)
 def f_beta(
     pred: np.ndarray | torch.Tensor,
     true: np.ndarray | torch.Tensor,
@@ -227,7 +228,7 @@ def f_beta(
     return f_beta_from_mat(conf, beta=beta, num_classes=num_classes, average=average)
 
 
-@deco.np2torch(dtype=torch.int, n=1)
+@np2torch(dtype=torch.int, n=1)
 def f_beta_from_mat(conf_mat: np.ndarray | torch.Tensor, beta: float, num_classes: int, average: str = "micro"):
     """
     Compute the F-beta score from a given confusion matrix.

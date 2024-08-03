@@ -3,8 +3,7 @@ import unittest
 import numpy as np
 import torch
 
-
-from zae_engine.utils.deco import np2torch, torch2np, shape_check, tictoc
+from zae_engine.utils.decorators import np2torch, torch2np, shape_check, tictoc
 
 
 @np2torch(torch.float32, n=2)
@@ -81,3 +80,67 @@ class TestDecorators(unittest.TestCase):
         example_tictoc()
         end = time.time()
         self.assertTrue(end - start >= 1)
+
+
+class TestDecoratorsWithDictAndTuple(unittest.TestCase):
+
+    def setUp(self):
+        self.dict_data = {
+            "x": np.array([1, 2, 3]),
+            "y": np.array([4, 5, 6]),
+            "z": torch.tensor([7, 8, 9], dtype=torch.float32),
+        }
+        self.torch_data = (
+            torch.tensor([1, 2, 3], dtype=torch.float32),
+            torch.tensor([4, 5, 6], dtype=torch.float32),
+            torch.tensor([7, 8, 9], dtype=torch.float32),
+        )
+        self.numpy_data = (
+            np.array([1, 2, 3], dtype=np.float32),
+            np.array([4, 5, 6], dtype=np.float32),
+            np.array([7, 8, 9], dtype=np.float32),
+        )
+
+    @np2torch(torch.float32, "x", "y")
+    def sample_func_np2torch_dict(self, batch):
+        return batch
+
+    @torch2np(np.float32, "x", "y")
+    def sample_func_torch2np_dict(self, batch):
+        return batch
+
+    @np2torch(torch.float32, n=2)
+    def sample_func_np2torch_tuple(self, x, y, z):
+        return x, y, z
+
+    @torch2np(np.float32, n=2)
+    def sample_func_torch2np_tuple(self, x, y, z):
+        return x, y, z
+
+    def test_np2torch_dict(self):
+        result = self.sample_func_np2torch_dict(self.dict_data)
+        self.assertIsInstance(result["x"], torch.Tensor)
+        self.assertIsInstance(result["y"], torch.Tensor)
+        self.assertIsInstance(result["z"], torch.Tensor)
+
+    def test_torch2np_dict(self):
+        result = self.sample_func_torch2np_dict(self.dict_data)
+        self.assertIsInstance(result["x"], np.ndarray)
+        self.assertIsInstance(result["y"], np.ndarray)
+        self.assertIsInstance(result["z"], torch.Tensor)
+
+    def test_np2torch_tuple(self):
+        x, y, z = self.sample_func_np2torch_tuple(*self.numpy_data)
+        self.assertIsInstance(x, torch.Tensor)
+        self.assertIsInstance(y, torch.Tensor)
+        self.assertIsInstance(z, np.ndarray)
+
+    def test_torch2np_tuple(self):
+        x, y, z = self.sample_func_torch2np_tuple(*self.torch_data)
+        self.assertIsInstance(x, np.ndarray)
+        self.assertIsInstance(y, np.ndarray)
+        self.assertIsInstance(z, torch.Tensor)
+
+
+if __name__ == "__main__":
+    unittest.main()

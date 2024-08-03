@@ -1,17 +1,18 @@
 import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Tuple, Dict, Union, Optional, Iterable
+from typing import Tuple, Dict, Union, Optional, TypeVar, Type, Sequence
 
 import tqdm
-import wandb
 import numpy as np
 import torch
 from torch import optim
 from torch.utils import data as td
 
-from .add_on import NeptuneLogger
+# from .addons import AddOnBase
 from ..schedulers import core
+
+T = TypeVar("T", bound="Trainer")
 
 
 class Trainer(ABC):
@@ -34,12 +35,10 @@ class Trainer(ABC):
         The learning rate scheduler for the optimizer.
     log_bar : bool, optional
         Whether to display a progress bar during training/testing, by default True.
-    callbacks : Iterable, optional
-        A list of callback functions to be executed during training/testing, by default an empty tuple.
-    web_logger : Optional[dict[str, Union[object, dict]]], optional
-        A dictionary containing web loggers (e.g., WandB, Neptune) or their parameters, by default None.
     scheduler_step_on_batch : bool, optional
         Whether to update the scheduler on each batch, by default False.
+    gradient_clip : float, optional
+        Gradient clipping value. If 0, no gradient clipping is applied, by default 0.0.
     """
 
     def __init__(
@@ -48,25 +47,21 @@ class Trainer(ABC):
         device: torch.device,
         mode: str,
         optimizer: optim.Optimizer,
-        scheduler: Optional[Union[optim.lr_scheduler.LRScheduler, core.SchedulerBase]],
+        scheduler: Optional[Union[optim.lr_scheduler.LRScheduler, core.T]],
         *,
         log_bar: bool = True,
-        callbacks: Iterable = (),
         scheduler_step_on_batch: bool = False,
-        web_logger: Optional[dict[str, Union[object, dict]]] = None,
         gradient_clip: float = 0.0,
     ):
         # Init with given args (positional params)
-        if "cuda" in device.type:
-            torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
-        self.device = device
+
+        self._set_device(device)
         self.model = self._to_device(model)
         self.mode = mode
         self.optimizer = optimizer
         self.scheduler = scheduler
         # Init with given args (named params)
         self.log_bar = log_bar
-        self.callbacks = callbacks
         self.scheduler_step_on_batch = scheduler_step_on_batch
         self.gradient_clip = gradient_clip
 
@@ -78,8 +73,29 @@ class Trainer(ABC):
         self.loader, self.n_data, self.batch_size = None, None, None
         self.valid_loader, self.n_valid_data, self.valid_batch_size = None, None, None
 
-        if web_logger:
-            self.web_logger = self.check_web_logger(web_logger)
+    @classmethod
+    def add_on(cls, *add_on_cls: "Type[AddOnBase]") -> Type[T]:
+        """
+        Install one or more add-ons to the Trainer class.
+
+        Parameters
+        ----------
+        add_on_cls : Type[AddOnBase]
+            One or more add-on classes to install.
+
+        Returns
+        -------
+        Type[Trainer]
+            The modified Trainer class with the add-ons applied.
+
+        Examples
+        --------
+        >>> trainer = Trainer.add_on(MultiGPUAddon, SomeOtherAddon)(model, [device1, device2], mode='train', scheduler=scheduler, optimizer=optimizer)
+        """
+        base_cls = cls
+        for add_on in add_on_cls:
+            base_cls = add_on.apply(base_cls)
+        return base_cls
 
     def _to_cpu(self, *args) -> Tuple[torch.Tensor, ...] or torch.Tensor:
         """
@@ -102,6 +118,19 @@ class Trainer(ABC):
                 return a
         else:
             return tuple([self._to_cpu(a) for a in args])
+
+    def _set_device(self, device: Union[torch.device, Sequence[torch.device]]):
+        self.device = device
+        if "cuda" in device.type:
+            torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
+        # if isinstance(device, torch.device):
+        #     self.device = device
+        #     torch.cuda.set_device(device)
+        # else:
+        #     self.device = tuple(device)
+        #     for d in self.device:
+        #         if "cuda" in d.type:
+        #             torch.cuda.set_device(d)
 
     def _to_device(
         self, *args, **kwargs
@@ -202,14 +231,6 @@ class Trainer(ABC):
                     self.scheduler.step(**kwargs)
                 self.progress_checker.update_epoch()
 
-    def run_callback(self):
-        """
-        Execute all registered callbacks.
-        """
-        if self.callbacks:
-            for cb in self.callbacks:
-                cb(self)  # replace even
-
     def run_epoch(self, loader: td.DataLoader, **kwargs) -> None:
         """
         Run the training/testing process for one epoch.
@@ -260,9 +281,7 @@ class Trainer(ABC):
 
         self.logging(step_dict)
         self.progress_checker.update_step()
-        self.run_callback()
 
-    @abstractmethod
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         """
         Perform a training step.
@@ -283,13 +302,17 @@ class Trainer(ABC):
         -------
         Dict[str, torch.Tensor]
             A dictionary containing the results of the training step, including the loss.
-        """
-        x, y, fn = batch  # or x, y, fn = batch['x'], batch['y'] batch['fn']
-        outputs = self.model(x)
-        loss = [0.0] * len(x)
-        return {"loss": loss, "mean": torch.mean(outputs)}
 
-    @abstractmethod
+        Examples
+        --------
+        >>> x, y, fn = batch['x'], batch['y'], batch['fn']  # or x, y, fn = batch
+        >>> outputs = self.model(x)
+        >>> loss = criteria(outputs)
+        >>> return {"loss": loss, "mean_output": torch.mean(outputs)}
+        """
+
+        raise NotImplementedError("train_step must be implemented by subclasses")
+
     def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         """
         Perform a testing step.
@@ -310,11 +333,16 @@ class Trainer(ABC):
         -------
         Dict[str, torch.Tensor]
             A dictionary containing the results of the testing step, including the loss.
+
+        Examples
+        --------
+        >>> x, y, fn = batch['x'], batch['y'], batch['fn']  # or x, y, fn = batch
+        >>> outputs = self.model(x)
+        >>> loss = criteria(outputs)
+        >>> return {"loss": loss, "mean_output": torch.mean(outputs)}
         """
-        x, y, fn = batch  # or x, y, fn = batch['x'], batch['y'] batch['fn']
-        outputs = self.model(x)
-        loss = [0.0] * len(x)
-        return {"loss": loss, "mean": torch.mean(outputs)}
+
+        raise NotImplementedError("test_step must be implemented by subclasses")
 
     def logging(self, step_dict: Dict[str, torch.Tensor]) -> None:
         """
@@ -348,7 +376,7 @@ class Trainer(ABC):
         else:
             self.mode = "test" if self.mode == "train" else "train"
 
-    def check_better(self, cur_epoch: int, cur_loss: float) -> None:
+    def check_better(self, cur_epoch: int, cur_loss: float) -> bool:
         """
         Compare the current model and the in-buffer model to determine if the current model is better.
         The criterion is loss.
@@ -361,10 +389,11 @@ class Trainer(ABC):
             The current loss value.
         """
         if cur_loss >= self.loss_buffer:
-            return
+            return False
         self.weight_buffer["epoch"].append(cur_epoch)
         self.weight_buffer["weight"].append(self.model.state_dict())
         self.loss_buffer = cur_loss
+        return True
 
     def log_reset(self) -> None:
         """
@@ -438,56 +467,6 @@ class Trainer(ABC):
             print(f"Cannot find file {filename}", e)
         except IndexError as e:
             print(f"There is no weight in buffer of trainer.", e)
-
-    def check_web_logger(self, web_logger: Dict[str, Union[object, dict]]) -> Dict[str, Union[object, None]]:
-        """
-        Check given web_logger is runner object or runner params.
-        If runner params are provided, init new runner object using those.
-
-        Parameters
-        ----------
-        web_logger : Dict[str, Union[object, dict]]
-            A dictionary containing web loggers (e.g., WandB, Neptune) or their parameters.
-
-        Returns
-        -------
-        Dict[str, Union[object, None]]
-            A dictionary of initialized web loggers.
-        """
-        logger_dict = defaultdict(None)
-        for k, v in web_logger.items():
-            if k.lower() in ["wandb", "w&b"]:
-                logger_dict["wandb"] = wandb.init(**v) if isinstance(v, dict) else v
-            elif k.lower() in ["neptune", "neptune.ai", "neptuneai", "neptune-ai", "nep"]:
-                logger_dict["neptune"] = self.init_tkn(**v) if isinstance(v, dict) else v
-            else:
-                # zae-engine now supports WandB and Neptune.ai only.
-                continue
-        return logger_dict
-
-    def init_tkn(self, project_name: str, api_tkn: str = "", **kwargs) -> None:
-        """
-        Initialize neptune logger with given project name and token.
-
-        Parameters
-        ----------
-        project_name : str
-            The name of the Neptune project.
-        api_tkn : str, optional
-            The API token for the Neptune project, by default "".
-        kwargs : extra hashable
-            Additional parameters for tracking model (or opt, scheduler, etc...).
-        """
-        self.web_logger = NeptuneLogger(project_name, api_tkn, **kwargs)
-
-    def end_web_logger(self) -> None:
-        """
-        Eliminate web loggers.
-        """
-        if wb_log := self.web_logger["wandb"]:
-            wb_log.finish()
-        if np_log := self.web_logger["neptune"]:
-            np_log.eliminate()
 
     def inference(self, loader) -> list:
         """
