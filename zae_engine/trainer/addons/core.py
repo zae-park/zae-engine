@@ -1,7 +1,7 @@
-from typing import Type, TypeVar
+from typing import Type
 from abc import ABC, abstractmethod
 
-T = TypeVar("T", bound="Trainer")
+from .._trainer import T
 
 
 class AddOnBase(ABC):

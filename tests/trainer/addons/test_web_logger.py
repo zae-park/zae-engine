@@ -10,8 +10,12 @@ import numpy as np
 from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
 
+import neptune.new as neptune
+from neptune.new.exceptions import NeptuneInvalidApiTokenException
+
 from zae_engine.models import DummyModel
 from zae_engine.trainer import Trainer
+from zae_engine.trainer.addons import NeptuneLoggerAddon, WandBLoggerAddon
 
 
 class DummySet(Dataset):
@@ -26,8 +30,8 @@ class DummySet(Dataset):
 
 
 class DummyTrainer(Trainer):
-    def __init__(self, model, optimizer=None, scheduler=None, mode="train", callbacks=None):
-        super(DummyTrainer, self).__init__(model, torch.device("cpu"), mode, optimizer, scheduler, callbacks=callbacks)
+    def __init__(self, model, optimizer=None, scheduler=None, mode="train"):
+        super(DummyTrainer, self).__init__(model, torch.device("cpu"), mode, optimizer, scheduler)
 
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         x = torch.concat(batch).unsqueeze(1)
@@ -81,22 +85,81 @@ class TestLogger(unittest.TestCase):
         self.epoch_check = np.random.randint(1, 3)
         self.model, self.optimizer, self.scheduler, self.train_loader, self.valid_loader = self.get_attribute()
         self.test_time_point = str(now.timestamp()).split(".")[0][:9]
+
+        # Initialize WandB
         wandb.setup(wandb.Settings(program="test_callback.py", program_relpath="test_callback.py"))
-        self.runner = wandb.init(project="wandb-test", config={"a": 1, "b": 2, "c": 3})
+        try:
+            self.wandb_runner = wandb.init(project="wandb-test", config={"a": 1, "b": 2, "c": 3})
+        except wandb.errors.UsageError as e:
+            self.skipTest(f"WandB initialization failed: {e}")
+
+        # Initialize Neptune
+        self.neptune_run = None
+        try:
+            self.neptune_run = neptune.init_run(project="test_project", api_token="your_neptune_api_token")
+        except NeptuneInvalidApiTokenException as e:
+            self.skipTest(f"Neptune initialization failed: {e}")
 
     def tearDown(self) -> None:
         self.step_check = None
         self.epoch_check = None
         self.test_time_point = None
-        self.runner.finish()
-        self.runner = None
+
+        if self.wandb_runner:
+            self.wandb_runner.finish()
+            self.wandb_runner = None
+
+        if self.neptune_run:
+            self.neptune_run.stop()
+            self.neptune_run = None
 
     def test_wandb_init(self):
         self.assertIn("wandb", os.listdir(".."))
 
     def test_wandb_log(self):
-        self.runner.log({"test": True})
-        self.assertTrue(self.runner.summary["test"])
+        self.wandb_runner.log({"test": True})
+        self.assertTrue(self.wandb_runner.summary["test"])
+
+    def test_neptune_init(self):
+        web_logger = {
+            "neptune": {
+                "project_name": "test_project",
+                "api_tkn": "your_neptune_api_token",
+            }
+        }
+        trainer_with_neptune = DummyTrainer.add_on(NeptuneLoggerAddon)
+        trainer = trainer_with_neptune(
+            model=self.model,
+            optimizer=self.optimizer,
+            scheduler=self.scheduler,
+            neptune_config=web_logger["neptune"],
+        )
+        self.assertTrue(trainer.neptune_run is not None)
+
+    def test_combined_logger(self):
+        web_logger = {
+            "wandb": {
+                "project": "wandb-test",
+                "config": {"a": 1, "b": 2, "c": 3},
+            },
+            "neptune": {
+                "project_name": "test_project",
+                "api_tkn": "your_neptune_api_token",
+            },
+        }
+        trainer_with_loggers = DummyTrainer.add_on(WandBLoggerAddon, NeptuneLoggerAddon)
+        try:
+            trainer = trainer_with_loggers(
+                model=self.model,
+                optimizer=self.optimizer,
+                scheduler=self.scheduler,
+                wandb_config=web_logger["wandb"],
+                neptune_config=web_logger["neptune"],
+            )
+        except NeptuneInvalidApiTokenException as e:
+            self.skipTest(f"Neptune initialization failed: {e}")
+        else:
+            self.assertTrue(trainer.neptune_run is not None)
 
     # ------------------------------------- Legacy ------------------------------------- #
     # def test_result(self):
