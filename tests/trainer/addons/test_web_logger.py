@@ -97,7 +97,7 @@ class TestLogger(unittest.TestCase):
         self.neptune_run = None
         try:
             self.neptune_run = neptune.init(project="test_project", api_token="your_neptune_api_token")
-        except InvalidApiToken as e:
+        except NeptuneInvalidApiTokenException as e:
             self.skipTest(f"Neptune initialization failed: {e}")
 
     def tearDown(self) -> None:
