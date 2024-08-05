@@ -35,7 +35,7 @@ def cli_run(command: str, path: str = ""):
         if not path:
             path = os.path.join(os.getcwd(), "zae_example.py")
         shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "example_script.py"), path)
-        print(f"Generate snippet file. {path} python")
+        print(f"Generate snippet file. {path}")
     elif command == "hello":
         zae_print()
     else:
