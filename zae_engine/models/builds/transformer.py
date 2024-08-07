@@ -1,45 +1,23 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import math
 
+import torch
+import torch.nn as nn
 
-def positional_encoding(seq_len, d_model, device):
+
+def timestamp_encoding(timestamps, d_model):
     """
-    주기적인 위치 인코딩을 생성하는 함수.
+    Encode timestamp to periodic
 
     Args:
-        seq_len (int): 시퀀스의 길이.
-        d_model (int): 모델의 차원.
-        device (torch.device): 텐서를 생성할 디바이스.
+        timestamps (torch.Tensor): Sequence of timestamp with (batch_size, seq_len) shape.
+        d_model (int): dimension of model.
 
     Returns:
-        torch.Tensor: 주기적인 위치 인코딩 텐서, shape (seq_len, d_model).
-    """
-    pe = torch.zeros(seq_len, d_model, device=device)
-    position = torch.arange(0, seq_len, dtype=torch.float32, device=device).unsqueeze(1)
-    div_term = torch.exp(torch.arange(0, d_model, 2).float().to(device) * -(math.log(10000.0) / d_model))
-
-    pe[:, 0::2] = torch.sin(position * div_term)
-    pe[:, 1::2] = torch.cos(position * div_term)
-
-    return pe
-
-
-def periodic_encoding(timestamps, d_model):
-    """
-    주기적인 타임스탬프 인코딩을 생성하는 함수.
-
-    Args:
-        timestamps (torch.Tensor): 타임스탬프 시퀀스, shape (batch_size, seq_len).
-        d_model (int): 모델의 차원.
-
-    Returns:
-        torch.Tensor: 주기적인 타임스탬프 인코딩 텐서, shape (batch_size, seq_len, d_model).
+        torch.Tensor: Timestamp encoding tensor with (batch_size, seq_len, d_model) shape.
     """
     batch_size, seq_len = timestamps.size()
     pe = torch.zeros(batch_size, seq_len, d_model, device=timestamps.device)
-    position = timestamps.unsqueeze(-1)
+    position = timestamps.unsqueeze(-1)  # [Batch, sequence_length, 1]
     div_term = torch.exp(torch.arange(0, d_model, 2).float().to(timestamps.device) * -(math.log(10000.0) / d_model))
 
     pe[:, :, 0::2] = torch.sin(position * div_term)
@@ -105,7 +83,7 @@ class TimeAwareTransformer(nn.Module):
         pos_encoding = self.pos_encoder(pos_indices).unsqueeze(0).repeat(batch_size, 1, 1)
 
         # add timestamp encoding
-        time_encoding = periodic_encoding(time_vecs, self.d_model)
+        time_encoding = timestamp_encoding(time_vecs, self.d_model)
 
         # apply encodings to event vectors
         event_vecs = self.embedding(event_vecs) + pos_encoding + time_encoding
