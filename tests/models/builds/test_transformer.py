@@ -6,10 +6,13 @@ from zae_engine.models import TimeAwareTransformer
 
 class TestTimeAwareTransformer(unittest.TestCase):
     def setUp(self):
+        self.d_head = 32
         self.d_model = 128
-        self.nhead = 8
+        self.n_head = 8
         self.num_layers = 6
-        self.model = TimeAwareTransformer(self.d_model, self.nhead, self.num_layers)
+        self.model = TimeAwareTransformer(
+            d_head=self.d_head, d_model=self.d_model, n_head=self.n_head, num_layers=self.num_layers
+        )
         self.batch_size = 16
         self.seq_len = 10
         self.event_vecs = torch.randn(self.seq_len, self.batch_size, 128)
