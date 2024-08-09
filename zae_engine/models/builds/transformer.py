@@ -76,7 +76,6 @@ class TimeAwareTransformer(nn.Module):
         self.d_model = d_model
         self.embedding = nn.Linear(d_head, d_model)  # 이벤트 벡터를 d_model 차원으로 변환
         self.pos_encoder = nn.Embedding(max_seq_len, d_model)
-        self.time_encoder = nn.Embedding(max_seq_len, d_model)
 
         encoder_layers = nn.TransformerEncoderLayer(d_model, n_head, activation="gelu", norm_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers, norm=nn.LayerNorm(d_model))

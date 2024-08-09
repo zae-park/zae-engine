@@ -15,16 +15,17 @@ class TestTimeAwareTransformer(unittest.TestCase):
         )
         self.batch_size = 16
         self.seq_len = 10
-        self.event_vecs = torch.randn(self.seq_len, self.batch_size, 128)
-        self.time_vecs = torch.randint(0, 512, (self.seq_len, self.batch_size))
+        self.event_vecs = torch.randn(self.batch_size, self.seq_len, self.d_head)
+        self.time_vecs = torch.randint(0, 512, (self.batch_size, self.seq_len))
+        print()
 
     def test_forward(self):
         output = self.model(self.event_vecs, self.time_vecs)
         self.assertEqual(output.size(), (self.batch_size, self.d_model))
 
     def test_variable_sequence_length(self):
-        event_vecs = torch.randn(5, self.batch_size, 128)
-        time_vecs = torch.randint(0, 512, (5, self.batch_size))
+        event_vecs = torch.randn(self.batch_size, 5, self.d_head)
+        time_vecs = torch.randint(0, 512, (self.batch_size, 5))
         output = self.model(event_vecs, time_vecs)
         self.assertEqual(output.size(), (self.batch_size, self.d_model))
 
