@@ -77,6 +77,56 @@
 <span class="kn">import</span> <span class="nn">math</span>
 
 
+<div class="viewcode-block" id="positional_encoding">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.positional_encoding">[docs]</a>
+<span class="k">def</span> <span class="nf">positional_encoding</span><span class="p">(</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    주기적인 위치 인코딩을 생성하는 함수.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        seq_len (int): 시퀀스의 길이.</span>
+<span class="sd">        d_model (int): 모델의 차원.</span>
+<span class="sd">        device (torch.device): 텐서를 생성할 디바이스.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: 주기적인 위치 인코딩 텐서, shape (seq_len, d_model).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pe</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">div_term</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10000.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">d_model</span><span class="p">))</span>
+
+    <span class="n">pe</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">position</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">)</span>
+    <span class="n">pe</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">position</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pe</span></div>
+
+
+
+<div class="viewcode-block" id="periodic_encoding">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.periodic_encoding">[docs]</a>
+<span class="k">def</span> <span class="nf">periodic_encoding</span><span class="p">(</span><span class="n">timestamps</span><span class="p">,</span> <span class="n">d_model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    주기적인 타임스탬프 인코딩을 생성하는 함수.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        timestamps (torch.Tensor): 타임스탬프 시퀀스, shape (batch_size, seq_len).</span>
+<span class="sd">        d_model (int): 모델의 차원.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: 주기적인 타임스탬프 인코딩 텐서, shape (batch_size, seq_len, d_model).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_len</span> <span class="o">=</span> <span class="n">timestamps</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+    <span class="n">pe</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">timestamps</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="n">timestamps</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">div_term</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">timestamps</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10000.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">d_model</span><span class="p">))</span>
+
+    <span class="n">pe</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">position</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">)</span>
+    <span class="n">pe</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">position</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pe</span></div>
+
+
+
 <div class="viewcode-block" id="TimeAwareTransformer">
 <a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.TimeAwareTransformer">[docs]</a>
 <span class="k">class</span> <span class="nc">TimeAwareTransformer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -85,9 +135,11 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
+<span class="sd">    d_head : int</span>
+<span class="sd">        Dimension of the head.</span>
 <span class="sd">    d_model : int</span>
 <span class="sd">        Dimension of the model.</span>
-<span class="sd">    nhead : int</span>
+<span class="sd">    n_head : int</span>
 <span class="sd">        Number of attention heads.</span>
 <span class="sd">    num_layers : int</span>
 <span class="sd">        Number of transformer encoder layers.</span>
@@ -100,14 +152,14 @@
 <span class="sd">        Forward pass through the model.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">nhead</span><span class="p">,</span> <span class="n">num_layers</span><span class="p">,</span> <span class="n">max_seq_len</span><span class="o">=</span><span class="mi">512</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_head</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">d_model</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_head</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_seq_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TimeAwareTransformer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d_model</span> <span class="o">=</span> <span class="n">d_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">d_head</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>  <span class="c1"># 이벤트 벡터를 d_model 차원으로 변환</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">max_seq_len</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">time_encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">max_seq_len</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
 
-        <span class="n">encoder_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">TransformerEncoderLayer</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">nhead</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">TransformerEncoder</span><span class="p">(</span><span class="n">encoder_layers</span><span class="p">,</span> <span class="n">num_layers</span><span class="p">)</span>
+        <span class="n">encoder_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">TransformerEncoderLayer</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">n_head</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;gelu&quot;</span><span class="p">,</span> <span class="n">norm_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">TransformerEncoder</span><span class="p">(</span><span class="n">encoder_layers</span><span class="p">,</span> <span class="n">num_layers</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">d_model</span><span class="p">))</span>
 
 <div class="viewcode-block" id="TimeAwareTransformer.forward">
 <a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.TimeAwareTransformer.forward">[docs]</a>
@@ -129,15 +181,81 @@
 <span class="sd">        torch.Tensor</span>
 <span class="sd">            Output features of the model of shape (batch_size, d_model).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">seq_len</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">event_vecs</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
-        <span class="n">pos_encoding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">event_vecs</span><span class="o">.</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">time_encoding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_encoder</span><span class="p">(</span><span class="n">time_vecs</span><span class="p">)</span>
+        <span class="n">batch_size</span><span class="p">,</span> <span class="n">max_seq_len</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">event_vecs</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
 
+        <span class="c1"># add positional encoding</span>
+        <span class="n">pos_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">max_seq_len</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">event_vecs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">pos_encoding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span><span class="p">(</span><span class="n">pos_indices</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># add timestamp encoding</span>
+        <span class="n">time_encoding</span> <span class="o">=</span> <span class="n">periodic_encoding</span><span class="p">(</span><span class="n">time_vecs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_model</span><span class="p">)</span>
+
+        <span class="c1"># apply encodings to event vectors</span>
         <span class="n">event_vecs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="p">(</span><span class="n">event_vecs</span><span class="p">)</span> <span class="o">+</span> <span class="n">pos_encoding</span> <span class="o">+</span> <span class="n">time_encoding</span>
-        <span class="n">transformer_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span><span class="p">(</span><span class="n">event_vecs</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+        <span class="n">event_vecs</span> <span class="o">=</span> <span class="n">event_vecs</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># (max_seq_len, batch_size, d_model)</span>
 
-        <span class="n">output</span> <span class="o">=</span> <span class="n">transformer_out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">transformer_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span><span class="p">(</span><span class="n">event_vecs</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">transformer_out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>  <span class="c1"># use last sequence vector</span>
         <span class="k">return</span> <span class="n">output</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AuxModel">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.AuxModel">[docs]</a>
+<span class="k">class</span> <span class="nc">AuxModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_aux</span><span class="p">,</span> <span class="n">d_model</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AuxModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aux_fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">d_aux</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>  <span class="c1"># aux_vector를 d_model 차원으로 변환</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aux_act</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+
+<div class="viewcode-block" id="AuxModel.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.AuxModel.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aux_vector</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux_act</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux_fc</span><span class="p">(</span><span class="n">aux_vector</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="UserIdModel">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.UserIdModel">[docs]</a>
+<span class="k">class</span> <span class="nc">UserIdModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UserIdModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">TimeAwareTransformer</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">event_body</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aux_body</span> <span class="o">=</span> <span class="n">AuxModel</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">aux_body</span><span class="o">.</span><span class="n">_asdict</span><span class="p">())</span>
+
+        <span class="n">dim_event</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">event_body</span><span class="o">.</span><span class="n">d_model</span>
+        <span class="n">dim_aux</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">aux_body</span><span class="o">.</span><span class="n">d_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neck</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim_event</span> <span class="o">+</span> <span class="n">dim_aux</span><span class="p">,</span> <span class="n">dim_event</span><span class="p">)</span>  <span class="c1"># combined_feature를 d_model 차원으로 변환</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neck_act</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">arcface</span> <span class="o">=</span> <span class="n">ArcFaceLoss</span><span class="p">(</span>
+            <span class="n">in_features</span><span class="o">=</span><span class="n">dim_event</span><span class="p">,</span>
+            <span class="n">out_features</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span>
+            <span class="n">s</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">s</span><span class="p">,</span>
+            <span class="n">m</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">m</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+
+<div class="viewcode-block" id="UserIdModel.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.UserIdModel.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_vecs</span><span class="p">,</span> <span class="n">time_vecs</span><span class="p">,</span> <span class="n">aux</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">event_vecs</span><span class="p">,</span> <span class="n">time_vecs</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="n">aux_feature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux_body</span><span class="p">(</span><span class="n">aux</span><span class="p">)</span>
+        <span class="n">combined_features</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">features</span><span class="p">,</span> <span class="n">aux_feature</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">neck_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neck_act</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neck</span><span class="p">(</span><span class="n">combined_features</span><span class="p">))</span>
+        <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arcface</span><span class="p">(</span><span class="n">neck_features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">logits</span><span class="p">,</span> <span class="n">neck_features</span></div>
+
+
+<div class="viewcode-block" id="UserIdModel.expand_classes">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.UserIdModel.expand_classes">[docs]</a>
+    <span class="k">def</span> <span class="nf">expand_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_num_classes</span><span class="p">):</span>
+        <span class="n">old_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arcface</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arcface</span> <span class="o">=</span> <span class="n">ArcFaceLoss</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arcface</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">new_num_classes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arcface</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">new_num_classes</span></div>
 </div>
 
 </pre></div>
