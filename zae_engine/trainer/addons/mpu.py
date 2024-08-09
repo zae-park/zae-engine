@@ -1,4 +1,4 @@
-from typing import Type, Optional
+from typing import Type, Optional, Union, Sequence
 
 import torch
 import torch.utils.data as td
@@ -39,12 +39,57 @@ class MultiGPUAddon(AddOnBase):
 
         class MultiGPUTrainer(base_cls):
             def __init__(self, *args, **kwargs):
-                self.rank = kwargs.pop("rank", 0)
-                self.world_size = kwargs.pop("world_size", torch.cuda.device_count())
-                self.setup_ddp(self.rank, self.world_size)
                 super().__init__(*args, **kwargs)
-                self.model = DDP(self.model, device_ids=[self.device], output_device=self.device)
+                self.rank = kwargs.pop("rank", [d.index for d in self.device])
+                self.world_size = kwargs.pop("world_size", len(self.device))
+                self.setup_ddp(self.rank, self.world_size)
+                self.model = DDP(self.model, device_ids=self.device, output_device=self.device)
                 self.device = torch.device(f"cuda:{self.rank}")
+
+            def _set_device(self, device: Union[torch.device, Sequence[torch.device]]):
+                self.device = device
+
+                if isinstance(device, torch.device):
+                    if "cuda" in device.type:
+                        torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
+                else:
+                    self.device = tuple(device)
+                    for d in self.device:
+                        if "cuda" in d.type:
+                            torch.cuda.set_device(d)
+
+            def _to_device(
+                self, *args, **kwargs
+            ) -> Tuple[Union[torch.Tensor, torch.nn.Module]] or Union[torch.Tensor, torch.nn.Module]:
+                """
+                Cast given arguments to device.
+
+                Parameters
+                ----------
+                args : Single argument or variable-length sequence of arguments.
+                    The arguments to be cast to the specified device.
+
+                Returns
+                -------
+                Single argument or variable-length sequence of arguments in device.
+                """
+                if isinstance(self.device, torch.device):
+                    if args:
+                        if len(args) == 1:
+                            return args[0].to(self.device) if "to" in args[0].__dir__() else args[0]
+                        else:
+                            return tuple([a.to(self.device) if "to" in a.__dir__() else a for a in args])
+                    elif kwargs:
+                        return {k: v.to(self.device) if "to" in v.__dir__() else v for k, v in kwargs.items()}
+                else:
+                    for d in self.device:
+                        if args:
+                            if len(args) == 1:
+                                return args[0].to(d) if "to" in args[0].__dir__() else args[0]
+                            else:
+                                return tuple([a.to(d) if "to" in a.__dir__() else a for a in args])
+                        elif kwargs:
+                            return {k: v.to(d) if "to" in v.__dir__() else v for k, v in kwargs.items()}
 
             def setup_ddp(self, rank, world_size):
                 dist.init_process_group(backend="nccl", init_method="env://", world_size=world_size, rank=rank)
