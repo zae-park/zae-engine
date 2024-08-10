@@ -4,6 +4,7 @@ import shutil
 import click
 
 from .tree_builder import TreeBuilder
+from .doctor import run_doctor
 
 
 # Package structure will be changed in the future.
@@ -38,12 +39,14 @@ def cli_run(command: str, path: str = ""):
         print(f"Generate snippet file. {path}")
     elif command == "hello":
         zae_print()
+    elif command == "doctor":
+        run_doctor()
     else:
         print(f'Invalid command "{command}".')
 
 
-# if __name__ == "__main__":
-#     os.system("zae tree")
+if __name__ == "__main__":
+    os.system("zae doctor")
 # python -m zae_cli.cli
 # print("module run")
 # cli_run(["snippet"])
