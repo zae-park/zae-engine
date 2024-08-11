@@ -2,8 +2,6 @@ import os
 import ast
 import pathlib
 from collections import defaultdict
-from importlib import import_module
-from inspect import isclass, isfunction, isroutine, getmembers
 
 from rich import print
 from rich.filesize import decimal
@@ -128,5 +126,4 @@ class TreeBuilder:
 
 
 if __name__ == "__main__":
-    # res = get_methods_from_abspath("Z:\\dev-zae\\zae-engine\\zae_cli\\../zae_engine\\data_pipeline\\collate.py")
-    TreeBuilder.print_tree("../zae_engine")
+    TreeBuilder.print_tree("../../zae_engine")
