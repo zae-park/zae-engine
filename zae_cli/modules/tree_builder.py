@@ -11,8 +11,12 @@ from rich.tree import Tree
 
 
 def get_methods_from_abspath(abs_path):
-    with open(abs_path, "r", encoding="utf-8") as file:
-        tree = ast.parse(file.read(), filename=abs_path)
+    try:
+        with open(abs_path, "r", encoding="utf-8") as file:
+            tree = ast.parse(file.read(), filename=abs_path)
+    except Exception as e:
+        print(f"Error reading file {abs_path}: {e}")
+        return {}
 
     defined_methods_with_classes = defaultdict(list)
     current_class = None
@@ -22,13 +26,10 @@ def get_methods_from_abspath(abs_path):
             current_class = node.name
             defined_methods_with_classes[current_class] = []
         elif isinstance(node, ast.FunctionDef):
-            # Check if the function is not a dunder
             if node.name.startswith("__") or node.name.endswith("__") or "wrap" in node.name:
                 continue
-            # Check if the function is in a class
             if current_class:
                 defined_methods_with_classes[current_class].append(node.name)
-            # Check if the function is standalone and not in a class
             else:
                 defined_methods_with_classes["standalone"].append(node.name)
 
@@ -52,7 +53,6 @@ class TreeBuilder:
         for path in paths:
             if self.is_valid(path):
                 if path.is_dir():
-                    # if current path is directory, add branch to tree and walk in to.
                     branch = tree.add(
                         f"[bold magenta]:open_file_folder: [link file://{path}]{escape(path.name)}",
                         style="",
@@ -60,35 +60,18 @@ class TreeBuilder:
                     )
                     self.walk_in(path, branch)
                 elif path.name.endswith(".py"):
-                    # if current path is script, add branch to tree and find routine.
                     branch = tree.add(
                         f"[bold magenta]🐍 [link file://{path}]{escape(path.name)}", style="", guide_style=""
                     )
-
-                    print(path)
-                    # bag = getmembers(import_module(path.name[:-3]))
-                    bag = get_methods_from_abspath(str(path.resolve()))
-                    # bag = getmembers(import_module(path.__str__().replace("\\", ".")[:-3]))
-                    for n, v in bag.items():
-                        if os.path.splitext(n)[-1]:
-                            self.add_leaf(path.name, branch)
+                    methods = get_methods_from_abspath(str(path.resolve()))
+                    for cls_name, funcs in methods.items():
+                        if cls_name == "standalone":
+                            for func_name in funcs:
+                                self.add_leaf(func_name, branch, icon="📄 ")
                         else:
-                            if n == "standalone":
-                                for func_name in v:
-                                    self.add_leaf(func_name, branch, icon="📄 ")
-                            else:
-                                # for cls_name in v:
-                                self.add_leaf(n, branch, icon="📘 ")
-
-                            # if isroutine(v):
-                            #     if isfunction(v):
-                            #         self.add_leaf(n, branch, icon="📘 ")
-                            #         # self.add_leaf(n, branch, icon='⬛ ')
-                            # elif isclass(v):
-                            #     self.add_leaf(n, branch, icon="📘 ")
-                            #     # self.add_leaf(n, branch, icon='◼ ')
-                            # else:
-                            #     pass
+                            self.add_leaf(cls_name, branch, icon="📘 ")
+                            for func_name in funcs:
+                                self.add_leaf(func_name, branch, icon="📄 ")
 
     def add_branch(self, path, branch):
         text_filename = Text(path.name, "green")
@@ -113,10 +96,7 @@ class TreeBuilder:
 
     def is_valid(self, path):
         name = path.name
-        for ig in self.START_IGNORE:
-            if name.startswith(ig):
-                return False
-        return True
+        return not any(name.startswith(ig) for ig in self.START_IGNORE)
 
     @classmethod
     def print_tree(cls, path):
