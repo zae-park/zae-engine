@@ -1,6 +1,6 @@
 import unittest
 from click.testing import CliRunner
-from zae_cli.cli import cli_run
+from zae_cli.main import cli
 import platform
 import subprocess
 
@@ -13,7 +13,7 @@ class TestZaeDoctor(unittest.TestCase):
 
     def test_doctor_no_verbose(self):
         """Test the `zae doctor` command without verbose flag."""
-        result = self.runner.invoke(cli_run, ["doctor"])
+        result = self.runner.invoke(cli, ["doctor"])
 
         self.assertEqual(result.exit_code, 0)
         self.assertIn("Running zae doctor...", result.output)
@@ -26,7 +26,7 @@ class TestZaeDoctor(unittest.TestCase):
 
     def test_doctor_verbose(self):
         """Test the `zae doctor` command with verbose flag."""
-        result = self.runner.invoke(cli_run, ["doctor", "--verbose"])
+        result = self.runner.invoke(cli, ["doctor", "--verbose"])
 
         self.assertEqual(result.exit_code, 0)
         self.assertIn("Running zae doctor...", result.output)
@@ -46,7 +46,7 @@ class TestZaeDoctor(unittest.TestCase):
 
     def test_doctor_spinner(self):
         """Test the spinner during the `zae doctor` command."""
-        result = self.runner.invoke(cli_run, ["doctor"])
+        result = self.runner.invoke(cli, ["doctor"])
 
         self.assertEqual(result.exit_code, 0)
         self.assertIn("Running zae doctor...", result.output)
