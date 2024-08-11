@@ -9,6 +9,29 @@ from rich.markup import escape
 from rich.text import Text
 from rich.tree import Tree
 
+import ast
+from collections import defaultdict
+
+
+class NodeVisitor(ast.NodeVisitor):
+    def __init__(self):
+        self.class_stack = []
+        self.methods = defaultdict(list)
+
+    def visit_ClassDef(self, node):
+        self.class_stack.append(node.name)
+        self.generic_visit(node)
+        self.class_stack.pop()
+
+    def visit_FunctionDef(self, node):
+        if node.name.startswith("__") or node.name.endswith("__") or "wrap" in node.name:
+            return
+        if self.class_stack:
+            class_name = self.class_stack[-1]
+            self.methods[class_name].append(node.name)
+        else:
+            self.methods["standalone"].append(node.name)
+
 
 def get_methods_from_abspath(abs_path):
     try:
@@ -18,22 +41,9 @@ def get_methods_from_abspath(abs_path):
         print(f"Error reading file {abs_path}: {e}")
         return {}
 
-    defined_methods_with_classes = defaultdict(list)
-    current_class = None
-
-    for node in ast.walk(tree):
-        if isinstance(node, ast.ClassDef):
-            current_class = node.name
-            defined_methods_with_classes[current_class] = []
-        elif isinstance(node, ast.FunctionDef):
-            if node.name.startswith("__") or node.name.endswith("__") or "wrap" in node.name:
-                continue
-            if current_class:
-                defined_methods_with_classes[current_class].append(node.name)
-            else:
-                defined_methods_with_classes["standalone"].append(node.name)
-
-    return defined_methods_with_classes
+    visitor = NodeVisitor()
+    visitor.visit(tree)
+    return visitor.methods
 
 
 class TreeBuilder:
