@@ -1,3 +1,6 @@
+import argparse
+from typing import Union, Dict
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -5,11 +8,10 @@ import torch.multiprocessing as mp
 from torch.utils.data import DataLoader, Dataset
 from torch.optim.lr_scheduler import StepLR
 from torch.optim import SGD
-from trainer import Trainer
-from trainer.addons.mpu import MultiGPUAddon
 
-# Define MultiGPUTrainer
-MultiGPUTrainer = MultiGPUAddon.apply(Trainer)
+from zae_engine.trainer import Trainer
+from zae_engine.trainer.addons.mpu import MultiGPUAddon
+
 
 
 class SimpleDataset(Dataset):
@@ -33,18 +35,22 @@ class SimpleModel(nn.Module):
         return self.fc(x)
 
 
-def train_step(batch):
-    x, y = batch
-    outputs = model(x)
-    loss = nn.CrossEntropyLoss()(outputs, y)
-    return {"loss": loss}
+class DummyTrainer(Trainer):
+    def __init__(self, model, optimizer=None, scheduler=None, mode="train"):
+        super(DummyTrainer, self).__init__(model, torch.device("cpu"), mode, optimizer, scheduler)
 
+    def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
+        x, y = batch
+        outputs = self.model(x)
+        loss = nn.CrossEntropyLoss()(outputs, y)
+        return {"loss": loss}
 
-def test_step(batch):
-    x, y = batch
-    outputs = model(x)
-    loss = nn.CrossEntropyLoss()(outputs, y)
-    return {"loss": loss}
+    def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
+        x, y = batch
+        outputs = self.model(x)
+        loss = nn.CrossEntropyLoss()(outputs, y)
+        return {"loss": loss}
+
 
 
 def main(rank, world_size):
@@ -54,6 +60,8 @@ def main(rank, world_size):
     optimizer = SGD(model.parameters(), lr=0.01)
     scheduler = StepLR(optimizer, step_size=1, gamma=0.7)
 
+    MultiGPUTrainer = DummyTrainer.add_on(MultiGPUAddon)
+    
     trainer = MultiGPUTrainer(
         model=model,
         device=[torch.device(f"cuda:{i}") for i in range(world_size)],
@@ -64,11 +72,11 @@ def main(rank, world_size):
         world_size=world_size,
     )
 
-    dataset = SimpleDataset(1000)
+    dataset = SimpleDataset(10)
     train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
     valid_loader = DataLoader(dataset, batch_size=32, shuffle=False)
 
-    trainer.run(n_epoch=3, loader=train_loader, valid_loader=valid_loader, train_step=train_step, test_step=test_step)
+    trainer.run(n_epoch=3, loader=train_loader, valid_loader=valid_loader)
 
 
 if __name__ == "__main__":
