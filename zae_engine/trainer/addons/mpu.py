@@ -1,9 +1,7 @@
-from typing import Type, Optional, Union, Sequence
+from typing import Type, Tuple, Optional, Union, Sequence
 
 import torch
-import torch.utils.data as td
 import torch.distributed as dist
-import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DistributedSampler
 
@@ -14,11 +12,6 @@ from .._trainer import T
 class MultiGPUAddon(AddOnBase):
     """
     Add-on for enabling multi-GPU support using Distributed Data Parallel (DDP) in the Trainer class.
-
-    Methods
-    -------
-    apply(cls, base_cls)
-        Applies the multi-GPU modifications to the base class.
     """
 
     @classmethod
@@ -40,23 +33,15 @@ class MultiGPUAddon(AddOnBase):
         class MultiGPUTrainer(base_cls):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
-                self.rank = kwargs.pop("rank", [d.index for d in self.device])
-                self.world_size = kwargs.pop("world_size", len(self.device))
+                self.rank = kwargs.pop("rank", 0)
+                self.world_size = kwargs.pop("world_size", 1)
                 self.setup_ddp(self.rank, self.world_size)
-                self.model = DDP(self.model, device_ids=self.device, output_device=self.device)
                 self.device = torch.device(f"cuda:{self.rank}")
+                self.model = DDP(self.model, device_ids=[self.rank], output_device=self.rank)
 
             def _set_device(self, device: Union[torch.device, Sequence[torch.device]]):
-                self.device = device
-
-                if isinstance(device, torch.device):
-                    if "cuda" in device.type:
-                        torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
-                else:
-                    self.device = tuple(device)
-                    for d in self.device:
-                        if "cuda" in d.type:
-                            torch.cuda.set_device(d)
+                # Device is set up already in __init__
+                pass
 
             def _to_device(
                 self, *args, **kwargs
@@ -82,6 +67,7 @@ class MultiGPUAddon(AddOnBase):
                     elif kwargs:
                         return {k: v.to(self.device) if "to" in v.__dir__() else v for k, v in kwargs.items()}
                 else:
+                    # Handle multiple GPUs
                     for d in self.device:
                         if args:
                             if len(args) == 1:
@@ -113,6 +99,7 @@ class MultiGPUAddon(AddOnBase):
                 valid_loader : Optional[td.DataLoader], optional
                     The data loader for validation data, by default None.
                 """
+                # Assign DistributedSampler to loaders
                 loader.sampler = DistributedSampler(loader.dataset, num_replicas=self.world_size, rank=self.rank)
                 if valid_loader:
                     valid_loader.sampler = DistributedSampler(
