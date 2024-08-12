@@ -1,6 +1,7 @@
 from typing import Type, Tuple, Optional, Union, Sequence
 
 import torch
+import torch.utils.data as td
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DistributedSampler
