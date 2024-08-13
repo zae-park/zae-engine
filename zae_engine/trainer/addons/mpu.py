@@ -1,6 +1,6 @@
 import os
-from typing import Type, Optional, List
 import copy
+from typing import Type, Optional, List
 import torch
 import torch.multiprocessing as mp
 import torch.utils.data as td
@@ -10,7 +10,11 @@ import torch.distributed as dist
 from .core import AddOnBase
 from .._trainer import T
 
-def train_process(rank, n_epoch, device_list, model_class, model_state_dict, trainer_args, trainer_kwargs, loader, valid_loader, **kwargs):
+def train_process(rank, device_list, model_class, model_state_dict, trainer_class, trainer_args, trainer_kwargs, n_epoch, loader, valid_loader, aux_run_kwargs):
+    print('1:', rank, device_list)
+    print('2:', model_class, model_state_dict)
+    print('3:', trainer_class, trainer_args, trainer_kwargs)
+    print('4:', n_epoch, loader, valid_loader, aux_run_kwargs)
     # Initialize distributed process group
     dist.init_process_group(backend='nccl', init_method='env://', world_size=len(device_list), rank=rank)
     torch.cuda.set_device(device_list[rank])
@@ -32,7 +36,7 @@ def train_process(rank, n_epoch, device_list, model_class, model_state_dict, tra
         valid_loader.sampler = DistributedSampler(valid_loader.dataset, num_replicas=len(device_list), rank=rank)
     
     # Run training
-    trainer.run(n_epoch, loader, valid_loader, **kwargs)
+    trainer.run(n_epoch, loader, valid_loader, **aux_run_kwargs)
 
 class MultiGPUAddon(AddOnBase):
     """
@@ -47,7 +51,6 @@ class MultiGPUAddon(AddOnBase):
         """
         class MultiGPUTrainer:
             def __init__(self, *args, **kwargs):
-                self.args, self.kwargs = args, kwargs
                 self.device_list = kwargs.pop("device", ["cuda:0"])
                 self.num_devices = len(self.device_list)
                 self.model = kwargs.pop("model", None)
@@ -58,39 +61,20 @@ class MultiGPUAddon(AddOnBase):
                 self.trainer_kwargs = kwargs
                 self.model_state_dict = self.model.state_dict()
 
-            def _create_trainer_for_device(self, device):
-                """
-                Create a trainer instance for a specific device.
-                """
-                # Deep copy the model and load the state dict
-                model_copy = copy.deepcopy(self.model)
-                model_copy.load_state_dict(self.model_state_dict)
-                model_copy = model_copy.to(device)
-
-                # Create and return Trainer instance
-                trainer = self.trainer_class(model=model_copy, device=device, *self.trainer_args, **self.trainer_kwargs)
-                return trainer
-
-            def run(self, n_epoch, loader: td.DataLoader, valid_loader: Optional[td.DataLoader] = None, **kwargs):
+            def run(self, n_epoch, loader: td.DataLoader, valid_loader: Optional[td.DataLoader] = None, **aux_run_kwargs):
                 """
                 Run training/testing process on all GPUs.
                 """
                 # Prepare arguments for train_process
-                train_kwargs = {
-                    'device_list': self.device_list,
-                    'model_class': self.model.__class__,
-                    'model_state_dict': self.model_state_dict,
-                    'trainer_args': self.trainer_args,
-                    'trainer_kwargs': self.trainer_kwargs,
-                    'loader': loader,
-                    'valid_loader': valid_loader,
-                    **kwargs
-                }
+                model_args = (self.model.__class__, self.model_state_dict)
+                trainer_args = (self.trainer_class, self.trainer_args, self.trainer_kwargs)
+                run_args = (n_epoch, loader, valid_loader, aux_run_kwargs)
+                args = (self.device_list, ) + model_args + trainer_args + run_args
 
                 # Use multiprocessing to run training on each device
                 mp.spawn(
                     train_process,
-                    args=(n_epoch, self.device_list, self.model.__class__, self.model_state_dict, self.trainer_args, self.trainer_kwargs, loader, valid_loader, kwargs),
+                    args=args,
                     nprocs=self.num_devices,
                     join=True
                 )
