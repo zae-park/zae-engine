@@ -12,8 +12,6 @@ from torch.optim import SGD
 from zae_engine.trainer import Trainer
 from zae_engine.trainer.addons.mpu import MultiGPUAddon
 
-
-
 class SimpleDataset(Dataset):
     def __init__(self, size):
         self.data = torch.randn(size, 10)
@@ -25,7 +23,6 @@ class SimpleDataset(Dataset):
     def __getitem__(self, index):
         return self.data[index], self.targets[index]
 
-
 class SimpleModel(nn.Module):
     def __init__(self):
         super(SimpleModel, self).__init__()
@@ -34,24 +31,23 @@ class SimpleModel(nn.Module):
     def forward(self, x):
         return self.fc(x)
 
-
 class DummyTrainer(Trainer):
-    def __init__(self, model, optimizer=None, scheduler=None, mode="train"):
-        super(DummyTrainer, self).__init__(model, torch.device("cpu"), mode, optimizer, scheduler)
+    def __init__(self, model, device, optimizer=None, scheduler=None, mode="train", *args, **kwargs):
+        super(DummyTrainer, self).__init__(model, device, mode, optimizer, scheduler)
 
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
+        # Here, we assume the device handling is already taken care of by Trainer class
         x, y = batch
         outputs = self.model(x)
         loss = nn.CrossEntropyLoss()(outputs, y)
         return {"loss": loss}
 
     def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
+        # Same assumption for device handling
         x, y = batch
         outputs = self.model(x)
         loss = nn.CrossEntropyLoss()(outputs, y)
         return {"loss": loss}
-
-
 
 def main(rank, world_size):
     torch.cuda.set_device(rank)
@@ -78,7 +74,6 @@ def main(rank, world_size):
 
     trainer.run(n_epoch=3, loader=train_loader, valid_loader=valid_loader)
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Multi-GPU Training Example")
     parser.add_argument("--epochs", type=int, default=3, help="Number of epochs")
@@ -88,4 +83,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     world_size = args.world_size
-    mp.spawn(main, args=(world_size,), nprocs=world_size, join=True)
+    main(rank=0, world_size=2)
+    # mp.spawn(main, args=(world_size,), nprocs=world_size, join=True)
