@@ -49,12 +49,14 @@ class DummyTrainer(Trainer):
         loss = nn.CrossEntropyLoss()(outputs, y)
         return {"loss": loss}
 
-def main(rank, world_size):
-    torch.cuda.set_device(rank)
 
-    model = SimpleModel().to(torch.device(f"cuda:{rank}"))
-    optimizer = SGD(model.parameters(), lr=0.01)
-    scheduler = StepLR(optimizer, step_size=1, gamma=0.7)
+if __name__ == "__main__":
+
+    world_size = 2
+
+    model = SimpleModel()
+    optimizer_ = SGD(model.parameters(), lr=0.01)
+    scheduler_ = StepLR(optimizer_, step_size=1, gamma=0.7)
 
     MultiGPUTrainer = DummyTrainer.add_on(MultiGPUAddon)
     
@@ -62,10 +64,9 @@ def main(rank, world_size):
         model=model,
         device=[torch.device(f"cuda:{i}") for i in range(world_size)],
         mode="train",
-        optimizer=optimizer,
-        scheduler=scheduler,
-        rank=rank,
-        world_size=world_size,
+        optimizer=optimizer_,
+        scheduler=scheduler_,
+        init_method="tcp://10.63.0.3:12355"
     )
 
     dataset = SimpleDataset(10)
@@ -74,14 +75,3 @@ def main(rank, world_size):
 
     trainer.run(n_epoch=3, loader=train_loader, valid_loader=valid_loader)
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Multi-GPU Training Example")
-    parser.add_argument("--epochs", type=int, default=3, help="Number of epochs")
-    parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
-    parser.add_argument("--world_size", type=int, default=1, help="Number of GPUs")
-    parser.add_argument("--rank", type=int, default=0, help="Rank of the current process")
-    args = parser.parse_args()
-
-    world_size = args.world_size
-    main(rank=0, world_size=2)
-    # mp.spawn(main, args=(world_size,), nprocs=world_size, join=True)
