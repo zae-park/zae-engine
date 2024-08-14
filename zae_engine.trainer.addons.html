@@ -132,30 +132,109 @@
 <dt class="sig sig-object py" id="zae_engine.trainer.addons.mpu.MultiGPUAddon">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.trainer.addons.mpu.</span></span><span class="sig-name descname"><span class="pre">MultiGPUAddon</span></span><a class="reference internal" href="_modules/zae_engine/trainer/addons/mpu.html#MultiGPUAddon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.trainer.addons.mpu.MultiGPUAddon" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#zae_engine.trainer.addons.core.AddOnBase" title="zae_engine.trainer.addons.core.AddOnBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">AddOnBase</span></code></a></p>
-<p>Add-on for enabling multi-GPU support using Distributed Data Parallel (DDP) in the Trainer class.</p>
+<p>Add-on for enabling multi-GPU support by distributing the model across multiple GPUs
+and creating separate Trainer instances for each GPU.</p>
+<p>This add-on is designed to facilitate distributed training across multiple GPUs by:
+- Setting up a distributed training environment using PyTorch’s DistributedDataParallel (DDP).
+- Initializing a separate training process for each GPU.
+- Supporting distributed data loading with <cite>DistributedSampler</cite>.</p>
+<p>The <cite>MultiGPUAddon</cite> class works with a <cite>Trainer</cite> class that performs the actual training
+and evaluation. This add-on ensures that each GPU operates in a separate process and
+uses a shared training setup.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyTrainer</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># Define your trainer class</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">multi_gpu_trainer</span> <span class="o">=</span> <span class="n">MultiGPUAddon</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">MyTrainer</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trainer_instance</span> <span class="o">=</span> <span class="n">multi_gpu_trainer</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">device</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda:1&quot;</span><span class="p">],</span>  <span class="c1"># List of GPU devices to use</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">model</span><span class="o">=</span><span class="n">my_model</span><span class="p">,</span>  <span class="c1"># Model instance</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">init_method</span><span class="o">=</span><span class="s2">&quot;tcp://&lt;MASTER_IP&gt;:&lt;PORT&gt;&quot;</span><span class="p">,</span>  <span class="c1"># Initialization method for distributed training</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># Any other arguments required by MyTrainer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trainer_instance</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">n_epoch</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">loader</span><span class="o">=</span><span class="n">train_loader</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">valid_loader</span><span class="o">=</span><span class="n">valid_loader</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># Any additional arguments for the run method</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.trainer.addons.mpu.MultiGPUAddon.apply">
-<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/trainer/addons/mpu.html#MultiGPUAddon.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.trainer.addons.mpu.MultiGPUAddon.apply" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/trainer/addons/mpu.html#MultiGPUAddon.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.trainer.addons.mpu.MultiGPUAddon.apply" title="Link to this definition">¶</a></dt>
 <dd><p>Applies the multi-GPU modifications to the base class.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="id1">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/trainer/addons/mpu.html#MultiGPUAddon.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
-<dd><p>Applies the multi-GPU modifications to the base class.</p>
+<p>This method wraps the given Trainer class with multi-GPU support, enabling distributed
+training across multiple GPUs. The returned class can be instantiated and used for
+training models across multiple GPUs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>base_cls</strong> (<em>Type</em>) – The base class to which the multi-GPU modifications will be applied.</p>
+<dd class="field-odd"><p><strong>base_cls</strong> (<em>Type</em><em>[</em><em>T</em><em>]</em>) – The Trainer class to be enhanced with multi-GPU support.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The modified base class with multi-GPU support.</p>
+<dd class="field-even"><p>A new Trainer class with multi-GPU support.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Type</p>
+<dd class="field-odd"><p>Type[T]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – If the <cite>init_method</cite> provided is not supported.</p>
 </dd>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.trainer.addons.mpu.train_process">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.trainer.addons.mpu.</span></span><span class="sig-name descname"><span class="pre">train_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rank</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_state_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainer_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainer_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainer_kwargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aux_run_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/trainer/addons/mpu.html#train_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.trainer.addons.mpu.train_process" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes and runs a distributed training process for a single GPU.</p>
+<p>This function is executed in a separate process for each GPU. It sets up the
+distributed training environment, initializes the model, and performs training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rank</strong> (<em>int</em>) – The rank of the current process, used to identify the GPU and setup distributed training.</p></li>
+<li><p><strong>device_list</strong> (<em>list</em><em> of </em><em>str</em>) – List of GPU device strings (e.g., [“cuda:0”, “cuda:1”]).</p></li>
+<li><p><strong>init_method</strong> (<em>str</em>) – The initialization method for distributed training. This should be a TCP address
+and port in the format “<a class="reference external" href="tcp:/">tcp:/</a>/&lt;MASTER_IP&gt;:&lt;PORT&gt;”.</p></li>
+<li><p><strong>model_class</strong> (<em>Type</em><em>[</em><em>torch.nn.Module</em><em>]</em>) – The model class to be instantiated and trained. This class must be compatible with
+<cite>torch.nn.Module</cite>.</p></li>
+<li><p><strong>model_state_dict</strong> (<em>dict</em>) – The state dictionary of the model to be loaded into the model instance.</p></li>
+<li><p><strong>trainer_class</strong> (<em>Type</em>) – The Trainer class used for managing the training process.</p></li>
+<li><p><strong>trainer_args</strong> (<em>tuple</em>) – Positional arguments to be passed to the Trainer class.</p></li>
+<li><p><strong>trainer_kwargs</strong> (<em>dict</em>) – Keyword arguments to be passed to the Trainer class.</p></li>
+<li><p><strong>n_epoch</strong> (<em>int</em>) – The number of epochs for training.</p></li>
+<li><p><strong>loader</strong> (<em>torch.utils.data.DataLoader</em>) – The training data loader. This should provide the training data in batches.</p></li>
+<li><p><strong>valid_loader</strong> (<em>Optional</em><em>[</em><em>torch.utils.data.DataLoader</em><em>]</em>) – The validation data loader, if any. If not provided, validation is skipped.</p></li>
+<li><p><strong>aux_run_kwargs</strong> (<em>dict</em>) – Additional keyword arguments to be passed to the <cite>run</cite> method of the Trainer class.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function creates a temporary file to facilitate the initialization of the distributed
+process group. The file is used to synchronize the setup of the distributed environment
+across all processes. After setting up the distributed environment, the model is instantiated,
+loaded with the provided state dictionary, and wrapped with <cite>DistributedDataParallel</cite> (DDP).
+The training process is then run using the provided Trainer class and data loaders.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">train_process</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">device_list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda:1&quot;</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">init_method</span><span class="o">=</span><span class="s2">&quot;tcp://localhost:12355&quot;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">model_class</span><span class="o">=</span><span class="n">MyModel</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">model_state_dict</span><span class="o">=</span><span class="n">my_model_state_dict</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">trainer_class</span><span class="o">=</span><span class="n">MyTrainer</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">trainer_args</span><span class="o">=</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">trainer_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;kwarg1&#39;</span><span class="p">:</span> <span class="n">value1</span><span class="p">},</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">n_epoch</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">loader</span><span class="o">=</span><span class="n">train_loader</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">valid_loader</span><span class="o">=</span><span class="n">valid_loader</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">aux_run_kwargs</span><span class="o">=</span><span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

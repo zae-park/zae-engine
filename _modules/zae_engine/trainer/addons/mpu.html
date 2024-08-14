@@ -70,29 +70,173 @@
            <div itemprop="articleBody">
              
   <h1>Source code for zae_engine.trainer.addons.mpu</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Optional</span>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.utils.data</span> <span class="k">as</span> <span class="nn">td</span>
 <span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
 <span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
-<span class="kn">from</span> <span class="nn">torch.nn.parallel</span> <span class="kn">import</span> <span class="n">DistributedDataParallel</span> <span class="k">as</span> <span class="n">DDP</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DistributedSampler</span>
+<span class="kn">from</span> <span class="nn">torch.nn.parallel</span> <span class="kn">import</span> <span class="n">DistributedDataParallel</span> <span class="k">as</span> <span class="n">DDP</span>
 
 <span class="kn">from</span> <span class="nn">.core</span> <span class="kn">import</span> <span class="n">AddOnBase</span>
 <span class="kn">from</span> <span class="nn">.._trainer</span> <span class="kn">import</span> <span class="n">T</span>
+
+
+<div class="viewcode-block" id="train_process">
+<a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.mpu.train_process">[docs]</a>
+<span class="k">def</span> <span class="nf">train_process</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">device_list</span><span class="p">,</span> <span class="n">init_method</span><span class="p">,</span> <span class="n">model_class</span><span class="p">,</span> <span class="n">model_state_dict</span><span class="p">,</span> <span class="n">trainer_class</span><span class="p">,</span> <span class="n">trainer_args</span><span class="p">,</span> <span class="n">trainer_kwargs</span><span class="p">,</span> <span class="n">n_epoch</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">aux_run_kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initializes and runs a distributed training process for a single GPU.</span>
+
+<span class="sd">    This function is executed in a separate process for each GPU. It sets up the</span>
+<span class="sd">    distributed training environment, initializes the model, and performs training.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rank : int</span>
+<span class="sd">        The rank of the current process, used to identify the GPU and setup distributed training.</span>
+<span class="sd">    device_list : list of str</span>
+<span class="sd">        List of GPU device strings (e.g., [&quot;cuda:0&quot;, &quot;cuda:1&quot;]).</span>
+<span class="sd">    init_method : str</span>
+<span class="sd">        The initialization method for distributed training. This should be a TCP address</span>
+<span class="sd">        and port in the format &quot;tcp://&lt;MASTER_IP&gt;:&lt;PORT&gt;&quot;.</span>
+<span class="sd">    model_class : Type[torch.nn.Module]</span>
+<span class="sd">        The model class to be instantiated and trained. This class must be compatible with</span>
+<span class="sd">        `torch.nn.Module`.</span>
+<span class="sd">    model_state_dict : dict</span>
+<span class="sd">        The state dictionary of the model to be loaded into the model instance.</span>
+<span class="sd">    trainer_class : Type</span>
+<span class="sd">        The Trainer class used for managing the training process.</span>
+<span class="sd">    trainer_args : tuple</span>
+<span class="sd">        Positional arguments to be passed to the Trainer class.</span>
+<span class="sd">    trainer_kwargs : dict</span>
+<span class="sd">        Keyword arguments to be passed to the Trainer class.</span>
+<span class="sd">    n_epoch : int</span>
+<span class="sd">        The number of epochs for training.</span>
+<span class="sd">    loader : torch.utils.data.DataLoader</span>
+<span class="sd">        The training data loader. This should provide the training data in batches.</span>
+<span class="sd">    valid_loader : Optional[torch.utils.data.DataLoader]</span>
+<span class="sd">        The validation data loader, if any. If not provided, validation is skipped.</span>
+<span class="sd">    aux_run_kwargs : dict</span>
+<span class="sd">        Additional keyword arguments to be passed to the `run` method of the Trainer class.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function creates a temporary file to facilitate the initialization of the distributed</span>
+<span class="sd">    process group. The file is used to synchronize the setup of the distributed environment</span>
+<span class="sd">    across all processes. After setting up the distributed environment, the model is instantiated,</span>
+<span class="sd">    loaded with the provided state dictionary, and wrapped with `DistributedDataParallel` (DDP).</span>
+<span class="sd">    The training process is then run using the provided Trainer class and data loaders.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; train_process(</span>
+<span class="sd">    &gt;&gt;&gt;     rank=0,</span>
+<span class="sd">    &gt;&gt;&gt;     device_list=[&quot;cuda:0&quot;, &quot;cuda:1&quot;],</span>
+<span class="sd">    &gt;&gt;&gt;     init_method=&quot;tcp://localhost:12355&quot;,</span>
+<span class="sd">    &gt;&gt;&gt;     model_class=MyModel,</span>
+<span class="sd">    &gt;&gt;&gt;     model_state_dict=my_model_state_dict,</span>
+<span class="sd">    &gt;&gt;&gt;     trainer_class=MyTrainer,</span>
+<span class="sd">    &gt;&gt;&gt;     trainer_args=(arg1, arg2),</span>
+<span class="sd">    &gt;&gt;&gt;     trainer_kwargs={&#39;kwarg1&#39;: value1},</span>
+<span class="sd">    &gt;&gt;&gt;     n_epoch=10,</span>
+<span class="sd">    &gt;&gt;&gt;     loader=train_loader,</span>
+<span class="sd">    &gt;&gt;&gt;     valid_loader=valid_loader,</span>
+<span class="sd">    &gt;&gt;&gt;     aux_run_kwargs={}</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Initializing process </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s1">...&#39;</span><span class="p">)</span>
+    
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;WORLD_SIZE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">device_list</span><span class="p">))</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;RANK&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Process </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s1"> initializing process group...&#39;</span><span class="p">)</span>
+    <span class="c1"># Initialize distributed process group with TCP initialization method</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s1">&#39;nccl&#39;</span><span class="p">,</span> <span class="n">init_method</span><span class="o">=</span><span class="n">init_method</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">device_list</span><span class="p">),</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">device_list</span><span class="p">[</span><span class="n">rank</span><span class="p">])</span>
+
+    <span class="c1"># Create a new model instance and load state dict</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Process </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s1"> loading model...&#39;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model_class</span><span class="p">()</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">model_state_dict</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device_list</span><span class="p">[</span><span class="n">rank</span><span class="p">])</span>
+    
+    <span class="c1"># Wrap model with DDP</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">rank</span><span class="p">],</span> <span class="n">output_device</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
+    
+    <span class="c1"># Create Trainer instance for the current process</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">trainer_class</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device_list</span><span class="p">[</span><span class="n">rank</span><span class="p">],</span> <span class="o">*</span><span class="n">trainer_args</span><span class="p">,</span> <span class="o">**</span><span class="n">trainer_kwargs</span><span class="p">)</span>
+    
+    <span class="c1"># Assign DistributedSampler to loaders</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Process </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s1"> setting up data loaders...&#39;</span><span class="p">)</span>
+    <span class="n">loader_sampler</span> <span class="o">=</span> <span class="n">DistributedSampler</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">num_replicas</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">device_list</span><span class="p">),</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
+    <span class="n">train_loader_mp</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># shuffle=False since DistributedSampler handles shuffling</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+        <span class="n">pin_memory</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">,</span>
+        <span class="n">drop_last</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">drop_last</span><span class="p">,</span>
+        <span class="n">sampler</span><span class="o">=</span><span class="n">loader_sampler</span>
+    <span class="p">)</span>
+    
+    <span class="n">valid_loader_mp</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">valid_loader</span><span class="p">:</span>
+        <span class="n">valid_loader_sampler</span> <span class="o">=</span> <span class="n">DistributedSampler</span><span class="p">(</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">num_replicas</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">device_list</span><span class="p">),</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
+        <span class="n">valid_loader_mp</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+            <span class="n">valid_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># shuffle=False since DistributedSampler handles shuffling</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+            <span class="n">pin_memory</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">,</span>
+            <span class="n">drop_last</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">drop_last</span><span class="p">,</span>
+            <span class="n">sampler</span><span class="o">=</span><span class="n">valid_loader_sampler</span>
+        <span class="p">)</span>
+    
+    <span class="c1"># Run training</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Process </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s1"> running training...&#39;</span><span class="p">)</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">n_epoch</span><span class="p">,</span> <span class="n">train_loader_mp</span><span class="p">,</span> <span class="n">valid_loader_mp</span><span class="p">,</span> <span class="o">**</span><span class="n">aux_run_kwargs</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="MultiGPUAddon">
 <a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.mpu.MultiGPUAddon">[docs]</a>
 <span class="k">class</span> <span class="nc">MultiGPUAddon</span><span class="p">(</span><span class="n">AddOnBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Add-on for enabling multi-GPU support using Distributed Data Parallel (DDP) in the Trainer class.</span>
+<span class="sd">    Add-on for enabling multi-GPU support by distributing the model across multiple GPUs</span>
+<span class="sd">    and creating separate Trainer instances for each GPU.</span>
 
-<span class="sd">    Methods</span>
+<span class="sd">    This add-on is designed to facilitate distributed training across multiple GPUs by:</span>
+<span class="sd">    - Setting up a distributed training environment using PyTorch&#39;s DistributedDataParallel (DDP).</span>
+<span class="sd">    - Initializing a separate training process for each GPU.</span>
+<span class="sd">    - Supporting distributed data loading with `DistributedSampler`.</span>
+
+<span class="sd">    The `MultiGPUAddon` class works with a `Trainer` class that performs the actual training</span>
+<span class="sd">    and evaluation. This add-on ensures that each GPU operates in a separate process and </span>
+<span class="sd">    uses a shared training setup.</span>
+
+<span class="sd">    Example</span>
 <span class="sd">    -------</span>
-<span class="sd">    apply(cls, base_cls)</span>
-<span class="sd">        Applies the multi-GPU modifications to the base class.</span>
+<span class="sd">    &gt;&gt;&gt; class MyTrainer:</span>
+<span class="sd">    &gt;&gt;&gt;     # Define your trainer class</span>
+<span class="sd">    &gt;&gt;&gt;     pass</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; multi_gpu_trainer = MultiGPUAddon.apply(MyTrainer)</span>
+<span class="sd">    &gt;&gt;&gt; trainer_instance = multi_gpu_trainer(</span>
+<span class="sd">    &gt;&gt;&gt;     device=[&quot;cuda:0&quot;, &quot;cuda:1&quot;],  # List of GPU devices to use</span>
+<span class="sd">    &gt;&gt;&gt;     model=my_model,  # Model instance</span>
+<span class="sd">    &gt;&gt;&gt;     init_method=&quot;tcp://&lt;MASTER_IP&gt;:&lt;PORT&gt;&quot;,  # Initialization method for distributed training</span>
+<span class="sd">    &gt;&gt;&gt;     # Any other arguments required by MyTrainer</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+<span class="sd">    &gt;&gt;&gt; trainer_instance.run(</span>
+<span class="sd">    &gt;&gt;&gt;     n_epoch=10,</span>
+<span class="sd">    &gt;&gt;&gt;     loader=train_loader,</span>
+<span class="sd">    &gt;&gt;&gt;     valid_loader=valid_loader,</span>
+<span class="sd">    &gt;&gt;&gt;     # Any additional arguments for the run method</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="MultiGPUAddon.apply">
@@ -102,58 +246,124 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Applies the multi-GPU modifications to the base class.</span>
 
+<span class="sd">        This method wraps the given Trainer class with multi-GPU support, enabling distributed</span>
+<span class="sd">        training across multiple GPUs. The returned class can be instantiated and used for</span>
+<span class="sd">        training models across multiple GPUs.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        base_cls : Type</span>
-<span class="sd">            The base class to which the multi-GPU modifications will be applied.</span>
+<span class="sd">        base_cls : Type[T]</span>
+<span class="sd">            The Trainer class to be enhanced with multi-GPU support.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        Type</span>
-<span class="sd">            The modified base class with multi-GPU support.</span>
+<span class="sd">        Type[T]</span>
+<span class="sd">            A new Trainer class with multi-GPU support.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            If the `init_method` provided is not supported.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">class</span> <span class="nc">MultiGPUTrainer</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            A trainer class for running distributed training across multiple GPUs.</span>
 
-        <span class="k">class</span> <span class="nc">MultiGPUTrainer</span><span class="p">(</span><span class="n">base_cls</span><span class="p">):</span>
-            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">world_size</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;world_size&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">())</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">setup_ddp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_size</span><span class="p">)</span>
-                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">],</span> <span class="n">output_device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cuda:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">            This class manages the setup and execution of training processes on each GPU.</span>
+<span class="sd">            It initializes the distributed environment, sets up data loaders with distributed</span>
+<span class="sd">            sampling, and runs the training process on all specified GPUs.</span>
 
-            <span class="k">def</span> <span class="nf">setup_ddp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
-                <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;nccl&quot;</span><span class="p">,</span> <span class="n">init_method</span><span class="o">=</span><span class="s2">&quot;env://&quot;</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            device : list of str</span>
+<span class="sd">                List of GPU device strings (e.g., [&quot;cuda:0&quot;, &quot;cuda:1&quot;]).</span>
+<span class="sd">            model : torch.nn.Module</span>
+<span class="sd">                The model to be trained.</span>
+<span class="sd">            init_method : str</span>
+<span class="sd">                The initialization method for distributed training (must start with &quot;tcp&quot;).</span>
+<span class="sd">            trainer_class : Type[T]</span>
+<span class="sd">                The Trainer class to use for training.</span>
+<span class="sd">            trainer_args : tuple</span>
+<span class="sd">                Positional arguments for the Trainer class.</span>
+<span class="sd">            trainer_kwargs : dict</span>
+<span class="sd">                Keyword arguments for the Trainer class.</span>
 
-            <span class="k">def</span> <span class="nf">cleanup_ddp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-                <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
-
-            <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
-                <span class="bp">self</span><span class="p">,</span> <span class="n">n_epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">loader</span><span class="p">:</span> <span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-            <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                Run the training/testing process for a given number of epochs with DistributedSampler.</span>
+<span class="sd">            Methods</span>
+<span class="sd">            -------</span>
+<span class="sd">            run(n_epoch, loader, valid_loader=None, **aux_run_kwargs)</span>
+<span class="sd">                Runs the training/testing process on all GPUs.</span>
 
 <span class="sd">                Parameters</span>
 <span class="sd">                ----------</span>
 <span class="sd">                n_epoch : int</span>
-<span class="sd">                    The number of epochs to run.</span>
-<span class="sd">                loader : td.DataLoader</span>
-<span class="sd">                    The data loader for the training/testing data.</span>
-<span class="sd">                valid_loader : Optional[td.DataLoader], optional</span>
-<span class="sd">                    The data loader for validation data, by default None.</span>
+<span class="sd">                    The number of epochs to train for.</span>
+<span class="sd">                loader : torch.utils.data.DataLoader</span>
+<span class="sd">                    The training data loader.</span>
+<span class="sd">                valid_loader : Optional[torch.utils.data.DataLoader]</span>
+<span class="sd">                    The validation data loader, if any.</span>
+<span class="sd">                **aux_run_kwargs</span>
+<span class="sd">                    Additional arguments for the training run.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+
+            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Initializes the MultiGPUTrainer instance.</span>
+
+<span class="sd">                Parameters</span>
+<span class="sd">                ----------</span>
+<span class="sd">                *args</span>
+<span class="sd">                    Positional arguments for the Trainer class.</span>
+<span class="sd">                **kwargs</span>
+<span class="sd">                    Keyword arguments for the Trainer class, including:</span>
+<span class="sd">                    - device (list of str): List of GPU devices to use (e.g., [&quot;cuda:0&quot;, &quot;cuda:1&quot;]).</span>
+<span class="sd">                    - model (torch.nn.Module): The model to be trained.</span>
+<span class="sd">                    - init_method (str): Initialization method for distributed training.</span>
 <span class="sd">                &quot;&quot;&quot;</span>
-                <span class="n">loader</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">DistributedSampler</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">num_replicas</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">world_size</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">valid_loader</span><span class="p">:</span>
-                    <span class="n">valid_loader</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">DistributedSampler</span><span class="p">(</span>
-                        <span class="n">valid_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">num_replicas</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">world_size</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span>
-                    <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">device_list</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;device&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_devices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device_list</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">init_method</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;init_method&quot;</span><span class="p">,</span> <span class="s2">&quot;tcp://localhost:12355&quot;</span><span class="p">)</span>  <span class="c1"># Default to TCP method</span>
+                
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_method</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;tcp&quot;</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;MultiGPUAddon supports TCP initialization method only.&quot;</span><span class="p">)</span>
+                
+                <span class="c1"># Save the class and arguments to create Trainer instances later</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trainer_class</span> <span class="o">=</span> <span class="n">base_cls</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trainer_args</span> <span class="o">=</span> <span class="n">args</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trainer_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model_state_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
 
-                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">n_epoch</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_epoch</span><span class="p">,</span> <span class="n">loader</span><span class="p">:</span> <span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">aux_run_kwargs</span><span class="p">):</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Runs the training process on all GPUs.</span>
 
-            <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">cleanup_ddp</span><span class="p">()</span>
+<span class="sd">                Initializes the distributed environment and spawns separate processes for each GPU.</span>
+<span class="sd">                Each process handles training on its assigned GPU.</span>
+
+<span class="sd">                Parameters</span>
+<span class="sd">                ----------</span>
+<span class="sd">                n_epoch : int</span>
+<span class="sd">                    The number of epochs to train for.</span>
+<span class="sd">                loader : torch.utils.data.DataLoader</span>
+<span class="sd">                    The training data loader.</span>
+<span class="sd">                valid_loader : Optional[torch.utils.data.DataLoader]</span>
+<span class="sd">                    The validation data loader, if any.</span>
+<span class="sd">                **aux_run_kwargs</span>
+<span class="sd">                    Additional arguments for the training run.</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="c1"># Prepare arguments for train_process</span>
+                <span class="n">model_args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_state_dict</span><span class="p">)</span>
+                <span class="n">trainer_args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer_class</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer_args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer_kwargs</span><span class="p">)</span>
+                <span class="n">run_args</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_epoch</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">aux_run_kwargs</span><span class="p">)</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_method</span><span class="p">,</span> <span class="p">)</span> <span class="o">+</span> <span class="n">model_args</span> <span class="o">+</span> <span class="n">trainer_args</span> <span class="o">+</span> <span class="n">run_args</span>
+
+                <span class="c1"># Use multiprocessing to run training on each device</span>
+                <span class="n">mp</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span>
+                    <span class="n">train_process</span><span class="p">,</span>
+                    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+                    <span class="n">nprocs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_devices</span><span class="p">,</span>
+                    <span class="n">join</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">MultiGPUTrainer</span></div>
 </div>
