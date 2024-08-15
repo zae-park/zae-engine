@@ -1,13 +1,5 @@
-import os
-import click
-import platform
-import psutil
-import subprocess
-import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
-import os
 import click
 import platform
 import psutil
@@ -93,8 +85,6 @@ def spinner_function(stop_event):
             time.sleep(0.1)
 
 
-# @click.command()
-# @click.option("--verbose", is_flag=True, help="Show detailed information for NVIDIA SMI.")
 def run_doctor(verbose=None):
     click.echo("Running zae doctor...\n")
 

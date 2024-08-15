@@ -1,8 +1,8 @@
 import os
 import shutil
 import click
-from zae_cli.modules.tree_builder import TreeBuilder
-from zae_cli.modules.doctor import run_doctor
+from .modules import TreeBuilder
+from .modules import run_doctor
 
 # Package structure will be changed in the future.
 # zae_cli
@@ -61,6 +61,7 @@ cli.add_command(doctor)
 
 
 if __name__ == "__main__":
+    print("main")
     os.system("zae doctor")
 # python -m zae_cli.cli
 # print("module run")
