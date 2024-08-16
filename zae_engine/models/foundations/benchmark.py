@@ -126,9 +126,11 @@ class UserIdModel(nn.Module):
         Expand the number of classes dynamically.
     """
 
-    def __init__(self, d_model, nhead, num_layers, num_classes):
+    def __init__(self, d_head, d_model, n_head, num_layers, num_classes):
         super(UserIdModel, self).__init__()
-        self.transformer = trx.TimeAwareTransformer(d_model, nhead, num_layers)
+        self.transformer = trx.TimeAwareTransformer(
+            d_head=d_head, d_model=d_model, n_head=n_head, num_layers=num_layers
+        )
         self.arcface = angular.ArcFaceLoss(d_model, num_classes)
         self.num_classes = num_classes
 
