@@ -4,8 +4,7 @@ from typing import Dict, Union
 
 import torch
 import wandb
-import neptune.new as neptune
-
+import neptune as neptune
 
 from .core import AddOnBase, T
 

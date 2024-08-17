@@ -7,7 +7,6 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import torch.distributed as dist
 
-
 from zae_engine.trainer import Trainer
 from zae_engine.trainer.addons import MultiGPUAddon
 
@@ -23,13 +22,13 @@ class SimpleModel(nn.Module):
 
 class CustomTrainer(Trainer):
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
-        x, y = batch["x"], batch["y"]
+        x, y = batch
         outputs = self.model(x)
         loss = torch.nn.functional.cross_entropy(outputs, y)
         return {"loss": loss}
 
     def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
-        x, y = batch["x"], batch["y"]
+        x, y = batch
         outputs = self.model(x)
         loss = torch.nn.functional.cross_entropy(outputs, y)
         return {"loss": loss}
@@ -56,7 +55,6 @@ class TestMultiGPUAddon(unittest.TestCase):
 
         os.environ["MASTER_ADDR"] = "localhost"
         os.environ["MASTER_PORT"] = "12355"
-        dist.init_process_group("nccl", rank=0, world_size=1)
 
         trainer_w_mpu = CustomTrainer.add_on(MultiGPUAddon)
         trainer = trainer_w_mpu(
@@ -65,9 +63,12 @@ class TestMultiGPUAddon(unittest.TestCase):
             mode="train",
             optimizer=self.optimizer,
             scheduler=self.scheduler,
+            init_method="tcp://localhost:12355"
         )
 
         trainer.run(n_epoch=1, loader=self.loader)
+        
+        # Check if the model is wrapped with DistributedDataParallel
         self.assertTrue(
             isinstance(trainer.model, nn.parallel.DistributedDataParallel),
             "Model is not wrapped with DistributedDataParallel",
