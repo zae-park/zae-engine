@@ -4,22 +4,19 @@ import platform
 import psutil
 import subprocess
 import locale
-import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import importlib
 
 
 def check_os_info():
     os_info = platform.uname()
-    return (
-        f"{os_info.system} {os_info.release} {os_info.version} ({os_info.machine})\nLocale: {locale.getdefaultlocale()}"
-    )
+    return f"Operating System: {os_info.system} {os_info.release} {os_info.version} {os_info.machine}\nLocale: {locale.getdefaultlocale()}"
 
 
 def check_cpu_info():
     cpu_count = psutil.cpu_count(logical=False)
     logical_cpu_count = psutil.cpu_count(logical=True)
     cpu_info = platform.processor()
-    cpu_details = f"{cpu_info} ({cpu_count} physical cores, {logical_cpu_count} logical cores)"
+    cpu_details = f"CPU: {cpu_info} ({cpu_count} physical cores, {logical_cpu_count} logical cores)"
     if platform.system() == "Darwin" and "arm" in platform.machine().lower():
         cpu_details += "\nDetected Apple Silicon (M1, M2 series)"
     return cpu_details
@@ -31,54 +28,51 @@ def check_torch_info():
         from torch.utils.cpp_extension import CUDA_HOME
 
         torch_version = torch.__version__
-        details = [f"PyTorch is installed. Version: {torch_version}"]
+        details = [f"[✓] PyTorch is installed. Version: {torch_version}"]
 
+        # GPU information
         if torch.cuda.is_available():
             gpu_count = torch.cuda.device_count()
-            details.append(f"{gpu_count} GPU(s) found")
+            details.append(f"GPUs: {gpu_count} available")
             for i in range(gpu_count):
                 gpu_name = torch.cuda.get_device_name(i)
-                details.append(f"  [GPU {i}] : {gpu_name}")
-                free_memory = torch.cuda.get_device_properties(i).total_memory - torch.cuda.memory_allocated(i)
-                total_memory = torch.cuda.get_device_properties(i).total_memory
-                details.append(f"    - Free Memory: {free_memory // (1024 * 1024)} MB")
-                details.append(f"    - Total Memory: {total_memory // (1024 * 1024)} MB")
+                details.append(f"  - GPU {i}: {gpu_name}")
 
+            # CUDA and cuDNN information
             cuda_version = torch.version.cuda
             cudnn_version = torch.backends.cudnn.version()
             details.append(f"CUDA Version: {cuda_version}")
             details.append(f"cuDNN Version: {cudnn_version}")
-            if CUDA_HOME:
-                details.append(f"CUDA_HOME: {CUDA_HOME}")
-            else:
-                details.append("CUDA_HOME: Not found")
-
         else:
             details.append("GPUs: No GPU available")
+
+        # Additional check for CUDA_HOME
+        if CUDA_HOME:
+            details.append(f"CUDA_HOME: {CUDA_HOME}")
+        else:
+            details.append("CUDA_HOME: Not found")
 
         return "\n".join(details)
 
     except ImportError:
-        return "PyTorch is not installed."
+        return "[✗] PyTorch is not installed."
 
 
-def check_nvidia_smi():
+def check_nvidia_smi(verbose=False):
     try:
-        query_args = ["nvidia-smi", "--query-gpu=name,memory.free,memory.total", "--format=csv,noheader,nounits"]
-        result = subprocess.run(query_args, capture_output=True, text=True)
-
-        output = "NVIDIA SMI GPU Information:\n"
-        gpu_info_lines = result.stdout.strip().split("\n")
-        output += f"{len(gpu_info_lines)} device(s) found\n"
-        for i, line in enumerate(gpu_info_lines):
-            name, free_memory, total_memory = line.split(", ")
-            output += f"  [GPU {i}] : {name}\n"
-            output += f"    - Free Memory: {free_memory} MB\n"
-            output += f"    - Total Memory: {total_memory} MB\n"
-
+        result = subprocess.run(["nvidia-smi"], capture_output=True, text=True)
+        output = f"NVIDIA SMI:\n{result.stdout}"
+        if verbose:
+            # Fetch additional details if verbose flag is set
+            detailed_result = subprocess.run(
+                ["nvidia-smi", "--query-gpu=name,memory.total,memory.free,memory.used", "--format=csv"],
+                capture_output=True,
+                text=True,
+            )
+            output += f"\nDetailed GPU Info:\n{detailed_result.stdout}"
         return output
     except FileNotFoundError:
-        return "NVIDIA SMI: Not found. Please ensure NVIDIA drivers are installed."
+        return "[✗] NVIDIA SMI: Not found. Please ensure NVIDIA drivers are installed."
 
 
 def spinner_function(stop_event):
@@ -91,31 +85,34 @@ def spinner_function(stop_event):
             time.sleep(0.1)
 
 
-def run_doctor(verbose=False):
+def run_doctor(verbose=None):
     click.echo("Running zae doctor...\n")
 
+    # Start spinner in a separate thread
     stop_event = threading.Event()
     spinner_thread = threading.Thread(target=spinner_function, args=(stop_event,))
     spinner_thread.start()
 
-    with ThreadPoolExecutor() as executor:
-        futures = {
-            executor.submit(check_os_info): "OS Info",
-            executor.submit(check_cpu_info): "CPU Info",
-            executor.submit(check_torch_info): "Torch Info",
-            executor.submit(check_nvidia_smi): "GPU Info",
-        }
+    # Perform checks
+    os_info = check_os_info()
+    click.echo(f"[✓] OS Info : {os_info.splitlines()[0]}")
+    click.echo(f"    - {os_info.splitlines()[1]}")
 
-        for future in as_completed(futures):
-            try:
-                result = future.result()
-                if verbose:
-                    click.echo(f"[✓] {futures[future]} :\n{result}")
-                else:
-                    click.echo(f"[✓] {futures[future]} : {result.splitlines()[0]}")
-            except Exception as exc:
-                click.echo(f"Error occurred: {exc}")
+    cpu_info = check_cpu_info()
+    click.echo(f"[✓] CPU Info : {cpu_info.splitlines()[0]}")
+    for line in cpu_info.splitlines()[1:]:
+        click.echo(f"    {line}")
 
+    torch_info = check_torch_info()
+    click.echo(f"[✓] GPU Info : {torch_info.splitlines()[0]}")
+    for line in torch_info.splitlines()[1:]:
+        click.echo(f"    {line}")
+
+    nvidia_smi_info = check_nvidia_smi(verbose=verbose)
+    click.echo(f"[✓] PyTorch is installed.")
+    click.echo(nvidia_smi_info)
+
+    # Stop spinner
     stop_event.set()
     spinner_thread.join()
 
