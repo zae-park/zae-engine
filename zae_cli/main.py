@@ -61,8 +61,8 @@ cli.add_command(doctor)
 
 
 if __name__ == "__main__":
-    print("main")
-    os.system("zae doctor")
+    cli()
+
 # python -m zae_cli.cli
 # print("module run")
 # cli_run(["snippet"])
