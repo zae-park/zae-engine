@@ -1,6 +1,6 @@
 [tool.poetry]
 name = 'zae-engine'
-version = '0.3.1'
+version = '0.3.2'
 description = 'Deep learning engine powered by zae-park.'
 authors = ["zae-park <tom941105@gmail.com>"]
 packages = [
@@ -100,8 +100,7 @@ line-length = 120
 target-version = ['py310']
 
 [tool.poetry.scripts]
-zae = "zae_cli.cli:cli_run"
-zae-test = "zae_cli.cli:zae_print"
+zae = "zae_cli.main:cli"
 
 [tool.pydoc-markdown]
 
