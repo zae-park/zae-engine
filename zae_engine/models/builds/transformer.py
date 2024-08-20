@@ -129,3 +129,19 @@ class UserIdModel(nn.Module):
     #     self.arcface = ArcFaceLoss(self.arcface.weight.shape[1], new_num_classes)
     #     self.arcface.weight.data[: self.num_classes] = old_weight
     #     self.num_classes = new_num_classes
+
+
+# if __name__ == "__main__":
+#     from transformers.models import llama as llm
+#     from transformers.models.llama import convert_llama_weights_to_hf as cvt
+#     # https://github.com/meta-llama/llama-recipes/blob/main/src/llama_recipes/model_checkpointing/checkpoint_handler.py
+#     cvt.write_model(
+#         model_path="./output_dir",
+#         input_base_path="./input_dir",
+#         model_size=args.model_size,
+#         safe_serialization=args.safe_serialization,
+#         llama_version=args.llama_version,
+#         vocab_size=vocab_size,
+#         num_shards=args.num_shards,
+#         instruct=args.instruct,
+#     )
