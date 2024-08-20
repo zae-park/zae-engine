@@ -41,6 +41,7 @@ seaborn = "^0.12.2"
 
 jupyter = "^1.0.0"
 minio = "^7.1.17"
+transformers = "^4.44.0"
 
 [tool.poetry.group.test.dependencies]
 coverage = "^7.4.4"
