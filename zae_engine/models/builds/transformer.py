@@ -131,7 +131,23 @@ class UserIdModel(nn.Module):
     #     self.num_classes = new_num_classes
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
+    import platform
+
+    pf = platform.platform().lower()
+
+    if "windows" in pf:
+        # https://ollama.com/download/OllamaSetup.exe
+        print("Windows")
+    elif "darwin" in pf:
+        # https://ollama.com/download/Ollama-darwin.zip
+        print("macOS")
+    elif "linux" in pf:
+        # sh$ curl -fsSL https://ollama.com/install.sh | sh
+        print("Linux")
+    else:
+        raise Exception
+
 #     from transformers.models import llama as llm
 #     from transformers.models.llama import convert_llama_weights_to_hf as cvt
 #     # https://github.com/meta-llama/llama-recipes/blob/main/src/llama_recipes/model_checkpointing/checkpoint_handler.py
