@@ -115,24 +115,17 @@ class UserIdModel(nn.Module):
         self.neck = nn.Linear(dim_event + dim_aux, dim_event)  # combined_feature를 d_model 차원으로 변환
         self.neck_act = nn.ReLU()
 
-        self.arcface = ArcFaceLoss(
-            in_features=dim_event,
-            out_features=num_classes,
-            s=kwargs["loss"].s,
-            m=kwargs["loss"].m,
-        )
         self.num_classes = num_classes
 
-    def forward(self, event_vecs, time_vecs, aux, labels, mask=None):
+    def forward(self, event_vecs, time_vecs, aux, mask=None):
         features = self.transformer(event_vecs, time_vecs, mask)
         aux_feature = self.aux_body(aux)
         combined_features = torch.cat((features, aux_feature), dim=1)
-        neck_features = self.neck_act(self.neck(combined_features))
-        logits = self.arcface(neck_features, labels)
-        return logits, neck_features
+        out = self.neck_act(self.neck(combined_features))
+        return out
 
-    def expand_classes(self, new_num_classes):
-        old_weight = self.arcface.weight.data
-        self.arcface = ArcFaceLoss(self.arcface.weight.shape[1], new_num_classes)
-        self.arcface.weight.data[: self.num_classes] = old_weight
-        self.num_classes = new_num_classes
+    # def expand_classes(self, new_num_classes):
+    #     old_weight = self.arcface.weight.data
+    #     self.arcface = ArcFaceLoss(self.arcface.weight.shape[1], new_num_classes)
+    #     self.arcface.weight.data[: self.num_classes] = old_weight
+    #     self.num_classes = new_num_classes
