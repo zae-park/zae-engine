@@ -132,21 +132,36 @@ class UserIdModel(nn.Module):
 
 
 if __name__ == "__main__":
-    import platform
+    from transformers import AutoModel, AutoTokenizer
 
-    pf = platform.platform().lower()
+    # 모델과 토크나이저 로드
+    model_name = "bert-base-uncased"  # 예: BERT 모델
+    model = AutoModel.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-    if "windows" in pf:
-        # https://ollama.com/download/OllamaSetup.exe
-        print("Windows")
-    elif "darwin" in pf:
-        # https://ollama.com/download/Ollama-darwin.zip
-        print("macOS")
-    elif "linux" in pf:
-        # sh$ curl -fsSL https://ollama.com/install.sh | sh
-        print("Linux")
-    else:
-        raise Exception
+    # 예제 텍스트를 토큰화하고 모델에 입력
+    text = "Hello, world!"
+    inputs = tokenizer(text, return_tensors="pt")
+    outputs = model(**inputs)
+
+    print(outputs)
+
+
+    # import platform
+    #
+    # pf = platform.platform().lower()
+    #
+    # if "windows" in pf:
+    #     # https://ollama.com/download/OllamaSetup.exe
+    #     print("Windows")
+    # elif "darwin" in pf:
+    #     # https://ollama.com/download/Ollama-darwin.zip
+    #     print("macOS")
+    # elif "linux" in pf:
+    #     # sh$ curl -fsSL https://ollama.com/install.sh | sh
+    #     print("Linux")
+    # else:
+    #     raise Exception
 
 #     from transformers.models import llama as llm
 #     from transformers.models.llama import convert_llama_weights_to_hf as cvt
