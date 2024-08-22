@@ -137,7 +137,7 @@ if __name__ == "__main__":
     # 모델과 토크나이저 로드
     model_name = "bert-base-uncased"  # 예: BERT 모델
     model = AutoModel.from_pretrained(model_name)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, clean_up_tokenization_spaces=True)  # DTrue
 
     # 예제 텍스트를 토큰화하고 모델에 입력
     text = "Hello, world!"
@@ -145,7 +145,6 @@ if __name__ == "__main__":
     outputs = model(**inputs)
 
     print(outputs)
-
 
     # import platform
     #
