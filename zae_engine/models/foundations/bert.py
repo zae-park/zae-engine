@@ -1,5 +1,6 @@
 from typing import OrderedDict, Union
 
+import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer
 
 from ..builds import transformer
@@ -25,6 +26,63 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
     OrderedDict or dict
         Updated destination model weights.
     """
+
+    # pretrained weight
+    bert_model = "base"
+
+    embedding = "BertEmbeddings"
+    embdding_ = {
+        "word_embeddings": nn.Embedding(30522, 768, padding_idx=0),
+        "position_embeddings": nn.Embedding(512, 768, padding_idx=0),
+        "token_type_embeddings": nn.Embedding(2, 768, padding_idx=0),
+        "LayerNorm": nn.LayerNorm(768),
+        "dropout": nn.Dropout(0.1)
+    }
+
+    encoder = "BertEncoder"
+    encoder_ = {
+        "layer": [
+            {
+                "0-11": {
+                    "12 x BertLayer": {
+                        "attention": {
+                            "BertAttention": {
+                                "self": [
+                                    "BertSelfAttention",
+                                    ["query", "key", "value", "768->768"], 
+                                    "dropout(0.1)"
+                                    ],
+                                "output": [
+                                    "BertSelfOutput", 
+                                    ["dense", "LayerNorm", "dropout"]
+                                    ]
+                            }
+                        },
+                        "intermediate":{
+                            "BertIntermediate": {
+                                "dense": nn.Linear(768, 3072),
+                                "intermediate_act_fn": nn.Gelu()
+                            }
+                        },
+                        "output": {
+                            "BertOutput": {
+                                "dense": nn.Linear(3072, 768),
+                                "LayerNorm": nn.LayerNorm(768),
+                                "dropout": nn.Dropout(0.1)
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+
+    pooler = "BertPooler"
+    pooler_ = {
+        "dense": nn.Linear(768, 768),
+        "activation": nn.Tanh()
+    }
+    #
 
     for k, v in src_weight.items():
 
