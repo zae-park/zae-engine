@@ -47,71 +47,34 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
     return dst_weight
 
 
-def __tokenizer_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Union[OrderedDict | dict]):
-    """
-    Map source weights to destination model weights.
+def bert_base(pretrained=False, tokenizer_name: Union[str, None] = None) -> transformer.UserIdModel:
+    model_name = checkpoint_map["bert"]
 
-    Parameters
-    ----------
-    src_weight : OrderedDict or dict
-        Source model weights.
-    dst_weight : OrderedDict or dict
-        Destination model weights.
+    if tokenizer_name is None:
+        tokenizer_name = model_name
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, clean_up_tokenization_spaces=True)
 
-    Returns
-    -------
-    OrderedDict or dict
-        Updated destination model weights.
-    """
-
-    for k, v in src_weight.items():
-
-        if k.startswith("layer"):
-            k = k.replace(".bn", ".norm")
-        elif k.startswith("fc"):
-            pass
-        else:
-            k = "stem." + k
-            k = k.replace("conv1", "0").replace("bn1", "1")
-
-        dst_weight[k] = v
-
-    return dst_weight
-
-
-def bert_base(pretrained=False) -> transformer.UserIdModel:
-
-    model = transformer.UserIdModel(num_classes=10)
-    tokenizer = transformer.AuxModel(d_aux=1, d_model=32)  # TODO: Implement tokenizer
-    if pretrained:
-        model_name = checkpoint_map["bert"]
-
+    model = transformer.UserIdModel(num_classes=10)    
+    if pretrained:    
         pre_model = AutoModel.from_pretrained(model_name)
         new_weight = __model_weight_mapper(pre_model.parameters(), model.parameters())
         model.load_state_dict(new_weight, strict=True)
-
-        pre_tokenizer = AutoTokenizer.from_pretrained(model_name, clean_up_tokenization_spaces=True)
-        if tokenizer:
-            new_tokenizer = __tokenizer_weight_mapper(pre_tokenizer.parameters(), tokenizer.parameters())
-            tokenizer.load_state_dict(new_tokenizer, strict=True)
-        else:
-            tokenizer = pre_tokenizer
-
+    
     return model, tokenizer
 
 
 
 if __name__ == "__main__":
 
-    # 모델과 토크나이저 로드
-    model_name = "bert-base-uncased"  # 예: BERT 모델
-    model = AutoModel.from_pretrained(model_name)
-    tokenizer = AutoTokenizer.from_pretrained(model_name, clean_up_tokenization_spaces=True)  # DTrue
+    # # 모델과 토크나이저 로드
+    # model_name = "bert-base-uncased"  # 예: BERT 모델
+    # model = AutoModel.from_pretrained(model_name)
     
-    # 예제 텍스트를 토큰화하고 모델에 입력
-    text = "Hello, world!"
-    inputs = tokenizer(text, return_tensors="pt")
-    outputs = model(**inputs)
+    
+    # # 예제 텍스트를 토큰화하고 모델에 입력
+    # text = "Hello, world!"
+    # inputs = tokenizer(text, return_tensors="pt")
+    # outputs = model(**inputs)
 #
 # print(outputs)
 
