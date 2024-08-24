@@ -9,7 +9,7 @@ checkpoint_map = {
 }
 
 
-def __model_weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [OrderedDict | dict]):
+def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Union[OrderedDict | dict]):
     """
     Map source weights to destination model weights.
 
@@ -47,7 +47,7 @@ def __model_weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [Ordered
     return dst_weight
 
 
-def __tokenizer_weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [OrderedDict | dict]):
+def __tokenizer_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Union[OrderedDict | dict]):
     """
     Map source weights to destination model weights.
 
@@ -100,18 +100,18 @@ def bert_base(pretrained=False) -> transformer.UserIdModel:
     return model, tokenizer
 
 
-#
-# if __name__ == "__main__":
 
-# # 모델과 토크나이저 로드
-# model_name = "bert-base-uncased"  # 예: BERT 모델
-# model = AutoModel.from_pretrained(model_name)
-# tokenizer = AutoTokenizer.from_pretrained(model_name, clean_up_tokenization_spaces=True)  # DTrue
-#
-# # 예제 텍스트를 토큰화하고 모델에 입력
-# text = "Hello, world!"
-# inputs = tokenizer(text, return_tensors="pt")
-# outputs = model(**inputs)
+if __name__ == "__main__":
+
+    # 모델과 토크나이저 로드
+    model_name = "bert-base-uncased"  # 예: BERT 모델
+    model = AutoModel.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, clean_up_tokenization_spaces=True)  # DTrue
+    
+    # 예제 텍스트를 토큰화하고 모델에 입력
+    text = "Hello, world!"
+    inputs = tokenizer(text, return_tensors="pt")
+    outputs = model(**inputs)
 #
 # print(outputs)
 
