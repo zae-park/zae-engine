@@ -36,7 +36,7 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
         "position_embeddings": nn.Embedding(512, 768, padding_idx=0),
         "token_type_embeddings": nn.Embedding(2, 768, padding_idx=0),
         "LayerNorm": nn.LayerNorm(768),
-        "dropout": nn.Dropout(0.1)
+        "dropout": nn.Dropout(0.1),
     }
 
     encoder = "BertEncoder"
@@ -47,30 +47,20 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
                     "12 x BertLayer": {
                         "attention": {
                             "BertAttention": {
-                                "self": [
-                                    "BertSelfAttention",
-                                    ["query", "key", "value", "768->768"], 
-                                    "dropout(0.1)"
-                                    ],
-                                "output": [
-                                    "BertSelfOutput", 
-                                    ["dense", "LayerNorm", "dropout"]
-                                    ]
+                                "self": ["BertSelfAttention", ["query", "key", "value", "768->768"], "dropout(0.1)"],
+                                "output": ["BertSelfOutput", ["dense", "LayerNorm", "dropout"]],
                             }
                         },
-                        "intermediate":{
-                            "BertIntermediate": {
-                                "dense": nn.Linear(768, 3072),
-                                "intermediate_act_fn": nn.Gelu()
-                            }
+                        "intermediate": {
+                            "BertIntermediate": {"dense": nn.Linear(768, 3072), "intermediate_act_fn": nn.Gelu()}
                         },
                         "output": {
                             "BertOutput": {
                                 "dense": nn.Linear(3072, 768),
                                 "LayerNorm": nn.LayerNorm(768),
-                                "dropout": nn.Dropout(0.1)
+                                "dropout": nn.Dropout(0.1),
                             }
-                        }
+                        },
                     }
                 }
             }
@@ -78,10 +68,7 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
     }
 
     pooler = "BertPooler"
-    pooler_ = {
-        "dense": nn.Linear(768, 768),
-        "activation": nn.Tanh()
-    }
+    pooler_ = {"dense": nn.Linear(768, 768), "activation": nn.Tanh()}
     #
 
     for k, v in src_weight.items():
@@ -112,27 +99,26 @@ def bert_base(pretrained=False, tokenizer_name: Union[str, None] = None) -> tran
         tokenizer_name = model_name
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, clean_up_tokenization_spaces=True)
 
-    model = transformer.UserIdModel(num_classes=10)    
-    if pretrained:    
+    model = transformer.UserIdModel(num_classes=10)
+    if pretrained:
         pre_model = AutoModel.from_pretrained(model_name)
         new_weight = __model_weight_mapper(pre_model.parameters(), model.parameters())
         model.load_state_dict(new_weight, strict=True)
-    
+
     return model, tokenizer
 
 
+# if __name__ == "__main__":
 
-if __name__ == "__main__":
+# # 모델과 토크나이저 로드
+# model_name = "bert-base-uncased"  # 예: BERT 모델
+# model = AutoModel.from_pretrained(model_name)
 
-    # # 모델과 토크나이저 로드
-    # model_name = "bert-base-uncased"  # 예: BERT 모델
-    # model = AutoModel.from_pretrained(model_name)
-    
-    
-    # # 예제 텍스트를 토큰화하고 모델에 입력
-    # text = "Hello, world!"
-    # inputs = tokenizer(text, return_tensors="pt")
-    # outputs = model(**inputs)
+
+# # 예제 텍스트를 토큰화하고 모델에 입력
+# text = "Hello, world!"
+# inputs = tokenizer(text, return_tensors="pt")
+# outputs = model(**inputs)
 #
 # print(outputs)
 
