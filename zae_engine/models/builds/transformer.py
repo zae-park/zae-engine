@@ -1,4 +1,5 @@
 import math
+import copy
 from typing import Callable, List, Type, Union, Tuple
 
 import torch
@@ -15,16 +16,22 @@ from transformers.models.bert import BertModel
 class TransformerBase(nn.Module):
     def __init__(
         self,
+        encoder_embedding: nn.Module,
+        decoder_embedding: nn.Module,
         encoder: nn.Module = nn.Identity(),
         decoder: nn.Module = nn.Identity(),
     ):
         super().__init__()
+        self.encoder_embedding = encoder_embedding
+        self.decoder_embedding = decoder_embedding
         self.encoder = encoder
         self.decoder = decoder
 
     def forward(self, src, tgt, src_mask=None, tgt_mask=None):
-        encoded = self.encoder(src, src_mask)
-        out = self.decoder(encoded, tgt, src_mask, tgt_mask)
+        src_embed = self.encoder_embedding(src)
+        tgt_embed = self.encoder_embedding(tgt)
+        encoded = self.encoder(src_embed, src_mask)
+        out = self.decoder(encoded, tgt_embed, src_mask, tgt_mask)
         return out
 
 
@@ -63,6 +70,7 @@ class EncoderBase(nn.Module):
         emb = self.emb_norm(self)
         pos_emb = self.position_embedding(event_vecs)
         out = self.transformer_encoder(emb, pos_emb, time_vecs, mask)
+
         return out
 
 
