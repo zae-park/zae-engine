@@ -7,6 +7,8 @@ from ..builds import transformer
 
 checkpoint_map = {
     "bert": "bert-base-uncased",
+    "bert-small": "bert-base-uncased",
+    "bert-large": "bert-base-uncased",
 }
 
 
@@ -94,6 +96,8 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
 
 def bert_base(pretrained=False, tokenizer_name: Union[str, None] = None) -> transformer.UserIdModel:
     model_name = checkpoint_map["bert"]
+
+    # zae_model = transformer.EncoderBase(layer=nn.TransformerEncoder)
 
     if tokenizer_name is None:
         tokenizer_name = model_name
