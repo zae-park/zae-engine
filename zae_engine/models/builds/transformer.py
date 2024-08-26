@@ -35,6 +35,50 @@ class TransformerBase(nn.Module):
         return out
 
 
+# class TransformerBase(nn.Module):
+#     def __init__(
+#         self,
+#         layer: nn.Module,
+#         vocab_size: int,
+#         max_length: int,
+#         d_model: int,
+#         n_layers: int,
+#     ) -> None:
+#         super().__init__()
+#         self.layer = layer
+#         self.vocab_size = vocab_size
+#         self.max_length = max_length
+#         self.d_model = d_model
+#         self.n_layers = n_layers
+#
+#         self.padding_idx = kwargs.pop("padding_idx", 0)
+#         self.position_embedding = nn.Embedding(max_length, d_model, padding_idx=self.padding_idx)
+#         self.word_embedding = nn.Embedding(self.vocab_size, d_model, padding_idx=self.padding_idx)
+#         self.token_type_embedding = nn.Embedding(2, d_model, padding_idx=self.padding_idx)
+#         self.emb_norm = nn.LayerNorm(d_model)
+#         self.dropout = nn.Dropout(0.1)
+#
+#         encoder_layers = nn.TransformerEncoderLayer(d_model, n_head, activation="gelu", norm_first=True)
+#         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, n_layers, norm=nn.LayerNorm(d_model))
+#
+#     def forward(self, event_vecs, time_vecs, mask=None):
+#
+#         embedding_output = self.embeddings(
+#             input_ids=input_ids,
+#             position_ids=position_ids,
+#             token_type_ids=token_type_ids,
+#             inputs_embeds=inputs_embeds,
+#             past_key_values_length=past_key_values_length,
+#         )
+#
+#         if attention_mask is None:
+#             attention_mask = torch.ones((batch_size, seq_length + past_key_values_length), device=device)
+#
+#         emb = self.emb_norm(self)
+#         pos_emb = self.position_embedding(event_vecs)
+#         out = self.transformer_encoder(emb, pos_emb, time_vecs, mask)
+
+
 class EncoderBase(nn.Module):
     def __init__(
         self,
@@ -66,12 +110,15 @@ class EncoderBase(nn.Module):
         encoder_layers = nn.TransformerEncoderLayer(d_model, n_head, activation="gelu", norm_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, n_layers, norm=nn.LayerNorm(d_model))
 
-    def forward(self, event_vecs, time_vecs, mask=None):
-        emb = self.emb_norm(self)
-        pos_emb = self.position_embedding(event_vecs)
-        out = self.transformer_encoder(emb, pos_emb, time_vecs, mask)
+    # def forward(self, event_vecs, time_vecs, mask=None):
+    #     emb = self.emb_norm(self)
+    #     pos_emb = self.position_embedding(event_vecs)
+    #     out = self.transformer_encoder(emb, pos_emb, time_vecs, mask)
+    #
+    #     return out
 
-        return out
+    def forward(self, src, src_mask):
+        return self.transformer_encoder(src, src_mask)
 
 
 def timestamp_encoding(timestamps, d_model):
