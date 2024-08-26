@@ -4,6 +4,29 @@ from typing import Callable, List, Type, Union, Tuple
 import torch
 import torch.nn as nn
 
+from transformers.models.bert import BertModel
+
+
+# TODO: implement Scaled-Dot Product Attention (SDPA).
+# ref: https://tutorials.pytorch.kr/intermediate/scaled_dot_product_attention_tutorial.html
+# from transformers.modeling_attn_mask_utils import _prepare_4d_attention_mask_for_sdpa
+
+
+class TransformerBase(nn.Module):
+    def __init__(
+        self,
+        encoder: nn.Module = nn.Identity(),
+        decoder: nn.Module = nn.Identity(),
+    ):
+        super().__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+
+    def forward(self, src, tgt, src_mask=None, tgt_mask=None):
+        encoded = self.encoder(src, src_mask)
+        out = self.decoder(encoded, tgt, src_mask, tgt_mask)
+        return out
+
 
 class EncoderBase(nn.Module):
     def __init__(
@@ -40,6 +63,7 @@ class EncoderBase(nn.Module):
         emb = self.emb_norm(self)
         pos_emb = self.position_embedding(event_vecs)
         out = self.transformer_encoder(emb, pos_emb, time_vecs, mask)
+        return out
 
 
 def timestamp_encoding(timestamps, d_model):
