@@ -100,25 +100,31 @@ class EncoderBase(nn.Module):
         self.n_head = n_head
         self.n_layers = n_layers
 
-        self.padding_idx = kwargs.pop("padding_idx", 0)
-        self.position_embedding = nn.Embedding(max_length, d_model, padding_idx=self.padding_idx)
-        self.word_embedding = nn.Embedding(self.vocab_size, d_model, padding_idx=self.padding_idx)
-        self.token_type_embedding = nn.Embedding(2, d_model, padding_idx=self.padding_idx)
         self.emb_norm = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(0.1)
 
-        encoder_layers = nn.TransformerEncoderLayer(d_model, n_head, activation="gelu", norm_first=True)
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, n_layers, norm=nn.LayerNorm(d_model))
+        self.activation = kwargs.pop("activation", "gelu")
+        self.norm_first = kwargs.pop("norm_first", False)
 
-    # def forward(self, event_vecs, time_vecs, mask=None):
-    #     emb = self.emb_norm(self)
-    #     pos_emb = self.position_embedding(event_vecs)
-    #     out = self.transformer_encoder(emb, pos_emb, time_vecs, mask)
-    #
-    #     return out
+        if not isinstance(layer, nn.Module):
+            layer = nn.TransformerEncoderLayer(d_model, n_head, activation=self.activation, norm_first=self.norm_first)
+        self.transformer_encoder = nn.TransformerEncoder(layer, n_layers, norm=nn.LayerNorm(d_model))
+        # check args: is_causal, src_key_padding_mask
 
     def forward(self, src, src_mask):
-        return self.transformer_encoder(src, src_mask)
+        """
+        :param src: (batch_size) embedded.
+        :param src_mask: (batch_size) mask.
+        Parameters
+        ----------
+        src
+        src_mask
+
+        Returns
+        -------
+
+        """
+        return self.transformer_encoder(src, mask=src_mask)
 
 
 def timestamp_encoding(timestamps, d_model):
