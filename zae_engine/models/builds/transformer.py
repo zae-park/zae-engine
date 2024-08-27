@@ -35,48 +35,46 @@ class TransformerBase(nn.Module):
         return out
 
 
-# class TransformerBase(nn.Module):
-#     def __init__(
-#         self,
-#         layer: nn.Module,
-#         vocab_size: int,
-#         max_length: int,
-#         d_model: int,
-#         n_layers: int,
-#     ) -> None:
-#         super().__init__()
-#         self.layer = layer
-#         self.vocab_size = vocab_size
-#         self.max_length = max_length
-#         self.d_model = d_model
-#         self.n_layers = n_layers
-#
-#         self.padding_idx = kwargs.pop("padding_idx", 0)
-#         self.position_embedding = nn.Embedding(max_length, d_model, padding_idx=self.padding_idx)
-#         self.word_embedding = nn.Embedding(self.vocab_size, d_model, padding_idx=self.padding_idx)
-#         self.token_type_embedding = nn.Embedding(2, d_model, padding_idx=self.padding_idx)
-#         self.emb_norm = nn.LayerNorm(d_model)
-#         self.dropout = nn.Dropout(0.1)
-#
-#         encoder_layers = nn.TransformerEncoderLayer(d_model, n_head, activation="gelu", norm_first=True)
-#         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, n_layers, norm=nn.LayerNorm(d_model))
-#
-#     def forward(self, event_vecs, time_vecs, mask=None):
-#
-#         embedding_output = self.embeddings(
-#             input_ids=input_ids,
-#             position_ids=position_ids,
-#             token_type_ids=token_type_ids,
-#             inputs_embeds=inputs_embeds,
-#             past_key_values_length=past_key_values_length,
-#         )
-#
-#         if attention_mask is None:
-#             attention_mask = torch.ones((batch_size, seq_length + past_key_values_length), device=device)
-#
-#         emb = self.emb_norm(self)
-#         pos_emb = self.position_embedding(event_vecs)
-#         out = self.transformer_encoder(emb, pos_emb, time_vecs, mask)
+class PositionalEncoding(nn.Module):
+    """
+    compute sinusoid encoding.
+    """
+
+    def __init__(self, d_model, max_len, padding_idx=0):
+        """
+        constructor of sinusoid encoding class
+
+        :param d_model: dimension of model
+        :param max_len: max sequence length
+        """
+        super(PositionalEncoding, self).__init__()
+
+        # same size with input matrix (for adding with input matrix)
+        self.encoding = torch.zeros(max_len, d_model)
+        self.encoding.requires_grad = False  # we don't need to compute gradient
+
+        pos = torch.arange(0, max_len)
+        pos = pos.float().unsqueeze(dim=1)
+        # 1D => 2D unsqueeze to represent word's position
+
+        _2i = torch.arange(0, d_model, step=2).float()
+        # 'i' means index of d_model (e.g. embedding size = 50, 'i' = [0,50])
+        # "step=2" means 'i' multiplied with two (same with 2 * i)
+
+        self.encoding[:, 0::2] = torch.sin(pos / (10000 ** (_2i / d_model)))
+        self.encoding[:, 1::2] = torch.cos(pos / (10000 ** (_2i / d_model)))
+        # compute positional encoding to consider positional information of words
+
+    def forward(self, x):
+        # self.encoding
+        # [max_len = 512, d_model = 512]
+
+        batch_size, seq_len = x.size()
+        # [batch_size = 128, seq_len = 30]
+
+        return self.encoding[:seq_len, :]
+        # [seq_len = 30, d_model = 512]
+        # it will add with tok_emb : [128, 30, 512]
 
 
 class EncoderBase(nn.Module):
