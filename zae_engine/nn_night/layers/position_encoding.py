@@ -122,8 +122,8 @@ class RotaryPositionalEncoding(nn.Module):
 
     def __init__(self, d_model):
         super(RotaryPositionalEncoding, self).__init__()
-        self.d_model = d_model
         assert d_model % 2 == 0, "d_model should be divisible by 2 for rotary encoding."
+        self.d_model = d_model
 
     def forward(self, x):
         """
@@ -140,16 +140,20 @@ class RotaryPositionalEncoding(nn.Module):
             Tensor with rotary positional encoding applied.
         """
         batch_size, seq_len, d_model = x.size()
-        position = torch.arange(seq_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model))
-        pos_enc = torch.zeros(seq_len, d_model)
+        device = x.device
+
+        # Create the position encoding matrix
+        position = torch.arange(seq_len, dtype=torch.float, device=device).unsqueeze(1)
+        div_term = torch.exp(
+            torch.arange(0, d_model, 2, dtype=torch.float, device=device) * -(math.log(10000.0) / d_model)
+        )
+        pos_enc = torch.zeros(seq_len, d_model, device=device)
         pos_enc[:, 0::2] = torch.sin(position * div_term)
         pos_enc[:, 1::2] = torch.cos(position * div_term)
 
-        # Apply rotary encoding
-        pos_enc = pos_enc.unsqueeze(0).expand(batch_size, -1, -1)
-        x_rotated = x * pos_enc  # Example application of rotary encoding
-        return x_rotated
+        # Apply rotary encoding (element-wise multiplication)
+        pos_enc = pos_enc.unsqueeze(0)  # Shape: (1, seq_len, d_model)
+        return x + pos_enc  # Adding positional encoding to the input tensor
 
 
 class RelativePositionalEncoding(nn.Module):
