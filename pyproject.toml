@@ -31,6 +31,7 @@ click = "^8.1.7"
 tqdm = "^4.65.0"
 rich = "^13.5.2"
 termcolor = "2.2.0"
+gensim = "^4.3.3"
 
 [tool.poetry.group.dev.dependencies]
 typeguard = "^4.1.2"
