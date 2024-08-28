@@ -17,21 +17,26 @@ class TransformerBase(nn.Module):
     def __init__(
         self,
         encoder_embedding: nn.Module,
-        decoder_embedding: nn.Module,
+        decoder_embedding: nn.Module = None,
         encoder: nn.Module = nn.Identity(),
         decoder: nn.Module = nn.Identity(),
     ):
         super().__init__()
         self.encoder_embedding = encoder_embedding
-        self.decoder_embedding = decoder_embedding
+        # If no decoder_embedding is provided, use encoder_embedding for both
+        self.decoder_embedding = decoder_embedding if decoder_embedding is not None else encoder_embedding
         self.encoder = encoder
         self.decoder = decoder
 
     def forward(self, src, tgt, src_mask=None, tgt_mask=None):
+        # Apply embeddings to source and target sequences
         src_embed = self.encoder_embedding(src)
-        tgt_embed = self.encoder_embedding(tgt)
+        tgt_embed = self.decoder_embedding(tgt)
+
+        # Pass the embeddings through the encoder and decoder
         encoded = self.encoder(src_embed, src_mask)
-        out = self.decoder(encoded, tgt_embed, src_mask, tgt_mask)
+        out = self.decoder(tgt_embed, encoded, src_mask, tgt_mask)
+
         return out
 
 
