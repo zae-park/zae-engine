@@ -1,7 +1,6 @@
 import unittest
 import torch
-import torch.nn as nn
-from position_encoding import (
+from zae_engine.nn_night.layers import (
     SinusoidalPositionalEncoding,
     LearnablePositionalEncoding,
     RotaryPositionalEncoding,
