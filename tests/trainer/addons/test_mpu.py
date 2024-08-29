@@ -35,12 +35,33 @@ class CustomTrainer(Trainer):
         return {"loss": loss}
 
 
-def check_ddp(rank, model):
-    """Check if the model is wrapped with DistributedDataParallel in each process."""
+def train_process(rank, device_list, init_method, model_class, model_state_dict, trainer_class, trainer_args, trainer_kwargs, n_epoch, loader, valid_loader, aux_run_kwargs):
+    print(f'Initializing process {rank}...')
+
+    os.environ['WORLD_SIZE'] = str(len(device_list))
+    os.environ['RANK'] = str(rank)
+
+    print(f'Process {rank} initializing process group...')
+    dist.init_process_group(backend='nccl', init_method=init_method, world_size=len(device_list), rank=rank)
+    torch.cuda.set_device(device_list[rank])
+
+    print(f'Process {rank} loading model...')
+    model = model_class()
+    model.load_state_dict(model_state_dict)
+    model = model.to(device_list[rank])
+
+    model = nn.parallel.DistributedDataParallel(model, device_ids=[rank], output_device=rank)
+    trainer = trainer_class(model=model, device=device_list[rank], *trainer_args, **trainer_kwargs)
+
+    print(f'Process {rank} running training...')
+    trainer.run(n_epoch, loader, valid_loader, **aux_run_kwargs)
+
+    # Add a check to confirm DDP is set up correctly
     assert isinstance(model, nn.parallel.DistributedDataParallel), (
         f"Process {rank}: Model is not wrapped with DistributedDataParallel"
     )
-    print(f"Process {rank}: Multi-GPU training test passed")
+
+    dist.destroy_process_group()
 
 
 class TestMultiGPUAddon(unittest.TestCase):
@@ -77,14 +98,7 @@ class TestMultiGPUAddon(unittest.TestCase):
 
         trainer.run(n_epoch=1, loader=self.loader)
 
-        # Run check in each process
-        mp.spawn(
-            check_ddp,
-            args=(trainer.model,),
-            nprocs=len(self.devices)
-        )
-
-        dist.destroy_process_group()
+        print("Multi-GPU training test passed")
 
 
 if __name__ == "__main__":
