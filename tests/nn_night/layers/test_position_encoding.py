@@ -2,6 +2,7 @@ import unittest
 import torch
 from zae_engine.nn_night.layers import (
     SinusoidalPositionalEncoding,
+    TimestampPositionalEncoding,
     LearnablePositionalEncoding,
     RotaryPositionalEncoding,
     RelativePositionalEncoding,
@@ -86,6 +87,32 @@ class TestPositionEncodings(unittest.TestCase):
                     output[i, : seq_lengths[i]], x[i, : seq_lengths[i]] + pos_enc.position_embeddings[: seq_lengths[i]]
                 )
             )
+
+
+class TestTimestampPositionalEncoding(unittest.TestCase):
+    def setUp(self):
+        self.d_model = 16
+        self.batch_size = 2
+        self.seq_len = 10
+        self.pe = TimestampPositionalEncoding(self.d_model)
+
+    def test_shape(self):
+        timestamps = torch.arange(self.batch_size * self.seq_len).view(self.batch_size, self.seq_len).float()
+        encoded = self.pe(timestamps)
+        self.assertEqual(encoded.shape, (self.batch_size, self.seq_len, self.d_model))
+
+    def test_encoding(self):
+        timestamps = torch.arange(self.batch_size * self.seq_len).view(self.batch_size, self.seq_len).float()
+        encoded = self.pe(timestamps)
+
+        # Ensure the encoding is not the same as input
+        self.assertFalse(
+            torch.equal(timestamps.unsqueeze(-1).expand(-1, -1, self.d_model), encoded),
+            "Output should be different from input due to applied positional encoding.",
+        )
+
+        # Check if encoding dimensions are correct
+        self.assertTrue(encoded.size(2) == self.d_model, "Encoding dimension does not match d_model")
 
 
 if __name__ == "__main__":
