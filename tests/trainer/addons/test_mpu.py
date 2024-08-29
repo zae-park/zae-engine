@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import torch.distributed as dist
+import torch.multiprocessing as mp
 
 from zae_engine.trainer import Trainer
 from zae_engine.trainer.addons import MultiGPUAddon
@@ -67,13 +68,21 @@ class TestMultiGPUAddon(unittest.TestCase):
         )
 
         trainer.run(n_epoch=1, loader=self.loader)
-        
-        # Check if the model is wrapped with DistributedDataParallel
-        self.assertTrue(
-            isinstance(trainer.model, nn.parallel.DistributedDataParallel),
-            "Model is not wrapped with DistributedDataParallel",
+
+        # Check if the model in each process is wrapped with DistributedDataParallel
+        def check_ddp(rank, model):
+            self.assertTrue(
+                isinstance(model, nn.parallel.DistributedDataParallel),
+                f"Process {rank}: Model is not wrapped with DistributedDataParallel",
+            )
+            print(f"Process {rank}: Multi-GPU training test passed")
+
+        # Run check in each process
+        mp.spawn(
+            check_ddp,
+            args=(trainer.model,),
+            nprocs=len(self.devices)
         )
-        print("Multi-GPU training test passed")
 
         dist.destroy_process_group()
 
