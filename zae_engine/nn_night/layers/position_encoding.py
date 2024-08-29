@@ -65,6 +65,67 @@ class SinusoidalPositionalEncoding(nn.Module):
         return x + pos_enc
 
 
+class TimestampPositionalEncoding(nn.Module):
+    """
+    Applies timestamp positional encoding to input sequences.
+
+    Parameters
+    ----------
+    d_model : int
+        Dimension of the embedding space.
+
+    Notes
+    -----
+    - This method encodes timestamps using sinusoidal functions of different frequencies.
+    - Similar to sinusoidal positional encoding but specifically tailored for timestamp data.
+    - Unlike sinusoidal positional encoding, which encodes token indices, this method encodes timestamps directly.
+    - Benefits: Can be used to encode time-based sequences where the timestamp is crucial.
+    - Drawbacks: Assumes timestamps are uniformly distributed and may not handle irregular time intervals well.
+
+    References
+    ----------
+    - This encoding approach is inspired by sinusoidal positional encoding methods used in Transformers.
+    """
+
+    def __init__(self, d_model):
+        """
+        Initializes TimestampPositionalEncoding with the given model dimension.
+
+        Parameters
+        ----------
+        d_model : int
+            Dimension of the embedding space.
+        """
+        super(TimestampPositionalEncoding, self).__init__()
+        self.d_model = d_model
+
+    def forward(self, timestamps):
+        """
+        Apply timestamp positional encoding to the input timestamps.
+
+        Parameters
+        ----------
+        timestamps : torch.Tensor
+            Input tensor of shape (batch_size, seq_len) containing timestamps.
+
+        Returns
+        -------
+        torch.Tensor
+            Encoded tensor of shape (batch_size, seq_len, d_model).
+        """
+        batch_size, seq_len = timestamps.size()
+        pe = torch.zeros(batch_size, seq_len, self.d_model, device=timestamps.device)
+        position = timestamps.unsqueeze(-1)  # [Batch, sequence_length, 1]
+        div_term = torch.exp(
+            torch.arange(0, self.d_model, 2).float().to(timestamps.device) * -(math.log(10000.0) / self.d_model)
+        )
+
+        pe[:, :, 0::2] = torch.sin(position * div_term)
+        pe[:, :, 1::2] = torch.cos(position * div_term)
+
+        return pe
+
+
 class LearnablePositionalEncoding(nn.Module):
     """
     Implements learnable positional encoding where positional embeddings are learned during training.
