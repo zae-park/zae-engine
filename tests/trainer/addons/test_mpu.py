@@ -35,6 +35,14 @@ class CustomTrainer(Trainer):
         return {"loss": loss}
 
 
+def check_ddp(rank, model):
+    """Check if the model is wrapped with DistributedDataParallel in each process."""
+    assert isinstance(model, nn.parallel.DistributedDataParallel), (
+        f"Process {rank}: Model is not wrapped with DistributedDataParallel"
+    )
+    print(f"Process {rank}: Multi-GPU training test passed")
+
+
 class TestMultiGPUAddon(unittest.TestCase):
     def setUp(self):
         self.model = SimpleModel()
@@ -68,14 +76,6 @@ class TestMultiGPUAddon(unittest.TestCase):
         )
 
         trainer.run(n_epoch=1, loader=self.loader)
-
-        # Check if the model in each process is wrapped with DistributedDataParallel
-        def check_ddp(rank, model):
-            self.assertTrue(
-                isinstance(model, nn.parallel.DistributedDataParallel),
-                f"Process {rank}: Model is not wrapped with DistributedDataParallel",
-            )
-            print(f"Process {rank}: Multi-GPU training test passed")
 
         # Run check in each process
         mp.spawn(
