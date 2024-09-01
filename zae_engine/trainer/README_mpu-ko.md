@@ -16,8 +16,11 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 import torch.optim as optim
+import torch.utils.data as td
+import torch.distributed as dist
 from zae_engine.trainer import Trainer  # 사용자 정의 Trainer 클래스를 임포트
 from zae_engine.trainer.addons.mpu import MultiGPUAddon  # MultiGPUAddon 임포트
+from zae_engine.schedulers import CosineAnnealingScheduler
 
 
 # 더미 데이터셋
@@ -33,8 +36,8 @@ class DummyDataset(Dataset):
         return self.data[idx], self.labels[idx]
 
 
-# 사용자 정의 Trainer 클래스
-class MyTrainer(Trainer):
+# MultiGPUTrainer 정의
+class MultiGPUTrainer(Trainer.add_on(MultiGPUAddon)):
     def train_step(self, batch):
         data, labels = batch
         outputs = self.model(data)
@@ -44,7 +47,7 @@ class MyTrainer(Trainer):
     def test_step(self, batch):
         return self.train_step(batch)
 
-    
+# 사용 시, 이전과 동일하게 적용하면 됩니다.
 def main():
     device_list = [torch.device(f'cuda:{i}') for i in range(torch.cuda.device_count())]  # 사용 가능한 모든 GPU
     assert len(device_list) > 1, "이 스크립트는 여러 GPU에서 실행되어야 합니다."
@@ -56,13 +59,12 @@ def main():
     # 모델, 옵티마이저, 스케줄러 설정
     model = nn.Linear(10, 2)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
-    scheduler = None  # 필요한 경우 스케줄러 설정
+    scheduler = CosineAnnealingScheduler(optimizer=optimizer, total_iters=100)  # total_iters 조정
 
-    # Trainer에 MultiGPUAddon 적용
-    MultiGPUTrainer = MyTrainer.add_on(MultiGPUAddon)
-    
     # Trainer 인스턴스 생성 & 학습
     trainer = MultiGPUTrainer(model=model, device=device_list, mode='train', optimizer=optimizer, scheduler=scheduler, init_method="tcp://localhost:12355")
+    
+    # MultiGPU 학습 수행
     trainer.run(n_epoch=10, loader=train_loader)
 
     # 모델 저장
