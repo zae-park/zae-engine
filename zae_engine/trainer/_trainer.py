@@ -8,6 +8,7 @@ import numpy as np
 import torch
 from torch import optim
 from torch.utils import data as td
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 # from .addons import AddOnBase
 from ..schedulers import core
@@ -25,8 +26,8 @@ class Trainer(ABC):
     ----------
     model : torch.nn.Module
         The model to be trained or tested.
-    device : torch.device
-        The device to run the model on (e.g., 'cuda' or 'cpu').
+    device : Union[torch.device, Sequence[torch.device]]
+        The device(s) to run the model on (e.g., 'cuda' or ['cuda:0', 'cuda:1']).
     mode : str
         The mode of the trainer, either 'train' or 'test'.
     optimizer : torch.optim.Optimizer
@@ -44,7 +45,7 @@ class Trainer(ABC):
     def __init__(
         self,
         model,
-        device: torch.device,
+        device: Union[torch.device, Sequence[torch.device]],
         mode: str,
         optimizer: optim.Optimizer,
         scheduler: Optional[Union[optim.lr_scheduler.LRScheduler, core.T]],
@@ -53,8 +54,8 @@ class Trainer(ABC):
         scheduler_step_on_batch: bool = False,
         gradient_clip: float = 0.0,
     ):
+        self.primary_device_index = 0  # Default index is 0, will be adjusted in multi-GPU cases
         # Init with given args (positional params)
-
         self._set_device(device)
         self.model = self._to_device(model)
         self.mode = mode
@@ -97,9 +98,9 @@ class Trainer(ABC):
             base_cls = add_on.apply(base_cls)
         return base_cls
 
-    def _to_cpu(self, *args) -> Tuple[torch.Tensor, ...] or torch.Tensor:
+    def _to_cpu(self, *args) -> Union[Tuple[torch.Tensor, ...], torch.Tensor]:
         """
-        Cast given arguments to cpu.
+        Cast given arguments to CPU.
 
         Parameters
         ----------
@@ -120,23 +121,18 @@ class Trainer(ABC):
             return tuple([self._to_cpu(a) for a in args])
 
     def _set_device(self, device: Union[torch.device, Sequence[torch.device]]):
-        self.device = device
-        if "cuda" in device.type:
-            torch.cuda.set_device(device)  # Not for device in ['cpu', 'mps']
-        # if isinstance(device, torch.device):
-        #     self.device = device
-        #     torch.cuda.set_device(device)
-        # else:
-        #     self.device = tuple(device)
-        #     for d in self.device:
-        #         if "cuda" in d.type:
-        #             torch.cuda.set_device(d)
+        if isinstance(device, (list, tuple)):
+            # multi GPU
+            self.device = device
+        else:
+            # single GPU
+            self.device = [device]
+            if "cuda" in device.type:
+                torch.cuda.set_device(device)
 
-    def _to_device(
-        self, *args, **kwargs
-    ) -> Tuple[Union[torch.Tensor, torch.nn.Module]] or Union[torch.Tensor, torch.nn.Module]:
+    def _to_device(self, *args, **kwargs) -> Union[Tuple[Union[torch.Tensor, torch.nn.Module]], Union[torch.Tensor, torch.nn.Module]]:
         """
-        Cast given arguments to device.
+        Cast given arguments to the appropriate device.
 
         Parameters
         ----------
@@ -147,13 +143,15 @@ class Trainer(ABC):
         -------
         Single argument or variable-length sequence of arguments in device.
         """
+        device = self.device[self.primary_device_index]  # Use the primary device index to select the correct device
+
         if args:
             if len(args) == 1:
-                return args[0].to(self.device) if "to" in args[0].__dir__() else args[0]
+                return args[0].to(device) if "to" in args[0].__dir__() else args[0]
             else:
-                return tuple([a.to(self.device) if "to" in a.__dir__() else a for a in args])
+                return tuple([a.to(device) if "to" in a.__dir__() else a for a in args])
         elif kwargs:
-            return {k: v.to(self.device) if "to" in v.__dir__() else v for k, v in kwargs.items()}
+            return {k: v.to(device) if "to" in v.__dir__() else v for k, v in kwargs.items()}
 
     def _data_count(self, initial=False) -> None:
         """
@@ -282,6 +280,7 @@ class Trainer(ABC):
         self.logging(step_dict)
         self.progress_checker.update_step()
 
+    @abstractmethod
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         """
         Perform a training step.
@@ -313,6 +312,7 @@ class Trainer(ABC):
 
         raise NotImplementedError("train_step must be implemented by subclasses")
 
+    @abstractmethod
     def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         """
         Perform a testing step.
@@ -430,7 +430,6 @@ class Trainer(ABC):
                 continue
             log_str += f"\t{k}: {np.mean(v):.6f}"
         log_str += f"\tLR: {LR:.3e}"
-        # print(log_str, end=end, file=disp)
         return log_str, {"end": end, "file": disp}
 
     def save_model(self, filename: str) -> None:
@@ -482,8 +481,6 @@ class Trainer(ABC):
         list
             The inference results.
         """
-        # if self.web_logger:
-        #     self.end_web_logger()
         self.toggle("test")
         self.run(n_epoch=1, loader=loader)
         return self.log_test["output"]
