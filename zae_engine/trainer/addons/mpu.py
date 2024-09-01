@@ -9,7 +9,6 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from .core import AddOnBase
 from .._trainer import T
 
-
 class MultiGPUAddon(AddOnBase):
     @classmethod
     def apply(cls, base_cls: Type[T]) -> Type[T]:
@@ -38,16 +37,20 @@ class MultiGPUAddon(AddOnBase):
                 # 모델을 DDP로 래핑
                 self.model = DDP(self.model.to(device_list[rank]), device_ids=[device_list[rank]])
 
-                # 데이터 로더의 분산 샘플러 설정
-                if loader:
-                    loader.sampler = td.DistributedSampler(loader.dataset, num_replicas=len(device_list), rank=rank)
-                if valid_loader:
-                    valid_loader.sampler = td.DistributedSampler(valid_loader.dataset, num_replicas=len(device_list), rank=rank)
+                # 새로운 DataLoader를 생성하고 DistributedSampler를 설정
+                train_sampler = td.DistributedSampler(loader.dataset, num_replicas=len(device_list), rank=rank)
+                train_loader = td.DataLoader(loader.dataset, batch_size=loader.batch_size, shuffle=False, num_workers=loader.num_workers, pin_memory=loader.pin_memory, sampler=train_sampler)
 
-                # Trainer의 기존 run 메소드 호출
-                super(MultiGPUTrainer, self).run(n_epoch, loader, valid_loader, **aux_run_kwargs)
+                if valid_loader:
+                    valid_sampler = td.DistributedSampler(valid_loader.dataset, num_replicas=len(device_list), rank=rank)
+                    valid_loader = td.DataLoader(valid_loader.dataset, batch_size=valid_loader.batch_size, shuffle=False, num_workers=valid_loader.num_workers, pin_memory=valid_loader.pin_memory, sampler=valid_sampler)
+                else:
+                    valid_loader = None
+
+                # 기존 run 메소드 호출
+                super(MultiGPUTrainer, self).run(n_epoch, train_loader, valid_loader, **aux_run_kwargs)
+
+                # 프로세스 그룹 해제
+                dist.destroy_process_group()
 
         return MultiGPUTrainer
-
-
-
