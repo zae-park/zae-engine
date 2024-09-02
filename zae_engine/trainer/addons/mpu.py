@@ -1,6 +1,7 @@
 import os
 from typing import Type, Optional
-from ._mpu_core import MultiGPUTrainer
+
+# from ._mpu_core import MultiGPUTrainer
 import torch
 import torch.utils.data as td
 import torch.distributed as dist
@@ -12,13 +13,6 @@ from .._trainer import T
 
 
 class MultiGPUAddon(AddOnBase):
-    @classmethod
-    def apply(cls, base_cls: Type[T]) -> Type[T]:
-        # 새 클래스를 정의하는 대신, 최상단의 MultiGPUTrainer 반환
-        return MultiGPUTrainer
-
-
-class MultiGPUAddon_legacy(AddOnBase):
     @classmethod
     def apply(cls, base_cls: Type[T]) -> Type[T]:
         class MultiGPUTrainer(base_cls):
