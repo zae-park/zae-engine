@@ -57,6 +57,7 @@ class MultiGPUAddon_legacy(AddOnBase):
                     num_workers=loader.num_workers,
                     pin_memory=loader.pin_memory,
                     sampler=train_sampler,
+                    collate_fn=loader.collate_fn,
                 )
 
                 if valid_loader:
@@ -70,6 +71,7 @@ class MultiGPUAddon_legacy(AddOnBase):
                         num_workers=valid_loader.num_workers,
                         pin_memory=valid_loader.pin_memory,
                         sampler=valid_sampler,
+                        collate_fn=valid_loader.collate_fn,
                     )
                 else:
                     valid_loader = None
