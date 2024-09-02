@@ -72,6 +72,8 @@
   <h1>Source code for zae_engine.trainer.addons.mpu</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="c1"># from ._mpu_core import MultiGPUTrainer</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.utils.data</span> <span class="k">as</span> <span class="nn">td</span>
 <span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
@@ -80,6 +82,7 @@
 
 <span class="kn">from</span> <span class="nn">.core</span> <span class="kn">import</span> <span class="n">AddOnBase</span>
 <span class="kn">from</span> <span class="nn">.._trainer</span> <span class="kn">import</span> <span class="n">T</span>
+
 
 <div class="viewcode-block" id="MultiGPUAddon">
 <a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.mpu.MultiGPUAddon">[docs]</a>
@@ -93,18 +96,20 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">init_method</span> <span class="o">=</span> <span class="n">init_method</span>
                 <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_epoch</span><span class="p">,</span> <span class="n">loader</span><span class="p">:</span> <span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">aux_run_kwargs</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">n_epoch</span><span class="p">,</span> <span class="n">loader</span><span class="p">:</span> <span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">aux_run_kwargs</span>
+            <span class="p">):</span>
                 <span class="n">device_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">]</span>
                 <span class="n">mp</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">train_process</span><span class="p">,</span>
                     <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">device_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_method</span><span class="p">,</span> <span class="n">n_epoch</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">aux_run_kwargs</span><span class="p">),</span>
                     <span class="n">nprocs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">device_list</span><span class="p">),</span>
-                    <span class="n">join</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="n">join</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">train_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">device_list</span><span class="p">,</span> <span class="n">init_method</span><span class="p">,</span> <span class="n">n_epoch</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">aux_run_kwargs</span><span class="p">):</span>
                 <span class="c1"># 프로세스 그룹 초기화</span>
-                <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s1">&#39;nccl&#39;</span><span class="p">,</span> <span class="n">init_method</span><span class="o">=</span><span class="n">init_method</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">device_list</span><span class="p">),</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
+                <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="s2">&quot;nccl&quot;</span><span class="p">,</span> <span class="n">init_method</span><span class="o">=</span><span class="n">init_method</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">device_list</span><span class="p">),</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
                 <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">device_list</span><span class="p">[</span><span class="n">rank</span><span class="p">])</span>
 
                 <span class="c1"># primary_device_index 설정</span>
@@ -115,11 +120,29 @@
 
                 <span class="c1"># 새로운 DataLoader를 생성하고 DistributedSampler를 설정</span>
                 <span class="n">train_sampler</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">DistributedSampler</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">num_replicas</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">device_list</span><span class="p">),</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
-                <span class="n">train_loader</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="n">train_sampler</span><span class="p">)</span>
+                <span class="n">train_loader</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+                    <span class="n">loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+                    <span class="n">batch_size</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+                    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">num_workers</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+                    <span class="n">pin_memory</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">,</span>
+                    <span class="n">sampler</span><span class="o">=</span><span class="n">train_sampler</span><span class="p">,</span>
+                    <span class="n">collate_fn</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">,</span>
+                <span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">valid_loader</span><span class="p">:</span>
-                    <span class="n">valid_sampler</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">DistributedSampler</span><span class="p">(</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">num_replicas</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">device_list</span><span class="p">),</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">)</span>
-                    <span class="n">valid_loader</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="n">valid_sampler</span><span class="p">)</span>
+                    <span class="n">valid_sampler</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">DistributedSampler</span><span class="p">(</span>
+                        <span class="n">valid_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="n">num_replicas</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">device_list</span><span class="p">),</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span>
+                    <span class="p">)</span>
+                    <span class="n">valid_loader</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+                        <span class="n">valid_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+                        <span class="n">batch_size</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+                        <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">num_workers</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+                        <span class="n">pin_memory</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">,</span>
+                        <span class="n">sampler</span><span class="o">=</span><span class="n">valid_sampler</span><span class="p">,</span>
+                        <span class="n">collate_fn</span><span class="o">=</span><span class="n">valid_loader</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">valid_loader</span> <span class="o">=</span> <span class="kc">None</span>
 
