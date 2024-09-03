@@ -189,31 +189,19 @@ class LearnablePositionalEncoding(nn.Module):
 
 class RotaryPositionalEncoding(nn.Module):
     """
-    Applies Rotary Positional Encoding as described in the paper "RoFormer: Enhanced Transformer with Rotary Position Embedding" [1]_.
+    Implements Rotary Positional Encoding as described in "RoFormer: Enhanced Transformer with Rotary Position Embedding".
 
     Parameters
     ----------
     d_model : int
         Dimension of the embedding space. Must be divisible by 2 for rotary encoding.
-
-    Notes
-    -----
-    - Rotary Positional Encoding introduces rotational embeddings that capture relative position information.
-    - It is more flexible and better at capturing relative positions compared to fixed sinusoidal encodings.
-    - The method helps in improving the performance of Transformer models by better representing positional information.
-
-    References
-    ----------
-    .. [1] Liu, J., Hu, Z., & Xu, J. (2021). RoFormer: Enhanced Transformer with Rotary Position Embedding.
-           Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR).
-           Available at: https://arxiv.org/abs/2111.09883
-           DOI: 10.48550/arXiv.2111.09883
     """
 
     def __init__(self, d_model):
         super(RotaryPositionalEncoding, self).__init__()
         assert d_model % 2 == 0, "d_model should be divisible by 2 for rotary encoding."
         self.d_model = d_model
+        self.inv_freq = 1.0 / (10000 ** (torch.arange(0, d_model, 2).float() / d_model))
 
     def forward(self, x):
         """
@@ -227,17 +215,20 @@ class RotaryPositionalEncoding(nn.Module):
         Returns
         -------
         torch.Tensor
-            Tensor with added positional encoding.
+            Tensor with added rotary positional encoding.
         """
         seq_len = x.size(1)
-        angle = torch.arange(self.d_model // 2).float() / (self.d_model // 2)
-        angle = 1 / (10000**angle)
-        angle = angle.unsqueeze(0).expand(seq_len, -1)
-        angle = torch.cat([torch.sin(angle), torch.cos(angle)], dim=-1)
-        angle = angle.unsqueeze(0).expand(x.size(0), -1, -1)
+        # Create sinusoidal positional encoding
+        positions = torch.arange(seq_len, device=x.device).type_as(self.inv_freq)
+        sinusoidal_inp = torch.einsum("i,j->ij", positions, self.inv_freq)
+        sin_enc = torch.sin(sinusoidal_inp)
+        cos_enc = torch.cos(sinusoidal_inp)
 
-        x_rot = x * angle
-        return x_rot
+        # Apply rotary embedding
+        x1, x2 = x[..., ::2], x[..., 1::2]
+        x = torch.cat([x1 * cos_enc - x2 * sin_enc, x1 * sin_enc + x2 * cos_enc], dim=-1)
+
+        return x
 
 
 class RelativePositionalEncoding(nn.Module):
