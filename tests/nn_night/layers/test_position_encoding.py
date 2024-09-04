@@ -1,7 +1,7 @@
 import unittest
 import torch
 import random
-from positional_encodings import (
+from zae_engine.nn_night.layers import (
     SinusoidalPositionalEncoding,
     TimestampPositionalEncoding,
     LearnablePositionalEncoding,
