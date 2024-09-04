@@ -3,7 +3,6 @@ import torch
 import random
 from zae_engine.nn_night.layers import (
     SinusoidalPositionalEncoding,
-    TimestampPositionalEncoding,
     LearnablePositionalEncoding,
     RotaryPositionalEncoding,
     RelativePositionalEncoding,
@@ -18,6 +17,8 @@ class TestPositionalEncodings(unittest.TestCase):
         self.batch_size = random.randint(1, 16)
         self.seq_len = random.randint(1, 100)
         self.d_model = random.randint(2, 128)  # Ensure d_model is even for rotary encoding
+        if self.d_model % 2 != 0:
+            self.d_model += 1
 
     def test_sinusoidal_positional_encoding(self):
         x = torch.randn(self.batch_size, self.seq_len, self.d_model)
@@ -29,15 +30,8 @@ class TestPositionalEncodings(unittest.TestCase):
 
         # Test with timestamps
         timestamps = torch.randn(self.batch_size, self.seq_len)
-        output_with_ts = encoding_layer(x, timestamps=timestamps)
+        output_with_ts = encoding_layer(x, positions=timestamps)
         self.assertEqual(output_with_ts.shape, (self.batch_size, self.seq_len, self.d_model))
-
-    def test_timestamp_positional_encoding(self):
-        timestamps = torch.randn(self.batch_size, self.seq_len)
-        encoding_layer = TimestampPositionalEncoding(d_model=self.d_model)
-
-        output = encoding_layer(timestamps)
-        self.assertEqual(output.shape, (self.batch_size, self.seq_len, self.d_model))
 
     def test_learnable_positional_encoding(self):
         x = torch.randn(self.batch_size, self.seq_len, self.d_model)
@@ -48,8 +42,6 @@ class TestPositionalEncodings(unittest.TestCase):
 
     def test_rotary_positional_encoding(self):
         # Ensure d_model is even for rotary encoding
-        if self.d_model % 2 != 0:
-            self.d_model += 1
 
         x = torch.randn(self.batch_size, self.seq_len, self.d_model)
         encoding_layer = RotaryPositionalEncoding(d_model=self.d_model)
