@@ -10,15 +10,15 @@ class SinusoidalPositionalEncoding(nn.Module):
     Parameters
     ----------
     d_model : int
-        Dimension of the embedding space.
+        Dimension of the embedding space. Must be an even number.
     max_len : int, optional
         Maximum sequence length. Default is 512.
 
     Notes
     -----
     - This method was introduced in the original Transformer paper (Vaswani et al., 2017) [1]_.
-    - Uses fixed sine and cosine functions of different frequencies.
-    - Benefits: Simple and efficient to compute.
+    - Uses fixed sine and cosine functions of different frequencies to encode token positions.
+    - Benefits: Simple and efficient to compute, and captures positional information effectively.
     - Drawbacks: Does not capture relative positional information.
 
     References
@@ -31,99 +31,59 @@ class SinusoidalPositionalEncoding(nn.Module):
 
     def __init__(self, d_model, max_len=512):
         super(SinusoidalPositionalEncoding, self).__init__()
+        assert d_model % 2 == 0, "d_model must be an even number for sinusoidal positional encoding."
         self.d_model = d_model
         self.max_len = max_len
-        self.position_embeddings = self._create_positional_encoding()
 
-    def _create_positional_encoding(self):
-        position = torch.arange(self.max_len).unsqueeze(1).float()
+    def _create_positional_encoding(self, positions):
+        """
+        Internal method to create positional encodings using sine and cosine functions.
+
+        Parameters
+        ----------
+        positions : torch.Tensor
+            Tensor of positions to be encoded.
+
+        Returns
+        -------
+        torch.Tensor
+            Positional encoding tensor of shape (batch_size, seq_len, d_model).
+        """
         div_term = torch.exp(
             torch.arange(0, self.d_model, 2).float() * -(torch.log(torch.tensor(10000.0)) / self.d_model)
         )
-        pos_enc = torch.zeros(self.max_len, self.d_model)
-        pos_enc[:, 0::2] = torch.sin(position * div_term)
-        pos_enc[:, 1::2] = torch.cos(position * div_term)
+        pos_enc = torch.zeros(positions.size(0), positions.size(1), self.d_model)
+        pos_enc[:, :, 0::2] = torch.sin(positions * div_term.unsqueeze(0).unsqueeze(0))
+        pos_enc[:, :, 1::2] = torch.cos(positions * div_term.unsqueeze(0).unsqueeze(0))
         return pos_enc
 
-    def forward(self, x):
+    def forward(self, x, positions: torch.Tensor = None):
         """
-        Apply sinusoidal positional encoding to input tensor.
+        Apply sinusoidal positional encoding to the input tensor.
 
         Parameters
         ----------
         x : torch.Tensor
             Input tensor of shape (batch_size, seq_len, d_model).
+        positions : torch.Tensor, optional
+            Optional tensor of shape (batch_size, seq_len) specifying the positions (e.g., timestamps) for each element in the sequence.
+            If not provided, the default positions (0 to seq_len - 1) are used.
 
         Returns
         -------
         torch.Tensor
             Tensor with added positional encoding.
         """
-        seq_len = x.size(1)
-        pos_enc = self.position_embeddings[:seq_len]
-        pos_enc = pos_enc.unsqueeze(0).expand(x.size(0), -1, -1)
+        batch_size, seq_len, _ = x.size()
+
+        if positions is not None:
+            assert positions.size(0) == batch_size, "Positions batch size must match input batch size"
+            assert positions.size(1) == seq_len, "Positions sequence length must match input sequence length"
+        else:
+            positions = torch.arange(seq_len).unsqueeze(0).expand(batch_size, -1).float()
+
+        pos_enc = self._create_positional_encoding(positions.unsqueeze(-1))
         return x + pos_enc
-
-
-class TimestampPositionalEncoding(nn.Module):
-    """
-    Applies timestamp positional encoding to input sequences.
-
-    Parameters
-    ----------
-    d_model : int
-        Dimension of the embedding space.
-
-    Notes
-    -----
-    - This method encodes timestamps using sinusoidal functions of different frequencies.
-    - Similar to sinusoidal positional encoding but specifically tailored for timestamp data.
-    - Unlike sinusoidal positional encoding, which encodes token indices, this method encodes timestamps directly.
-    - Benefits: Can be used to encode time-based sequences where the timestamp is crucial.
-    - Drawbacks: Assumes timestamps are uniformly distributed and may not handle irregular time intervals well.
-
-    References
-    ----------
-    - This encoding approach is inspired by sinusoidal positional encoding methods used in Transformers.
-    """
-
-    def __init__(self, d_model):
-        """
-        Initializes TimestampPositionalEncoding with the given model dimension.
-
-        Parameters
-        ----------
-        d_model : int
-            Dimension of the embedding space.
-        """
-        super(TimestampPositionalEncoding, self).__init__()
-        self.d_model = d_model
-
-    def forward(self, timestamps):
-        """
-        Apply timestamp positional encoding to the input timestamps.
-
-        Parameters
-        ----------
-        timestamps : torch.Tensor
-            Input tensor of shape (batch_size, seq_len) containing timestamps.
-
-        Returns
-        -------
-        torch.Tensor
-            Encoded tensor of shape (batch_size, seq_len, d_model).
-        """
-        batch_size, seq_len = timestamps.size()
-        pe = torch.zeros(batch_size, seq_len, self.d_model, device=timestamps.device)
-        position = timestamps.unsqueeze(-1)  # [Batch, sequence_length, 1]
-        div_term = torch.exp(
-            torch.arange(0, self.d_model, 2).float().to(timestamps.device) * -(math.log(10000.0) / self.d_model)
-        )
-
-        pe[:, :, 0::2] = torch.sin(position * div_term)
-        pe[:, :, 1::2] = torch.cos(position * div_term)
-
-        return pe
 
 
 class LearnablePositionalEncoding(nn.Module):
@@ -153,38 +113,39 @@ class LearnablePositionalEncoding(nn.Module):
         self.position_embeddings = nn.Parameter(torch.randn(max_len, d_model))
 
     def forward(self, x):
+        """
+        Apply learnable positional encoding to input tensor.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor of shape (batch_size, seq_len, d_model).
+
+        Returns
+        -------
+        torch.Tensor
+            Tensor with added positional encoding.
+        """
         seq_len = x.size(1)
-        pos_enc = self.position_embeddings[:seq_len]
+        pos_enc = self.position_embeddings[:seq_len].unsqueeze(0).expand(x.size(0), -1, -1)
         return x + pos_enc
 
 
 class RotaryPositionalEncoding(nn.Module):
     """
-    Applies Rotary Positional Encoding as described in the paper "RoFormer: Enhanced Transformer with Rotary Position Embedding" [1]_.
+    Implements Rotary Positional Encoding as described in "RoFormer: Enhanced Transformer with Rotary Position Embedding".
 
     Parameters
     ----------
     d_model : int
         Dimension of the embedding space. Must be divisible by 2 for rotary encoding.
-
-    Notes
-    -----
-    - Rotary Positional Encoding introduces rotational embeddings that capture relative position information.
-    - It is more flexible and better at capturing relative positions compared to fixed sinusoidal encodings.
-    - The method helps in improving the performance of Transformer models by better representing positional information.
-
-    References
-    ----------
-    .. [1] Liu, J., Hu, Z., & Xu, J. (2021). RoFormer: Enhanced Transformer with Rotary Position Embedding.
-           Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR).
-           Available at: https://arxiv.org/abs/2111.09883
-           DOI: 10.48550/arXiv.2111.09883
     """
 
     def __init__(self, d_model):
         super(RotaryPositionalEncoding, self).__init__()
         assert d_model % 2 == 0, "d_model should be divisible by 2 for rotary encoding."
         self.d_model = d_model
+        self.inv_freq = 1.0 / (10000 ** (torch.arange(0, d_model, 2).float() / d_model))
 
     def forward(self, x):
         """
@@ -198,23 +159,20 @@ class RotaryPositionalEncoding(nn.Module):
         Returns
         -------
         torch.Tensor
-            Tensor with rotary positional encoding applied.
+            Tensor with added rotary positional encoding.
         """
-        batch_size, seq_len, d_model = x.size()
-        device = x.device
+        seq_len = x.size(1)
+        # Create sinusoidal positional encoding
+        positions = torch.arange(seq_len, device=x.device).type_as(self.inv_freq)
+        sinusoidal_inp = torch.einsum("i,j->ij", positions, self.inv_freq)
+        sin_enc = torch.sin(sinusoidal_inp)
+        cos_enc = torch.cos(sinusoidal_inp)
 
-        # Create the position encoding matrix
-        position = torch.arange(seq_len, dtype=torch.float, device=device).unsqueeze(1)
-        div_term = torch.exp(
-            torch.arange(0, d_model, 2, dtype=torch.float, device=device) * -(math.log(10000.0) / d_model)
-        )
-        pos_enc = torch.zeros(seq_len, d_model, device=device)
-        pos_enc[:, 0::2] = torch.sin(position * div_term)
-        pos_enc[:, 1::2] = torch.cos(position * div_term)
+        # Apply rotary embedding
+        x1, x2 = x[..., ::2], x[..., 1::2]
+        x = torch.cat([x1 * cos_enc - x2 * sin_enc, x1 * sin_enc + x2 * cos_enc], dim=-1)
 
-        # Apply rotary encoding (element-wise multiplication)
-        pos_enc = pos_enc.unsqueeze(0)  # Shape: (1, seq_len, d_model)
-        return x + pos_enc  # Adding positional encoding to the input tensor
+        return x
 
 
 class RelativePositionalEncoding(nn.Module):
@@ -254,8 +212,21 @@ class RelativePositionalEncoding(nn.Module):
         self.relative_embeddings = nn.Parameter(torch.randn(max_len, d_model))
 
     def forward(self, x):
+        """
+        Apply relative positional encoding to input tensor.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor of shape (batch_size, seq_len, d_model).
+
+        Returns
+        -------
+        torch.Tensor
+            Tensor with added positional encoding.
+        """
         seq_len = x.size(1)
-        pos_enc = self.relative_embeddings[:seq_len]
+        pos_enc = self.relative_embeddings[:seq_len].unsqueeze(0).expand(x.size(0), -1, -1)
         return x + pos_enc
 
 
