@@ -3,7 +3,7 @@ from typing import OrderedDict, Union
 import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer
 
-from ..builds import transformer
+from ..builds import transformer as trns
 
 checkpoint_map = {
     "bert": "bert-base-uncased",
@@ -94,7 +94,7 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
     return dst_weight
 
 
-def bert_base(pretrained=False, tokenizer_name: Union[str, None] = None) -> transformer.UserIdModel:
+def bert_base(pretrained=False, tokenizer_name: Union[str, None] = None) -> trns.UserIdModel:
     model_name = checkpoint_map["bert"]
 
     # zae_model = transformer.EncoderBase(layer=nn.TransformerEncoder)
@@ -112,7 +112,64 @@ def bert_base(pretrained=False, tokenizer_name: Union[str, None] = None) -> tran
     return model, tokenizer
 
 
-# if __name__ == "__main__":
+
+# Define hyperparameters
+d_model = 512
+nhead = 8
+dim_feedforward = 2048
+dropout = 0.1
+src_vocab_size = 10000
+tgt_vocab_size = 10000
+max_len = 100
+num_layers = 6
+
+# Embedding and Positional Encoding
+encoder_embedding = nn.Sequential(
+    nn.Embedding(src_vocab_size, d_model),
+    SinusoidalPositionalEncoding(d_model)
+)
+decoder_embedding = nn.Sequential(
+    nn.Embedding(tgt_vocab_size, d_model),
+    SinusoidalPositionalEncoding(d_model)
+)
+
+from ...nn_night.layers import SinusoidalPositionalEncoding
+
+# Using PyTorch's TransformerEncoderLayer and TransformerDecoderLayer
+encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout)
+decoder_layer = nn.TransformerDecoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout)
+
+# Encoder and Decoder using EncoderBase and DecoderBase
+encoder = trns.EncoderBase(
+    layer=encoder_layer, 
+    num_layers=num_layers, 
+    positional_encoding=SinusoidalPositionalEncoding(d_model)
+)
+decoder = trns.DecoderBase(
+    layer=nn.TransformerDecoderLayer, 
+    num_layers=num_layers, 
+    positional_encoding=SinusoidalPositionalEncoding(d_model)
+)
+
+# Build the Transformer
+transformer = trns.TransformerBase(
+    encoder_embedding=encoder_embedding,
+    decoder_embedding=decoder_embedding,
+    encoder=encoder,
+    decoder=decoder
+)
+
+
+if __name__ == "__main__":
+
+    # Sample input data
+    src = torch.randint(0, src_vocab_size, (32, max_len))  # batch_size=32, seq_len=max_len
+    tgt = torch.randint(0, tgt_vocab_size, (32, max_len))
+
+    # Run a forward pass through the Transformer
+    output = transformer(src, tgt)
+    print(output.shape)  # Should return a tensor of shape (batch_size, seq_len, d_model)
+
 
 # # 모델과 토크나이저 로드
 # model_name = "bert-base-uncased"  # 예: BERT 모델
