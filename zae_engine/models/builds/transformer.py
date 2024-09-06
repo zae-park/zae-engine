@@ -46,7 +46,6 @@ class EncoderBase(nn.Module):
         self,
         d_model: int,
         num_layers: int,
-        positional_encoding: nn.Module,
         encoder_layer: nn.Module = nn.TransformerEncoderLayer,
         norm_layer: str = "LayerNorm",
         dim_feedforward: int = 2048,
@@ -60,8 +59,6 @@ class EncoderBase(nn.Module):
             The dimension of the embedding space (output size of each layer).
         num_layers : int
             The number of layers in the encoder.
-        positional_encoding : nn.Module
-            Positional encoding module to add positional information to embeddings.
         encoder_layer : nn.Module, optional
             Custom encoder layer module. Defaults to `nn.TransformerEncoderLayer`.
         norm_layer : str, optional
@@ -74,9 +71,6 @@ class EncoderBase(nn.Module):
             Number of attention heads in multi-head attention. Default is 8.
         """
         super(EncoderBase, self).__init__()
-
-        # Positional encoding
-        self.positional_encoding = positional_encoding
 
         # Layer normalization
         self.norm = self._get_norm_layer(norm_layer, d_model)
@@ -119,27 +113,10 @@ class EncoderBase(nn.Module):
         else:
             raise ValueError(f"Unsupported norm layer type: {norm_type}")
 
-    def forward(self, src, src_mask=None, src_positions=None):
+    def forward(self, src, src_mask=None):
         """
         Forward pass through the encoder.
-
-        Parameters
-        ----------
-        src : torch.Tensor
-            The input tensor representing the source sequence. Shape: (batch_size, seq_len, d_model).
-        src_mask : torch.Tensor, optional
-            A mask tensor to prevent attention to certain positions. Shape: (batch_size, seq_len).
-        src_positions : torch.Tensor, optional
-            Optional positional tensor (e.g., timestamps) for each token in the sequence.
-
-        Returns
-        -------
-        torch.Tensor
-            The encoded output of the source sequence. Shape: (batch_size, seq_len, d_model).
         """
-        # Apply positional encoding to the input
-        src = self.positional_encoding(src, src_positions)
-
         # Apply initial normalization
         src = self.norm(src)
 
@@ -158,8 +135,7 @@ class DecoderBase(nn.Module):
         self,
         d_model: int,
         num_layers: int,
-        positional_encoding: nn.Module,
-        decoder_layer: nn.Module = nn.TransformerEncoderLayer,
+        decoder_layer: nn.Module = nn.TransformerDecoderLayer,
         norm_layer: str = "LayerNorm",
         dim_feedforward: int = 2048,
         dropout: float = 0.1,
@@ -172,8 +148,6 @@ class DecoderBase(nn.Module):
             The dimension of the embedding space (output size of each layer).
         num_layers : int
             The number of layers in the decoder.
-        positional_encoding : nn.Module
-            Positional encoding module to add positional information to embeddings.
         decoder_layer : nn.Module, optional
             Custom decoder layer module. Defaults to `nn.TransformerDecoderLayer`.
         norm_layer : str, optional
@@ -186,9 +160,6 @@ class DecoderBase(nn.Module):
             Number of attention heads in multi-head attention. Default is 8.
         """
         super(DecoderBase, self).__init__()
-
-        # Positional encoding
-        self.positional_encoding = positional_encoding
 
         # Custom decoder layer
         self.layers = nn.ModuleList(
@@ -207,18 +178,6 @@ class DecoderBase(nn.Module):
     def _get_norm_layer(self, norm_type, d_model):
         """
         Returns the appropriate normalization layer based on user input.
-
-        Parameters
-        ----------
-        norm_type : str
-            Type of normalization layer. Supported types: 'LayerNorm', 'BatchNorm1d', 'InstanceNorm1d', 'GroupNorm'.
-        d_model : int
-            Dimension of the model for normalization.
-
-        Returns
-        -------
-        nn.Module
-            The chosen normalization layer.
         """
         if norm_type == "LayerNorm":
             return nn.LayerNorm(d_model)
@@ -231,31 +190,10 @@ class DecoderBase(nn.Module):
         else:
             raise ValueError(f"Unsupported norm layer type: {norm_type}")
 
-    def forward(self, tgt, memory, tgt_mask=None, memory_mask=None, tgt_positions=None):
+    def forward(self, tgt, memory, tgt_mask=None, memory_mask=None):
         """
         Forward pass through the decoder.
-
-        Parameters
-        ----------
-        tgt : torch.Tensor
-            The input tensor representing the target sequence. Shape: (batch_size, seq_len, d_model).
-        memory : torch.Tensor
-            The encoded memory output from the encoder. Shape: (batch_size, seq_len_src, d_model).
-        tgt_mask : torch.Tensor, optional
-            A mask tensor to prevent attention to certain positions in the target sequence. Shape: (batch_size, seq_len_tgt).
-        memory_mask : torch.Tensor, optional
-            A mask tensor to prevent attention to certain positions in the source sequence. Shape: (batch_size, seq_len_src).
-        tgt_positions : torch.Tensor, optional
-            Optional positional tensor (e.g., timestamps) for each token in the target sequence.
-
-        Returns
-        -------
-        torch.Tensor
-            The decoded output of the target sequence. Shape: (batch_size, seq_len_tgt, d_model).
         """
-        # Apply positional encoding to the target input
-        tgt = self.positional_encoding(tgt, tgt_positions)
-
         # Apply initial normalization
         tgt = self.norm(tgt)
 
