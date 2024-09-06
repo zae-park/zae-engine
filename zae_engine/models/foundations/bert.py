@@ -109,66 +109,81 @@ def bert_base(pretrained=False, tokenizer_name: Union[str, None] = None) -> trns
         new_weight = __model_weight_mapper(pre_model.parameters(), model.parameters())
         model.load_state_dict(new_weight, strict=True)
 
-    return model, tokenizer
+    return tokenizer, model
 
-
-
-# Define hyperparameters
-d_model = 512
-nhead = 8
-dim_feedforward = 2048
-dropout = 0.1
-src_vocab_size = 10000
-tgt_vocab_size = 10000
-max_len = 100
-num_layers = 6
-
-# Embedding and Positional Encoding
-encoder_embedding = nn.Sequential(
-    nn.Embedding(src_vocab_size, d_model),
-    SinusoidalPositionalEncoding(d_model)
-)
-decoder_embedding = nn.Sequential(
-    nn.Embedding(tgt_vocab_size, d_model),
-    SinusoidalPositionalEncoding(d_model)
-)
-
-from ...nn_night.layers import SinusoidalPositionalEncoding
-
-# Using PyTorch's TransformerEncoderLayer and TransformerDecoderLayer
-encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout)
-decoder_layer = nn.TransformerDecoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout)
-
-# Encoder and Decoder using EncoderBase and DecoderBase
-encoder = trns.EncoderBase(
-    layer=encoder_layer, 
-    num_layers=num_layers, 
-    positional_encoding=SinusoidalPositionalEncoding(d_model)
-)
-decoder = trns.DecoderBase(
-    layer=nn.TransformerDecoderLayer, 
-    num_layers=num_layers, 
-    positional_encoding=SinusoidalPositionalEncoding(d_model)
-)
-
-# Build the Transformer
-transformer = trns.TransformerBase(
-    encoder_embedding=encoder_embedding,
-    decoder_embedding=decoder_embedding,
-    encoder=encoder,
-    decoder=decoder
-)
 
 
 if __name__ == "__main__":
+
+    pre_tkn, pre_model = bert_base()
+
+    # Define hyperparameters
+    d_model = 512
+    nhead = 8
+    dim_feedforward = 2048
+    dropout = 0.1
+    src_vocab_size = 10000
+    tgt_vocab_size = 10000
+    max_len = 100
+    num_layers = 6
+
+
+    # extract embedding layer
+    src_emb = nn.Embedding(src_vocab_size, 768)
+    tgt_emb = nn.Embedding(src_vocab_size, 768)
+    
+
+    # Encoder and Decoder using EncoderBase and DecoderBase
+    encoder = trns.EncoderBase(
+        d_model=d_model,
+        num_layers=num_layers,
+        transformer_layer=nn.TransformerEncoderLayer
+    )
+    decoder = trns.DecoderBase(
+        d_model=d_model,
+        num_layers=num_layers,
+        transformer_layer=nn.TransformerDecoderLayer
+    )
+
+
+    # Build the Transformer
+    model = trns.TransformerBase(
+    encoder_embedding=src_emb,
+    decoder_embedding=tgt_emb,
+    encoder=encoder,
+    decoder=decoder
+)
 
     # Sample input data
     src = torch.randint(0, src_vocab_size, (32, max_len))  # batch_size=32, seq_len=max_len
     tgt = torch.randint(0, tgt_vocab_size, (32, max_len))
 
     # Run a forward pass through the Transformer
-    output = transformer(src, tgt)
+    output = model(src, tgt)
     print(output.shape)  # Should return a tensor of shape (batch_size, seq_len, d_model)
+
+
+    # Example of a simple test with PyTorch's Transformer layers
+    encoder_layer = nn.TransformerEncoderLayer(d_model=512, nhead=8)
+    decoder_layer = nn.TransformerDecoderLayer(d_model=512, nhead=8)
+
+    # Define custom positional encoding and embeddings
+    src_embedding = nn.Sequential(nn.Embedding(10000, 512), SinusoidalPositionalEncoding(d_model=512))
+    tgt_embedding = nn.Sequential(nn.Embedding(10000, 512), SinusoidalPositionalEncoding(d_model=512))
+
+    # Define the encoder and decoder with flexibility for different transformer layers
+    encoder = EncoderBase(d_model=512, num_layers=6, transformer_layer=encoder_layer)
+    decoder = DecoderBase(d_model=512, num_layers=6, transformer_layer=decoder_layer)
+
+    # Define the Transformer model
+    model = TransformerBase(encoder_embedding=src_embedding, decoder_embedding=tgt_embedding, encoder=encoder, decoder=decoder)
+
+    # Run a sample input
+    src = torch.randint(0, 10000, (32, 100))  # (batch_size, seq_len)
+    tgt = torch.randint(0, 10000, (32, 100))
+    output = model(src, tgt)
+    print(output.shape)
+
 
 
 # # 모델과 토크나이저 로드
