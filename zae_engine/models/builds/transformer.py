@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 
 from transformers.models.bert import BertModel
+from transformers import AutoModel, AutoTokenizer
 
 
 # TODO: implement Scaled-Dot Product Attention (SDPA).
@@ -15,12 +16,39 @@ from transformers.models.bert import BertModel
 
 
 class TransformerBase(nn.Module):
+    """
+    A flexible Transformer model that supports both encoder-only and encoder-decoder architectures.
+
+    Parameters
+    ----------
+    encoder_embedding : nn.Module
+        The embedding layer for the encoder input.
+    decoder_embedding : nn.Module, optional
+        The embedding layer for the decoder input. If not provided, encoder_embedding is used for both encoder and decoder.
+    encoder : nn.Module, optional
+        The encoder module. Defaults to nn.Identity(), which can be replaced with any custom encoder (e.g., TransformerEncoder).
+    decoder : nn.Module, optional
+        The decoder module. If None, the model operates as an encoder-only model (e.g., BERT). Otherwise, uses a decoder (e.g., for translation models).
+
+    Notes
+    -----
+    - If `decoder` is None, the model acts as an encoder-only transformer (similar to BERT).
+    - If `decoder` is provided, the model functions as an encoder-decoder transformer (e.g., for translation tasks).
+    - The forward pass adjusts based on the presence of the decoder.
+
+    Methods
+    -------
+    forward(src, tgt=None, src_mask=None, tgt_mask=None)
+        Forward pass through the model. If `tgt` and `decoder` are provided, both encoder and decoder are used. Otherwise, only the encoder is applied.
+
+    """
+
     def __init__(
         self,
         encoder_embedding: nn.Module,
         decoder_embedding: nn.Module = None,
         encoder: nn.Module = nn.Identity(),
-        decoder: nn.Module = nn.Identity(),
+        decoder: nn.Module = None,  # Set decoder to None by default
     ):
         super().__init__()
         self.encoder_embedding = encoder_embedding
@@ -29,16 +57,38 @@ class TransformerBase(nn.Module):
         self.encoder = encoder
         self.decoder = decoder
 
-    def forward(self, src, tgt, src_mask=None, tgt_mask=None):
+    def forward(self, src, tgt=None, src_mask=None, tgt_mask=None):
+        """
+        Forward pass through the Transformer model.
+
+        Parameters
+        ----------
+        src : torch.Tensor
+            The input tensor representing the source sequence (e.g., for BERT-style models). Shape: (batch_size, seq_len).
+        tgt : torch.Tensor, optional
+            The input tensor representing the target sequence (for models with a decoder). Shape: (batch_size, seq_len).
+        src_mask : torch.Tensor, optional
+            Source mask for masking certain positions in the encoder input.
+        tgt_mask : torch.Tensor, optional
+            Target mask for masking certain positions in the decoder input.
+
+        Returns
+        -------
+        torch.Tensor
+            If a decoder is provided, returns the output of the decoder. Otherwise, returns the output of the encoder.
+        """
         # Apply embeddings to source and target sequences
         src_embed = self.encoder_embedding(src)
-        tgt_embed = self.decoder_embedding(tgt)
 
-        # Pass the embeddings through the encoder and decoder
-        encoded = self.encoder(src_embed, src_mask)
-        out = self.decoder(tgt_embed, encoded, src_mask, tgt_mask)
-
-        return out
+        # If a decoder exists, apply decoder embedding and pass through the decoder
+        if self.decoder is not None and tgt is not None:
+            tgt_embed = self.decoder_embedding(tgt)
+            encoded = self.encoder(src_embed, src_mask)
+            out = self.decoder(tgt_embed, encoded, src_mask, tgt_mask)
+            return out
+        else:
+            # If no decoder, only pass through the encoder
+            return self.encoder(src_embed, src_mask)
 
 
 class EncoderBase(nn.Module):
@@ -51,7 +101,7 @@ class EncoderBase(nn.Module):
         dim_feedforward: int = 2048,
         dropout: float = 0.1,
         num_heads: int = 8,
-        **factory_kwargs
+        **factory_kwargs,
     ):
         """
         Parameters
@@ -81,7 +131,9 @@ class EncoderBase(nn.Module):
         # Create layers using the provided layer factory
         self.layers = nn.ModuleList(
             [
-                layer_factory(d_model=d_model, nhead=num_heads, dim_feedforward=dim_feedforward, dropout=dropout, **factory_kwargs)
+                layer_factory(
+                    d_model=d_model, nhead=num_heads, dim_feedforward=dim_feedforward, dropout=dropout, **factory_kwargs
+                )
                 for _ in range(num_layers)
             ]
         )
@@ -139,6 +191,7 @@ class DecoderBase(EncoderBase):
         output = self.final_norm(tgt)
 
         return output
+
 
 class EncoderBaseLegacy(nn.Module):
     def __init__(
@@ -313,3 +366,51 @@ class UserIdModel(nn.Module):
     #     self.arcface = ArcFaceLoss(self.arcface.weight.shape[1], new_num_classes)
     #     self.arcface.weight.data[: self.num_classes] = old_weight
     #     self.num_classes = new_num_classes
+
+
+if __name__ == "__main__":
+
+    # Define hyperparameters
+    d_model = 768
+    num_layers = 6
+    max_len = 512
+    src_vocab_size = 10000
+    tgt_vocab_size = 10000
+
+    src_emb = nn.Embedding(src_vocab_size, d_model)
+    tgt_emb = nn.Embedding(src_vocab_size, d_model)
+    encoder = EncoderBase(
+        d_model=d_model, num_layers=num_layers, layer_factory=nn.TransformerEncoderLayer, dim_feedforward=3072
+    )
+    decoder = DecoderBase(
+        d_model=d_model, num_layers=num_layers, layer_factory=nn.TransformerDecoderLayer, dim_feedforward=3072
+    )
+    model = TransformerBase(encoder_embedding=src_emb, decoder_embedding=tgt_emb, encoder=encoder, decoder=decoder)
+
+    # Sample input data
+    src = torch.randint(0, src_vocab_size, (32, max_len))  # batch_size=32, seq_len=max_len
+    tgt = torch.randint(0, tgt_vocab_size, (32, max_len))
+
+    # Run a forward pass through the Transformer
+    output = model(src, tgt)
+    print(output.shape)  # Should return a tensor of shape (batch_size, seq_len, d_model)
+
+    model_name = "bert-base-uncased"
+    pre_tkn = AutoTokenizer.from_pretrained(model_name, clean_up_tokenization_spaces=True)
+    pre_model = AutoModel.from_pretrained(model_name)
+
+    bert_emb = pre_model.embeddings  # word_embeddings, position_embeddings, token_type_embeddings, LayerNorm, dropout
+    bert_enc = pre_model.encoder  # BertEncoder
+    bert_pool = pre_model.pooler  # BertPooler : Dense(768, 768) + Tanh()
+
+    # Embedding = word + positional + type
+    zae_emb = nn.ModuleList([nn.Embedding(30522, 768, padding_idx=0), nn.Embedding(512, 768), nn.Embedding(2, 768)])
+    zae_embedding = nn.Sequential(nn.Embedding(30522 + 512 + 2, 768, padding_idx=0), nn.LayerNorm(768), nn.Dropout(0.1))
+
+    encoder = EncoderBase(d_model=768, num_layers=12, layer_factory=nn.TransformerEncoderLayer, dim_feedforward=3072)
+    decoder = nn.Identity()
+    model = TransformerBase(encoder_embedding=zae_embedding, encoder=encoder)
+    output = model(src, tgt)
+    print(output.shape)  # Should return a tensor of shape (batch_size, seq_len, d_model)
+
+    print()
