@@ -8,10 +8,10 @@ class TestTransformerBase(unittest.TestCase):
     def setUp(self):
         # 설정: 모델의 하이퍼파라미터와 입력 데이터 정의
         self.d_model = 768
-        self.num_layers = 6
-        self.src_vocab_size = 10000
-        self.tgt_vocab_size = 10000
-        self.max_len = 512
+        self.num_layers = 4
+        self.src_vocab_size = 1024
+        self.tgt_vocab_size = 1024
+        self.max_len = 256
 
         # 임베딩 레이어
         self.src_emb = torch.nn.Embedding(self.src_vocab_size, self.d_model)
@@ -22,13 +22,15 @@ class TestTransformerBase(unittest.TestCase):
             d_model=self.d_model,
             num_layers=self.num_layers,
             layer_factory=torch.nn.TransformerEncoderLayer,
-            dim_feedforward=3072,
+            dim_feedforward=512,
+            batch_first=True,
         )
         self.decoder = DecoderBase(
             d_model=self.d_model,
             num_layers=self.num_layers,
             layer_factory=torch.nn.TransformerDecoderLayer,
-            dim_feedforward=3072,
+            dim_feedforward=512,
+            batch_first=True,
         )
 
         # TransformerBase 정의
