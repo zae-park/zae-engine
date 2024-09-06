@@ -46,7 +46,7 @@ class EncoderBase(nn.Module):
         self,
         d_model: int,
         num_layers: int,
-        encoder_layer: nn.Module = nn.TransformerEncoderLayer,
+        transformer_layer: nn.Module = Union[nn.Module, nn.TransformerEncoderLayer, nn.TransformerDecoderLayer],
         norm_layer: str = "LayerNorm",
         dim_feedforward: int = 2048,
         dropout: float = 0.1,
@@ -59,8 +59,8 @@ class EncoderBase(nn.Module):
             The dimension of the embedding space (output size of each layer).
         num_layers : int
             The number of layers in the encoder.
-        encoder_layer : nn.Module, optional
-            Custom encoder layer module. Defaults to `nn.TransformerEncoderLayer`.
+        transformer_layer : nn.Module, nn.TransformerEncoderLayer, nn.TransformerDecoderLayer, optional
+            Custom encoder (or decoder) layer module. Defaults to `nn.TransformerEncoderLayer`.
         norm_layer : str, optional
             The normalization layer to apply. Options are ['LayerNorm', 'BatchNorm1d', 'InstanceNorm1d', 'GroupNorm'].
         dim_feedforward : int, optional
@@ -78,7 +78,7 @@ class EncoderBase(nn.Module):
         # Custom encoder layer
         self.layers = nn.ModuleList(
             [
-                encoder_layer(d_model=d_model, nhead=num_heads, dim_feedforward=dim_feedforward, dropout=dropout)
+                transformer_layer(d_model=d_model, nhead=num_heads, dim_feedforward=dim_feedforward, dropout=dropout)
                 for _ in range(num_layers)
             ]
         )
@@ -125,74 +125,31 @@ class EncoderBase(nn.Module):
             src = layer(src, src_key_padding_mask=src_mask)
 
         # Apply final normalization after all layers
-        encoded_output = self.final_norm(src)
+        output = self.final_norm(src)
 
-        return encoded_output
+        return output
 
 
-class DecoderBase(nn.Module):
-    def __init__(
-        self,
-        d_model: int,
-        num_layers: int,
-        decoder_layer: nn.Module = nn.TransformerDecoderLayer,
-        norm_layer: str = "LayerNorm",
-        dim_feedforward: int = 2048,
-        dropout: float = 0.1,
-        num_heads: int = 8,
-    ):
-        """
-        Parameters
-        ----------
-        d_model : int
-            The dimension of the embedding space (output size of each layer).
-        num_layers : int
-            The number of layers in the decoder.
-        decoder_layer : nn.Module, optional
-            Custom decoder layer module. Defaults to `nn.TransformerDecoderLayer`.
-        norm_layer : str, optional
-            The normalization layer to apply. Options are ['LayerNorm', 'BatchNorm1d', 'InstanceNorm1d', 'GroupNorm'].
-        dim_feedforward : int, optional
-            The dimension of the feedforward network. Default is 2048.
-        dropout : float, optional
-            Dropout rate for regularization. Default is 0.1.
-        num_heads : int, optional
-            Number of attention heads in multi-head attention. Default is 8.
-        """
-        super(DecoderBase, self).__init__()
-
-        # Custom decoder layer
-        self.layers = nn.ModuleList(
-            [
-                decoder_layer(d_model=d_model, nhead=num_heads, dim_feedforward=dim_feedforward, dropout=dropout)
-                for _ in range(num_layers)
-            ]
-        )
-
-        # Custom norm layer
-        self.norm = self._get_norm_layer(norm_layer, d_model)
-
-        # Final normalization after all layers
-        self.final_norm = self._get_norm_layer(norm_layer, d_model)
-
-    def _get_norm_layer(self, norm_type, d_model):
-        """
-        Returns the appropriate normalization layer based on user input.
-        """
-        if norm_type == "LayerNorm":
-            return nn.LayerNorm(d_model)
-        elif norm_type == "BatchNorm1d":
-            return nn.BatchNorm1d(d_model)
-        elif norm_type == "InstanceNorm1d":
-            return nn.InstanceNorm1d(d_model)
-        elif norm_type == "GroupNorm":
-            return nn.GroupNorm(8, d_model)  # 8 groups can be adjusted
-        else:
-            raise ValueError(f"Unsupported norm layer type: {norm_type}")
-
+class DecoderBase(EncoderBase):
     def forward(self, tgt, memory, tgt_mask=None, memory_mask=None):
         """
         Forward pass through the decoder.
+
+        Parameters
+        ----------
+        tgt : torch.Tensor
+            The input tensor representing the target sequence. Shape: (batch_size, seq_len, d_model).
+        memory : torch.Tensor
+            The encoded memory output from the encoder. Shape: (batch_size, seq_len_src, d_model).
+        tgt_mask : torch.Tensor, optional
+            A mask tensor to prevent attention to certain positions in the target sequence. Shape: (batch_size, seq_len_tgt).
+        memory_mask : torch.Tensor, optional
+            A mask tensor to prevent attention to certain positions in the source sequence. Shape: (batch_size, seq_len_src).
+
+        Returns
+        -------
+        torch.Tensor
+            The decoded output of the target sequence. Shape: (batch_size, seq_len_tgt, d_model).
         """
         # Apply initial normalization
         tgt = self.norm(tgt)
@@ -202,9 +159,9 @@ class DecoderBase(nn.Module):
             tgt = layer(tgt, memory, tgt_mask=tgt_mask, memory_mask=memory_mask)
 
         # Apply final normalization after all layers
-        decoded_output = self.final_norm(tgt)
+        output = self.final_norm(tgt)
 
-        return decoded_output
+        return output
 
 
 class EncoderBaseLegacy(nn.Module):
