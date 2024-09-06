@@ -84,7 +84,7 @@ class TransformerBase(nn.Module):
         if self.decoder is not None and tgt is not None:
             tgt_embed = self.decoder_embedding(tgt)
             encoded = self.encoder(src_embed, src_mask)
-            out = self.decoder(tgt_embed, encoded, src_mask, tgt_mask)
+            out = self.decoder(tgt_embed, encoded, tgt_mask=tgt_mask, memory_mask=src_mask)
             return out
         else:
             # If no decoder, only pass through the encoder
