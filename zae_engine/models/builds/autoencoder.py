@@ -10,6 +10,56 @@ from ...nn_night import blocks as blk
 
 
 class AutoEncoder(nn.Module):
+    """
+    A flexible AutoEncoder architecture with optional skip connections for U-Net style implementations.
+
+    Parameters
+    ----------
+    block : Type[Union[blk.UNetBlock, nn.Module]]
+        The basic building block for the encoder and decoder (e.g., ResNet block or UNetBlock).
+    ch_in : int
+        Number of input channels.
+    ch_out : int
+        Number of output channels.
+    width : int
+        Base width for the encoder and decoder layers.
+    layers : Union[Tuple[int], List[int]]
+        Number of blocks in each stage of the encoder and decoder.
+    groups : int, optional
+        Number of groups for group normalization in the block. Default is 1.
+    dilation : int, optional
+        Dilation rate for convolutional layers. Default is 1.
+    norm_layer : Callable[..., nn.Module], optional
+        Normalization layer to use. Default is `nn.BatchNorm2d`.
+    skip_connect : bool, optional
+        If True, adds skip connections for U-Net style. Default is False.
+
+    Attributes
+    ----------
+    encoder : nn.Module
+        The encoder module that encodes the input image.
+    bottleneck : nn.Module
+        The bottleneck layer between the encoder and decoder.
+    decoder : nn.ModuleList
+        The decoder module that reconstructs the input image.
+    feature_vectors : list
+        Stores intermediate feature maps for skip connections when `skip_connect` is True.
+    up_pools : nn.ModuleList
+        List of transposed convolution layers for upsampling in the decoder.
+    fc : nn.Conv2d
+        The final output convolutional layer.
+    sig : nn.Sigmoid
+        Sigmoid activation function for the output.
+
+    Methods
+    -------
+    feature_hook(module, input_tensor, output_tensor)
+        Hooks intermediate feature maps for skip connections.
+    feature_output_hook(module, input_tensor, output_tensor)
+        Hooks the final feature map before bottleneck.
+    forward(x)
+        Defines the forward pass of the autoencoder.
+    """
 
     def __init__(
         self,
@@ -37,9 +87,8 @@ class AutoEncoder(nn.Module):
             dilation=dilation,
             norm_layer=norm_layer,
         )
-        # Remove Stem layer in CNNBase & use 1st layer in body instead.
-        self.skip_connect = skip_connect
 
+        self.skip_connect = skip_connect
         self.encoder.stem = nn.Identity()
         self.encoder.body[0] = self.encoder.make_body(blocks=[block] * layers[0], ch_in=ch_in, ch_out=width, stride=2)
 
@@ -66,13 +115,32 @@ class AutoEncoder(nn.Module):
         self.sig = nn.Sigmoid()
 
     def feature_hook(self, module, input_tensor, output_tensor):
+        """
+        Hooks intermediate feature maps for skip connections.
+        """
         self.feature_vectors.append(input_tensor[0])
 
     def feature_output_hook(self, module, input_tensor, output_tensor):
+        """
+        Hooks the final feature map before bottleneck.
+        """
         self.feature_vectors.append(output_tensor)
 
     def forward(self, x):
-        feat = self.encoder(x)  # Forwarding encoder & hook immediate outputs
+        """
+        Defines the forward pass of the autoencoder.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor. Shape: (batch_size, channels, height, width).
+
+        Returns
+        -------
+        torch.Tensor
+            The reconstructed output tensor. Shape: (batch_size, channels, height, width).
+        """
+        feat = self.encoder(x)
         feat = self.bottleneck(self.feature_vectors.pop())
 
         for up_pool, dec in zip(self.up_pools, self.decoder):
@@ -80,4 +148,5 @@ class AutoEncoder(nn.Module):
             if self.skip_connect:
                 feat = torch.cat((feat, self.feature_vectors.pop()), dim=1)
             feat = dec(feat)
+
         return self.sig(self.fc(feat))
