@@ -140,12 +140,19 @@ class AutoEncoder(nn.Module):
         torch.Tensor
             The reconstructed output tensor. Shape: (batch_size, channels, height, width).
         """
+        # Ensure feature_vectors is cleared at the start of each forward pass
+        self.feature_vectors = []
+
+        # Forwarding encoder & hook immediate outputs
         feat = self.encoder(x)
+
+        # Bottleneck processing
         feat = self.bottleneck(self.feature_vectors.pop())
 
+        # Decoder with skip connections if enabled
         for up_pool, dec in zip(self.up_pools, self.decoder):
             feat = up_pool(feat)
-            if self.skip_connect:
+            if self.skip_connect and len(self.feature_vectors) > 0:
                 feat = torch.cat((feat, self.feature_vectors.pop()), dim=1)
             feat = dec(feat)
 
