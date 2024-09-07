@@ -38,7 +38,7 @@ class TransformerBase(nn.Module):
 
     Methods
     -------
-    forward(src, tgt=None, src_mask=None, tgt_mask=None)
+    forward(src, tgt=None, src_mask=None, tgt_mask=None, src_key_padding_mask=None, tgt_key_padding_mask=None)
         Forward pass through the model. If `tgt` and `decoder` are provided, both encoder and decoder are used. Otherwise, only the encoder is applied.
 
     """
@@ -57,7 +57,9 @@ class TransformerBase(nn.Module):
         self.encoder = encoder
         self.decoder = decoder
 
-    def forward(self, src, tgt=None, src_mask=None, tgt_mask=None):
+    def forward(
+        self, src, tgt=None, src_mask=None, tgt_mask=None, src_key_padding_mask=None, tgt_key_padding_mask=None
+    ):
         """
         Forward pass through the Transformer model.
 
@@ -71,6 +73,10 @@ class TransformerBase(nn.Module):
             Source mask for masking certain positions in the encoder input.
         tgt_mask : torch.Tensor, optional
             Target mask for masking certain positions in the decoder input.
+        src_key_padding_mask : torch.Tensor, optional
+            Mask for padding tokens in the source sequence.
+        tgt_key_padding_mask : torch.Tensor, optional
+            Mask for padding tokens in the target sequence.
 
         Returns
         -------
@@ -83,12 +89,19 @@ class TransformerBase(nn.Module):
         # If a decoder exists, apply decoder embedding and pass through the decoder
         if self.decoder is not None and tgt is not None:
             tgt_embed = self.decoder_embedding(tgt)
-            encoded = self.encoder(src_embed, src_mask)
-            out = self.decoder(tgt_embed, encoded, tgt_mask=tgt_mask, memory_mask=src_mask)
+            encoded = self.encoder(src_embed, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
+            out = self.decoder(
+                tgt_embed,
+                encoded,
+                tgt_mask=tgt_mask,
+                memory_mask=src_mask,
+                tgt_key_padding_mask=tgt_key_padding_mask,
+                memory_key_padding_mask=src_key_padding_mask,
+            )
             return out
         else:
             # If no decoder, only pass through the encoder
-            return self.encoder(src_embed, src_mask)
+            return self.encoder(src_embed, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
 
 
 class EncoderBase(nn.Module):
@@ -158,16 +171,30 @@ class EncoderBase(nn.Module):
         else:
             raise ValueError(f"Unsupported norm layer type: {norm_type}")
 
-    def forward(self, src, src_mask=None):
+    def forward(self, src, src_mask=None, src_key_padding_mask=None):
         """
         Forward pass through the encoder.
+
+        Parameters
+        ----------
+        src : torch.Tensor
+            The input tensor representing the source sequence. Shape: (batch_size, seq_len, d_model).
+        src_mask : torch.Tensor, optional
+            A mask tensor to prevent attention to certain positions in the source sequence.
+        src_key_padding_mask : torch.Tensor, optional
+            A mask tensor to prevent attention to padding tokens in the source sequence.
+
+        Returns
+        -------
+        torch.Tensor
+            The encoded output of the source sequence. Shape: (batch_size, seq_len, d_model).
         """
         # Apply initial normalization
         src = self.norm(src)
 
         # Pass the source sequence through each encoder layer
         for layer in self.layers:
-            src = layer(src, src_key_padding_mask=src_mask)
+            src = layer(src, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
 
         # Apply final normalization after all layers
         output = self.final_norm(src)
@@ -176,16 +203,45 @@ class EncoderBase(nn.Module):
 
 
 class DecoderBase(EncoderBase):
-    def forward(self, tgt, memory, tgt_mask=None, memory_mask=None):
+    def forward(
+        self, tgt, memory, tgt_mask=None, memory_mask=None, tgt_key_padding_mask=None, memory_key_padding_mask=None
+    ):
         """
         Forward pass through the decoder.
+
+        Parameters
+        ----------
+        tgt : torch.Tensor
+            The input tensor representing the target sequence. Shape: (batch_size, seq_len, d_model).
+        memory : torch.Tensor
+            The encoded memory output from the encoder. Shape: (batch_size, seq_len_src, d_model).
+        tgt_mask : torch.Tensor, optional
+            A mask tensor to prevent attention to certain positions in the target sequence. Shape: (batch_size, seq_len_tgt).
+        memory_mask : torch.Tensor, optional
+            A mask tensor to prevent attention to certain positions in the memory sequence (from the encoder). Shape: (batch_size, seq_len_src).
+        tgt_key_padding_mask : torch.Tensor, optional
+            A mask tensor to prevent attention to padding tokens in the target sequence. Shape: (batch_size, seq_len_tgt).
+        memory_key_padding_mask : torch.Tensor, optional
+            A mask tensor to prevent attention to padding tokens in the memory sequence. Shape: (batch_size, seq_len_src).
+
+        Returns
+        -------
+        torch.Tensor
+            The decoded output of the target sequence. Shape: (batch_size, seq_len_tgt, d_model).
         """
         # Apply initial normalization
         tgt = self.norm(tgt)
 
         # Pass the target sequence through each decoder layer
         for layer in self.layers:
-            tgt = layer(tgt, memory, tgt_mask=tgt_mask, memory_mask=memory_mask)
+            tgt = layer(
+                tgt,
+                memory,
+                tgt_mask=tgt_mask,
+                memory_mask=memory_mask,
+                tgt_key_padding_mask=tgt_key_padding_mask,
+                memory_key_padding_mask=memory_key_padding_mask,
+            )
 
         # Apply final normalization after all layers
         output = self.final_norm(tgt)
