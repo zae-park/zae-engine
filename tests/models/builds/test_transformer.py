@@ -62,9 +62,22 @@ class TestTransformerBase(unittest.TestCase):
 
     def test_with_mask(self):
         # 마스크를 사용한 테스트
-        src_mask = torch.ones(32, self.max_len).bool()
-        tgt_mask = torch.ones(32, self.max_len).bool()
-        output = self.model(self.src, self.tgt, src_mask=src_mask, tgt_mask=tgt_mask)
+        src_key_padding_mask = torch.zeros(32, self.max_len).bool()  # 패딩 마스크는 0
+        tgt_key_padding_mask = torch.zeros(32, self.max_len).bool()
+
+        # Attention mask: Future positions을 가리지 않음 (디코더에서 사용)
+        tgt_mask = torch.nn.Transformer.generate_square_subsequent_mask(self.max_len).bool()
+
+        # 모델에 마스크 입력
+        output = self.model(
+            self.src,
+            self.tgt,
+            src_key_padding_mask=src_key_padding_mask,
+            tgt_mask=tgt_mask,
+            tgt_key_padding_mask=tgt_key_padding_mask,
+        )
+
+        # 출력 크기 확인
         self.assertEqual(output.size(), (32, self.max_len, self.d_model))
 
 
