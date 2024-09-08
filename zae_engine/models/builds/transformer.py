@@ -53,7 +53,7 @@ class TransformerBase(nn.Module):
         super().__init__()
         self.encoder_embedding = encoder_embedding
         # If no decoder_embedding is provided, use encoder_embedding for both
-        self.decoder_embedding = decoder_embedding if decoder_embedding is not None else encoder_embedding
+        self.decoder_embedding = decoder_embedding
         self.encoder = encoder
         self.decoder = decoder
 
@@ -88,7 +88,10 @@ class TransformerBase(nn.Module):
 
         # If a decoder exists, apply decoder embedding and pass through the decoder
         if self.decoder is not None and tgt is not None:
-            tgt_embed = self.decoder_embedding(tgt)
+            if self.decoder_embedding is not None:
+                tgt_embed = self.decoder_embedding(tgt)
+            else:
+                tgt_embed = self.encoder_embedding(tgt)
             encoded = self.encoder(src_embed, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
             out = self.decoder(
                 tgt_embed,
@@ -335,3 +338,76 @@ class DecoderBase(CoderBase):
         output = self.final_norm(tgt)
 
         return output
+
+
+def __weight_mapper(src_weight: [dict], dst_weight: [dict]):
+    """
+    Map source weights to destination model weights.
+
+    Parameters
+    ----------
+    src_weight : OrderedDict or dict
+        Source model weights.
+    dst_weight : OrderedDict or dict
+        Destination model weights.
+
+    Returns
+    -------
+    OrderedDict or dict
+        Updated destination model weights.
+    """
+
+    for k, v in src_weight.items():
+
+        if k.startswith("embeddings"):
+            k = k.replace("embeddings", "encoder_embedding")
+            k = (
+                k.replace("word_embeddings", "word")
+                .replace("position_embeddings", "position")
+                .replace("token_type", "type")
+            )
+            k = k.replace("LayerNorm", "norm")
+        elif k.startswith("encoder"):
+            # From : encoder.layer.0.attention.self.query.weight
+            # To : encoder.layers.0.self_attn.in_proj_weight
+            pass
+        elif k.startswith("pooler"):
+            pass
+        else:
+            k = "stem." + k
+            k = k.replace("conv1", "0").replace("bn1", "1")
+
+        dst_weight[k] = v
+
+    return dst_weight
+
+
+if __name__ == "__main__":
+    # implementation: # https://github.com/huggingface/transformers/blob/main/src/transformers/models/bert/modeling_bert.py
+
+    model_name = "bert-base-uncased"
+    pre_tkn = AutoTokenizer.from_pretrained(model_name, clean_up_tokenization_spaces=True)
+    pre_model = AutoModel.from_pretrained(model_name)
+
+    bert_emb = pre_model.embeddings  # word_embeddings, position_embeddings, token_type_embeddings, LayerNorm, dropout
+    bert_enc = pre_model.encoder  # BertEncoder
+    bert_pool = pre_model.pooler  # BertPooler : Dense(768, 768) + Tanh()
+
+    # Embedding = word + positional + type
+    zae_emb = nn.ModuleList([nn.Embedding(30522, 768, padding_idx=0), nn.Embedding(512, 768), nn.Embedding(2, 768)])
+    zae_embedding = nn.Sequential(nn.Embedding(30522 + 512 + 2, 768, padding_idx=0), nn.LayerNorm(768), nn.Dropout(0.1))
+
+    encoder = EncoderBase(d_model=768, num_layers=12, layer_factory=nn.TransformerEncoderLayer, dim_feedforward=3072)
+    decoder = nn.Identity()
+    model = TransformerBase(encoder_embedding=zae_embedding, encoder=encoder)
+
+    enc = __weight_mapper(pre_model.state_dict(), model.state_dict())
+
+    max_len = 16
+    src_vocab_size = tgt_vocab_size = 1000
+    src = torch.randint(0, src_vocab_size, (1, max_len))  # batch_size=32, seq_len=max_len
+    tgt = torch.randint(0, tgt_vocab_size, (1, max_len))
+    output = model(src, tgt)
+    print(output.shape)  # Should return a tensor of shape (batch_size, seq_len, d_model)
+
+    print()
