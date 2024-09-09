@@ -359,6 +359,9 @@ def __weight_mapper(src_weight: [dict], dst_weight: [dict]):
 
     for k, v in src_weight.items():
 
+        # Aggregate QKV projection to in_proj layer
+        # Bert Encoder -> Zae Encoder
+
         if k.startswith("embeddings"):
             k = k.replace("embeddings", "encoder_embedding")
             k = (
