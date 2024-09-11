@@ -119,8 +119,8 @@ class CoderBase(nn.Module):
         The number of layers in the encoder/decoder.
     layer_factory : nn.Module, optional
         Custom layer module. Defaults to `nn.TransformerEncoderLayer` for encoders and `nn.TransformerDecoderLayer` for decoders.
-    norm_layer : str or nn.Module, optional
-        The normalization layer to apply. Can be a string or custom `nn.Module`. Default is 'LayerNorm'.
+    # norm_layer : str or nn.Module, optional
+    #     The normalization layer to apply. Can be a string or custom `nn.Module`. Default is 'LayerNorm'.
     dim_feedforward : int, optional
         The dimension of the feedforward network. Default is 2048.
     dropout : float, optional
@@ -136,7 +136,7 @@ class CoderBase(nn.Module):
         d_model: int,
         num_layers: int,
         layer_factory: Type[nn.Module] = nn.TransformerEncoderLayer,
-        norm_layer: Union[str, nn.Module] = "LayerNorm",
+        # norm_layer: Union[str, nn.Module] = "LayerNorm",
         dim_feedforward: int = 2048,
         dropout: float = 0.1,
         num_heads: int = 8,
@@ -144,9 +144,6 @@ class CoderBase(nn.Module):
     ):
         super(CoderBase, self).__init__()
         self.d_model = d_model
-
-        # Set up normalization layer
-        self.norm = self._get_norm_layer(norm_layer)
 
         # Create layers using the provided layer factory
         self.layers = nn.ModuleList(
@@ -157,9 +154,6 @@ class CoderBase(nn.Module):
                 for _ in range(num_layers)
             ]
         )
-
-        # Final normalization after all layers
-        self.final_norm = self._get_norm_layer(norm_layer)
 
     def _get_norm_layer(self, norm_type):
         """
@@ -191,8 +185,8 @@ class EncoderBase(CoderBase):
         The number of layers in the encoder.
     layer_factory : nn.Module, optional
         Custom layer module. Defaults to `nn.TransformerEncoderLayer`.
-    norm_layer : str or nn.Module, optional
-        The normalization layer to apply. Can be a string or custom `nn.Module`. Default is 'LayerNorm'.
+    # norm_layer : str or nn.Module, optional
+    #     The normalization layer to apply. Can be a string or custom `nn.Module`. Default is 'LayerNorm'.
     dim_feedforward : int, optional
         The dimension of the feedforward network. Default is 2048.
     dropout : float, optional
@@ -208,14 +202,14 @@ class EncoderBase(CoderBase):
         d_model: int,
         num_layers: int,
         layer_factory: Type[nn.Module] = nn.TransformerEncoderLayer,
-        norm_layer: Union[str, nn.Module] = "LayerNorm",
+        # norm_layer: Union[str, nn.Module] = "LayerNorm",
         dim_feedforward: int = 2048,
         dropout: float = 0.1,
         num_heads: int = 8,
         **factory_kwargs,
     ):
         super(EncoderBase, self).__init__(
-            d_model, num_layers, layer_factory, norm_layer, dim_feedforward, dropout, num_heads, **factory_kwargs
+            d_model, num_layers, layer_factory, dim_feedforward, dropout, num_heads, **factory_kwargs
         )
 
     def forward(self, src, src_mask=None, src_key_padding_mask=None):
@@ -240,9 +234,6 @@ class EncoderBase(CoderBase):
         # Pass the source sequence through each encoder layer
         for layer in self.layers:
             src = layer(src, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
-
-        # Apply final normalization after all layers
-        output = self.final_norm(src)
 
         return output
 
@@ -329,9 +320,6 @@ class DecoderBase(CoderBase):
                 tgt_key_padding_mask=tgt_key_padding_mask,
                 memory_key_padding_mask=memory_key_padding_mask,
             )
-
-        # Apply final normalization after all layers
-        output = self.final_norm(tgt)
 
         return output
 
@@ -434,7 +422,7 @@ def __weight_mapper(src_weight: [dict], dst_weight: [dict]):
             k = (
                 k.replace("word_embeddings", "0.0")  # word
                 .replace("position_embeddings", "0.1")  # position
-                .replace("token_type", "0.2")  # type
+                .replace("token_type_embeddings", "0.2")  # type
             )
             k = k.replace("embeddings", "encoder_embedding")
             k = k.replace("LayerNorm", "1")  # norm
@@ -446,6 +434,7 @@ def __weight_mapper(src_weight: [dict], dst_weight: [dict]):
                 n_layer = tkn[2]
                 para_name = "_".join(tkn[-2:])
                 buff_dict[f"{n_layer}_{para_name}"] = v
+                continue
 
             elif "attention.output" in k:
                 k = (
@@ -461,9 +450,11 @@ def __weight_mapper(src_weight: [dict], dst_weight: [dict]):
                 )
 
         elif k.startswith("pooler"):
-            pass
-        else:
             print(k)
+            continue
+        else:
+            print(123)
+            continue
 
         dst_weight[k] = v
 
