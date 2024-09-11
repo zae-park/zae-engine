@@ -236,8 +236,6 @@ class EncoderBase(CoderBase):
         torch.Tensor
             The encoded output of the source sequence. Shape: (batch_size, seq_len, d_model).
         """
-        # Apply initial normalization
-        src = self.norm(src)
 
         # Pass the source sequence through each encoder layer
         for layer in self.layers:
@@ -320,8 +318,6 @@ class DecoderBase(CoderBase):
         torch.Tensor
             The decoded output of the target sequence. Shape: (batch_size, seq_len_tgt, d_model).
         """
-        # Apply initial normalization
-        tgt = self.norm(tgt)
 
         # Pass the target sequence through each decoder layer
         for layer in self.layers:
@@ -443,6 +439,7 @@ def __weight_mapper(src_weight: [dict], dst_weight: [dict]):
             k = k.replace("embeddings", "encoder_embedding")
             k = k.replace("LayerNorm", "1")  # norm
         elif k.startswith("encoder.layer"):
+            k = k.replace(".layer.", ".layers.")
             # Save QKV weight & bias to buffer
             if "attention.self" in k:
                 tkn = k.split(".")
@@ -452,22 +449,16 @@ def __weight_mapper(src_weight: [dict], dst_weight: [dict]):
 
             elif "attention.output" in k:
                 k = (
-                    k.replace("layer.", "layers.")
-                    .replace("attention.output", "self_attn")
-                    .replace("dense", "out_proj")
-                    .replace("LayerNorm", "norm")
+                    k.replace("attention.output", "self_attn")
+                    .replace("self_attn.LayerNorm", "norm1")
+                    .replace("self_attn.dense", "self_attn.out_proj")
                 )
-
-            elif "intermediate" in k:
-                k = k.replace("intermediate.", "").replace("dense", "linear1")
-
-            elif "output" in k:
-                k = k.replace("output,", "").replace("dense", "linear2").replace("LayerNorm", "norm1")
-                asd = "dense"
-                asd = "LayerNorm"
-
             else:
-                print(k)
+                k = (
+                    k.replace("intermediate.dense", "linear1")
+                    .replace("output.dense", "linear2")
+                    .replace("output.LayerNorm", "norm2")
+                )
 
         elif k.startswith("pooler"):
             pass
