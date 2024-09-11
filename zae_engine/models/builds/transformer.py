@@ -435,13 +435,13 @@ def __weight_mapper(src_weight: [dict], dst_weight: [dict]):
 
     for k, v in src_weight.items():
         if k.startswith("embeddings"):
-            k = k.replace("embeddings", "encoder_embedding")
             k = (
-                k.replace("word_embeddings", "word")  # 0
-                .replace("position_embeddings", "position")  # 1
-                .replace("token_type", "type")  # 2
+                k.replace("word_embeddings", "0.0")  # word
+                .replace("position_embeddings", "0.1")  # position
+                .replace("token_type", "0.2")  # type
             )
-            k = k.replace("LayerNorm", "norm")
+            k = k.replace("embeddings", "encoder_embedding")
+            k = k.replace("LayerNorm", "1")  # norm
         elif k.startswith("encoder.layer"):
             # Save QKV weight & bias to buffer
             if "attention.self" in k:
