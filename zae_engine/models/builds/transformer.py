@@ -118,7 +118,7 @@ class BertBase(nn.Module):
         The encoder module responsible for transforming the input sequence.
     dim_hidden : int, optional
         The hidden dimension used by the pooler layer. If provided, a pooler layer will be applied to the [CLS] token
-        (first token) of the encoder output. Otherwise, the encoder output is returned without pooling.
+        (first token) of the encoder output. Otherwise, only the encoder output is returned.
     sep_token_id : int, optional
         The ID representing the [SEP] token, used to identify sentence boundaries. The default value is 102, which
         is the standard for Hugging Face's BERT tokenizer. In BERT, the [SEP] token separates different sentences
@@ -130,10 +130,12 @@ class BertBase(nn.Module):
     - The default value for `sep_token_id` is 102, which corresponds to the [SEP] token in Hugging Face's pre-trained
       BERT models. This token is used to separate sentences or indicate the end of a sentence. If you are using a different
       tokenizer or model, you may need to adjust this value accordingly.
+    - If `input_sequence` is precomputed embeddings (dtype is float), the embedding layer is skipped, and
+      `position_ids` and `token_type_ids` are not generated, as these are already embedded.
 
     Methods
     -------
-    forward(src, src_mask=None, src_key_padding_mask=None)
+    forward(input_sequence, src_mask=None, src_key_padding_mask=None)
         Performs the forward pass. If a hidden dimension (dim_hidden) is provided, the pooler is applied to the
         [CLS] token. Otherwise, it returns the encoder output as-is.
     """
@@ -160,7 +162,8 @@ class BertBase(nn.Module):
         input_sequence : torch.Tensor
             The input tensor representing either input_ids (token IDs) or input embeddings.
             If dtype is int, it is assumed to be token IDs (input_ids).
-            If dtype is float, it is assumed to be precomputed embeddings (inputs_embeds).
+            If dtype is float, it is assumed to be precomputed embeddings (inputs_embeds), and the embedding layer
+            is skipped. In this case, `position_ids` and `token_type_ids` are not generated.
         src_mask : torch.Tensor, optional
             Source mask for masking certain positions in the encoder input. Shape: (batch_size, seq_len).
         src_key_padding_mask : torch.Tensor, optional
@@ -175,11 +178,15 @@ class BertBase(nn.Module):
         """
 
         if torch.is_floating_point(input_sequence):
-            # input_sequence is precomputed embeddings (inputs_embeds)
+            # input_sequence is precomputed embeddings (inputs_embeds), skip embedding layer
             input_embeds = input_sequence
         else:
-            # input_sequence is token IDs (input_ids)
-            input_embeds = self.encoder_embedding(input_sequence)
+            # input_sequence is token IDs (input_ids), generate position_ids and token_type_ids
+            position_ids = torch.arange(
+                input_sequence.size(1), dtype=torch.long, device=input_sequence.device
+            ).unsqueeze(0)
+            token_type_ids = self._generate_token_type_ids(input_sequence.tolist())
+            input_embeds = self.encoder_embedding(input_sequence, position_ids, token_type_ids)
 
         # Pass through the encoder
         encoded_output = self.encoder(input_embeds, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
@@ -191,13 +198,13 @@ class BertBase(nn.Module):
 
         return encoded_output
 
-    def _generate_token_type_ids(self, input_sequence: Sequence[int]) -> torch.Tensor:
+    def _generate_token_type_ids(self, input_sequence: list) -> torch.Tensor:
         """
         Generate token_type_ids based on the presence of [SEP] tokens in the input sequence.
 
         Parameters
         ----------
-        input_sequence : Sequence[int]
+        input_sequence : list
             The list of token IDs from which token_type_ids are generated.
 
         Returns
@@ -224,7 +231,7 @@ class BertBase(nn.Module):
             # Second sentence starts after the [SEP]
             token_type_ids[sep_indices[0] + 1 :] = 1
 
-        return token_type_ids
+        return token_type_ids.unsqueeze(0)  # Return with batch dimension
 
 
 class CoderBase(nn.Module):
