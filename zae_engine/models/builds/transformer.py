@@ -148,54 +148,45 @@ class BertBase(nn.Module):
             self.pool_dense = nn.Linear(self.dim_hidden, self.dim_hidden)
             self.pool_activation = nn.Tanh()
 
-    def forward(
-        self,
-        input_sequence: Union[Sequence[int], Sequence[Sequence[float]]],
-        src_mask=None,
-        src_key_padding_mask=None,
-    ):
+    def forward(self, input_sequence: torch.Tensor, src_mask=None, src_key_padding_mask=None):
         """
         Forward pass through the BERT model with an optional pooler.
 
+        If a hidden dimension is provided, the pooler is applied to the first token of the encoder output.
+        Otherwise, the encoder output is returned as-is.
+
         Parameters
         ----------
-        input_sequence : Union[Sequence[int], Sequence[Sequence[float]]]
-            If Sequence[int], treat as input_ids (token IDs).
-            If Sequence[Sequence[float]], treat as already embedded inputs (inputs_embeds).
+        input_sequence : torch.Tensor
+            The input tensor representing either input_ids (token IDs) or input embeddings.
+            If dtype is int, it is assumed to be token IDs (input_ids).
+            If dtype is float, it is assumed to be precomputed embeddings (inputs_embeds).
         src_mask : torch.Tensor, optional
-            Source mask for masking certain positions in the encoder input.
+            Source mask for masking certain positions in the encoder input. Shape: (batch_size, seq_len).
         src_key_padding_mask : torch.Tensor, optional
-            Mask for padding tokens in the source sequence.
+            Mask for padding tokens in the source sequence. Shape: (batch_size, seq_len).
 
         Returns
         -------
         torch.Tensor
-            The output of the encoder or pooled output depending on the configuration.
+            If dim_hidden is provided, returns the pooled output from the [CLS] token. Otherwise, returns the
+            encoder output for the entire sequence. Shape: (batch_size, dim_hidden) if pooled, or
+            (batch_size, seq_len, dim_hidden) if not.
         """
 
-        # Automatically generate position_ids based on input length
-        input_length = len(input_sequence)
-        position_ids = torch.arange(input_length, dtype=torch.long, device=self.encoder_embedding[0].weight.device)
-
-        # If input_sequence is a list of token IDs (Sequence[int])
-        if isinstance(input_sequence[0], int):
-            # Automatically generate token_type_ids
-            token_type_ids = self._generate_token_type_ids(input_sequence)
-            input_embeds = self.encoder_embedding(
-                input_sequence, position_ids=position_ids, token_type_ids=token_type_ids
-            )
-        # If input_sequence is a list of embeddings (Sequence[Sequence[float]])
-        elif isinstance(input_sequence[0], Sequence):
-            input_embeds = torch.tensor(input_sequence)
+        if torch.is_floating_point(input_sequence):
+            # input_sequence is precomputed embeddings (inputs_embeds)
+            input_embeds = input_sequence
         else:
-            raise ValueError("Invalid input_sequence type. Expected Sequence[int] or Sequence[Sequence[float]].")
+            # input_sequence is token IDs (input_ids)
+            input_embeds = self.encoder_embedding(input_sequence)
 
-        # Pass the embedded input through the encoder
+        # Pass through the encoder
         encoded_output = self.encoder(input_embeds, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
 
-        # If pooling is enabled, apply the pooler to the [CLS] token (first token)
+        # Apply pooling if a hidden dimension is specified
         if self.dim_hidden:
-            cls_tkn = encoded_output[:, 0]
+            cls_tkn = encoded_output[:, 0]  # Extract the first token ([CLS] token)
             return self.pool_activation(self.pool_dense(cls_tkn))
 
         return encoded_output
