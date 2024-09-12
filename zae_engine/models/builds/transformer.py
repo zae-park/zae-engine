@@ -1,4 +1,4 @@
-from typing import Type, TypeVar, Union
+from typing import Type, Sequence, Union
 
 import torch
 import torch.nn as nn
@@ -102,7 +102,7 @@ class TransformerBase(nn.Module):
             return self.encoder(src_embed, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
 
 
-class BertBase(TransformerBase):
+class BertBase(nn.Module):
     """
     BertBase is a specialized version of TransformerBase, including a pooler for processing the [CLS] token.
 
@@ -119,16 +119,30 @@ class BertBase(TransformerBase):
     dim_hidden : int, optional
         The hidden dimension used by the pooler layer. If provided, a pooler layer will be applied to the [CLS] token
         (first token) of the encoder output. Otherwise, the encoder output is returned without pooling.
+    sep_token_id : int, optional
+        The ID representing the [SEP] token, used to identify sentence boundaries. The default value is 102, which
+        is the standard for Hugging Face's BERT tokenizer. In BERT, the [SEP] token separates different sentences
+        or segments, and is expected to be present once or twice in the input. An error will be raised if more than
+        two [SEP] tokens are found in the input.
+
+    Notes
+    -----
+    - The default value for `sep_token_id` is 102, which corresponds to the [SEP] token in Hugging Face's pre-trained
+      BERT models. This token is used to separate sentences or indicate the end of a sentence. If you are using a different
+      tokenizer or model, you may need to adjust this value accordingly.
 
     Methods
     -------
-    forward(input_ids=None, position_ids=None, token_type_ids=None, inputs_embeds=None, src_mask=None, src_key_padding_mask=None, past_key_values_length=0)
+    forward(src, src_mask=None, src_key_padding_mask=None)
         Performs the forward pass. If a hidden dimension (dim_hidden) is provided, the pooler is applied to the
         [CLS] token. Otherwise, it returns the encoder output as-is.
     """
 
-    def __init__(self, encoder_embedding: nn.Module, encoder: nn.Module, **kwargs):
-        super().__init__(encoder_embedding=encoder_embedding, encoder=encoder, decoder=None)
+    def __init__(self, encoder_embedding: nn.Module, encoder: nn.Module, sep_token_id: int = 102, **kwargs):
+        super().__init__()
+        self.encoder_embedding = encoder_embedding
+        self.encoder = encoder
+        self.sep_token_id = sep_token_id
         self.dim_hidden = kwargs.get("dim_hidden", None)
         if self.dim_hidden:
             self.pool_dense = nn.Linear(self.dim_hidden, self.dim_hidden)
@@ -136,68 +150,90 @@ class BertBase(TransformerBase):
 
     def forward(
         self,
-        input_ids=None,
-        position_ids=None,
-        token_type_ids=None,
-        inputs_embeds=None,
+        input_sequence: Union[Sequence[int], Sequence[Sequence[float]]],
         src_mask=None,
         src_key_padding_mask=None,
-        past_key_values_length=0,
     ):
         """
         Forward pass through the BERT model with an optional pooler.
 
-        If a hidden dimension is provided, the pooler is applied to the first token of the encoder output.
-        Otherwise, the encoder output is returned as-is.
-
         Parameters
         ----------
-        input_ids : torch.Tensor, optional
-            The input tensor representing the token indices. Shape: (batch_size, seq_len).
-        position_ids : torch.Tensor, optional
-            The tensor representing the positions of the tokens in the sequence. Shape: (batch_size, seq_len).
-        token_type_ids : torch.Tensor, optional
-            The tensor representing segment IDs (e.g., sentence A or B). Shape: (batch_size, seq_len).
-        inputs_embeds : torch.Tensor, optional
-            Optionally, instead of input_ids, directly pass in embeddings. Shape: (batch_size, seq_len, embedding_dim).
+        input_sequence : Union[Sequence[int], Sequence[Sequence[float]]]
+            If Sequence[int], treat as input_ids (token IDs).
+            If Sequence[Sequence[float]], treat as already embedded inputs (inputs_embeds).
         src_mask : torch.Tensor, optional
-            Source mask for masking certain positions in the encoder input. Shape: (batch_size, seq_len).
+            Source mask for masking certain positions in the encoder input.
         src_key_padding_mask : torch.Tensor, optional
-            Mask for padding tokens in the source sequence. Shape: (batch_size, seq_len).
-        past_key_values_length : int, optional
-            If using caching, this represents the length of previously cached tokens.
+            Mask for padding tokens in the source sequence.
 
         Returns
         -------
         torch.Tensor
-            If dim_hidden is provided, returns the pooled output from the [CLS] token. Otherwise, returns the
-            encoder output for the entire sequence. Shape: (batch_size, dim_hidden) if pooled, or
-            (batch_size, seq_len, dim_hidden) if not.
+            The output of the encoder or pooled output depending on the configuration.
         """
-        if input_ids is not None:
-            src = input_ids
-        elif inputs_embeds is not None:
-            src = inputs_embeds
+
+        # Automatically generate position_ids based on input length
+        input_length = len(input_sequence)
+        position_ids = torch.arange(input_length, dtype=torch.long, device=self.encoder_embedding[0].weight.device)
+
+        # If input_sequence is a list of token IDs (Sequence[int])
+        if isinstance(input_sequence[0], int):
+            # Automatically generate token_type_ids
+            token_type_ids = self._generate_token_type_ids(input_sequence)
+            input_embeds = self.encoder_embedding(
+                input_sequence, position_ids=position_ids, token_type_ids=token_type_ids
+            )
+        # If input_sequence is a list of embeddings (Sequence[Sequence[float]])
+        elif isinstance(input_sequence[0], Sequence):
+            input_embeds = torch.tensor(input_sequence)
         else:
-            raise ValueError("Either input_ids or inputs_embeds must be provided.")
+            raise ValueError("Invalid input_sequence type. Expected Sequence[int] or Sequence[Sequence[float]].")
 
-        # Apply the embedding layer
-        embedding_output = self.encoder_embedding(src)
+        # Pass the embedded input through the encoder
+        encoded_output = self.encoder(input_embeds, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
 
-        # Add position_ids and token_type_ids if provided
-        if position_ids is not None or token_type_ids is not None:
-            position_embeds = self.encoder_embedding[1](position_ids)
-            token_type_embeds = self.encoder_embedding[2](token_type_ids)
-            embedding_output += position_embeds + token_type_embeds
-
-        # Encode the input
-        encoded_output = self.encoder(embedding_output, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
-
-        # Apply pooler if dim_hidden is set
+        # If pooling is enabled, apply the pooler to the [CLS] token (first token)
         if self.dim_hidden:
-            cls_tkn = encoded_output[:, 0]  # Extract the first token ([CLS] token)
+            cls_tkn = encoded_output[:, 0]
             return self.pool_activation(self.pool_dense(cls_tkn))
+
         return encoded_output
+
+    def _generate_token_type_ids(self, input_sequence: Sequence[int]) -> torch.Tensor:
+        """
+        Generate token_type_ids based on the presence of [SEP] tokens in the input sequence.
+
+        Parameters
+        ----------
+        input_sequence : Sequence[int]
+            The list of token IDs from which token_type_ids are generated.
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of token_type_ids where 0 represents the first sentence, and 1 represents the second sentence.
+
+        Raises
+        ------
+        ValueError
+            If more than two [SEP] tokens are present in the input_sequence.
+        """
+        token_type_ids = torch.zeros(len(input_sequence), dtype=torch.long)
+
+        sep_indices = [i for i, token_id in enumerate(input_sequence) if token_id == self.sep_token_id]
+
+        if len(sep_indices) > 2:
+            raise ValueError(f"Input sequence contains more than two [SEP] tokens: {len(sep_indices)} found.")
+
+        if len(sep_indices) == 2:
+            # First sentence is before the first [SEP], second sentence is after the first [SEP]
+            token_type_ids[sep_indices[0] + 1 :] = 1
+        elif len(sep_indices) == 1:
+            # Second sentence starts after the [SEP]
+            token_type_ids[sep_indices[0] + 1 :] = 1
+
+        return token_type_ids
 
 
 class CoderBase(nn.Module):
