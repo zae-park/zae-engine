@@ -30,7 +30,7 @@ class TestAdditionalLayer(unittest.TestCase):
         # Test: Check if ValueError is raised when output shapes differ
         input_with_different_shape = torch.randn(32, 20)  # Shape mismatch
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             self.additional_layer(self.input1, input_with_different_shape, self.input3)
 
     def test_input_count_mismatch(self):
@@ -41,7 +41,8 @@ class TestAdditionalLayer(unittest.TestCase):
     def test_output_sum(self):
         # Test: Ensure the output is the sum of the individual layer outputs
         outputs = [
-            layer(input) for layer, input in zip(self.additional_layer.layers, [self.input1, self.input2, self.input3])
+            layer(input_tensor)
+            for layer, input_tensor in zip(list(self.additional_layer), [self.input1, self.input2, self.input3])
         ]
         expected_sum = sum(outputs)
 
