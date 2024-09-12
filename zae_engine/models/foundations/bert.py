@@ -1,10 +1,13 @@
 from typing import OrderedDict, Union
 
+import torch
 import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer
 
 from ..builds import transformer as trns
+from ...nn_night.layers import Additional
 
+# implementation: # https://github.com/huggingface/transformers/blob/main/src/transformers/models/bert/modeling_bert.py
 checkpoint_map = {
     "bert": "bert-base-uncased",
     "bert-small": "bert-base-uncased",
@@ -29,115 +32,103 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
         Updated destination model weights.
     """
 
-    # pretrained weight
-    bert_model = "base"
-
-    embedding = "BertEmbeddings"
-    embdding_ = {
-        "word_embeddings": nn.Embedding(30522, 768, padding_idx=0),
-        "position_embeddings": nn.Embedding(512, 768, padding_idx=0),
-        "token_type_embeddings": nn.Embedding(2, 768, padding_idx=0),
-        "LayerNorm": nn.LayerNorm(768),
-        "dropout": nn.Dropout(0.1),
-    }
-
-    encoder = "BertEncoder"
-    encoder_ = {
-        "layer": [
-            {
-                "0-11": {
-                    "12 x BertLayer": {
-                        "attention": {
-                            "BertAttention": {
-                                "self": ["BertSelfAttention", ["query", "key", "value", "768->768"], "dropout(0.1)"],
-                                "output": ["BertSelfOutput", ["dense", "LayerNorm", "dropout"]],
-                            }
-                        },
-                        "intermediate": {
-                            "BertIntermediate": {"dense": nn.Linear(768, 3072), "intermediate_act_fn": nn.Gelu()}
-                        },
-                        "output": {
-                            "BertOutput": {
-                                "dense": nn.Linear(3072, 768),
-                                "LayerNorm": nn.LayerNorm(768),
-                                "dropout": nn.Dropout(0.1),
-                            }
-                        },
-                    }
-                }
-            }
-        ]
-    }
-
-    pooler = "BertPooler"
-    pooler_ = {"dense": nn.Linear(768, 768), "activation": nn.Tanh()}
-    #
+    buff_dict = {}
 
     for k, v in src_weight.items():
-
-        if k.startswith("layer"):
+        if k.startswith("embeddings"):
             k = (
-                k.replace("layer1", "body.0")
-                .replace("layer2", "body.1")
-                .replace("layer3", "body.2")
-                .replace("layer4", "body.3")
+                k.replace("word_embeddings", "0.0")  # word
+                .replace("position_embeddings", "0.1")  # position
+                .replace("token_type_embeddings", "0.2")  # type
             )
-            k = k.replace(".bn", ".norm")
-        elif k.startswith("fc"):
-            pass
+            k = k.replace("embeddings", "encoder_embedding")
+            k = k.replace("LayerNorm", "1")  # norm
+        elif k.startswith("encoder.layer"):
+            k = k.replace(".layer.", ".layers.")
+            # Save QKV weight & bias to buffer
+            if "attention.self" in k:
+                tkn = k.split(".")
+                n_layer = tkn[2]
+                para_name = "_".join(tkn[-2:])
+                buff_dict[f"{n_layer}_{para_name}"] = v
+                continue
+
+            elif "attention.output" in k:
+                k = (
+                    k.replace("attention.output", "self_attn")
+                    .replace("self_attn.LayerNorm", "norm1")
+                    .replace("self_attn.dense", "self_attn.out_proj")
+                )
+            else:
+                k = (
+                    k.replace("intermediate.dense", "linear1")
+                    .replace("output.dense", "linear2")
+                    .replace("output.LayerNorm", "norm2")
+                )
+
+        elif k.startswith("pooler"):
+            # Ignore Pooler layer
+            continue
         else:
-            k = "stem." + k
-            k = k.replace("conv1", "0").replace("bn1", "1")
+            raise NotImplementedError
 
         dst_weight[k] = v
+
+    # Generate in_proj weight & bias using theirs of QKV in buffer
+    total_layer = len(buff_dict) // 6
+    for t in range(total_layer):
+        qkv_w = [buff_dict[f"{t}_{n}_weight"] for n in ["query", "key", "value"]]
+        qkv_b = [buff_dict[f"{t}_{n}_bias"] for n in ["query", "key", "value"]]
+        dst_weight[f"encoder.layers.{t}.self_attn.in_proj_weight"] = torch.cat(qkv_w, dim=0)
+        dst_weight[f"encoder.layers.{t}.self_attn.in_proj_bias"] = torch.cat(qkv_b, dim=0)
+        # From : encoder.layer.0.attention.self.query.weight
+        # To : encoder.layers.0.self_attn.in_proj_weight
 
     return dst_weight
 
 
-# def bert_base(pretrained=False, tokenizer_name: Union[str, None] = None) -> tuple:
-#     model_name = checkpoint_map["bert"]
-#
-#     # zae_model = transformer.EncoderBase(layer=nn.TransformerEncoder)
-#
-#     if tokenizer_name is None:
-#         tokenizer_name = model_name
-#     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, clean_up_tokenization_spaces=True)
-#
-#     model = trns.TransformerBase(nn.Embedding(1, 2), encoder=nn.Identity())
-#     if pretrained:
-#         pre_model = AutoModel.from_pretrained(model_name)
-#         new_weight = __model_weight_mapper(pre_model.parameters(), model.parameters())
-#         model.load_state_dict(new_weight, strict=True)
-#
-#     return tokenizer, model
+def bert_zae(pretrained=False) -> tuple:
+    model_name = checkpoint_map["bert"]
 
-
-if __name__ == "__main__":
-
-    model_name = "bert-base-uncased"
-    pre_tkn = AutoTokenizer.from_pretrained(model_name, clean_up_tokenization_spaces=True)
-    pre_model = AutoModel.from_pretrained(model_name)
-
-    bert_emb = pre_model.embeddings  # word_embeddings, position_embeddings, token_type_embeddings, LayerNorm, dropout
-    bert_enc = pre_model.encoder  # BertEncoder
-    bert_pool = pre_model.pooler  # BertPooler : Dense(768, 768) + Tanh()
+    dim_model = 768
 
     # Embedding = word + positional + type
-    zae_emb = nn.ModuleList([nn.Embedding(30522, 768, padding_idx=0), nn.Embedding(512, 768), nn.Embedding(2, 768)])
-    zae_embedding = nn.Sequential(nn.Embedding(30522 + 512 + 2, 768, padding_idx=0), nn.LayerNorm(768), nn.Dropout(0.1))
-
-    encoder = trns.EncoderBase(
-        d_model=768, num_layers=12, layer_factory=nn.TransformerEncoderLayer, dim_feedforward=3072
+    zae_emb = nn.Sequential(
+        Additional(
+            nn.Embedding(30522, dim_model, padding_idx=0),
+            nn.Embedding(512, dim_model),
+            nn.Embedding(2, dim_model),
+        ),
+        nn.LayerNorm(dim_model),
     )
-    decoder = nn.Identity()
-    model = trns.TransformerBase(encoder_embedding=zae_embedding, encoder=encoder)
-    import torch
 
-    max_len = 16
-    src_vocab_size = tgt_vocab_size = 1000
-    src = torch.randint(0, src_vocab_size, (1, max_len))  # batch_size=32, seq_len=max_len
-    tgt = torch.randint(0, tgt_vocab_size, (1, max_len))
-    output = model(src, tgt)
-    print(output.shape)  # Should return a tensor of shape (batch_size, seq_len, d_model)
+    zae_enc = trns.EncoderBase(
+        d_model=dim_model, num_layers=12, layer_factory=nn.TransformerEncoderLayer, dim_feedforward=3072
+    )
+    zae_dec = nn.Identity()
+    zae_bert = trns.TransformerBase(encoder_embedding=zae_emb, encoder=zae_enc)
 
-    print()
+    tokenizer_name = model_name
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, clean_up_tokenization_spaces=True)
+
+    if pretrained:
+        pre_model = AutoModel.from_pretrained(model_name)
+        new_weight = __model_weight_mapper(pre_model.state_dict(), zae_bert.state_dict())
+        zae_bert.load_state_dict(new_weight, strict=True)
+
+    return tokenizer, zae_bert
+
+
+class ZaeBertPool(nn.Module):
+    def __init__(self, dim_hidden):
+        super().__init__()
+        self.dense = nn.Linear(dim_hidden, dim_hidden)
+        self.activation = nn.Tanh()
+
+    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        # We "pool" the model by simply taking the hidden state corresponding
+        # to the first token.
+        first_token_tensor = hidden_states[:, 0]
+        pooled_output = self.dense(first_token_tensor)
+        pooled_output = self.activation(pooled_output)
+        return pooled_output
