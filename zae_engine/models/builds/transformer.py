@@ -122,10 +122,9 @@ class BertBase(TransformerBase):
 
     Methods
     -------
-    forward(src, src_mask=None, src_key_padding_mask=None)
+    forward(input_ids=None, position_ids=None, token_type_ids=None, inputs_embeds=None, src_mask=None, src_key_padding_mask=None, past_key_values_length=0)
         Performs the forward pass. If a hidden dimension (dim_hidden) is provided, the pooler is applied to the
         [CLS] token. Otherwise, it returns the encoder output as-is.
-
     """
 
     def __init__(self, encoder_embedding: nn.Module, encoder: nn.Module, **kwargs):
@@ -135,7 +134,16 @@ class BertBase(TransformerBase):
             self.pool_dense = nn.Linear(self.dim_hidden, self.dim_hidden)
             self.pool_activation = nn.Tanh()
 
-    def forward(self, src, src_mask=None, src_key_padding_mask=None):
+    def forward(
+        self,
+        input_ids=None,
+        position_ids=None,
+        token_type_ids=None,
+        inputs_embeds=None,
+        src_mask=None,
+        src_key_padding_mask=None,
+        past_key_values_length=0,
+    ):
         """
         Forward pass through the BERT model with an optional pooler.
 
@@ -144,12 +152,20 @@ class BertBase(TransformerBase):
 
         Parameters
         ----------
-        src : torch.Tensor
-            The input tensor representing the source sequence. Shape: (batch_size, seq_len).
+        input_ids : torch.Tensor, optional
+            The input tensor representing the token indices. Shape: (batch_size, seq_len).
+        position_ids : torch.Tensor, optional
+            The tensor representing the positions of the tokens in the sequence. Shape: (batch_size, seq_len).
+        token_type_ids : torch.Tensor, optional
+            The tensor representing segment IDs (e.g., sentence A or B). Shape: (batch_size, seq_len).
+        inputs_embeds : torch.Tensor, optional
+            Optionally, instead of input_ids, directly pass in embeddings. Shape: (batch_size, seq_len, embedding_dim).
         src_mask : torch.Tensor, optional
             Source mask for masking certain positions in the encoder input. Shape: (batch_size, seq_len).
         src_key_padding_mask : torch.Tensor, optional
             Mask for padding tokens in the source sequence. Shape: (batch_size, seq_len).
+        past_key_values_length : int, optional
+            If using caching, this represents the length of previously cached tokens.
 
         Returns
         -------
@@ -158,10 +174,26 @@ class BertBase(TransformerBase):
             encoder output for the entire sequence. Shape: (batch_size, dim_hidden) if pooled, or
             (batch_size, seq_len, dim_hidden) if not.
         """
-        encoded_output = self.encoder(
-            self.encoder_embedding(src), src_mask=src_mask, src_key_padding_mask=src_key_padding_mask
-        )
+        if input_ids is not None:
+            src = input_ids
+        elif inputs_embeds is not None:
+            src = inputs_embeds
+        else:
+            raise ValueError("Either input_ids or inputs_embeds must be provided.")
 
+        # Apply the embedding layer
+        embedding_output = self.encoder_embedding(src)
+
+        # Add position_ids and token_type_ids if provided
+        if position_ids is not None or token_type_ids is not None:
+            position_embeds = self.encoder_embedding[1](position_ids)
+            token_type_embeds = self.encoder_embedding[2](token_type_ids)
+            embedding_output += position_embeds + token_type_embeds
+
+        # Encode the input
+        encoded_output = self.encoder(embedding_output, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
+
+        # Apply pooler if dim_hidden is set
         if self.dim_hidden:
             cls_tkn = encoded_output[:, 0]  # Extract the first token ([CLS] token)
             return self.pool_activation(self.pool_dense(cls_tkn))
