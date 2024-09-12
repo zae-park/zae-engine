@@ -1,12 +1,7 @@
-import math
-import copy
-from typing import Callable, List, Type, Union, Tuple
+from typing import Type
 
 import torch
 import torch.nn as nn
-
-from transformers.models.bert import BertModel
-from transformers import AutoModel, AutoTokenizer
 
 
 # TODO: implement Scaled-Dot Product Attention (SDPA).
@@ -235,7 +230,7 @@ class EncoderBase(CoderBase):
         for layer in self.layers:
             src = layer(src, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
 
-        return output
+        return src
 
 
 class DecoderBase(CoderBase):
@@ -267,14 +262,14 @@ class DecoderBase(CoderBase):
         d_model: int,
         num_layers: int,
         layer_factory: Type[nn.Module] = nn.TransformerDecoderLayer,
-        norm_layer: Union[str, nn.Module] = "LayerNorm",
+        # norm_layer: Union[str, nn.Module] = "LayerNorm",
         dim_feedforward: int = 2048,
         dropout: float = 0.1,
         num_heads: int = 8,
         **factory_kwargs,
     ):
         super(DecoderBase, self).__init__(
-            d_model, num_layers, layer_factory, norm_layer, dim_feedforward, dropout, num_heads, **factory_kwargs
+            d_model, num_layers, layer_factory, dim_feedforward, dropout, num_heads, **factory_kwargs
         )
 
     def forward(
@@ -321,189 +316,4 @@ class DecoderBase(CoderBase):
                 memory_key_padding_mask=memory_key_padding_mask,
             )
 
-        return output
-
-
-class Additional(nn.ModuleList):
-    """
-    Additional connection module.
-
-    This module extends nn.ModuleList to implement an additional connection.
-    Each input tensor is passed through its corresponding module,
-    and the output tensors are summed. If the shapes of the output tensors
-    do not match, an error is raised.
-
-    Parameters
-    ----------
-    *args : nn.Module
-        Sequence of PyTorch modules. Each module will be applied to
-        a corresponding input tensor in the forward pass.
-
-    Methods
-    -------
-    forward(*inputs)
-        Applies each module to its corresponding input tensor and returns
-        the sum of the output tensors. If the shapes of the output tensors
-        do not match, an error is raised.
-    """
-
-    def __init__(self, *args):
-        """
-        Initialize the Additional module with a sequence of sub-modules.
-
-        Parameters
-        ----------
-        *args : nn.Module
-            Sequence of PyTorch modules to be applied to the input tensors.
-        """
-        super(Additional, self).__init__(args)
-
-    def forward(self, *inputs):
-        """
-        Forward pass through the additional block.
-
-        Applies each module to its corresponding input tensor and returns
-        the sum of the output tensors. If the shapes of the output tensors
-        do not match, an error is raised.
-
-        Parameters
-        ----------
-        *inputs : torch.Tensor
-            Sequence of input tensors. Each tensor is passed through its corresponding module.
-
-        Returns
-        -------
-        torch.Tensor
-            The sum of the output tensors of each module.
-
-        Raises
-        ------
-        ValueError
-            If the output tensors have mismatched shapes.
-        """
-
-        if len(inputs) != len(self):
-            raise ValueError(f"Expected {len(self)} input tensors, but got {len(inputs)}.")
-
-        # Apply each module to its corresponding input and store the outputs in a list
-        outputs = [layer(inputs[i]) for i, layer in enumerate(self)]
-
-        # Ensure that all output tensors have the same shape
-        first_shape = outputs[0].shape
-        for output in outputs[1:]:
-            if output.shape != first_shape:
-                raise ValueError(f"Shape mismatch: expected {first_shape}, but got {output.shape}")
-
-        # Return the sum of the output tensors
-        return sum(outputs)
-
-
-def __weight_mapper(src_weight: [dict], dst_weight: [dict]):
-    """
-    Map source weights to destination model weights.
-
-    Parameters
-    ----------
-    src_weight : OrderedDict or dict
-        Source model weights.
-    dst_weight : OrderedDict or dict
-        Destination model weights.
-
-    Returns
-    -------
-    OrderedDict or dict
-        Updated destination model weights.
-    """
-
-    buff_dict = {}
-
-    for k, v in src_weight.items():
-        if k.startswith("embeddings"):
-            k = (
-                k.replace("word_embeddings", "0.0")  # word
-                .replace("position_embeddings", "0.1")  # position
-                .replace("token_type_embeddings", "0.2")  # type
-            )
-            k = k.replace("embeddings", "encoder_embedding")
-            k = k.replace("LayerNorm", "1")  # norm
-        elif k.startswith("encoder.layer"):
-            k = k.replace(".layer.", ".layers.")
-            # Save QKV weight & bias to buffer
-            if "attention.self" in k:
-                tkn = k.split(".")
-                n_layer = tkn[2]
-                para_name = "_".join(tkn[-2:])
-                buff_dict[f"{n_layer}_{para_name}"] = v
-                continue
-
-            elif "attention.output" in k:
-                k = (
-                    k.replace("attention.output", "self_attn")
-                    .replace("self_attn.LayerNorm", "norm1")
-                    .replace("self_attn.dense", "self_attn.out_proj")
-                )
-            else:
-                k = (
-                    k.replace("intermediate.dense", "linear1")
-                    .replace("output.dense", "linear2")
-                    .replace("output.LayerNorm", "norm2")
-                )
-
-        elif k.startswith("pooler"):
-            print(k)
-            continue
-        else:
-            print(123)
-            continue
-
-        dst_weight[k] = v
-
-    # Generate in_proj weight & bias using theirs of QKV in buffer
-    total_layer = len(buff_dict) // 6
-    for t in total_layer:
-        qkv_w = [buff_dict[f"{t}_{n}_weight"] for n in ["query", "key", "value"]]
-        qkv_b = [buff_dict[f"{t}_{n}_bias"] for n in ["query", "key", "value"]]
-        dst_weight[f"encoder.layers.{t}.self_attn.in_proj_weight"] = torch.cat(qkv_w, dim=0)
-        dst_weight[f"encoder.layers.{t}.self_attn.in_proj_bias"] = torch.cat(qkv_b, dim=0)
-        # From : encoder.layer.0.attention.self.query.weight
-        # To : encoder.layers.0.self_attn.in_proj_weight
-
-    return dst_weight
-
-
-if __name__ == "__main__":
-    # implementation: # https://github.com/huggingface/transformers/blob/main/src/transformers/models/bert/modeling_bert.py
-
-    model_name = "bert-base-uncased"
-    pre_tkn = AutoTokenizer.from_pretrained(model_name, clean_up_tokenization_spaces=True)
-    pre_model = AutoModel.from_pretrained(model_name)
-
-    bert_emb = pre_model.embeddings  # word_embeddings, position_embeddings, token_type_embeddings, LayerNorm, dropout
-    bert_enc = pre_model.encoder  # BertEncoder
-    bert_pool = pre_model.pooler  # BertPooler : Dense(768, 768) + Tanh()
-
-    # Embedding = word + positional + type
-
-    zae_emb = nn.Sequential(
-        Additional(
-            nn.Embedding(30522, 768, padding_idx=0),
-            nn.Embedding(512, 768),
-            nn.Embedding(2, 768),
-        ),
-        nn.LayerNorm(768),
-    )
-
-    encoder = EncoderBase(d_model=768, num_layers=12, layer_factory=nn.TransformerEncoderLayer, dim_feedforward=3072)
-    decoder = nn.Identity()
-    model = TransformerBase(encoder_embedding=zae_emb, encoder=encoder)
-
-    enc = __weight_mapper(pre_model.state_dict(), model.state_dict())
-
-    max_len = 16
-    src_vocab_size = tgt_vocab_size = 1000
-    src = torch.randint(0, src_vocab_size, (1, max_len))  # batch_size=32, seq_len=max_len
-    tgt = torch.randint(0, tgt_vocab_size, (1, max_len))
-    output = model(src, tgt)
-    print(output.shape)  # Should return a tensor of shape (batch_size, seq_len, d_model)
-
-    print()
+        return tgt
