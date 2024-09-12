@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from transformers import AutoModel, AutoTokenizer
 
-from ..builds import transformer as trns
+from ..builds import BertBase, EncoderBase
 from ...nn_night.layers import Additional
 
 # implementation: # https://github.com/huggingface/transformers/blob/main/src/transformers/models/bert/modeling_bert.py
@@ -91,6 +91,8 @@ def bert_zae(pretrained=False) -> tuple:
     model_name = checkpoint_map["bert"]
 
     dim_model = 768
+    dim_ff = 3072
+    layer_factory = nn.TransformerEncoderLayer
 
     # Embedding = word + positional + type
     zae_emb = nn.Sequential(
@@ -102,11 +104,8 @@ def bert_zae(pretrained=False) -> tuple:
         nn.LayerNorm(dim_model),
     )
 
-    zae_enc = trns.EncoderBase(
-        d_model=dim_model, num_layers=12, layer_factory=nn.TransformerEncoderLayer, dim_feedforward=3072
-    )
-    zae_dec = nn.Identity()
-    zae_bert = trns.TransformerBase(encoder_embedding=zae_emb, encoder=zae_enc)
+    zae_enc = EncoderBase(d_model=dim_model, num_layers=12, layer_factory=layer_factory, dim_feedforward=dim_ff)
+    zae_bert = BertBase(encoder_embedding=zae_emb, encoder=zae_enc, dim_hidden=dim_model)
 
     tokenizer_name = model_name
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, clean_up_tokenization_spaces=True)
@@ -117,18 +116,3 @@ def bert_zae(pretrained=False) -> tuple:
         zae_bert.load_state_dict(new_weight, strict=True)
 
     return tokenizer, zae_bert
-
-
-class ZaeBertPool(nn.Module):
-    def __init__(self, dim_hidden):
-        super().__init__()
-        self.dense = nn.Linear(dim_hidden, dim_hidden)
-        self.activation = nn.Tanh()
-
-    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
-        # We "pool" the model by simply taking the hidden state corresponding
-        # to the first token.
-        first_token_tensor = hidden_states[:, 0]
-        pooled_output = self.dense(first_token_tensor)
-        pooled_output = self.activation(pooled_output)
-        return pooled_output

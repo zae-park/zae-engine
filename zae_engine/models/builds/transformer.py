@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, TypeVar, Union
 
 import torch
 import torch.nn as nn
@@ -100,6 +100,72 @@ class TransformerBase(nn.Module):
         else:
             # If no decoder, only pass through the encoder
             return self.encoder(src_embed, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
+
+
+class BertBase(TransformerBase):
+    """
+    BertBase is a specialized version of TransformerBase, including a pooler for processing the [CLS] token.
+
+    This class adds a pooler layer that processes the first token ([CLS]) from the encoder output, similar to the
+    original BERT architecture. If a hidden dimension is provided during initialization, the pooler will be applied.
+    Otherwise, only the encoder output is returned.
+
+    Parameters
+    ----------
+    encoder_embedding : nn.Module
+        The embedding layer for the encoder input.
+    encoder : nn.Module
+        The encoder module responsible for transforming the input sequence.
+    dim_hidden : int, optional
+        The hidden dimension used by the pooler layer. If provided, a pooler layer will be applied to the [CLS] token
+        (first token) of the encoder output. Otherwise, the encoder output is returned without pooling.
+
+    Methods
+    -------
+    forward(src, src_mask=None, src_key_padding_mask=None)
+        Performs the forward pass. If a hidden dimension (dim_hidden) is provided, the pooler is applied to the
+        [CLS] token. Otherwise, it returns the encoder output as-is.
+
+    """
+
+    def __init__(self, encoder_embedding: nn.Module, encoder: nn.Module, **kwargs):
+        super().__init__(encoder_embedding=encoder_embedding, encoder=encoder, decoder=None)
+        self.dim_hidden = kwargs.get("dim_hidden", None)
+        if self.dim_hidden:
+            self.pool_dense = nn.Linear(self.dim_hidden, self.dim_hidden)
+            self.pool_activation = nn.Tanh()
+
+    def forward(self, src, src_mask=None, src_key_padding_mask=None):
+        """
+        Forward pass through the BERT model with an optional pooler.
+
+        If a hidden dimension is provided, the pooler is applied to the first token of the encoder output.
+        Otherwise, the encoder output is returned as-is.
+
+        Parameters
+        ----------
+        src : torch.Tensor
+            The input tensor representing the source sequence. Shape: (batch_size, seq_len).
+        src_mask : torch.Tensor, optional
+            Source mask for masking certain positions in the encoder input. Shape: (batch_size, seq_len).
+        src_key_padding_mask : torch.Tensor, optional
+            Mask for padding tokens in the source sequence. Shape: (batch_size, seq_len).
+
+        Returns
+        -------
+        torch.Tensor
+            If dim_hidden is provided, returns the pooled output from the [CLS] token. Otherwise, returns the
+            encoder output for the entire sequence. Shape: (batch_size, dim_hidden) if pooled, or
+            (batch_size, seq_len, dim_hidden) if not.
+        """
+        encoded_output = self.encoder(
+            self.encoder_embedding(src), src_mask=src_mask, src_key_padding_mask=src_key_padding_mask
+        )
+
+        if self.dim_hidden:
+            cls_tkn = encoded_output[:, 0]  # Extract the first token ([CLS] token)
+            return self.pool_activation(self.pool_dense(cls_tkn))
+        return encoded_output
 
 
 class CoderBase(nn.Module):
