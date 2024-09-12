@@ -2,7 +2,7 @@ from typing import OrderedDict, Union
 
 import torch
 import torch.nn as nn
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoModel, AutoTokenizer, BertModel, BertTokenizer
 
 from ..builds import BertBase, EncoderBase
 from ...nn_night.layers import Additional
@@ -87,7 +87,7 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
     return dst_weight
 
 
-def bert_zae(pretrained=False) -> tuple:
+def bert_base(pretrained=False) -> tuple:
     model_name = checkpoint_map["bert"]
 
     dim_model = 768
