@@ -4,6 +4,14 @@ zae\_engine.nn\_night.layers package
 Submodules
 ----------
 
+zae\_engine.nn\_night.layers.additional module
+----------------------------------------------
+
+.. automodule:: zae_engine.nn_night.layers.additional
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 zae\_engine.nn\_night.layers.dynamic\_pool module
 -------------------------------------------------
 
@@ -16,6 +24,14 @@ zae\_engine.nn\_night.layers.involution module
 ----------------------------------------------
 
 .. automodule:: zae_engine.nn_night.layers.involution
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.nn\_night.layers.position\_encoding module
+------------------------------------------------------
+
+.. automodule:: zae_engine.nn_night.layers.position_encoding
    :members:
    :undoc-members:
    :show-inheritance:

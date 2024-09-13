@@ -12,6 +12,14 @@ zae\_engine.models.foundations.benchmark module
    :undoc-members:
    :show-inheritance:
 
+zae\_engine.models.foundations.bert module
+------------------------------------------
+
+.. automodule:: zae_engine.models.foundations.bert
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 zae\_engine.models.foundations.resnet module
 --------------------------------------------
 
@@ -24,6 +32,14 @@ zae\_engine.models.foundations.unet module
 ------------------------------------------
 
 .. automodule:: zae_engine.models.foundations.unet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.models.foundations.word\_embedding module
+-----------------------------------------------------
+
+.. automodule:: zae_engine.models.foundations.word_embedding
    :members:
    :undoc-members:
    :show-inheritance:

@@ -164,6 +164,34 @@
 </dd></dl>
 
 </section>
+<section id="module-zae_engine.models.foundations.bert">
+<span id="zae-engine-models-foundations-bert-module"></span><h2>zae_engine.models.foundations.bert module<a class="headerlink" href="#module-zae_engine.models.foundations.bert" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.bert.BertEmbedding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.bert.</span></span><span class="sig-name descname"><span class="pre">BertEmbedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vocab_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_embedding</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/bert.html#BertEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.bert.BertEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.bert.BertEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">input_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/bert.html#BertEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.bert.BertEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.bert.bert_base">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.bert.</span></span><span class="sig-name descname"><span class="pre">bert_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/bert.html#bert_base"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.bert.bert_base" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
 <section id="module-zae_engine.models.foundations.resnet">
 <span id="zae-engine-models-foundations-resnet-module"></span><h2>zae_engine.models.foundations.resnet module<a class="headerlink" href="#module-zae_engine.models.foundations.resnet" title="Link to this heading">¶</a></h2>
 <dl class="py function">
@@ -566,8 +594,8 @@ In Proceedings of the IEEE conference on computer vision and pattern recognition
 <section id="module-zae_engine.models.foundations.unet">
 <span id="zae-engine-models-foundations-unet-module"></span><h2>zae_engine.models.foundations.unet module<a class="headerlink" href="#module-zae_engine.models.foundations.unet" title="Link to this heading">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.models.foundations.unet.unet">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.unet.</span></span><span class="sig-name descname"><span class="pre">unet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.AutoEncoder" title="zae_engine.models.builds.autoencoder.AutoEncoder"><span class="pre">AutoEncoder</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/unet.html#unet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.unet.unet" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="zae_engine.models.foundations.unet.unet_brain">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.unet.</span></span><span class="sig-name descname"><span class="pre">unet_brain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.AutoEncoder" title="zae_engine.models.builds.autoencoder.AutoEncoder"><span class="pre">AutoEncoder</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/unet.html#unet_brain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.unet.unet_brain" title="Link to this definition">¶</a></dt>
 <dd><p>Create a U-Net model with the option to load pre-trained weights.</p>
 <p>The U-Net model is a type of convolutional neural network developed for biomedical image segmentation.</p>
 <p class="rubric">References</p>
@@ -589,6 +617,91 @@ in MICCAI 2015. (<a class="reference external" href="https://arxiv.org/abs/1505.
 <dd class="field-odd"><p>zae_engine.models.autoencoder.AutoEncoder</p>
 </dd>
 </dl>
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.models.foundations.word_embedding">
+<span id="zae-engine-models-foundations-word-embedding-module"></span><h2>zae_engine.models.foundations.word_embedding module<a class="headerlink" href="#module-zae_engine.models.foundations.word_embedding" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.FastTextEmbedding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.word_embedding.</span></span><span class="sig-name descname"><span class="pre">FastTextEmbedding</span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#FastTextEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.FastTextEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A PyTorch module that uses pre-trained FastText embeddings from gensim.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.FastTextEmbedding.embedding">
+<span class="sig-name descname"><span class="pre">embedding</span></span><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.FastTextEmbedding.embedding" title="Link to this definition">¶</a></dt>
+<dd><p>PyTorch embedding layer initialized with FastText pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Embedding</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.FastTextEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#FastTextEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.FastTextEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Passes input tensor through the embedding layer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#FastTextEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Passes the input tensor through the embedding layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor containing indices of words.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor with embeddings for the input indices.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.Word2VecEmbedding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.word_embedding.</span></span><span class="sig-name descname"><span class="pre">Word2VecEmbedding</span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#Word2VecEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.Word2VecEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A PyTorch module that uses pre-trained Word2Vec embeddings from gensim.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.Word2VecEmbedding.embedding">
+<span class="sig-name descname"><span class="pre">embedding</span></span><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.Word2VecEmbedding.embedding" title="Link to this definition">¶</a></dt>
+<dd><p>PyTorch embedding layer initialized with Word2Vec pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Embedding</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.Word2VecEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#Word2VecEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.Word2VecEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Passes input tensor through the embedding layer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#Word2VecEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id7" title="Link to this definition">¶</a></dt>
+<dd><p>Passes the input tensor through the embedding layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor containing indices of words.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor with embeddings for the input indices.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>

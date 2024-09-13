@@ -105,28 +105,144 @@
 <dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.autoencoder.</span></span><span class="sig-name descname"><span class="pre">AutoEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">block:</span> <span class="pre">~typing.Type[~zae_engine.nn_night.blocks.unet_block.UNetBlock</span> <span class="pre">|</span> <span class="pre">~torch.nn.modules.module.Module],</span> <span class="pre">ch_in:</span> <span class="pre">int,</span> <span class="pre">ch_out:</span> <span class="pre">int,</span> <span class="pre">width:</span> <span class="pre">int,</span> <span class="pre">layers:</span> <span class="pre">~typing.Tuple[int]</span> <span class="pre">|</span> <span class="pre">~typing.List[int],</span> <span class="pre">groups:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">dilation:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">norm_layer:</span> <span class="pre">~typing.Callable[[...],</span> <span class="pre">~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.batchnorm.BatchNorm2d'&gt;,</span> <span class="pre">skip_connect:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A flexible AutoEncoder architecture with optional skip connections for U-Net style implementations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> (<em>Type</em><em>[</em><em>Union</em><em>[</em><em>blk.UNetBlock</em><em>, </em><em>nn.Module</em><em>]</em><em>]</em>) – The basic building block for the encoder and decoder (e.g., ResNet block or UNetBlock).</p></li>
+<li><p><strong>ch_in</strong> (<em>int</em>) – Number of input channels.</p></li>
+<li><p><strong>ch_out</strong> (<em>int</em>) – Number of output channels.</p></li>
+<li><p><strong>width</strong> (<em>int</em>) – Base width for the encoder and decoder layers.</p></li>
+<li><p><strong>layers</strong> (<em>Union</em><em>[</em><em>Tuple</em><em>[</em><em>int</em><em>]</em><em>, </em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Number of blocks in each stage of the encoder and decoder.</p></li>
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of groups for group normalization in the block. Default is 1.</p></li>
+<li><p><strong>dilation</strong> (<em>int</em><em>, </em><em>optional</em>) – Dilation rate for convolutional layers. Default is 1.</p></li>
+<li><p><strong>norm_layer</strong> (<em>Callable</em><em>[</em><em>...</em><em>, </em><em>nn.Module</em><em>]</em><em>, </em><em>optional</em>) – Normalization layer to use. Default is <cite>nn.BatchNorm2d</cite>.</p></li>
+<li><p><strong>skip_connect</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, adds skip connections for U-Net style. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.encoder">
+<span class="sig-name descname"><span class="pre">encoder</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.encoder" title="Link to this definition">¶</a></dt>
+<dd><p>The encoder module that encodes the input image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.bottleneck">
+<span class="sig-name descname"><span class="pre">bottleneck</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.bottleneck" title="Link to this definition">¶</a></dt>
+<dd><p>The bottleneck layer between the encoder and decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.decoder">
+<span class="sig-name descname"><span class="pre">decoder</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.decoder" title="Link to this definition">¶</a></dt>
+<dd><p>The decoder module that reconstructs the input image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.ModuleList</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.feature_vectors">
+<span class="sig-name descname"><span class="pre">feature_vectors</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.feature_vectors" title="Link to this definition">¶</a></dt>
+<dd><p>Stores intermediate feature maps for skip connections when <cite>skip_connect</cite> is True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.up_pools">
+<span class="sig-name descname"><span class="pre">up_pools</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.up_pools" title="Link to this definition">¶</a></dt>
+<dd><p>List of transposed convolution layers for upsampling in the decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.ModuleList</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.fc">
+<span class="sig-name descname"><span class="pre">fc</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.fc" title="Link to this definition">¶</a></dt>
+<dd><p>The final output convolutional layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Conv2d</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.sig">
+<span class="sig-name descname"><span class="pre">sig</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.sig" title="Link to this definition">¶</a></dt>
+<dd><p>Sigmoid activation function for the output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Sigmoid</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.feature_hook">
 <span class="sig-name descname"><span class="pre">feature_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder.feature_hook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.feature_hook" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Hooks intermediate feature maps for skip connections.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.feature_output_hook">
 <span class="sig-name descname"><span class="pre">feature_output_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder.feature_output_hook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.feature_output_hook" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Hooks the final feature map before bottleneck.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.AutoEncoder.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.AutoEncoder.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dd><p>Defines the forward pass of the autoencoder.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">feature_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder.feature_hook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Hooks intermediate feature maps for skip connections.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">feature_output_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder.feature_output_hook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
+<dd><p>Hooks the final feature map before bottleneck.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#AutoEncoder.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the forward pass of the autoencoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor. Shape: (batch_size, channels, height, width).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The reconstructed output tensor. Shape: (batch_size, channels, height, width).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -173,61 +289,63 @@ registered hooks while the latter silently ignores them.</p>
 <section id="module-zae_engine.models.builds.transformer">
 <span id="zae-engine-models-builds-transformer-module"></span><h2>zae_engine.models.builds.transformer module<a class="headerlink" href="#module-zae_engine.models.builds.transformer" title="Link to this heading">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.AuxModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.transformer.</span></span><span class="sig-name descname"><span class="pre">AuxModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_aux</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#AuxModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.AuxModel" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.BertBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.transformer.</span></span><span class="sig-name descname"><span class="pre">BertBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep_token_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">102</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#BertBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.BertBase" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.AuxModel.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aux_vector</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#AuxModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.AuxModel.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.TimeAwareTransformer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.transformer.</span></span><span class="sig-name descname"><span class="pre">TimeAwareTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_head</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_head</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_seq_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#TimeAwareTransformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.TimeAwareTransformer" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<p>Time-aware Transformer model for encoding event sequences with time information.</p>
+<p>BertBase is a specialized version of TransformerBase, including a pooler for processing the [CLS] token.</p>
+<p>This class adds a pooler layer that processes the first token ([CLS]) from the encoder output, similar to the
+original BERT architecture. If a hidden dimension is provided during initialization, the pooler will be applied.
+Otherwise, only the encoder output is returned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>d_head</strong> (<em>int</em>) – Dimension of the head.</p></li>
-<li><p><strong>d_model</strong> (<em>int</em>) – Dimension of the model.</p></li>
-<li><p><strong>n_head</strong> (<em>int</em>) – Number of attention heads.</p></li>
-<li><p><strong>num_layers</strong> (<em>int</em>) – Number of transformer encoder layers.</p></li>
-<li><p><strong>max_seq_len</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum sequence length (default is 512).</p></li>
+<li><p><strong>encoder_embedding</strong> (<em>nn.Module</em>) – The embedding layer for the encoder input.</p></li>
+<li><p><strong>encoder</strong> (<em>nn.Module</em>) – The encoder module responsible for transforming the input sequence.</p></li>
+<li><p><strong>dim_hidden</strong> (<em>int</em><em>, </em><em>optional</em>) – The hidden dimension used by the pooler layer. If provided, a pooler layer will be applied to the [CLS] token
+(first token) of the encoder output. Otherwise, only the encoder output is returned.</p></li>
+<li><p><strong>sep_token_id</strong> (<em>int</em><em>, </em><em>optional</em>) – The ID representing the [SEP] token, used to identify sentence boundaries. The default value is 102, which
+is the standard for Hugging Face’s BERT tokenizer. In BERT, the [SEP] token separates different sentences
+or segments, and is expected to be present once or twice in the input. An error will be raised if more than
+two [SEP] tokens are found in the input.</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The default value for <cite>sep_token_id</cite> is 102, which corresponds to the [SEP] token in Hugging Face’s pre-trained
+BERT models. This token is used to separate sentences or indicate the end of a sentence. If you are using a different
+tokenizer or model, you may need to adjust this value accordingly.</p></li>
+<li><p>If <cite>input_sequence</cite> is precomputed embeddings (dtype is float), the embedding layer is skipped, and
+<cite>position_ids</cite> and <cite>token_type_ids</cite> are not generated, as these are already embedded.</p></li>
+</ul>
 <dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">forward(event_vecs,</span> <span class="pre">time_vecs,</span> <span class="pre">mask=None):</span></span></dt>
-<dd><p>Forward pass through the model.</p>
+<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.BertBase.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_key_padding_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#BertBase.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.BertBase.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Performs the forward pass. If a hidden dimension (dim_hidden) is provided, the pooler is applied to the
+[CLS] token. Otherwise, it returns the encoder output as-is.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.TimeAwareTransformer.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event_vecs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_vecs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#TimeAwareTransformer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.TimeAwareTransformer.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Forward pass through the TimeAwareTransformer.</p>
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_key_padding_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#BertBase.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the BERT model with an optional pooler.</p>
+<p>If a hidden dimension is provided, the pooler is applied to the first token of the encoder output.
+Otherwise, the encoder output is returned as-is.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>event_vecs</strong> (<em>torch.Tensor</em>) – Input event vectors of shape (seq_len, batch_size, 128).</p></li>
-<li><p><strong>time_vecs</strong> (<em>torch.Tensor</em>) – Input time vectors of shape (seq_len, batch_size).</p></li>
-<li><p><strong>mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Mask for the input data (default is None).</p></li>
+<li><p><strong>input_sequence</strong> (<em>torch.Tensor</em>) – The input tensor representing either input_ids (token IDs) or input embeddings.
+If dtype is int, it is assumed to be token IDs (input_ids).
+If dtype is float, it is assumed to be precomputed embeddings (inputs_embeds), and the embedding layer
+is skipped. In this case, <cite>position_ids</cite> and <cite>token_type_ids</cite> are not generated.</p></li>
+<li><p><strong>src_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Source mask for masking certain positions in the encoder input. Shape: (batch_size, seq_len).</p></li>
+<li><p><strong>src_key_padding_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Mask for padding tokens in the source sequence. Shape: (batch_size, seq_len).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Output features of the model of shape (batch_size, d_model).</p>
+<dd class="field-even"><p>If dim_hidden is provided, returns the pooled output from the [CLS] token. Otherwise, returns the
+encoder output for the entire sequence. Shape: (batch_size, dim_hidden) if pooled, or
+(batch_size, seq_len, dim_hidden) if not.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor</p>
@@ -238,43 +356,63 @@ registered hooks while the latter silently ignores them.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.UserIdModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.transformer.</span></span><span class="sig-name descname"><span class="pre">UserIdModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#UserIdModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.UserIdModel" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.CoderBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.transformer.</span></span><span class="sig-name descname"><span class="pre">CoderBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_factory:</span> <span class="pre">~typing.Type[~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.transformer.TransformerEncoderLayer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_feedforward:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">2048</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**factory_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#CoderBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.CoderBase" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.UserIdModel.expand_classes">
-<span class="sig-name descname"><span class="pre">expand_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_num_classes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#UserIdModel.expand_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.UserIdModel.expand_classes" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.UserIdModel.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event_vecs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_vecs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aux</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#UserIdModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.UserIdModel.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.periodic_encoding">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.transformer.</span></span><span class="sig-name descname"><span class="pre">periodic_encoding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#periodic_encoding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.periodic_encoding" title="Link to this definition">¶</a></dt>
-<dd><p>주기적인 타임스탬프 인코딩을 생성하는 함수.</p>
+<p>Base class for both Encoder and Decoder that defines the core structure of the transformer layers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>timestamps</strong> (<em>torch.Tensor</em>) – 타임스탬프 시퀀스, shape (batch_size, seq_len).</p></li>
-<li><p><strong>d_model</strong> (<em>int</em>) – 모델의 차원.</p></li>
+<li><p><strong>d_model</strong> (<em>int</em>) – The dimension of the embedding space (output size of each layer).</p></li>
+<li><p><strong>num_layers</strong> (<em>int</em>) – The number of layers in the encoder/decoder.</p></li>
+<li><p><strong>layer_factory</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – Custom layer module. Defaults to <cite>nn.TransformerEncoderLayer</cite> for encoders and <cite>nn.TransformerDecoderLayer</cite> for decoders.</p></li>
+<li><p><strong>norm_layer</strong> (<em>#</em>)</p></li>
+<li><p><strong>'LayerNorm'.</strong> (<em>#     The normalization layer to apply. Can be a string</em><em> or </em><em>custom nn.Module. Default is</em>)</p></li>
+<li><p><strong>dim_feedforward</strong> (<em>int</em><em>, </em><em>optional</em>) – The dimension of the feedforward network. Default is 2048.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization. Default is 0.1.</p></li>
+<li><p><strong>num_heads</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of attention heads in multi-head attention. Default is 8.</p></li>
+<li><p><strong>factory_kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Additional arguments to pass to <cite>layer_factory</cite> when creating layers.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.DecoderBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.transformer.</span></span><span class="sig-name descname"><span class="pre">DecoderBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_factory:</span> <span class="pre">~typing.Type[~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.transformer.TransformerDecoderLayer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_feedforward:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">2048</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**factory_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#DecoderBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.DecoderBase" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zae_engine.models.builds.transformer.CoderBase" title="zae_engine.models.builds.transformer.CoderBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoderBase</span></code></a></p>
+<p>Decoder class that builds on CoderBase for decoding sequences based on the encoder’s memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d_model</strong> (<em>int</em>) – The dimension of the embedding space (output size of each layer).</p></li>
+<li><p><strong>num_layers</strong> (<em>int</em>) – The number of layers in the decoder.</p></li>
+<li><p><strong>layer_factory</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – Custom layer module. Defaults to <cite>nn.TransformerDecoderLayer</cite>.</p></li>
+<li><p><strong>norm_layer</strong> (<em>str</em><em> or </em><em>nn.Module</em><em>, </em><em>optional</em>) – The normalization layer to apply. Can be a string or custom <cite>nn.Module</cite>. Default is ‘LayerNorm’.</p></li>
+<li><p><strong>dim_feedforward</strong> (<em>int</em><em>, </em><em>optional</em>) – The dimension of the feedforward network. Default is 2048.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization. Default is 0.1.</p></li>
+<li><p><strong>num_heads</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of attention heads in multi-head attention. Default is 8.</p></li>
+<li><p><strong>factory_kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Additional arguments to pass to <cite>layer_factory</cite> when creating layers.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.DecoderBase.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tgt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tgt_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tgt_key_padding_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory_key_padding_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#DecoderBase.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.DecoderBase.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tgt</strong> (<em>torch.Tensor</em>) – The input tensor representing the target sequence. Shape: (batch_size, seq_len, d_model).</p></li>
+<li><p><strong>memory</strong> (<em>torch.Tensor</em>) – The encoded memory output from the encoder. Shape: (batch_size, seq_len_src, d_model).</p></li>
+<li><p><strong>tgt_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – A mask tensor to prevent attention to certain positions in the target sequence.</p></li>
+<li><p><strong>memory_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – A mask tensor to prevent attention to certain positions in the memory sequence (from the encoder).</p></li>
+<li><p><strong>tgt_key_padding_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – A mask tensor to prevent attention to padding tokens in the target sequence.</p></li>
+<li><p><strong>memory_key_padding_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – A mask tensor to prevent attention to padding tokens in the memory sequence.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>주기적인 타임스탬프 인코딩 텐서, shape (batch_size, seq_len, d_model).</p>
+<dd class="field-even"><p>The decoded output of the target sequence. Shape: (batch_size, seq_len_tgt, d_model).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor</p>
@@ -282,25 +420,102 @@ registered hooks while the latter silently ignores them.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.positional_encoding">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.transformer.</span></span><span class="sig-name descname"><span class="pre">positional_encoding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#positional_encoding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.positional_encoding" title="Link to this definition">¶</a></dt>
-<dd><p>주기적인 위치 인코딩을 생성하는 함수.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.EncoderBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.transformer.</span></span><span class="sig-name descname"><span class="pre">EncoderBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers:</span> <span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_factory:</span> <span class="pre">~typing.Type[~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.transformer.TransformerEncoderLayer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_feedforward:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">2048</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**factory_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#EncoderBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.EncoderBase" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zae_engine.models.builds.transformer.CoderBase" title="zae_engine.models.builds.transformer.CoderBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoderBase</span></code></a></p>
+<p>Encoder class that builds on CoderBase for encoding the input sequences.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>seq_len</strong> (<em>int</em>) – 시퀀스의 길이.</p></li>
-<li><p><strong>d_model</strong> (<em>int</em>) – 모델의 차원.</p></li>
-<li><p><strong>device</strong> (<em>torch.device</em>) – 텐서를 생성할 디바이스.</p></li>
+<li><p><strong>d_model</strong> (<em>int</em>) – The dimension of the embedding space (output size of each layer).</p></li>
+<li><p><strong>num_layers</strong> (<em>int</em>) – The number of layers in the encoder.</p></li>
+<li><p><strong>layer_factory</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – Custom layer module. Defaults to <cite>nn.TransformerEncoderLayer</cite>.</p></li>
+<li><p><strong>norm_layer</strong> (<em>#</em>)</p></li>
+<li><p><strong>'LayerNorm'.</strong> (<em>#     The normalization layer to apply. Can be a string</em><em> or </em><em>custom nn.Module. Default is</em>)</p></li>
+<li><p><strong>dim_feedforward</strong> (<em>int</em><em>, </em><em>optional</em>) – The dimension of the feedforward network. Default is 2048.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for regularization. Default is 0.1.</p></li>
+<li><p><strong>num_heads</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of attention heads in multi-head attention. Default is 8.</p></li>
+<li><p><strong>factory_kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Additional arguments to pass to <cite>layer_factory</cite> when creating layers.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.EncoderBase.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_key_padding_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#EncoderBase.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.EncoderBase.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the encoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src</strong> (<em>torch.Tensor</em>) – The input tensor representing the source sequence. Shape: (batch_size, seq_len, d_model).</p></li>
+<li><p><strong>src_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – A mask tensor to prevent attention to certain positions in the source sequence.</p></li>
+<li><p><strong>src_key_padding_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – A mask tensor to prevent attention to padding tokens in the source sequence.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>주기적인 위치 인코딩 텐서, shape (seq_len, d_model).</p>
+<dd class="field-even"><p>The encoded output of the source sequence. Shape: (batch_size, seq_len, d_model).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor</p>
 </dd>
 </dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.TransformerBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.transformer.</span></span><span class="sig-name descname"><span class="pre">TransformerBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder_embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Identity()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#TransformerBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.TransformerBase" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A flexible Transformer model that supports both encoder-only and encoder-decoder architectures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder_embedding</strong> (<em>nn.Module</em>) – The embedding layer for the encoder input.</p></li>
+<li><p><strong>decoder_embedding</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – The embedding layer for the decoder input. If not provided, encoder_embedding is used for both encoder and decoder.</p></li>
+<li><p><strong>encoder</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – The encoder module. Defaults to nn.Identity(), which can be replaced with any custom encoder (e.g., TransformerEncoder).</p></li>
+<li><p><strong>decoder</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – The decoder module. If None, the model operates as an encoder-only model (e.g., BERT). Otherwise, uses a decoder (e.g., for translation models).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>If <cite>decoder</cite> is None, the model acts as an encoder-only transformer (similar to BERT).</p></li>
+<li><p>If <cite>decoder</cite> is provided, the model functions as an encoder-decoder transformer (e.g., for translation tasks).</p></li>
+<li><p>The forward pass adjusts based on the presence of the decoder.</p></li>
+</ul>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.builds.transformer.TransformerBase.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tgt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tgt_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_key_padding_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tgt_key_padding_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#TransformerBase.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.transformer.TransformerBase.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the model. If <cite>tgt</cite> and <cite>decoder</cite> are provided, both encoder and decoder are used. Otherwise, only the encoder is applied.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tgt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tgt_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_key_padding_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tgt_key_padding_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/transformer.html#TransformerBase.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the Transformer model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src</strong> (<em>torch.Tensor</em>) – The input tensor representing the source sequence (e.g., for BERT-style models). Shape: (batch_size, seq_len).</p></li>
+<li><p><strong>tgt</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – The input tensor representing the target sequence (for models with a decoder). Shape: (batch_size, seq_len).</p></li>
+<li><p><strong>src_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Source mask for masking certain positions in the encoder input.</p></li>
+<li><p><strong>tgt_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Target mask for masking certain positions in the decoder input.</p></li>
+<li><p><strong>src_key_padding_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Mask for padding tokens in the source sequence.</p></li>
+<li><p><strong>tgt_key_padding_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Mask for padding tokens in the target sequence.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If a decoder is provided, returns the output of the decoder. Otherwise, returns the output of the encoder.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
