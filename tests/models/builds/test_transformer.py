@@ -84,19 +84,13 @@ class TestTransformerBase(unittest.TestCase):
 
 class TestBertBase(unittest.TestCase):
     def setUp(self):
-        # 모델의 하이퍼파라미터 설정
+        # Define model hyperparameters
         self.d_model = 768
         self.num_layers = 12
-        self.src_vocab_size = 30522
         self.max_len = 512
         self.dim_hidden = 768
 
-        # 임베딩 레이어 정의
-        self.encoder_embedding = nn.Sequential(
-            nn.Embedding(self.src_vocab_size, self.d_model), nn.LayerNorm(self.d_model)
-        )
-
-        # 인코더 정의
+        # Define encoder (no embedding layer)
         self.encoder = EncoderBase(
             d_model=self.d_model,
             num_layers=self.num_layers,
@@ -105,36 +99,48 @@ class TestBertBase(unittest.TestCase):
             batch_first=True,
         )
 
-        # BertBase 모델 정의
-        self.model = BertBase(
-            encoder_embedding=self.encoder_embedding, encoder=self.encoder, dim_hidden=self.dim_hidden
-        )
+        # Define BertBase model (encoder_embedding is nn.Identity since input_embeds are precomputed)
+        self.model = BertBase(encoder_embedding=nn.Identity(), encoder=self.encoder, dim_hidden=self.dim_hidden)
 
-        # 샘플 데이터 생성
-        self.src = torch.randint(0, self.src_vocab_size, (32, self.max_len))  # batch_size=32, seq_len=max_len
+        # Generate precomputed embeddings (batch_size=32, seq_len=512, embedding_dim=768)
+        self.input_embeds = torch.randn(32, self.max_len, self.d_model)
 
     def test_forward_with_pooler(self):
-        # Pooler가 있는 경우의 forward 패스 테스트
-        output = self.model(self.src)
-        self.assertEqual(output.size(), (32, self.dim_hidden))  # 예상 출력 크기 확인
+        # Test forward pass with precomputed embeddings and a pooler
+        output = self.model(self.input_embeds)
+        self.assertEqual(output.size(), (32, self.dim_hidden))  # Check expected output size
 
     def test_forward_without_pooler(self):
-        # Pooler가 없는 경우의 forward 패스 테스트
-        model_without_pooler = BertBase(encoder_embedding=self.encoder_embedding, encoder=self.encoder)
-        output = model_without_pooler(self.src)
-        self.assertEqual(output.size(), (32, self.max_len, self.d_model))  # 예상 출력 크기 확인
+        # Test forward pass without a pooler, using precomputed embeddings
+        model_without_pooler = BertBase(encoder_embedding=nn.Identity(), encoder=self.encoder)
+        output = model_without_pooler(self.input_embeds)
+        self.assertEqual(output.size(), (32, self.max_len, self.d_model))  # Check expected output size
 
     def test_variable_sequence_length(self):
-        # 다양한 시퀀스 길이에 대한 테스트
-        src_var_len = torch.randint(0, self.src_vocab_size, (32, 256))  # 짧은 시퀀스
-        output = self.model(src_var_len)
-        self.assertEqual(output.size(), (32, self.dim_hidden))  # Pooler 출력 크기 확인
+        # Test with variable sequence lengths using precomputed embeddings
+        input_embeds_var_len = torch.randn(32, 256, self.d_model)  # Shorter sequence
+        output = self.model(input_embeds_var_len)
+        self.assertEqual(output.size(), (32, self.dim_hidden))  # Check pooler output size
 
     def test_with_mask(self):
-        # 마스크를 적용한 테스트
+        # Test with masking applied using precomputed embeddings
         src_mask = torch.ones(self.max_len, self.max_len).bool()
-        output = self.model(self.src, src_mask=src_mask)
-        self.assertEqual(output.size(), (32, self.dim_hidden))  # Pooler 출력 크기 확인
+        output = self.model(self.input_embeds, src_mask=src_mask)
+        self.assertEqual(output.size(), (32, self.dim_hidden))  # Check pooler output size
+
+    # def test_token_type_ids_generation(self):
+    #     # Test token_type_ids generation based on [SEP] tokens
+    #     src_with_sep = torch.randint(0, self.src_vocab_size, (32, self.max_len)).tolist()
+    #
+    #     for i in range(32):
+    #         # Ensure only one [SEP] token is inserted per sequence to avoid errors
+    #         src_with_sep[i][self.max_len // 2] = self.model.sep_token_id  # Insert a single [SEP] token
+    #
+    #     token_type_ids = self.model._generate_token_type_ids(src_with_sep)
+    #
+    #     # Check that the token_type_ids are correctly generated
+    #     self.assertTrue(torch.all(token_type_ids[:, : self.max_len // 2] == 0))  # First part should be 0
+    #     self.assertTrue(torch.all(token_type_ids[:, self.max_len // 2 + 1 :] == 1))  # Second part should be 1
 
 
 if __name__ == "__main__":
