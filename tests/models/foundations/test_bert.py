@@ -3,8 +3,7 @@ import torch
 import torch.nn as nn
 from transformers import AutoTokenizer
 
-from zae_engine.models import BertBase, EncoderBase
-from zae_engine.nn_night.layers import Additional
+from zae_engine.models.foundations import bert_base
 
 
 class TestBertBase(unittest.TestCase):
@@ -14,33 +13,10 @@ class TestBertBase(unittest.TestCase):
         self.num_layers = 12
         self.sep_token_id = 102
         self.src_vocab_size = 30522
-        self.max_len = 128
+        self.max_len = 512
 
-        # Embedding layer
-        self.embedding_layer = nn.Sequential(
-            Additional(
-                nn.Embedding(self.src_vocab_size, self.dim_model, padding_idx=0),
-                nn.Embedding(self.max_len, self.dim_model),
-                nn.Embedding(2, self.dim_model),
-            ),
-            nn.LayerNorm(self.dim_model),
-        )
-
-        # Define encoder
-        self.encoder = EncoderBase(
-            d_model=self.dim_model,
-            num_layers=self.num_layers,
-            layer_factory=nn.TransformerEncoderLayer,
-            dim_feedforward=3072,
-        )
-
-        # Create BertBase model
-        self.bert_model = BertBase(
-            encoder_embedding=self.embedding_layer, encoder=self.encoder, dim_hidden=self.dim_model
-        )
-
-        # Define tokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased", use_fast=True)
+        # Load pre-trained model and tokenizer
+        self.tokenizer, self.bert_model = bert_base(pretrained=True)
 
         # Generate input data
         self.input_ids = torch.randint(0, self.src_vocab_size, (32, self.max_len))  # batch_size=32, seq_len=max_len
@@ -70,18 +46,17 @@ class TestBertBase(unittest.TestCase):
 
     def test_token_type_ids_generation(self):
         """Test token type IDs generation."""
-        # Create a sequence with a single [SEP] token
+        # Create a sequence with a single [SEP] token at the max length position
         input_ids_with_sep = torch.cat(
             [self.input_ids[:, : self.max_len - 1], torch.tensor([[self.sep_token_id]] * 32)], dim=1
         )
 
         # Generate token type IDs using Bert model
-        self.bert_model(input_sequence=input_ids_with_sep)
-
-        # Check if token type IDs are correctly assigned (0 for the first segment, 1 for the second)
         token_type_ids = self.bert_model._generate_token_type_ids(input_ids_with_sep.tolist())
-        self.assertTrue(torch.all(token_type_ids[:, : self.max_len - 1] == 0))
-        self.assertTrue(torch.all(token_type_ids[:, self.max_len - 1 :] == 1))
+
+        # Check if token type IDs are correctly assigned
+        self.assertTrue(torch.all(token_type_ids[:, : self.max_len - 1] == 0))  # First segment should be 0
+        self.assertTrue(torch.all(token_type_ids[:, self.max_len :] == 1))  # Second segment should be 1 after [SEP]
 
 
 if __name__ == "__main__":
