@@ -4,6 +4,8 @@ import os
 import nibabel
 import numpy as np
 from PIL.GifImagePlugin import GifImageFile
+from PIL.JpegImagePlugin import JpegImageFile
+from urllib.error import HTTPError
 from PIL import Image
 
 from zae_engine.utils.io import example_ecg, example_mri, image_from_url
@@ -57,12 +59,18 @@ class TestSampleDataLoader(unittest.TestCase):
         self.assertEqual(res.shape, (128, 96, 24, 2))  # check dimensions [Y, X, # of slices, real & imaginary]
 
     def test_image_from_url(self):
-        url = "https://github.com/zae-park/zae-engine/raw/main/assets/img/spinning_ascii_donut.gif150"
-        donut_gif = image_from_url(url)
-        self.assertIsInstance(donut_gif, GifImageFile)  # check if result is a PIL Image
+        donut_url = "https://github.com/zae-park/zae-engine/raw/main/assets/img/spinning_ascii_donut.gif150"
+        cat_url = "https://avatars.githubusercontent.com/u/79952215?s=400&u=91feba2bda98b1a30e56342f7acfd44efb06434f&v=4"
+        
+        with self.assertRaises(HTTPError) as context:
+            donut_gif = image_from_url(donut_url)
+            self.assertIsInstance(donut_gif, GifImageFile)  # check if result is a PIL Image
+        
+        cat_jpeg = image_from_url(cat_url)
+        self.assertIsInstance(cat_jpeg, JpegImageFile)  # check if result is a PIL Image
 
         save_dst = "test_image.png"
-        image_from_url(url, save_dst)
+        image_from_url(cat_url, save_dst)
         self.assertTrue(os.path.exists(save_dst))  # check if image is saved
         os.remove(save_dst)
 
