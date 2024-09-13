@@ -3,6 +3,7 @@ import os
 
 import nibabel
 import numpy as np
+from PIL.GifImagePlugin import GifImageFile
 from PIL import Image
 
 from zae_engine.utils.io import example_ecg, example_mri, image_from_url
@@ -56,9 +57,9 @@ class TestSampleDataLoader(unittest.TestCase):
         self.assertEqual(res.shape, (128, 96, 24, 2))  # check dimensions [Y, X, # of slices, real & imaginary]
 
     def test_image_from_url(self):
-        url = "https://via.placeholder.com/150"
-        img = image_from_url(url)
-        self.assertIsInstance(img, Image.Image)  # check if result is a PIL Image
+        url = "https://github.com/zae-park/zae-engine/raw/main/assets/img/spinning_ascii_donut.gif150"
+        donut_gif = image_from_url(url)
+        self.assertIsInstance(donut_gif, GifImageFile)  # check if result is a PIL Image
 
         save_dst = "test_image.png"
         image_from_url(url, save_dst)
