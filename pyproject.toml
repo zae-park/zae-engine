@@ -31,6 +31,7 @@ click = "^8.1.7"
 tqdm = "^4.65.0"
 rich = "^13.5.2"
 termcolor = "2.2.0"
+gensim = "^4.3.3"
 
 [tool.poetry.group.dev.dependencies]
 typeguard = "^4.1.2"
@@ -41,6 +42,7 @@ seaborn = "^0.12.2"
 
 jupyter = "^1.0.0"
 minio = "^7.1.17"
+transformers = "^4.44.1"    # warning message @ low version
 
 [tool.poetry.group.test.dependencies]
 coverage = "^7.4.4"

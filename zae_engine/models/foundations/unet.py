@@ -85,7 +85,7 @@ def __brain_weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [Ordered
     return dst_weight
 
 
-def unet(pretrained: bool = False) -> autoencoder.AutoEncoder:
+def unet_brain(pretrained: bool = False) -> autoencoder.AutoEncoder:
     """
     Create a U-Net model with the option to load pre-trained weights.
 
