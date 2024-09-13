@@ -182,10 +182,15 @@ class BertBase(nn.Module):
             input_embeds = input_sequence
         else:
             # input_sequence is token IDs (input_ids), generate position_ids and token_type_ids
-            position_ids = torch.arange(
-                input_sequence.size(1), dtype=torch.long, device=input_sequence.device
-            ).unsqueeze(0)
+            batch_size, seq_len = input_sequence.size()
+
+            # Generate position_ids: [batch_size, seq_len]
+            position_ids = torch.arange(seq_len, dtype=torch.long).unsqueeze(0).repeat(batch_size, 1)
+
+            # Generate token_type_ids: [batch_size, seq_len]
             token_type_ids = self._generate_token_type_ids(input_sequence.tolist())
+
+            # Pass input_ids, position_ids, and token_type_ids to embedding layer
             input_embeds = self.encoder_embedding(input_sequence, position_ids, token_type_ids)
 
         # Pass through the encoder
@@ -198,14 +203,14 @@ class BertBase(nn.Module):
 
         return encoded_output
 
-    def _generate_token_type_ids(self, input_sequence: list) -> torch.Tensor:
+    def _generate_token_type_ids(self, input_sequences: list) -> torch.Tensor:
         """
-        Generate token_type_ids based on the presence of [SEP] tokens in the input sequence.
+        Generate token_type_ids for each sequence in the batch based on the presence of [SEP] tokens.
 
         Parameters
         ----------
-        input_sequence : list
-            The list of token IDs from which token_type_ids are generated.
+        input_sequences : list[list[int]]
+            The list of token ID sequences (batch of sequences) from which token_type_ids are generated.
 
         Returns
         -------
@@ -215,23 +220,29 @@ class BertBase(nn.Module):
         Raises
         ------
         ValueError
-            If more than two [SEP] tokens are present in the input_sequence.
+            If more than two [SEP] tokens are present in any sequence.
         """
-        token_type_ids = torch.zeros(len(input_sequence), dtype=torch.long)
+        token_type_ids_batch = []
 
-        sep_indices = [i for i, token_id in enumerate(input_sequence) if token_id == self.sep_token_id]
+        for input_sequence in input_sequences:
+            token_type_ids = torch.zeros(len(input_sequence), dtype=torch.long)
 
-        if len(sep_indices) > 2:
-            raise ValueError(f"Input sequence contains more than two [SEP] tokens: {len(sep_indices)} found.")
+            sep_indices = [i for i, token_id in enumerate(input_sequence) if token_id == self.sep_token_id]
 
-        if len(sep_indices) == 2:
-            # First sentence is before the first [SEP], second sentence is after the first [SEP]
-            token_type_ids[sep_indices[0] + 1 :] = 1
-        elif len(sep_indices) == 1:
-            # Second sentence starts after the [SEP]
-            token_type_ids[sep_indices[0] + 1 :] = 1
+            if len(sep_indices) > 2:
+                raise ValueError(f"Input sequence contains more than two [SEP] tokens: {len(sep_indices)} found.")
 
-        return token_type_ids.unsqueeze(0)  # Return with batch dimension
+            if len(sep_indices) == 2:
+                # First sentence is before the first [SEP], second sentence is after the first [SEP]
+                token_type_ids[sep_indices[0] + 1 :] = 1
+            elif len(sep_indices) == 1:
+                # Second sentence starts after the [SEP]
+                token_type_ids[sep_indices[0] + 1 :] = 1
+
+            token_type_ids_batch.append(token_type_ids)
+
+        # Stack the token_type_ids for each sequence in the batch to form a tensor of shape [batch_size, seq_len]
+        return torch.stack(token_type_ids_batch)
 
 
 class CoderBase(nn.Module):
