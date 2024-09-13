@@ -1,12 +1,10 @@
 import unittest
 import torch
-import torch.nn as nn
-from transformers import AutoTokenizer
 
 from zae_engine.models.foundations import bert_base
 
 
-class TestBertBase(unittest.TestCase):
+class TestBert(unittest.TestCase):
     def setUp(self):
         # Define model hyperparameters
         self.dim_model = 768
