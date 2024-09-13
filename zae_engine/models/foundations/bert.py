@@ -37,12 +37,12 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
     for k, v in src_weight.items():
         if k.startswith("embeddings"):
             k = (
-                k.replace("word_embeddings", "0.0")  # word
-                .replace("position_embeddings", "0.1")  # position
-                .replace("token_type_embeddings", "0.2")  # type
+                k.replace("word_embeddings", "word")  # word
+                .replace("position_embeddings", "position")  # position
+                .replace("token_type_embeddings", "token_type")  # type
             )
             k = k.replace("embeddings", "encoder_embedding")
-            k = k.replace("LayerNorm", "1")  # norm
+            k = k.replace("LayerNorm", "norm")  # norm
         elif k.startswith("encoder.layer"):
             k = k.replace(".layer.", ".layers.")
             # Save QKV weight & bias to buffer
@@ -87,25 +87,34 @@ def __model_weight_mapper(src_weight: Union[OrderedDict | dict], dst_weight: Uni
     return dst_weight
 
 
+class BertEmbedding(nn.Module):
+    def __init__(self, vocab_size, max_len, dim_embedding):
+        super(BertEmbedding, self).__init__()
+        self.word = nn.Embedding(vocab_size, dim_embedding, padding_idx=0)
+        self.position = nn.Embedding(max_len, dim_embedding)
+        self.token_type = nn.Embedding(2, dim_embedding)
+        self.norm = nn.LayerNorm(dim_embedding)
+
+    def forward(self, *input_args):
+        w, p, t = input_args
+        emb = self.word(w) + self.position(p) + self.token_type(t)
+        return self.norm(emb)
+
+
 def bert_base(pretrained=False) -> tuple:
     model_name = checkpoint_map["bert"]
 
     dim_model = 768
     dim_ff = 3072
+    sep_token_id = 102
+    src_vocab_size = 30522
+    max_len = 512
     layer_factory = nn.TransformerEncoderLayer
 
     # Embedding = word + positional + type
-    zae_emb = nn.Sequential(
-        Additional(
-            nn.Embedding(30522, dim_model, padding_idx=0),
-            nn.Embedding(512, dim_model),
-            nn.Embedding(2, dim_model),
-        ),
-        nn.LayerNorm(dim_model),
-    )
-
+    zae_emb = BertEmbedding(vocab_size=src_vocab_size, max_len=max_len, dim_embedding=dim_model)
     zae_enc = EncoderBase(d_model=dim_model, num_layers=12, layer_factory=layer_factory, dim_feedforward=dim_ff)
-    zae_bert = BertBase(encoder_embedding=zae_emb, encoder=zae_enc, dim_hidden=dim_model)
+    zae_bert = BertBase(encoder_embedding=zae_emb, encoder=zae_enc, dim_hidden=dim_model, sep_token_id=sep_token_id)
 
     tokenizer_name = model_name
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, clean_up_tokenization_spaces=True)
