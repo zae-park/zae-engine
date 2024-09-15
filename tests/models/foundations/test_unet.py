@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from zae_engine.models.foundations import unet
+from zae_engine.models.foundations import unet_brain
 
 
 class TestUnet(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestUnet(unittest.TestCase):
         pass
 
     def test_unet(self):
-        model = unet.unet()
+        model = unet_brain()
         output = model(self.test_sample)
         expect_output = self.test_sample.mean(1, keepdim=True)
 
