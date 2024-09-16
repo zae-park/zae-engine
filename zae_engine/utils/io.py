@@ -112,9 +112,9 @@ def example_ecg(beat_idx: int = None) -> Tuple[np.ndarray, ...]:
     if sym[0] != "*":
         samp.insert(0, 0)
         sym.insert(0, "*")
-    if sym[-1] != "*":
-        samp.append(2499)
-        sym.append("*")
+    # if sym[-1] != "*":
+    #     samp.append(2499)
+    #     sym.append("*")
 
     assert len(sym) == len(samp), "The length of samples and symbols is not matched. The annotation file is insane."
     assert len(sym) % 3 == 0, "Invalid symbol. Please check out the first & last symbol of annotation."
@@ -175,7 +175,3 @@ def example_mri() -> nibabel.arrayproxy.ArrayProxy:
     proxy = nib.load(example_path)
     if "get_fdata" in proxy.__dir__():
         return proxy.dataobj
-
-
-if __name__ == "__main__":
-    res = example_mri()
