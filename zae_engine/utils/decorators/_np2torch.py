@@ -153,10 +153,10 @@ def np2torch(dtype: torch.dtype, *keys: str, n: int = None) -> Callable:
             if keys:
                 # Assuming new_args[offset] is a dict
                 for key in keys:
-                    if key in new_args[offset]:
-                        v = new_args[offset][key]
-                        if isinstance(v, np.ndarray):
-                            new_args[offset][key] = torch.tensor(v, dtype=dtype)
+                    # Directly access the key without checking existence to raise KeyError if missing
+                    v = new_args[offset][key]
+                    if isinstance(v, np.ndarray):
+                        new_args[offset][key] = torch.tensor(v, dtype=dtype)
             else:
                 # Adjust end_index to avoid IndexError if n is greater than the number of arguments
                 end_index = min(offset + n, len(new_args)) if n is not None else len(new_args)
