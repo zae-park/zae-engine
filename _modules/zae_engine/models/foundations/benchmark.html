@@ -70,186 +70,178 @@
            <div itemprop="articleBody">
              
   <h1>Source code for zae_engine.models.foundations.benchmark</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
 <span class="kn">from</span> <span class="nn">..builds</span> <span class="kn">import</span> <span class="n">transformer</span> <span class="k">as</span> <span class="n">trx</span>
+<span class="kn">from</span> <span class="nn">...nn_night.layers</span> <span class="kn">import</span> <span class="n">SinusoidalPositionalEncoding</span>
 <span class="kn">from</span> <span class="nn">...loss</span> <span class="kn">import</span> <span class="n">angular</span>
 
-<span class="c1">#</span>
-<span class="c1"># from ..builds.legacy import Segmentor, Regressor1D</span>
-<span class="c1"># from ..utility import initializer, WeightLoader</span>
-<span class="c1">#</span>
-<span class="c1">#</span>
-<span class="c1"># def beat_segmentation(pretrained: Optional[bool] = False) -&gt; nn.Module:</span>
+
+<span class="c1"># class UserIdModel(nn.Module):</span>
 <span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     Build model which has a same structure with the latest released model.</span>
-<span class="c1">#     :param pretrained: bool</span>
-<span class="c1">#         If True, load weight from the server.</span>
-<span class="c1">#         If not, weights are initialized with &#39;initializer&#39; method in utils.py</span>
-<span class="c1">#     :return: nn.Module</span>
+<span class="c1">#     User identification model using a Transformer encoder and ArcFace loss.</span>
+<span class="c1">#</span>
+<span class="c1">#     Parameters</span>
+<span class="c1">#     ----------</span>
+<span class="c1">#     d_model : int</span>
+<span class="c1">#         Dimension of the model.</span>
+<span class="c1">#     n_head : int</span>
+<span class="c1">#         Number of attention heads.</span>
+<span class="c1">#     num_layers : int</span>
+<span class="c1">#         Number of transformer encoder layers.</span>
+<span class="c1">#     num_classes : int</span>
+<span class="c1">#         Number of user classes.</span>
+<span class="c1">#</span>
+<span class="c1">#     Methods</span>
+<span class="c1">#     -------</span>
+<span class="c1">#     forward(event_vecs, time_vecs, labels, mask=None):</span>
+<span class="c1">#         Forward pass through the model.</span>
+<span class="c1">#     expand_classes(new_num_classes):</span>
+<span class="c1">#         Expand the number of classes dynamically.</span>
 <span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     model = Segmentor(</span>
-<span class="c1">#         ch_in=1,</span>
-<span class="c1">#         ch_out=4,</span>
-<span class="c1">#         width=16,</span>
-<span class="c1">#         kernel_size=7,</span>
-<span class="c1">#         depth=5,</span>
-<span class="c1">#         order=4,</span>
-<span class="c1">#         stride=(2, 2, 2, 2),</span>
-<span class="c1">#         decoding=False,</span>
-<span class="c1">#     )</span>
 <span class="c1">#</span>
-<span class="c1">#     if pretrained:</span>
-<span class="c1">#         weights = WeightLoader.get(&quot;beat_segmentation&quot;)</span>
-<span class="c1">#         model.load_state_dict(weights, strict=True)</span>
-<span class="c1">#     else:</span>
-<span class="c1">#         model.apply(initializer)</span>
+<span class="c1">#     def __init__(self, d_model, n_head, num_layers, num_classes):</span>
+<span class="c1">#         super(UserIdModel, self).__init__()</span>
+<span class="c1">#         self.transformer = trx.EncoderBase(d_model=d_model, num_layers=num_layers, num_heads=n_head)</span>
+<span class="c1">#         self.arcface = angular.ArcFaceLoss(d_model, num_classes)</span>
+<span class="c1">#         self.num_classes = num_classes</span>
 <span class="c1">#</span>
-<span class="c1">#     return model</span>
+<span class="c1">#     def forward(self, event_vecs, time_vecs, labels, mask=None):</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         Forward pass through the UserIdentificationModel.</span>
 <span class="c1">#</span>
+<span class="c1">#         Parameters</span>
+<span class="c1">#         ----------</span>
+<span class="c1">#         event_vecs : torch.Tensor</span>
+<span class="c1">#             Input event vectors of shape (seq_len, batch_size, 128).</span>
+<span class="c1">#         time_vecs : torch.Tensor</span>
+<span class="c1">#             Input time vectors of shape (seq_len, batch_size).</span>
+<span class="c1">#         labels : torch.Tensor</span>
+<span class="c1">#             Ground truth labels of shape (batch_size).</span>
+<span class="c1">#         mask : torch.Tensor, optional</span>
+<span class="c1">#             Mask for the input data (default is None).</span>
 <span class="c1">#</span>
-<span class="c1"># def peak_regression(pretrained: Optional[bool] = False) -&gt; nn.Module:</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     Build model which has a same structure with the latest released model.</span>
-<span class="c1">#     :param pretrained: bool</span>
-<span class="c1">#         If True, load weight from the server.</span>
-<span class="c1">#         If not, weights are initialized with &#39;initializer&#39; method in utils.py.</span>
-<span class="c1">#     :return: nn.Module</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     model = Regressor1D(</span>
-<span class="c1">#         dim_in=64,</span>
-<span class="c1">#         ch_in=1,</span>
-<span class="c1">#         width=16,</span>
-<span class="c1">#         kernel_size=3,</span>
-<span class="c1">#         depth=2,</span>
-<span class="c1">#         stride=1,</span>
-<span class="c1">#         order=4,</span>
-<span class="c1">#         head_depth=1,</span>
-<span class="c1">#         embedding_dims=16,</span>
-<span class="c1">#     )</span>
+<span class="c1">#         Returns</span>
+<span class="c1">#         -------</span>
+<span class="c1">#         tuple of torch.Tensor</span>
+<span class="c1">#             Logits of shape (batch_size, num_classes) and features of shape (batch_size, d_model).</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         features = self.transformer(event_vecs, time_vecs, mask)</span>
+<span class="c1">#         logits = self.arcface(features, labels)</span>
+<span class="c1">#         return logits, features</span>
 <span class="c1">#</span>
-<span class="c1">#     if pretrained:</span>
-<span class="c1">#         weights = WeightLoader.get(&quot;peak_regression&quot;)</span>
-<span class="c1">#         model.load_state_dict(weights, strict=True)</span>
-<span class="c1">#     else:</span>
-<span class="c1">#         model.apply(initializer)</span>
+<span class="c1">#     def expand_classes(self, new_num_classes):</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         Expand the number of classes dynamically.</span>
 <span class="c1">#</span>
-<span class="c1">#     return model</span>
-<span class="c1">#</span>
-<span class="c1">#</span>
-<span class="c1"># def u_net(pretrained: Optional[bool] = False) -&gt; nn.Module:</span>
-<span class="c1">#     model = Segmentor(</span>
-<span class="c1">#         ch_in=1,</span>
-<span class="c1">#         ch_out=2,</span>
-<span class="c1">#         width=64,</span>
-<span class="c1">#         kernel_size=[3, 3],</span>
-<span class="c1">#         depth=5,</span>
-<span class="c1">#         order=2,</span>
-<span class="c1">#         stride=(2, 2, 2, 2),</span>
-<span class="c1">#         decoding=True,</span>
-<span class="c1">#     )</span>
-<span class="c1">#     if pretrained:</span>
-<span class="c1">#         weights = WeightLoader.get(&quot;u_net&quot;)</span>
-<span class="c1">#         model.load_state_dict(weights, strict=True)</span>
-<span class="c1">#</span>
-<span class="c1">#     return model</span>
-<span class="c1">#</span>
-<span class="c1">#</span>
-<span class="c1"># # if __name__ == &quot;__main__&quot;:</span>
-<span class="c1"># #     import numpy as np</span>
-<span class="c1"># #</span>
-<span class="c1"># #     m = u_net()</span>
-<span class="c1"># #     tmp = np.zeros((10, 1, 256, 256), dtype=np.float32)</span>
-<span class="c1"># #     tmp = torch.Tensor(tmp)</span>
-<span class="c1"># #     p = m(tmp)</span>
-<span class="c1"># #     print(m)</span>
-<span class="c1"># #     print(p)</span>
-<span class="c1"># #</span>
-<span class="c1"># #     m = u_net1()</span>
-<span class="c1"># #     tmp = np.zeros((10, 1, 256), dtype=np.float32)</span>
-<span class="c1"># #     tmp = torch.Tensor(tmp)</span>
-<span class="c1"># #     p = m(tmp)</span>
-<span class="c1"># #     print(m)</span>
-<span class="c1"># #     print(p)</span>
+<span class="c1">#         Parameters</span>
+<span class="c1">#         ----------</span>
+<span class="c1">#         new_num_classes : int</span>
+<span class="c1">#             New number of classes.</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         old_weight = self.arcface.weight.data</span>
+<span class="c1">#         self.arcface = angular.ArcFaceLoss(self.arcface.weight.shape[1], new_num_classes)</span>
+<span class="c1">#         self.arcface.weight.data[: self.num_classes] = old_weight</span>
+<span class="c1">#         self.num_classes = new_num_classes</span>
 
 
-<div class="viewcode-block" id="UserIdModel">
-<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.benchmark.UserIdModel">[docs]</a>
-<span class="k">class</span> <span class="nc">UserIdModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="TimeSeriesTransformer">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.benchmark.TimeSeriesTransformer">[docs]</a>
+<span class="k">class</span> <span class="nc">TimeSeriesTransformer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    User identification model using a Transformer encoder and ArcFace loss.</span>
+<span class="sd">    A Transformer model for time series data using BertBase and SinusoidalPositionalEncoding.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
+<span class="sd">    vocab_size : int</span>
+<span class="sd">        The size of the vocabulary.</span>
 <span class="sd">    d_model : int</span>
-<span class="sd">        Dimension of the model.</span>
-<span class="sd">    nhead : int</span>
-<span class="sd">        Number of attention heads.</span>
+<span class="sd">        The dimension of the embedding space.</span>
+<span class="sd">    max_len : int</span>
+<span class="sd">        The maximum sequence length.</span>
 <span class="sd">    num_layers : int</span>
-<span class="sd">        Number of transformer encoder layers.</span>
-<span class="sd">    num_classes : int</span>
-<span class="sd">        Number of user classes.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    forward(event_vecs, time_vecs, labels, mask=None):</span>
-<span class="sd">        Forward pass through the model.</span>
-<span class="sd">    expand_classes(new_num_classes):</span>
-<span class="sd">        Expand the number of classes dynamically.</span>
+<span class="sd">        The number of layers in the Transformer encoder.</span>
+<span class="sd">    num_heads : int</span>
+<span class="sd">        The number of attention heads in the Transformer encoder.</span>
+<span class="sd">    dim_feedforward : int</span>
+<span class="sd">        The dimension of the feedforward network in the Transformer encoder.</span>
+<span class="sd">    dropout : float</span>
+<span class="sd">        The dropout rate for regularization.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_head</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">n_head</span><span class="p">,</span> <span class="n">num_layers</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">UserIdModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">trx</span><span class="o">.</span><span class="n">TimeAwareTransformer</span><span class="p">(</span>
-            <span class="n">d_head</span><span class="o">=</span><span class="n">d_head</span><span class="p">,</span> <span class="n">d_model</span><span class="o">=</span><span class="n">d_model</span><span class="p">,</span> <span class="n">n_head</span><span class="o">=</span><span class="n">n_head</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="n">num_layers</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">arcface</span> <span class="o">=</span> <span class="n">angular</span><span class="o">.</span><span class="n">ArcFaceLoss</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">max_len</span><span class="p">,</span> <span class="n">num_layers</span><span class="p">,</span> <span class="n">num_heads</span><span class="p">,</span> <span class="n">dim_feedforward</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TimeSeriesTransformer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-<div class="viewcode-block" id="UserIdModel.forward">
-<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.benchmark.UserIdModel.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_vecs</span><span class="p">,</span> <span class="n">time_vecs</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Word embedding layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+
+        <span class="c1"># Sinusoidal positional encoding layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span> <span class="o">=</span> <span class="n">SinusoidalPositionalEncoding</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">max_len</span><span class="p">)</span>
+
+        <span class="c1"># Transformer encoder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">trx</span><span class="o">.</span><span class="n">EncoderBase</span><span class="p">(</span>
+            <span class="n">d_model</span><span class="o">=</span><span class="n">d_model</span><span class="p">,</span>
+            <span class="n">num_layers</span><span class="o">=</span><span class="n">num_layers</span><span class="p">,</span>
+            <span class="n">layer_factory</span><span class="o">=</span><span class="n">nn</span><span class="o">.</span><span class="n">TransformerEncoderLayer</span><span class="p">,</span>
+            <span class="n">dim_feedforward</span><span class="o">=</span><span class="n">dim_feedforward</span><span class="p">,</span>
+            <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">,</span>
+            <span class="n">num_heads</span><span class="o">=</span><span class="n">num_heads</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># BertBase for the transformer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">trx</span><span class="o">.</span><span class="n">BertBase</span><span class="p">(</span>
+            <span class="n">encoder_embedding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_embedding_with_position</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span> <span class="n">dim_hidden</span><span class="o">=</span><span class="n">d_model</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_embedding_with_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_ids</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">token_type_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Forward pass through the UserIdentificationModel.</span>
+<span class="sd">        Embeds the input tokens and adds positional encoding.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        event_vecs : torch.Tensor</span>
-<span class="sd">            Input event vectors of shape (seq_len, batch_size, 128).</span>
-<span class="sd">        time_vecs : torch.Tensor</span>
-<span class="sd">            Input time vectors of shape (seq_len, batch_size).</span>
-<span class="sd">        labels : torch.Tensor</span>
-<span class="sd">            Ground truth labels of shape (batch_size).</span>
-<span class="sd">        mask : torch.Tensor, optional</span>
-<span class="sd">            Mask for the input data (default is None).</span>
+<span class="sd">        input_ids : torch.Tensor</span>
+<span class="sd">            Tensor of input token IDs with shape (batch_size, seq_len).</span>
+<span class="sd">        positions : torch.Tensor</span>
+<span class="sd">            Tensor of positions (timestamps) with shape (batch_size, seq_len).</span>
+<span class="sd">        token_type_ids : torch.Tensor, optional</span>
+<span class="sd">            Tensor of token type IDs. Not used in this implementation.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        tuple of torch.Tensor</span>
-<span class="sd">            Logits of shape (batch_size, num_classes) and features of shape (batch_size, d_model).</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            The embedded input with positional encoding added.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">event_vecs</span><span class="p">,</span> <span class="n">time_vecs</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
-        <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arcface</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">logits</span><span class="p">,</span> <span class="n">features</span></div>
+        <span class="c1"># Get word embeddings</span>
+        <span class="n">word_embeds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_embedding</span><span class="p">(</span><span class="n">input_ids</span><span class="p">)</span>
 
+        <span class="c1"># Add positional encoding</span>
+        <span class="n">word_embeds_with_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span><span class="n">word_embeds</span><span class="p">,</span> <span class="n">positions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">word_embeds_with_pos</span>
 
-<div class="viewcode-block" id="UserIdModel.expand_classes">
-<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.benchmark.UserIdModel.expand_classes">[docs]</a>
-    <span class="k">def</span> <span class="nf">expand_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_num_classes</span><span class="p">):</span>
+<div class="viewcode-block" id="TimeSeriesTransformer.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.benchmark.TimeSeriesTransformer.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_ids</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Expand the number of classes dynamically.</span>
+<span class="sd">        Forward pass for the time series Transformer model.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        new_num_classes : int</span>
-<span class="sd">            New number of classes.</span>
+<span class="sd">        input_ids : torch.Tensor</span>
+<span class="sd">            Tensor of input token IDs with shape (batch_size, seq_len).</span>
+<span class="sd">        positions : torch.Tensor</span>
+<span class="sd">            Tensor of positions (timestamps) with shape (batch_size, seq_len).</span>
+<span class="sd">        src_mask : torch.Tensor, optional</span>
+<span class="sd">            Source mask for masking certain positions in the input.</span>
+<span class="sd">        src_key_padding_mask : torch.Tensor, optional</span>
+<span class="sd">            Mask for padding tokens in the input sequence.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            Output from the encoder, shape (batch_size, seq_len, d_model).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">old_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arcface</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">arcface</span> <span class="o">=</span> <span class="n">angular</span><span class="o">.</span><span class="n">ArcFaceLoss</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arcface</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">new_num_classes</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">arcface</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_weight</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">new_num_classes</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">input_sequence</span><span class="o">=</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="n">src_mask</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="n">src_key_padding_mask</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

@@ -104,7 +104,7 @@
 <span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">__brain_weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">:</span> <span class="p">[</span><span class="n">OrderedDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">dst_weight</span><span class="p">:</span> <span class="p">[</span><span class="n">OrderedDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">]):</span>
+<span class="k">def</span> <span class="nf">_brain_weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">:</span> <span class="p">[</span><span class="n">OrderedDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">dst_weight</span><span class="p">:</span> <span class="p">[</span><span class="n">OrderedDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Map source weights to the destination model&#39;s weight dictionary, adjusting key names as needed.</span>
 
@@ -185,7 +185,7 @@
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
         <span class="n">src_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">load_state_dict_from_url</span><span class="p">(</span><span class="n">checkpoint_map</span><span class="p">[</span><span class="s2">&quot;brain&quot;</span><span class="p">],</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">dst_weight</span> <span class="o">=</span> <span class="n">__brain_weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+        <span class="n">dst_weight</span> <span class="o">=</span> <span class="n">_brain_weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
         <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">dst_weight</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model</span></div>
 

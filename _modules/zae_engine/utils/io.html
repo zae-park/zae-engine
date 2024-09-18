@@ -189,9 +189,9 @@
     <span class="k">if</span> <span class="n">sym</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
         <span class="n">samp</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">sym</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">sym</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
-        <span class="n">samp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2499</span><span class="p">)</span>
-        <span class="n">sym</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+    <span class="c1"># if sym[-1] != &quot;*&quot;:</span>
+    <span class="c1">#     samp.append(2499)</span>
+    <span class="c1">#     sym.append(&quot;*&quot;)</span>
 
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">samp</span><span class="p">),</span> <span class="s2">&quot;The length of samples and symbols is not matched. The annotation file is insane.&quot;</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Invalid symbol. Please check out the first &amp; last symbol of annotation.&quot;</span>
@@ -256,10 +256,6 @@
     <span class="k">if</span> <span class="s2">&quot;get_fdata&quot;</span> <span class="ow">in</span> <span class="n">proxy</span><span class="o">.</span><span class="fm">__dir__</span><span class="p">():</span>
         <span class="k">return</span> <span class="n">proxy</span><span class="o">.</span><span class="n">dataobj</span></div>
 
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="n">example_mri</span><span class="p">()</span>
 </pre></div>
 
            </div>

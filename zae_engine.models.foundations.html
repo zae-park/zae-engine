@@ -102,61 +102,41 @@
 <section id="module-zae_engine.models.foundations.benchmark">
 <span id="zae-engine-models-foundations-benchmark-module"></span><h2>zae_engine.models.foundations.benchmark module<a class="headerlink" href="#module-zae_engine.models.foundations.benchmark" title="Link to this heading">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.models.foundations.benchmark.UserIdModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.benchmark.</span></span><span class="sig-name descname"><span class="pre">UserIdModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_head</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_head</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/benchmark.html#UserIdModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.benchmark.UserIdModel" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="zae_engine.models.foundations.benchmark.TimeSeriesTransformer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.benchmark.</span></span><span class="sig-name descname"><span class="pre">TimeSeriesTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vocab_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_feedforward</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/benchmark.html#TimeSeriesTransformer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.benchmark.TimeSeriesTransformer" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<p>User identification model using a Transformer encoder and ArcFace loss.</p>
+<p>A Transformer model for time series data using BertBase and SinusoidalPositionalEncoding.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>d_model</strong> (<em>int</em>) – Dimension of the model.</p></li>
-<li><p><strong>nhead</strong> (<em>int</em>) – Number of attention heads.</p></li>
-<li><p><strong>num_layers</strong> (<em>int</em>) – Number of transformer encoder layers.</p></li>
-<li><p><strong>num_classes</strong> (<em>int</em>) – Number of user classes.</p></li>
+<li><p><strong>vocab_size</strong> (<em>int</em>) – The size of the vocabulary.</p></li>
+<li><p><strong>d_model</strong> (<em>int</em>) – The dimension of the embedding space.</p></li>
+<li><p><strong>max_len</strong> (<em>int</em>) – The maximum sequence length.</p></li>
+<li><p><strong>num_layers</strong> (<em>int</em>) – The number of layers in the Transformer encoder.</p></li>
+<li><p><strong>num_heads</strong> (<em>int</em>) – The number of attention heads in the Transformer encoder.</p></li>
+<li><p><strong>dim_feedforward</strong> (<em>int</em>) – The dimension of the feedforward network in the Transformer encoder.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em>) – The dropout rate for regularization.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">forward(event_vecs,</span> <span class="pre">time_vecs,</span> <span class="pre">labels,</span> <span class="pre">mask=None):</span></span></dt>
-<dd><p>Forward pass through the model.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">expand_classes(new_num_classes):</span></span></dt>
-<dd><p>Expand the number of classes dynamically.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.foundations.benchmark.UserIdModel.expand_classes">
-<span class="sig-name descname"><span class="pre">expand_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_num_classes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/benchmark.html#UserIdModel.expand_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.benchmark.UserIdModel.expand_classes" title="Link to this definition">¶</a></dt>
-<dd><p>Expand the number of classes dynamically.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new_num_classes</strong> (<em>int</em>) – New number of classes.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.models.foundations.benchmark.UserIdModel.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event_vecs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_vecs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/benchmark.html#UserIdModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.benchmark.UserIdModel.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Forward pass through the UserIdentificationModel.</p>
+<dt class="sig sig-object py" id="zae_engine.models.foundations.benchmark.TimeSeriesTransformer.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_key_padding_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/benchmark.html#TimeSeriesTransformer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.benchmark.TimeSeriesTransformer.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for the time series Transformer model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>event_vecs</strong> (<em>torch.Tensor</em>) – Input event vectors of shape (seq_len, batch_size, 128).</p></li>
-<li><p><strong>time_vecs</strong> (<em>torch.Tensor</em>) – Input time vectors of shape (seq_len, batch_size).</p></li>
-<li><p><strong>labels</strong> (<em>torch.Tensor</em>) – Ground truth labels of shape (batch_size).</p></li>
-<li><p><strong>mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Mask for the input data (default is None).</p></li>
+<li><p><strong>input_ids</strong> (<em>torch.Tensor</em>) – Tensor of input token IDs with shape (batch_size, seq_len).</p></li>
+<li><p><strong>positions</strong> (<em>torch.Tensor</em>) – Tensor of positions (timestamps) with shape (batch_size, seq_len).</p></li>
+<li><p><strong>src_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Source mask for masking certain positions in the input.</p></li>
+<li><p><strong>src_key_padding_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Mask for padding tokens in the input sequence.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Logits of shape (batch_size, num_classes) and features of shape (batch_size, d_model).</p>
+<dd class="field-even"><p>Output from the encoder, shape (batch_size, seq_len, d_model).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple of torch.Tensor</p>
+<dd class="field-odd"><p>torch.Tensor</p>
 </dd>
 </dl>
 </dd></dl>
