@@ -166,20 +166,20 @@ class TimeSeriesBert(nn.Module):
             Output from the encoder or pooled output if dim_pool is set.
         """
         # Get word embeddings
-        word_embeds = self.word_embedding(input_ids)
+        word_embeds = self.word_embedding(input_ids)  # [batch_size, seq_len, d_model]
 
         # Add positional encoding
-        word_embeds_with_pos = self.positional_encoding(word_embeds, positions)
+        word_embeds_with_pos = self.positional_encoding(word_embeds, positions)  # [batch_size, seq_len, d_model]
 
         # Pass through encoder
         encoded_output = self.encoder(
             word_embeds_with_pos, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask
-        )
+        )  # [batch_size, seq_len, d_model]
 
         # Apply pooler if specified
         if self.dim_pool:
-            cls_tkn = encoded_output[:, 0]  # [CLS] token
-            pooled_output = self.pool_activation(self.pool_dense(cls_tkn))
+            cls_tkn = encoded_output[:, 0, :]  # [CLS] token [batch_size, d_model]
+            pooled_output = self.pool_activation(self.pool_dense(cls_tkn))  # [batch_size, dim_pool]
             return pooled_output
 
         return encoded_output
