@@ -188,6 +188,7 @@ class CollateBase(ABC):
         for b in batches:
             for k, v in torch_sweep(**b).items():
                 accumulate_dict[k].append(v)
+
         for k, v in accumulate_dict.items():
             try:
                 if k in self.x_key:
@@ -197,8 +198,9 @@ class CollateBase(ABC):
                 else:
                     accumulate_dict[k] = v
             except TypeError as e:
-                print(e)
-                pass
+                print(f"Error accumulating key {k}: {e}")
+                raise  # Optionally, raise the exception to prevent silent failures
+
         return accumulate_dict
 
     def __call__(self, batch: List[Union[dict, OrderedDict]]) -> Union[dict, OrderedDict]:
