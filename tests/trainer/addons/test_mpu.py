@@ -52,7 +52,7 @@ class TestMultiGPUAddon(unittest.TestCase):
         self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=1, gamma=0.1)
 
     def test_multi_gpu_training(self):
-        if not torch.cuda.is_available() or len(self.devices) < 2:
+        if not torch.cuda.is_available() or len(self.device_list) < 2:
             self.skipTest("Multi-GPU test requires at least 2 GPUs.")
 
         os.environ["MASTER_ADDR"] = "localhost"

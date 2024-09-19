@@ -32,7 +32,7 @@ unet_map = {
 }
 
 
-def __brain_weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [OrderedDict | dict]):
+def _brain_weight_mapper(src_weight: [OrderedDict | dict], dst_weight: [OrderedDict | dict]):
     """
     Map source weights to the destination model's weight dictionary, adjusting key names as needed.
 
@@ -111,6 +111,6 @@ def unet_brain(pretrained: bool = False) -> autoencoder.AutoEncoder:
     )
     if pretrained:
         src_weight = torch.hub.load_state_dict_from_url(checkpoint_map["brain"], progress=True)
-        dst_weight = __brain_weight_mapper(src_weight, model.state_dict())
+        dst_weight = _brain_weight_mapper(src_weight, model.state_dict())
         model.load_state_dict(dst_weight, strict=True)
     return model
