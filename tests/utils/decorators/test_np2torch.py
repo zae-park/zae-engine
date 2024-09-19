@@ -1,206 +1,267 @@
 import unittest
+from typing import Dict, Any
 import numpy as np
 import torch
+
+# Import the optimized np2torch decorator
 from zae_engine.utils.decorators import np2torch
 
 
-class TestNp2TorchDecorator(unittest.TestCase):
+class TestNP2TorchDecorator(unittest.TestCase):
+    """Unit tests for the np2torch decorator."""
 
-    def test_np2torch_function(self):
-        @np2torch(torch.float32, n=2)
-        def example_func(x, y, z):
-            return x, y, z
+    def test_full_conversion_function(self):
+        """Test full key conversion on a standalone function."""
+
+        @np2torch(torch.float32, "x", "y", device=torch.device("cpu"))
+        def process_batch(batch: Dict[str, Any]) -> Dict[str, Any]:
+            return batch
+
+        batch = {"x": np.array([1, 2, 3]), "y": np.array([0]), "aux": [0.5], "filename": "sample.txt"}
+
+        processed = process_batch(batch)
+
+        self.assertIsInstance(processed["x"], torch.Tensor)
+        self.assertEqual(processed["x"].dtype, torch.float32)
+        self.assertEqual(processed["x"].tolist(), [1, 2, 3])
+
+        self.assertIsInstance(processed["y"], torch.Tensor)
+        self.assertEqual(processed["y"].dtype, torch.float32)
+        self.assertEqual(processed["y"].item(), 0)
+
+        # Ensure other fields are unchanged
+        self.assertEqual(processed["aux"], [0.5])
+        self.assertEqual(processed["filename"], "sample.txt")
+
+    def test_partial_conversion_function(self):
+        """Test partial key conversion on a standalone function."""
+
+        @np2torch(torch.int64, "x")
+        def process_batch(batch: Dict[str, Any]) -> Dict[str, Any]:
+            return batch
+
+        batch = {"x": np.array([1, 2, 3]), "y": [0], "aux": [0.5], "filename": "sample.txt"}  # Should remain unchanged
+
+        processed = process_batch(batch)
+
+        self.assertIsInstance(processed["x"], torch.Tensor)
+        self.assertEqual(processed["x"].dtype, torch.int64)
+        self.assertEqual(processed["x"].tolist(), [1, 2, 3])
+
+        # Ensure other fields are unchanged
+        self.assertEqual(processed["y"], [0])
+        self.assertEqual(processed["aux"], [0.5])
+        self.assertEqual(processed["filename"], "sample.txt")
+
+    def test_n_argument_conversion(self):
+        """Test conversion of the first n positional arguments."""
+
+        @np2torch(torch.float32, n=3)  # Changed n=2 to n=3 to convert all arguments
+        def add_tensors(x, y, z):
+            return x + y + z
 
         x = np.array([1, 2, 3])
         y = np.array([4, 5, 6])
         z = np.array([7, 8, 9])
 
-        x_torch, y_torch, z_np = example_func(x, y, z)
+        result = add_tensors(x, y, z)
 
-        self.assertIsInstance(x_torch, torch.Tensor)
-        self.assertIsInstance(y_torch, torch.Tensor)
-        self.assertIsInstance(z_np, np.ndarray)
-        self.assertEqual(x_torch.dtype, torch.float32)
-        self.assertEqual(y_torch.dtype, torch.float32)
+        # All three arguments are converted to torch.float32, so result dtype should be float32
+        self.assertIsInstance(result, torch.Tensor)
+        self.assertEqual(result.dtype, torch.float32, "Result dtype mismatch.")
+        self.assertTrue(torch.equal(result, torch.tensor([12, 15, 18], dtype=torch.float32)), "Result values mismatch.")
 
-    def test_np2torch_method(self):
+    def test_method_conversion(self):
+        """Test the decorator on a class method."""
+
         class Example:
             @np2torch(torch.float32, "x", "y")
-            def example_method(self, batch):
+            def process(self, batch: Dict[str, Any]) -> Dict[str, Any]:
                 return batch
 
         example = Example()
 
-        batch = {
-            "x": np.array([1, 2, 3]),
-            "y": np.array([4, 5, 6]),
-            "z": np.array([7, 8, 9]),
-        }
+        batch = {"x": np.array([1, 2, 3]), "y": np.array([4, 5, 6]), "z": np.array([7, 8, 9])}
 
-        result = example.example_method(batch)
+        processed = example.process(batch)
 
-        self.assertIsInstance(result["x"], torch.Tensor)
-        self.assertIsInstance(result["y"], torch.Tensor)
-        self.assertIsInstance(result["z"], np.ndarray)
-        self.assertEqual(result["x"].dtype, torch.float32)
-        self.assertEqual(result["y"].dtype, torch.float32)
+        self.assertIsInstance(processed["x"], torch.Tensor)
+        self.assertEqual(processed["x"].dtype, torch.float32)
+        self.assertTrue(torch.equal(processed["x"], torch.tensor([1, 2, 3], dtype=torch.float32)), "Mismatch in 'x'.")
 
-    def test_np2torch_function_all_args(self):
-        @np2torch(torch.float32)
-        def example_func(x, y, z):
-            return x, y, z
+        self.assertIsInstance(processed["y"], torch.Tensor)
+        self.assertEqual(processed["y"].dtype, torch.float32)
+        self.assertTrue(torch.equal(processed["y"], torch.tensor([4, 5, 6], dtype=torch.float32)), "Mismatch in 'y'.")
+
+        # 'z'는 변환되지 않았으므로 NumPy 배열로 남아있어야 함
+        self.assertTrue(np.array_equal(processed["z"], np.array([7, 8, 9])), "Mismatch in 'z'.")
+
+    def test_n_argument_exceeds_length(self):
+        """Test that specifying n greater than the number of arguments works without error."""
+
+        @np2torch(torch.float32, n=5)  # n=5 exceeds the number of arguments (3)
+        def add_tensors(x, y, z):
+            return x + y + z
 
         x = np.array([1, 2, 3])
         y = np.array([4, 5, 6])
         z = np.array([7, 8, 9])
 
-        x_torch, y_torch, z_torch = example_func(x, y, z)
+        result = add_tensors(x, y, z)
 
-        self.assertIsInstance(x_torch, torch.Tensor)
-        self.assertIsInstance(y_torch, torch.Tensor)
-        self.assertIsInstance(z_torch, torch.Tensor)
-        self.assertEqual(x_torch.dtype, torch.float32)
-        self.assertEqual(y_torch.dtype, torch.float32)
-        self.assertEqual(z_torch.dtype, torch.float32)
+        # All three arguments are converted to torch.float32, so result dtype should be float32
+        self.assertIsInstance(result, torch.Tensor)
+        self.assertEqual(result.dtype, torch.float32, "Result dtype mismatch.")
+        self.assertTrue(torch.equal(result, torch.tensor([12, 15, 18], dtype=torch.float32)), "Result values mismatch.")
 
-    def test_np2torch_method_all_args(self):
-        class Example:
-            @np2torch(torch.float32)
-            def example_method(self, x, y):
-                return x, y
+    def test_non_numpy_input(self):
+        """Test that non-numpy inputs are not converted."""
 
-        example = Example()
-
-        x = np.array([1, 2, 3])
-        y = np.array([4, 5, 6])
-
-        x_torch, y_torch = example.example_method(x, y)
-
-        self.assertIsInstance(x_torch, torch.Tensor)
-        self.assertIsInstance(y_torch, torch.Tensor)
-        self.assertEqual(x_torch.dtype, torch.float32)
-        self.assertEqual(y_torch.dtype, torch.float32)
-
-    def test_np2torch_function_with_non_array_args(self):
-        @np2torch(torch.float32)
-        def example_func(x, y, z):
-            return x, y, z
-
-        x = np.array([1, 2, 3])
-        y = [4, 5, 6]  # Non-numpy array argument
-        z = "string"  # Non-numpy array argument
-
-        x_torch, y_out, z_out = example_func(x, y, z)
-
-        self.assertIsInstance(x_torch, torch.Tensor)
-        self.assertEqual(x_torch.dtype, torch.float32)
-        self.assertEqual(y_out, y)
-        self.assertEqual(z_out, z)
-
-    def test_np2torch_method_with_non_array_args(self):
-        class Example:
-            @np2torch(torch.float32)
-            def example_method(self, x, y):
-                return x, y
-
-        example = Example()
-
-        x = np.array([1, 2, 3])
-        y = [4, 5, 6]  # Non-numpy array argument
-
-        x_torch, y_out = example.example_method(x, y)
-
-        self.assertIsInstance(x_torch, torch.Tensor)
-        self.assertEqual(x_torch.dtype, torch.float32)
-        self.assertEqual(y_out, y)
-
-    def test_np2torch_static_method(self):
-        class Example:
-            @staticmethod
-            @np2torch(torch.float32)
-            def example_static_method(x, y):
-                return x, y
-
-        x = np.array([1, 2, 3])
-        y = np.array([4, 5, 6])
-
-        x_torch, y_torch = Example.example_static_method(x, y)
-
-        self.assertIsInstance(x_torch, torch.Tensor)
-        self.assertIsInstance(y_torch, torch.Tensor)
-        self.assertEqual(x_torch.dtype, torch.float32)
-        self.assertEqual(y_torch.dtype, torch.float32)
-
-    def test_np2torch_class_method(self):
-        class Example:
-            @classmethod
-            @np2torch(torch.float32)
-            def example_class_method(cls, x, y):
-                return x, y
-
-        x = np.array([1, 2, 3])
-        y = np.array([4, 5, 6])
-
-        x_torch, y_torch = Example.example_class_method(x, y)
-
-        self.assertIsInstance(x_torch, torch.Tensor)
-        self.assertIsInstance(y_torch, torch.Tensor)
-        self.assertEqual(x_torch.dtype, torch.float32)
-        self.assertEqual(y_torch.dtype, torch.float32)
-
-    def test_np2torch_method_with_missing_keys(self):
-        class Example:
-            @np2torch(torch.float32, "x", "y")
-            def example_method(self, batch):
-                return batch
-
-        example = Example()
+        @np2torch(torch.float32, "x", "y")
+        def process_batch(batch: Dict[str, Any]) -> Dict[str, Any]:
+            return batch
 
         batch = {
-            "a": np.array([1, 2, 3]),
-            "b": np.array([4, 5, 6]),
-            "c": np.array([7, 8, 9]),
+            "x": [1, 2, 3],  # Not a numpy array
+            "y": [0],  # Not a numpy array
+            "aux": [0.5],
+            "filename": "sample.txt",
         }
 
-        # "x"와 "y" 키가 존재하지 않으므로 KeyError가 발생해야 함
+        processed = process_batch(batch)
+
+        # 'x' and 'y' should remain unchanged as lists
+        self.assertEqual(processed["x"], [1, 2, 3])
+        self.assertEqual(processed["y"], [0])
+        self.assertEqual(processed["aux"], [0.5])
+        self.assertEqual(processed["filename"], "sample.txt")
+
+    def test_missing_keys_in_dict(self):
+        """Test that missing keys in the dictionary raise KeyError."""
+
+        @np2torch(torch.float32, "x", "y")
+        def process_batch(batch: Dict[str, Any]) -> Dict[str, Any]:
+            return batch
+
+        batch = {"x": np.array([1, 2, 3]), "z": np.array([7, 8, 9])}  # 'y' key is missing
+
         with self.assertRaises(KeyError):
-            example.example_method(batch)
+            process_batch(batch)
 
-    def test_np2torch_with_invalid_dtype(self):
+    def test_invalid_argument_type(self):
+        """Test that providing non-dict argument when keys are specified raises TypeError."""
+
+        @np2torch(torch.float32, "x", "y")
+        def process_batch(batch: Any) -> Any:
+            return batch
+
+        # Passing a list instead of a dict
+        batch = ["x", "y"]
+
         with self.assertRaises(TypeError):
+            process_batch(batch)
 
-            @np2torch("invalid_dtype")
-            def example_func(x):
-                return x
+    def test_device_conversion(self):
+        """Test that tensors are placed on the specified device."""
+        # Determine the device to test
+        device = torch.device("cuda", 0) if torch.cuda.is_available() else torch.device("cpu")
 
-            x = np.array([1, 2, 3])
-            example_func(x)
+        @np2torch(torch.float32, "x", "y", device=device)
+        def process_batch(batch: Dict[str, Any]) -> Dict[str, Any]:
+            return batch
 
-    def test_np2torch_with_different_dtype(self):
-        @np2torch(torch.int32)
-        def example_func(x):
-            return x
+        batch = {"x": np.array([1, 2, 3]), "y": np.array([0]), "z": np.array([7, 8, 9])}
 
-        x = np.array([1, 2, 3], dtype=np.float32)
-        x_torch = example_func(x)
+        processed = process_batch(batch)
 
-        self.assertIsInstance(x_torch, torch.Tensor)
-        self.assertEqual(x_torch.dtype, torch.int32)
+        # Verify 'x' tensor
+        self.assertIsInstance(processed["x"], torch.Tensor)
+        self.assertEqual(processed["x"].dtype, torch.float32)
+        self.assertEqual(processed["x"].device.type, device.type, "Device type mismatch for 'x'.")
+        expected_index = device.index if device.index is not None else 0
+        actual_index = processed["x"].device.index if processed["x"].device.index is not None else 0
+        self.assertEqual(actual_index, expected_index, "Device index mismatch for 'x'.")
 
-    def test_np2torch_function_n_greater_than_args(self):
-        @np2torch(torch.float32, n=5)
-        def example_func(x, y):
-            return x, y
+        # Verify 'y' tensor
+        self.assertIsInstance(processed["y"], torch.Tensor)
+        self.assertEqual(processed["y"].dtype, torch.float32)
+        self.assertEqual(processed["y"].device.type, device.type, "Device type mismatch for 'y'.")
+        expected_index = device.index if device.index is not None else 0
+        actual_index = processed["y"].device.index if processed["y"].device.index is not None else 0
+        self.assertEqual(actual_index, expected_index, "Device index mismatch for 'y'.")
+
+        # 'z'는 변환되지 않았으므로 NumPy 배열로 남아있어야 함
+        self.assertTrue(np.array_equal(processed["z"], np.array([7, 8, 9])), "Mismatch in 'z'.")
+
+    def test_all_arguments_conversion(self):
+        """Test that all numpy array arguments are converted when no keys or n are specified."""
+
+        @np2torch(torch.float32)
+        def process_batch(x, y, z):
+            return x + y + z
 
         x = np.array([1, 2, 3])
         y = np.array([4, 5, 6])
+        z = np.array([7, 8, 9])
 
-        x_torch, y_torch = example_func(x, y)
+        result = process_batch(x, y, z)
 
-        self.assertIsInstance(x_torch, torch.Tensor)
-        self.assertIsInstance(y_torch, torch.Tensor)
-        self.assertEqual(x_torch.dtype, torch.float32)
-        self.assertEqual(y_torch.dtype, torch.float32)
+        self.assertIsInstance(result, torch.Tensor)
+        self.assertEqual(result.dtype, torch.float32)
+        self.assertTrue(torch.equal(result, torch.tensor([12, 15, 18], dtype=torch.float32)), "Result values mismatch.")
+
+    def test_conversion_with_some_keys_present(self):
+        """Test that only existing keys are converted and others are ignored."""
+
+        @np2torch(torch.float32, "x", "y")
+        def process_batch(batch: Dict[str, Any]) -> Dict[str, Any]:
+            return batch
+
+        batch = {"x": np.array([1, 2, 3]), "z": np.array([7, 8, 9])}  # 'y' key is missing
+
+        # Since 'y' key is missing, KeyError should be raised
+        with self.assertRaises(KeyError):
+            process_batch(batch)
+
+    def test_multiple_calls(self):
+        """Test that the decorator works correctly on multiple calls."""
+
+        @np2torch(torch.float32, "x", "y")
+        def process_batch(batch: Dict[str, Any]) -> Dict[str, Any]:
+            return batch
+
+        batch1 = {"x": np.array([1, 2, 3]), "y": np.array([4, 5, 6])}
+
+        batch2 = {"x": np.array([7, 8, 9]), "y": np.array([10, 11, 12])}
+
+        processed1 = process_batch(batch1)
+        processed2 = process_batch(batch2)
+
+        # Verify batch1
+        self.assertIsInstance(processed1["x"], torch.Tensor)
+        self.assertEqual(processed1["x"].dtype, torch.float32)
+        self.assertTrue(
+            torch.equal(processed1["x"], torch.tensor([1, 2, 3], dtype=torch.float32)), "Mismatch in 'x' for batch1."
+        )
+
+        self.assertIsInstance(processed1["y"], torch.Tensor)
+        self.assertEqual(processed1["y"].dtype, torch.float32)
+        self.assertTrue(
+            torch.equal(processed1["y"], torch.tensor([4, 5, 6], dtype=torch.float32)), "Mismatch in 'y' for batch1."
+        )
+
+        # Verify batch2
+        self.assertIsInstance(processed2["x"], torch.Tensor)
+        self.assertEqual(processed2["x"].dtype, torch.float32)
+        self.assertTrue(
+            torch.equal(processed2["x"], torch.tensor([7, 8, 9], dtype=torch.float32)), "Mismatch in 'x' for batch2."
+        )
+
+        self.assertIsInstance(processed2["y"], torch.Tensor)
+        self.assertEqual(processed2["y"].dtype, torch.float32)
+        self.assertTrue(
+            torch.equal(processed2["y"], torch.tensor([10, 11, 12], dtype=torch.float32)), "Mismatch in 'y' for batch2."
+        )
 
 
 if __name__ == "__main__":
