@@ -137,6 +137,9 @@ class TestTimeSeriesBert(unittest.TestCase):
     @patch.object(trx.EncoderBase, "forward")
     def test_encoder_forward_call(self, mock_encoder_forward):
         """Test if the encoder's forward method is called correctly."""
+        # Inactive `dropout` in model with evaluation mode
+        self.model.eval()
+
         batch_size = 4
         seq_len = 50
         input_ids = torch.randint(0, self.vocab_size, (batch_size, seq_len))
@@ -146,12 +149,14 @@ class TestTimeSeriesBert(unittest.TestCase):
         mock_encoder_forward.return_value = torch.randn(batch_size, seq_len, self.d_model)
 
         # Forward pass
-        output = self.model(input_ids=input_ids, positions=positions)
+        with torch.no_grad():  # Inactivate gradient
+            output = self.model(input_ids=input_ids, positions=positions)
 
         # Prepare expected embeddings
-        word_embeds = self.model.word_embedding(input_ids)  # [batch_size, seq_len, d_model]
-        pos_embeds = self.model.positional_encoding(word_embeds, positions)  # [batch_size, seq_len, d_model]
-        expected_embeds = word_embeds + pos_embeds  # [batch_size, seq_len, d_model]
+        with torch.no_grad():
+            word_embeds = self.model.word_embedding(input_ids)  # [batch_size, seq_len, d_model]
+            pos_embeds = self.model.positional_encoding(word_embeds, positions)  # [batch_size, seq_len, d_model]
+            expected_embeds = pos_embeds  # [batch_size, seq_len, d_model]
 
         # Check if encoder's forward was called once
         mock_encoder_forward.assert_called_once()
