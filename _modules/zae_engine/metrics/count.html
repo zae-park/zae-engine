@@ -80,6 +80,8 @@
 <span class="kn">from</span> <span class="nn">..utils.decorators</span> <span class="kn">import</span> <span class="n">np2torch</span><span class="p">,</span> <span class="n">shape_check</span>
 
 
+<div class="viewcode-block" id="accuracy">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.count.accuracy">[docs]</a>
 <span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
 <span class="nd">@shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span>
@@ -115,7 +117,8 @@
 <span class="sd">    tensor(0.7500)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">correct</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">true</span><span class="p">,</span> <span class="n">predict</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">correct</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">correct</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">correct</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">correct</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="Acc">
@@ -167,6 +170,8 @@
                 <span class="s2">&quot;The dimensions of &#39;predict&#39; must be either equal to or one more than the dimensions of &#39;true&#39;.&quot;</span>
             <span class="p">)</span>
 
+<div class="viewcode-block" id="Acc.accuracy">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.count.Acc.accuracy">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
     <span class="nd">@shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
@@ -192,8 +197,11 @@
 <span class="sd">            The top-1 accuracy of the predictions as a torch tensor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">correct</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">true</span><span class="p">,</span> <span class="n">predict</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">correct</span><span class="o">.</span><span class="n">float</span><span class="p">())</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">correct</span><span class="o">.</span><span class="n">float</span><span class="p">())</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
 
+
+<div class="viewcode-block" id="Acc.top_k_accuracy">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.count.Acc.top_k_accuracy">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">top_k_accuracy</span><span class="p">(</span>
@@ -223,7 +231,8 @@
 
         <span class="n">topk</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">predict</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">indices</span>
         <span class="n">correct</span> <span class="o">=</span> <span class="n">topk</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">true</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">topk</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">correct</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">true</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">correct</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">true</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
+
 
     <span class="k">def</span> <span class="nf">_check_inputs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">predict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
@@ -255,6 +264,8 @@
 
 
 
+<div class="viewcode-block" id="f_beta">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.count.f_beta">[docs]</a>
 <span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="nd">@shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f_beta</span><span class="p">(</span>
@@ -300,9 +311,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">conf</span> <span class="o">=</span> <span class="n">confusion</span><span class="o">.</span><span class="n">confusion_matrix</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">true</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">f_beta_from_mat</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="n">average</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">f_beta_from_mat</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="n">average</span><span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="f_beta_from_mat">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.count.f_beta_from_mat">[docs]</a>
 <span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">f_beta_from_mat</span><span class="p">(</span><span class="n">conf_mat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">average</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;micro&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -359,7 +373,8 @@
             <span class="n">f1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">beta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">recall</span> <span class="o">*</span> <span class="n">precision</span> <span class="o">/</span> <span class="p">((</span><span class="n">beta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">precision</span> <span class="o">+</span> <span class="n">recall</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span>
             <span class="n">macro_f1</span> <span class="o">+=</span> <span class="n">f1</span>
 
-        <span class="k">return</span> <span class="n">macro_f1</span> <span class="o">/</span> <span class="n">num_classes</span>
+        <span class="k">return</span> <span class="n">macro_f1</span> <span class="o">/</span> <span class="n">num_classes</span></div>
+
 </pre></div>
 
            </div>

@@ -113,6 +113,8 @@
 
 
 
+<div class="viewcode-block" id="mse">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.mse">[docs]</a>
 <span class="nd">@np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">mse</span><span class="p">(</span><span class="n">signal1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">signal2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -143,9 +145,12 @@
 <span class="sd">    &gt;&gt;&gt; mse(signal1, signal2)</span>
 <span class="sd">    0.20000000298023224</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">((</span><span class="n">signal1</span> <span class="o">-</span> <span class="n">signal2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">signal1</span> <span class="o">-</span> <span class="n">signal2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
 
 
+
+<div class="viewcode-block" id="signal_to_noise">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.signal_to_noise">[docs]</a>
 <span class="nd">@np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">signal_to_noise</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">noise</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -178,9 +183,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">signal_eff</span><span class="p">,</span> <span class="n">noise_eff</span> <span class="o">=</span> <span class="n">rms</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">signal</span><span class="p">),</span> <span class="n">rms</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">noise</span><span class="p">)</span>
     <span class="n">db</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">signal_eff</span> <span class="o">/</span> <span class="p">(</span><span class="n">noise_eff</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">db</span>
+    <span class="k">return</span> <span class="n">db</span></div>
 
 
+
+<div class="viewcode-block" id="peak_signal_to_noise">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.peak_signal_to_noise">[docs]</a>
 <span class="nd">@np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">peak_signal_to_noise</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
@@ -225,9 +233,12 @@
 
     <span class="n">mse_value</span> <span class="o">=</span> <span class="n">mse</span><span class="p">(</span><span class="n">signal1</span><span class="o">=</span><span class="n">signal</span><span class="p">,</span> <span class="n">signal2</span><span class="o">=</span><span class="n">noise</span><span class="p">)</span>
     <span class="n">db</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">peak</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse_value</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">db</span>
+    <span class="k">return</span> <span class="n">db</span></div>
 
 
+
+<div class="viewcode-block" id="qilv">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.qilv">[docs]</a>
 <span class="nd">@torch2np</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">qilv</span><span class="p">(</span>
     <span class="n">signal1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
@@ -286,7 +297,8 @@
     <span class="n">index3</span> <span class="o">=</span> <span class="n">covar_l_vars</span> <span class="o">/</span> <span class="p">(</span><span class="n">std_l_vars1</span> <span class="o">*</span> <span class="n">std_l_vars2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
 
     <span class="n">qilv_value</span> <span class="o">=</span> <span class="n">index1</span> <span class="o">*</span> <span class="n">index2</span> <span class="o">*</span> <span class="n">index3</span>
-    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">qilv_value</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">qilv_value</span><span class="p">))</span></div>
+
 
 
 <span class="c1"># def iec_60601(true: dict, predict: dict, data_length: int, criteria: str) -&gt; Tuple[float, float]:</span>

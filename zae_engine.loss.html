@@ -155,6 +155,73 @@ Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognitio
 </section>
 <section id="module-zae_engine.loss.iou">
 <span id="zae-engine-loss-iou-module"></span><h2>zae_engine.loss.iou module<a class="headerlink" href="#module-zae_engine.loss.iou" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.loss.iou.GIoU">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.loss.iou.</span></span><span class="sig-name descname"><span class="pre">GIoU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">true_onoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_onoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/loss/iou.html#GIoU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.loss.iou.GIoU" title="Link to this definition">¶</a></dt>
+<dd><p>Compute mean Generalized Intersection over Union (GIoU) using the given true and predicted labels.</p>
+<p>The true and predicted labels must be 2-D tensors with elements of integer type.
+See <a class="reference external" href="https://arxiv.org/abs/1902.09630v2">https://arxiv.org/abs/1902.09630v2</a> for details on GIoU.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>true_onoff</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>torch.Tensor</em><em>]</em>) – True labels tensor. Elements must be of type int.</p></li>
+<li><p><strong>pred_onoff</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>torch.Tensor</em><em>]</em>) – Predicted labels tensor. Elements must be of type int.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The mean GIoU score.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If the elements of true_onoff or pred_onoff are not of integer type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.loss.iou.IoU">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.loss.iou.</span></span><span class="sig-name descname"><span class="pre">IoU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/loss/iou.html#IoU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.loss.iou.IoU" title="Link to this definition">¶</a></dt>
+<dd><p>Compute mean Intersection over Union (IoU) using the given true and predicted labels.</p>
+<p>The true and predicted labels must be 2-D tensors with elements of integer type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>torch.Tensor</em><em>]</em>) – Predicted labels tensor. Elements must be of type int.</p></li>
+<li><p><strong>true</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>torch.Tensor</em><em>]</em>) – True labels tensor. Elements must be of type int.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The mean IoU score.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.loss.iou.mIoU">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.loss.iou.</span></span><span class="sig-name descname"><span class="pre">mIoU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/loss/iou.html#mIoU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.loss.iou.mIoU" title="Link to this definition">¶</a></dt>
+<dd><p>Compute mean Intersection over Union (mIoU) using the given predicted and true labels.</p>
+<p>The outputs and labels must be 1-D or 2-D tensors with elements of integer or boolean type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<em>torch.Tensor</em>) – Predicted labels tensor. Elements must be of type int or bool.</p></li>
+<li><p><strong>true</strong> (<em>torch.Tensor</em>) – True labels tensor. Elements must be of type int or bool.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The mean IoU score.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-zae_engine.loss.norm">
 <span id="zae-engine-loss-norm-module"></span><h2>zae_engine.loss.norm module<a class="headerlink" href="#module-zae_engine.loss.norm" title="Link to this heading">¶</a></h2>
