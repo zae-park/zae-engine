@@ -146,11 +146,11 @@
 <span class="c1">#         self.num_classes = new_num_classes</span>
 
 
-<div class="viewcode-block" id="TimeSeriesTransformer">
-<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.benchmark.TimeSeriesTransformer">[docs]</a>
-<span class="k">class</span> <span class="nc">TimeSeriesTransformer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="TimeSeriesBert">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.benchmark.TimeSeriesBert">[docs]</a>
+<span class="k">class</span> <span class="nc">TimeSeriesBert</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A Transformer model for time series data using BertBase and SinusoidalPositionalEncoding.</span>
+<span class="sd">    Encoder-only Transformer model based on BertBase with integrated embedding and positional encoding.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -166,17 +166,33 @@
 <span class="sd">        The number of attention heads in the Transformer encoder.</span>
 <span class="sd">    dim_feedforward : int</span>
 <span class="sd">        The dimension of the feedforward network in the Transformer encoder.</span>
-<span class="sd">    dropout : float</span>
-<span class="sd">        The dropout rate for regularization.</span>
+<span class="sd">    dropout : float, optional</span>
+<span class="sd">        The dropout rate for regularization. Default is 0.1.</span>
+<span class="sd">    dim_pool : int, optional</span>
+<span class="sd">        The hidden dimension for the pooler. If provided, a pooler is applied to the [CLS] token.</span>
+<span class="sd">    sep_token_id : int, optional</span>
+<span class="sd">        The token ID for [SEP]. Default is 102.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">max_len</span><span class="p">,</span> <span class="n">num_layers</span><span class="p">,</span> <span class="n">num_heads</span><span class="p">,</span> <span class="n">dim_feedforward</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TimeSeriesTransformer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">d_model</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_heads</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">dim_feedforward</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">dim_pool</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sep_token_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">102</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TimeSeriesBert</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="c1"># Word embedding layer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">word_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
 
-        <span class="c1"># Sinusoidal positional encoding layer</span>
+        <span class="c1"># Sinusoidal positional encoding</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span> <span class="o">=</span> <span class="n">SinusoidalPositionalEncoding</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">max_len</span><span class="p">)</span>
 
         <span class="c1"># Transformer encoder</span>
@@ -187,63 +203,188 @@
             <span class="n">dim_feedforward</span><span class="o">=</span><span class="n">dim_feedforward</span><span class="p">,</span>
             <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">,</span>
             <span class="n">num_heads</span><span class="o">=</span><span class="n">num_heads</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># BertBase for the transformer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">trx</span><span class="o">.</span><span class="n">BertBase</span><span class="p">(</span>
-            <span class="n">encoder_embedding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_embedding_with_position</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span> <span class="n">dim_hidden</span><span class="o">=</span><span class="n">d_model</span>
-        <span class="p">)</span>
+        <span class="c1"># Optional pooler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim_pool</span> <span class="o">=</span> <span class="n">dim_pool</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sep_token_id</span> <span class="o">=</span> <span class="n">sep_token_id</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_pool</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pool_dense</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim_pool</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_pool</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pool_activation</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_embedding_with_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_ids</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">token_type_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TimeSeriesBert.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.benchmark.TimeSeriesBert.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">input_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">positions</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">src_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">src_key_padding_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Embeds the input tokens and adds positional encoding.</span>
+<span class="sd">        Forward pass through the encoder-only Transformer model.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        input_ids : torch.Tensor</span>
 <span class="sd">            Tensor of input token IDs with shape (batch_size, seq_len).</span>
-<span class="sd">        positions : torch.Tensor</span>
-<span class="sd">            Tensor of positions (timestamps) with shape (batch_size, seq_len).</span>
-<span class="sd">        token_type_ids : torch.Tensor, optional</span>
-<span class="sd">            Tensor of token type IDs. Not used in this implementation.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        torch.Tensor</span>
-<span class="sd">            The embedded input with positional encoding added.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Get word embeddings</span>
-        <span class="n">word_embeds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_embedding</span><span class="p">(</span><span class="n">input_ids</span><span class="p">)</span>
-
-        <span class="c1"># Add positional encoding</span>
-        <span class="n">word_embeds_with_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span><span class="n">word_embeds</span><span class="p">,</span> <span class="n">positions</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">word_embeds_with_pos</span>
-
-<div class="viewcode-block" id="TimeSeriesTransformer.forward">
-<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.benchmark.TimeSeriesTransformer.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_ids</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Forward pass for the time series Transformer model.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        input_ids : torch.Tensor</span>
-<span class="sd">            Tensor of input token IDs with shape (batch_size, seq_len).</span>
-<span class="sd">        positions : torch.Tensor</span>
+<span class="sd">        positions : torch.Tensor, optional</span>
 <span class="sd">            Tensor of positions (timestamps) with shape (batch_size, seq_len).</span>
 <span class="sd">        src_mask : torch.Tensor, optional</span>
-<span class="sd">            Source mask for masking certain positions in the input.</span>
+<span class="sd">            Source mask for masking certain positions in the input. Shape: (seq_len, seq_len).</span>
 <span class="sd">        src_key_padding_mask : torch.Tensor, optional</span>
-<span class="sd">            Mask for padding tokens in the input sequence.</span>
+<span class="sd">            Mask for padding tokens in the input sequence. Shape: (batch_size, seq_len).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        torch.Tensor</span>
-<span class="sd">            Output from the encoder, shape (batch_size, seq_len, d_model).</span>
+<span class="sd">            Output from the encoder or pooled output if dim_pool is set.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">input_sequence</span><span class="o">=</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="n">src_mask</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="n">src_key_padding_mask</span><span class="p">)</span></div>
+        <span class="c1"># Get word embeddings</span>
+        <span class="n">word_embeds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_embedding</span><span class="p">(</span><span class="n">input_ids</span><span class="p">)</span>  <span class="c1"># [batch_size, seq_len, d_model]</span>
+
+        <span class="c1"># Add positional encoding</span>
+        <span class="n">word_embeds_with_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span><span class="n">word_embeds</span><span class="p">,</span> <span class="n">positions</span><span class="p">)</span>  <span class="c1"># [batch_size, seq_len, d_model]</span>
+
+        <span class="c1"># Pass through encoder</span>
+        <span class="n">encoded_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span>
+            <span class="n">word_embeds_with_pos</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="n">src_mask</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="n">src_key_padding_mask</span>
+        <span class="p">)</span>  <span class="c1"># [batch_size, seq_len, d_model]</span>
+
+        <span class="c1"># Apply pooler if specified</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_pool</span><span class="p">:</span>
+            <span class="n">cls_tkn</span> <span class="o">=</span> <span class="n">encoded_output</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># [CLS] token [batch_size, d_model]</span>
+            <span class="n">pooled_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_activation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pool_dense</span><span class="p">(</span><span class="n">cls_tkn</span><span class="p">))</span>  <span class="c1"># [batch_size, dim_pool]</span>
+            <span class="k">return</span> <span class="n">pooled_output</span>
+
+        <span class="k">return</span> <span class="n">encoded_output</span></div>
 </div>
 
+
+
+<span class="c1"># class TimeSeriesBert(nn.Module):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     A Transformer-based Encoder-only model for time series data using BertBase and SinusoidalPositionalEncoding.</span>
+<span class="c1">#</span>
+<span class="c1">#     Parameters</span>
+<span class="c1">#     ----------</span>
+<span class="c1">#     vocab_size : int</span>
+<span class="c1">#         The size of the vocabulary.</span>
+<span class="c1">#     d_model : int</span>
+<span class="c1">#         The dimension of the embedding space.</span>
+<span class="c1">#     max_len : int</span>
+<span class="c1">#         The maximum sequence length.</span>
+<span class="c1">#     num_layers : int</span>
+<span class="c1">#         The number of layers in the Transformer encoder.</span>
+<span class="c1">#     num_heads : int</span>
+<span class="c1">#         The number of attention heads in the Transformer encoder.</span>
+<span class="c1">#     dim_feedforward : int</span>
+<span class="c1">#         The dimension of the feedforward network in the Transformer encoder.</span>
+<span class="c1">#     dropout : float, optional</span>
+<span class="c1">#         The dropout rate for regularization. Default is 0.1.</span>
+<span class="c1">#     dim_hidden : int, optional</span>
+<span class="c1">#         The hidden dimension for the pooler. If provided, a pooler is applied to the [CLS] token.</span>
+<span class="c1">#     sep_token_id : int, optional</span>
+<span class="c1">#         The token ID for [SEP]. Default is 102.</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#     def __init__(</span>
+<span class="c1">#         self,</span>
+<span class="c1">#         vocab_size: int,</span>
+<span class="c1">#         d_model: int,</span>
+<span class="c1">#         max_len: int,</span>
+<span class="c1">#         num_layers: int,</span>
+<span class="c1">#         num_heads: int,</span>
+<span class="c1">#         dim_feedforward: int,</span>
+<span class="c1">#         dropout: float = 0.1,</span>
+<span class="c1">#         dim_hidden: int = None,</span>
+<span class="c1">#         sep_token_id: int = 102,</span>
+<span class="c1">#     ):</span>
+<span class="c1">#         super(TimeSeriesBert, self).__init__()</span>
+<span class="c1">#</span>
+<span class="c1">#         # Word embedding layer</span>
+<span class="c1">#         self.word_embedding = nn.Embedding(vocab_size, d_model)</span>
+<span class="c1">#</span>
+<span class="c1">#         # Sinusoidal positional encoding</span>
+<span class="c1">#         self.positional_encoding = SinusoidalPositionalEncoding(d_model, max_len)</span>
+<span class="c1">#</span>
+<span class="c1">#         # Transformer encoder</span>
+<span class="c1">#         self.encoder = trx.EncoderBase(</span>
+<span class="c1">#             d_model=d_model,</span>
+<span class="c1">#             num_layers=num_layers,</span>
+<span class="c1">#             layer_factory=nn.TransformerEncoderLayer,</span>
+<span class="c1">#             dim_feedforward=dim_feedforward,</span>
+<span class="c1">#             dropout=dropout,</span>
+<span class="c1">#             num_heads=num_heads,</span>
+<span class="c1">#         )</span>
+<span class="c1">#</span>
+<span class="c1">#         # BertBase for the transformer</span>
+<span class="c1">#         self.transformer = trx.BertBase(</span>
+<span class="c1">#             encoder_embedding=self._embedding_with_position,</span>
+<span class="c1">#             encoder=self.encoder,</span>
+<span class="c1">#             dim_hidden=d_model,</span>
+<span class="c1">#             sep_token_id=sep_token_id,</span>
+<span class="c1">#         )</span>
+<span class="c1">#</span>
+<span class="c1">#         # Optional pooler</span>
+<span class="c1">#         self.dim_hidden = dim_hidden</span>
+<span class="c1">#         if self.dim_hidden:</span>
+<span class="c1">#             self.pool_dense = nn.Linear(self.dim_hidden, self.dim_hidden)</span>
+<span class="c1">#             self.pool_activation = nn.Tanh()</span>
+<span class="c1">#</span>
+<span class="c1">#     def _embedding_with_position(self, input_ids, positions, token_type_ids=None):</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         Embeds the input tokens and adds positional encoding.</span>
+<span class="c1">#</span>
+<span class="c1">#         Parameters</span>
+<span class="c1">#         ----------</span>
+<span class="c1">#         input_ids : torch.Tensor</span>
+<span class="c1">#             Tensor of input token IDs with shape (batch_size, seq_len).</span>
+<span class="c1">#         positions : torch.Tensor</span>
+<span class="c1">#             Tensor of positions (timestamps) with shape (batch_size, seq_len).</span>
+<span class="c1">#         token_type_ids : torch.Tensor, optional</span>
+<span class="c1">#             Tensor of token type IDs. Not used in this implementation.</span>
+<span class="c1">#</span>
+<span class="c1">#         Returns</span>
+<span class="c1">#         -------</span>
+<span class="c1">#         torch.Tensor</span>
+<span class="c1">#             The embedded input with positional encoding added.</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         # Get word embeddings</span>
+<span class="c1">#         word_embeds = self.word_embedding(input_ids)</span>
+<span class="c1">#</span>
+<span class="c1">#         # Add positional encoding</span>
+<span class="c1">#         word_embeds_with_pos = self.positional_encoding(word_embeds, positions)</span>
+<span class="c1">#         return word_embeds_with_pos</span>
+<span class="c1">#</span>
+<span class="c1">#     def forward(self, input_ids, positions=None, src_mask=None, src_key_padding_mask=None):</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         Forward pass for the TimeSeriesBert model.</span>
+<span class="c1">#</span>
+<span class="c1">#         Parameters</span>
+<span class="c1">#         ----------</span>
+<span class="c1">#         input_ids : torch.Tensor</span>
+<span class="c1">#             Tensor of input token IDs with shape (batch_size, seq_len).</span>
+<span class="c1">#         positions : torch.Tensor, optional</span>
+<span class="c1">#             Tensor of positions (timestamps) with shape (batch_size, seq_len).</span>
+<span class="c1">#             If None, default positions (0 to seq_len - 1) are used.</span>
+<span class="c1">#         src_mask : torch.Tensor, optional</span>
+<span class="c1">#             Source mask for masking certain positions in the input. Shape: (seq_len, seq_len).</span>
+<span class="c1">#         src_key_padding_mask : torch.Tensor, optional</span>
+<span class="c1">#             Mask for padding tokens in the input sequence. Shape: (batch_size, seq_len).</span>
+<span class="c1">#</span>
+<span class="c1">#         Returns</span>
+<span class="c1">#         -------</span>
+<span class="c1">#         torch.Tensor</span>
+<span class="c1">#             Output from the encoder or pooled output if dim_hidden is set.</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         return self.transformer(</span>
+<span class="c1">#             input_sequence=input_ids,</span>
+<span class="c1">#             src_mask=src_mask,</span>
+<span class="c1">#             src_key_padding_mask=src_key_padding_mask,</span>
+<span class="c1">#             positions=positions,  # Pass positions to the transformer</span>
+<span class="c1">#         )</span>
 </pre></div>
 
            </div>
