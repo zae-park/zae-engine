@@ -11,14 +11,14 @@ from zae_engine.nn_night.layers import SinusoidalPositionalEncoding
 class TestTimeSeriesBert(unittest.TestCase):
     def setUp(self):
         """Set up model parameters for testing."""
-        self.vocab_size = 10000
-        self.d_model = 512
-        self.max_len = 100
-        self.num_layers = 6
+        self.vocab_size = 1024
+        self.d_model = 128
+        self.max_len = 128
+        self.num_layers = 4
         self.num_heads = 8
-        self.dim_feedforward = 2048
+        self.dim_feedforward = 64
         self.dropout = 0.1
-        self.dim_pool = 512  # If you want to use the pooler
+        self.dim_pool = 128  # If you want to use the pooler
 
         # Initialize the model
         self.model = bm.TimeSeriesBert(
