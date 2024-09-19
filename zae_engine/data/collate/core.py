@@ -86,6 +86,8 @@ class CollateBase(ABC):
         self.x_key, self.y_key, self.aux_key = x_key, y_key, aux_key
         self.sample_batch = {}
         self._fn = OrderedDict()  # Initialize the ordered dictionary
+        self._fn_checked = OrderedDict()  # Track which functions have passed io_check
+
         if len(args) == 1 and isinstance(args[0], OrderedDict):
             for key, module in args[0].items():
                 self.add_fn(key, module)
@@ -99,56 +101,64 @@ class CollateBase(ABC):
     def __iter__(self) -> Iterator:
         return iter(self._fn.values())
 
-    def io_check(self, sample_data: Union[dict, OrderedDict]) -> None:
+    def io_check(self, sample_data: Union[dict, OrderedDict], check_all: bool = False) -> None:
         """
         Checks if the registered functions maintain the structure of the sample batch.
+        Only checks the newly added function if check_all is False.
 
         Parameters
         ----------
         sample_data : Union[dict, OrderedDict]
             The sample data to test the functions with.
-
-        Raises
-        ------
-        AssertionError
-            If any function changes the structure of the sample data.
+        check_all : bool
+            If True, checks all registered functions. Otherwise, checks only the newly added function.
         """
 
         @np2torch(torch.float, *(self.x_key + self.y_key))
-        def check(sample_data_inner: Union[dict, OrderedDict]):
-            if not sample_data_inner:
+        def check(updated_sample_data: Union[dict, OrderedDict], fn_list):
+            """
+            Internal function to check the sample data against the provided functions.
+
+            Parameters
+            ----------
+            updated_sample_data : Union[dict, OrderedDict]
+                The sample data to be processed.
+            fn_list : list
+                List of functions to apply to the sample data.
+            """
+            if not updated_sample_data:
                 raise ValueError("Sample data cannot be empty for io_check.")
 
-            self.set_batch(sample_data_inner)  # Update the sample_batch with the provided sample_data
-            keys = self.sample_batch.keys()
-            updated = self.sample_batch.copy()
-            for fn in self._fn.values():
-                updated = fn(updated)
-            assert isinstance(updated, type(self.sample_batch)), "The functions changed the type of the batch."
-            assert set(keys).issubset(updated.keys()), "The functions changed the keys of the batch."
+            # Ensure the function list is iterated correctly
+            for fn_name, fn in fn_list:
+                updated_sample_data = fn(updated_sample_data)
+                # Mark function as checked
+                self._fn_checked[fn_name] = True
 
-            for key in keys:
+            # Check structure integrity
+            assert isinstance(updated_sample_data, type(sample_data)), "The functions changed the type of the batch."
+            assert set(sample_data.keys()).issubset(
+                updated_sample_data.keys()
+            ), "The functions changed the keys of the batch."
+
+            for key in sample_data.keys():
                 assert isinstance(
-                    updated[key], type(self.sample_batch[key])
+                    updated_sample_data[key], type(sample_data[key])
                 ), f"The type of value for key '{key}' has changed."
-
-                if not isinstance(updated[key], (list, str)):
+                if not isinstance(updated_sample_data[key], (list, str)):
                     assert (
-                        updated[key].dtype == self.sample_batch[key].dtype
+                        updated_sample_data[key].dtype == sample_data[key].dtype
                     ), f"The dtype of value for key '{key}' has changed."
 
-        check(sample_data)
+        # Choose functions to check
+        if check_all:
+            functions_to_check = [(name, fn) for name, fn in self._fn.items()]
+        else:
+            # Only check functions that haven't been checked yet
+            functions_to_check = [(name, fn) for name, fn in self._fn.items() if not self._fn_checked.get(name, False)]
 
-    def set_batch(self, batch: Union[dict, OrderedDict]) -> None:
-        """
-        Sets the sample batch to be used for input-output structure validation.
-
-        Parameters
-        ----------
-        batch : Union[dict, OrderedDict]
-            The sample batch.
-        """
-        self.sample_batch = batch
+        # Perform the check
+        check(sample_data, functions_to_check)
 
     def add_fn(self, name: str, fn: Callable) -> None:
         """
@@ -162,8 +172,25 @@ class CollateBase(ABC):
             The preprocessing function.
         """
         self._fn[name] = fn
+        self._fn_checked[name] = False  # Mark as unchecked
+
         if self.sample_batch:
+            # Check only the newly added function
             self.io_check(self.sample_batch)
+
+    def set_batch(self, batch: Union[dict, OrderedDict]) -> None:
+        """
+        Sets the sample batch to be used for input-output structure validation.
+
+        Parameters
+        ----------
+        batch : Union[dict, OrderedDict]
+            The sample batch.
+        """
+        self.sample_batch = batch
+        # Reset all functions to unchecked
+        for key in self._fn_checked:
+            self._fn_checked[key] = False
 
     def accumulate(self, batches: Union[Tuple, List]) -> Dict:
         """
