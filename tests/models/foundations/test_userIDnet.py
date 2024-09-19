@@ -18,7 +18,7 @@ class TestTimeSeriesBert(unittest.TestCase):
         self.num_heads = 8
         self.dim_feedforward = 2048
         self.dropout = 0.1
-        self.dim_hidden = 512  # If you want to use the pooler
+        self.dim_pool = 512  # If you want to use the pooler
 
         # Initialize the model
         self.model = bm.TimeSeriesBert(
@@ -29,7 +29,8 @@ class TestTimeSeriesBert(unittest.TestCase):
             num_heads=self.num_heads,
             dim_feedforward=self.dim_feedforward,
             dropout=self.dropout,
-            dim_hidden=self.dim_hidden,
+            dim_pool=self.dim_pool,
+            batch_first=True,
         )
 
     def test_model_initialization(self):
@@ -38,7 +39,7 @@ class TestTimeSeriesBert(unittest.TestCase):
         self.assertIsInstance(self.model.word_embedding, nn.Embedding)
         self.assertIsInstance(self.model.positional_encoding, SinusoidalPositionalEncoding)
         self.assertIsInstance(self.model.encoder, trx.EncoderBase)
-        if self.dim_hidden:
+        if self.dim_pool:
             self.assertIsInstance(self.model.pool_dense, nn.Linear)
             self.assertIsInstance(self.model.pool_activation, nn.Tanh)
 
@@ -53,8 +54,8 @@ class TestTimeSeriesBert(unittest.TestCase):
         output = self.model(input_ids=input_ids, positions=positions)
 
         # Check output shape
-        if self.dim_hidden:
-            self.assertEqual(output.shape, (batch_size, self.dim_hidden))
+        if self.dim_pool:
+            self.assertEqual(output.shape, (batch_size, self.dim_pool))
         else:
             self.assertEqual(output.shape, (batch_size, seq_len, self.d_model))
 
@@ -69,8 +70,8 @@ class TestTimeSeriesBert(unittest.TestCase):
         output = self.model(input_ids=input_ids, positions=positions)
 
         # Check output shape
-        if self.dim_hidden:
-            self.assertEqual(output.shape, (batch_size, self.dim_hidden))
+        if self.dim_pool:
+            self.assertEqual(output.shape, (batch_size, self.dim_pool))
         else:
             self.assertEqual(output.shape, (batch_size, seq_len, self.d_model))
 
@@ -108,8 +109,8 @@ class TestTimeSeriesBert(unittest.TestCase):
         )
 
         # Check output shape
-        if self.dim_hidden:
-            self.assertEqual(output.shape, (batch_size, self.dim_hidden))
+        if self.dim_pool:
+            self.assertEqual(output.shape, (batch_size, self.dim_pool))
         else:
             self.assertEqual(output.shape, (batch_size, seq_len, self.d_model))
 
@@ -128,8 +129,8 @@ class TestTimeSeriesBert(unittest.TestCase):
         output = self.model(input_ids=input_ids, positions=positions, src_key_padding_mask=src_key_padding_mask)
 
         # Check output shape
-        if self.dim_hidden:
-            self.assertEqual(output.shape, (batch_size, self.dim_hidden))
+        if self.dim_pool:
+            self.assertEqual(output.shape, (batch_size, self.dim_pool))
         else:
             self.assertEqual(output.shape, (batch_size, seq_len, self.d_model))
 
@@ -142,7 +143,10 @@ class TestTimeSeriesBert(unittest.TestCase):
         positions = torch.arange(seq_len).unsqueeze(0).expand(batch_size, -1).float()
 
         # Define what the mock should return
-        mock_output = torch.randn(batch_size, seq_len, self.d_model)
+        if self.dim_pool:
+            mock_output = torch.randn(batch_size, self.d_model)
+        else:
+            mock_output = torch.randn(batch_size, seq_len, self.d_model)
         mock_encoder_forward.return_value = mock_output
 
         # Forward pass
@@ -194,7 +198,7 @@ class TestTimeSeriesBert(unittest.TestCase):
 
         # Check if gradients are not None
         self.assertIsNotNone(self.model.word_embedding.weight.grad)
-        if self.dim_hidden:
+        if self.dim_pool:
             self.assertIsNotNone(self.model.pool_dense.weight.grad)
         else:
             # If no pooler, check encoder gradients
