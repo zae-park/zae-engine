@@ -94,7 +94,7 @@ class TimeSeriesBert(nn.Module):
         The dimension of the feedforward network in the Transformer encoder.
     dropout : float, optional
         The dropout rate for regularization. Default is 0.1.
-    dim_hidden : int, optional
+    dim_pool : int, optional
         The hidden dimension for the pooler. If provided, a pooler is applied to the [CLS] token.
     sep_token_id : int, optional
         The token ID for [SEP]. Default is 102.
@@ -109,8 +109,9 @@ class TimeSeriesBert(nn.Module):
         num_heads: int,
         dim_feedforward: int,
         dropout: float = 0.1,
-        dim_hidden: int = None,
+        dim_pool: int = None,
         sep_token_id: int = 102,
+        **factory_kwargs,
     ):
         super(TimeSeriesBert, self).__init__()
 
@@ -128,13 +129,14 @@ class TimeSeriesBert(nn.Module):
             dim_feedforward=dim_feedforward,
             dropout=dropout,
             num_heads=num_heads,
+            **factory_kwargs,
         )
 
         # Optional pooler
-        self.dim_hidden = dim_hidden
+        self.dim_pool = dim_pool
         self.sep_token_id = sep_token_id
-        if self.dim_hidden:
-            self.pool_dense = nn.Linear(self.dim_hidden, self.dim_hidden)
+        if self.dim_pool:
+            self.pool_dense = nn.Linear(self.dim_pool, self.dim_pool)
             self.pool_activation = nn.Tanh()
 
     def forward(
@@ -161,7 +163,7 @@ class TimeSeriesBert(nn.Module):
         Returns
         -------
         torch.Tensor
-            Output from the encoder or pooled output if dim_hidden is set.
+            Output from the encoder or pooled output if dim_pool is set.
         """
         # Get word embeddings
         word_embeds = self.word_embedding(input_ids)
@@ -175,7 +177,7 @@ class TimeSeriesBert(nn.Module):
         )
 
         # Apply pooler if specified
-        if self.dim_hidden:
+        if self.dim_pool:
             cls_tkn = encoded_output[:, 0]  # [CLS] token
             pooled_output = self.pool_activation(self.pool_dense(cls_tkn))
             return pooled_output
