@@ -1,10 +1,12 @@
-from typing import Callable, Optional, Any, Union
+from typing import Callable, Union, Any
 from functools import wraps
+import inspect
 import numpy as np
 import torch
+import pandas as pd
 
 
-def shape_check(*keys: Union[int, str]) -> Callable:
+def shape_check(*keys: Union[int, str], github_repo: str = "https://github.com/your-repo/shape_check") -> Callable:
     """
     Ensure that the shapes of specified arguments are the same.
     This decorator automatically detects if it is used in a class method or a standalone function and behaves accordingly.
@@ -14,6 +16,8 @@ def shape_check(*keys: Union[int, str]) -> Callable:
     keys : int or str
         If a single integer is provided, it checks the shapes of the first 'keys' positional arguments.
         If multiple strings are provided, it checks the shapes of the corresponding keyword arguments.
+    github_repo : str, optional
+        URL to the GitHub repository containing the decorator's implementation and documentation.
 
     Returns
     -------
@@ -29,6 +33,7 @@ def shape_check(*keys: Union[int, str]) -> Callable:
     ... def example_func(**kwargs):
     ...     return kwargs['x'] + kwargs['y']
     """
+
     if len(keys) == 0:
         raise ValueError("At least one key or an integer specifying number of positional arguments must be provided.")
 
@@ -45,50 +50,67 @@ def shape_check(*keys: Union[int, str]) -> Callable:
                 )
 
     def decorator(func: Callable) -> Callable:
-        @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
-            # Determine if this is a method by checking if the first argument is an instance with the function as an attribute
-            if len(args) > 0 and hasattr(args[0], func.__name__):
-                # It's a method; 'self' is args[0]
+        # Inspect the function signature to determine if it's a method
+        sig = inspect.signature(func)
+        params = list(sig.parameters.values())
+        is_method = False
+        offset = 0
+        if params:
+            first_param = params[0]
+            if first_param.name in ("self", "cls"):
                 is_method = True
                 offset = 1
-            else:
-                is_method = False
-                offset = 0
 
-            if len(keys) == 1 and isinstance(keys[0], int):
-                num_args = keys[0]
-                if len(args) < num_args + offset:
-                    raise AssertionError(
-                        f"Expected at least {num_args} positional arguments after {'self' if is_method else ''}, but got {len(args) - offset}."
-                    )
-                # Extract shapes
-                shape_list = []
-                for i in range(offset, offset + num_args):
-                    arg = args[i]
-                    if not hasattr(arg, "shape"):
-                        raise TypeError(f"Argument at position {i} ({arg}) does not have a 'shape' attribute.")
-                    shape_list.append(arg.shape)
-            else:
-                # keys are strings
-                shape_list = []
-                for key in keys:
-                    if key not in kwargs:
-                        raise KeyError(f"Keyword argument '{key}' not found.")
-                    arg = kwargs[key]
-                    if not hasattr(arg, "shape"):
-                        raise TypeError(f"Keyword argument '{key}' ({arg}) does not have a 'shape' attribute.")
-                    shape_list.append(arg.shape)
+        @wraps(func)
+        def wrapper(*args, **kwargs) -> Any:
+            try:
+                if len(keys) == 1 and isinstance(keys[0], int):
+                    num_args = keys[0]
+                    if len(args) < num_args + offset:
+                        raise AssertionError(
+                            f"Expected at least {num_args} positional arguments{' after self' if is_method else ''}, "
+                            f"but got {len(args) - offset}."
+                        )
+                    # Extract shapes
+                    shape_list = []
+                    for i in range(offset, offset + num_args):
+                        arg = args[i]
+                        if not hasattr(arg, "shape"):
+                            raise TypeError(f"Argument at position {i} ({arg}) does not have a 'shape' attribute.")
+                        shape_list.append(arg.shape)
+                else:
+                    # keys are strings
+                    shape_list = []
+                    for key in keys:
+                        if key not in kwargs:
+                            raise KeyError(f'Keyword argument "{key}" not found.')
+                        arg = kwargs[key]
+                        if not hasattr(arg, "shape"):
+                            raise TypeError(f"Keyword argument \"{key}\" ({arg}) does not have a 'shape' attribute.")
+                        shape_list.append(arg.shape)
 
-            # Check if all shapes are the same
-            if not shape_list:
-                raise AssertionError("No shapes to compare.")
-            first_shape = shape_list[0]
-            for s in shape_list[1:]:
-                if s != first_shape:
-                    raise AssertionError(f"Shapes of the given arguments are not the same: {shape_list}")
+                # Check if all shapes are the same
+                if not shape_list:
+                    raise AssertionError("No shapes to compare.")
+                first_shape = shape_list[0]
+                for s in shape_list[1:]:
+                    if s != first_shape:
+                        raise AssertionError(f"Shapes of the given arguments are not the same: {shape_list}")
 
-            return func(*args, **kwargs)
+                return func(*args, **kwargs)
+            except Exception as e:
+                # Determine if it's a method or function based on is_method flag
+                if is_method:
+                    error_type = "method"
+                else:
+                    error_type = "function"
+                error_message = (
+                    f'An error occurred in ({error_type}) "{func.__name__}": {e}'
+                    f"\nThis might be due to incorrect argument shapes or usage.\n"
+                    f"For more information, visit: {github_repo}"
+                )
+                # Re-raise the same exception type with new message
+                raise type(e)(error_message).with_traceback(e.__traceback__)
 
         return wrapper
 
