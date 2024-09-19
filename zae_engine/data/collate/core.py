@@ -215,13 +215,9 @@ class CollateBase(ABC):
         Union[dict, OrderedDict]
             The processed batch.
         """
-        batches = []
-        for b in batch:
-            for fn in self._fn.values():
-                b = fn(b)
-            batches.append(b)
-        batches = self.accumulate(batches)
-        return batches
+        processed_batches = [fn(b) for b in batch for fn in self._fn.values()]
+        accumulated = self.accumulate(processed_batches)
+        return accumulated
 
     def wrap(self, func: Callable = None):
         if func is None:
