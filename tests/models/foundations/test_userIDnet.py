@@ -134,7 +134,7 @@ class TestTimeSeriesBert(unittest.TestCase):
         else:
             self.assertEqual(output.shape, (batch_size, seq_len, self.d_model))
 
-    @patch("zae_engine.models.builds.transformer.EncoderBase.forward")
+    @patch.object(trx.EncoderBase, "forward")
     def test_encoder_forward_call(self, mock_encoder_forward):
         """Test if the encoder's forward method is called correctly."""
         batch_size = 4
@@ -142,21 +142,34 @@ class TestTimeSeriesBert(unittest.TestCase):
         input_ids = torch.randint(0, self.vocab_size, (batch_size, seq_len))
         positions = torch.arange(seq_len).unsqueeze(0).expand(batch_size, -1).float()
 
-        # Define what the mock should return
-        if self.dim_pool:
-            mock_output = torch.randn(batch_size, self.d_model)
-        else:
-            mock_output = torch.randn(batch_size, seq_len, self.d_model)
-        mock_encoder_forward.return_value = mock_output
+        # Define what the mock should return [batch_size, seq_len, d_model]
+        mock_encoder_forward.return_value = torch.randn(batch_size, seq_len, self.d_model)
 
         # Forward pass
         output = self.model(input_ids=input_ids, positions=positions)
 
+        # Prepare expected embeddings
+        word_embeds = self.model.word_embedding(input_ids)  # [batch_size, seq_len, d_model]
+        pos_embeds = self.model.positional_encoding(word_embeds, positions)  # [batch_size, seq_len, d_model]
+        expected_embeds = word_embeds + pos_embeds  # [batch_size, seq_len, d_model]
+
         # Check if encoder's forward was called once
         mock_encoder_forward.assert_called_once()
 
-        # Check if output matches mock output
-        self.assertTrue(torch.equal(output, mock_output))
+        # Retrieve actual call arguments
+        actual_call_args, actual_call_kwargs = mock_encoder_forward.call_args
+
+        # Compare actual embeddings with expected embeddings using torch.allclose
+        self.assertTrue(
+            torch.allclose(actual_call_args[0], expected_embeds, atol=1e-6),
+            "Encoder was not called with the expected embeddings.",
+        )
+
+        # Check if output shape is correct (pooler applied)
+        if self.dim_pool:
+            self.assertEqual(output.shape, (batch_size, self.dim_pool))
+        else:
+            self.assertEqual(output.shape, (batch_size, seq_len, self.d_model))
 
     def test_invalid_input_shape(self):
         """Test if the model raises an error with invalid input shapes."""
