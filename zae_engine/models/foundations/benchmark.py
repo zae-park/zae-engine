@@ -74,9 +74,9 @@ from ...loss import angular
 #         self.num_classes = new_num_classes
 
 
-class TimeSeriesTransformer(nn.Module):
+class TimeSeriesBert(nn.Module):
     """
-    A Transformer model for time series data using BertBase and SinusoidalPositionalEncoding.
+    Encoder-only Transformer model based on BertBase with integrated embedding and positional encoding.
 
     Parameters
     ----------
@@ -92,17 +92,32 @@ class TimeSeriesTransformer(nn.Module):
         The number of attention heads in the Transformer encoder.
     dim_feedforward : int
         The dimension of the feedforward network in the Transformer encoder.
-    dropout : float
-        The dropout rate for regularization.
+    dropout : float, optional
+        The dropout rate for regularization. Default is 0.1.
+    dim_hidden : int, optional
+        The hidden dimension for the pooler. If provided, a pooler is applied to the [CLS] token.
+    sep_token_id : int, optional
+        The token ID for [SEP]. Default is 102.
     """
 
-    def __init__(self, vocab_size, d_model, max_len, num_layers, num_heads, dim_feedforward, dropout=0.1):
-        super(TimeSeriesTransformer, self).__init__()
+    def __init__(
+        self,
+        vocab_size: int,
+        d_model: int,
+        max_len: int,
+        num_layers: int,
+        num_heads: int,
+        dim_feedforward: int,
+        dropout: float = 0.1,
+        dim_hidden: int = None,
+        sep_token_id: int = 102,
+    ):
+        super(TimeSeriesBert, self).__init__()
 
         # Word embedding layer
         self.word_embedding = nn.Embedding(vocab_size, d_model)
 
-        # Sinusoidal positional encoding layer
+        # Sinusoidal positional encoding
         self.positional_encoding = SinusoidalPositionalEncoding(d_model, max_len)
 
         # Transformer encoder
@@ -115,54 +130,178 @@ class TimeSeriesTransformer(nn.Module):
             num_heads=num_heads,
         )
 
-        # BertBase for the transformer
-        self.transformer = trx.BertBase(
-            encoder_embedding=self._embedding_with_position, encoder=self.encoder, dim_hidden=d_model
-        )
+        # Optional pooler
+        self.dim_hidden = dim_hidden
+        self.sep_token_id = sep_token_id
+        if self.dim_hidden:
+            self.pool_dense = nn.Linear(self.dim_hidden, self.dim_hidden)
+            self.pool_activation = nn.Tanh()
 
-    def _embedding_with_position(self, input_ids, positions, token_type_ids=None):
+    def forward(
+        self,
+        input_ids: torch.Tensor,
+        positions: torch.Tensor = None,
+        src_mask: torch.Tensor = None,
+        src_key_padding_mask: torch.Tensor = None,
+    ) -> torch.Tensor:
         """
-        Embeds the input tokens and adds positional encoding.
+        Forward pass through the encoder-only Transformer model.
 
         Parameters
         ----------
         input_ids : torch.Tensor
             Tensor of input token IDs with shape (batch_size, seq_len).
-        positions : torch.Tensor
+        positions : torch.Tensor, optional
             Tensor of positions (timestamps) with shape (batch_size, seq_len).
-        token_type_ids : torch.Tensor, optional
-            Tensor of token type IDs. Not used in this implementation.
+        src_mask : torch.Tensor, optional
+            Source mask for masking certain positions in the input. Shape: (seq_len, seq_len).
+        src_key_padding_mask : torch.Tensor, optional
+            Mask for padding tokens in the input sequence. Shape: (batch_size, seq_len).
 
         Returns
         -------
         torch.Tensor
-            The embedded input with positional encoding added.
+            Output from the encoder or pooled output if dim_hidden is set.
         """
         # Get word embeddings
         word_embeds = self.word_embedding(input_ids)
 
         # Add positional encoding
         word_embeds_with_pos = self.positional_encoding(word_embeds, positions)
-        return word_embeds_with_pos
 
-    def forward(self, input_ids, positions, src_mask=None, src_key_padding_mask=None):
-        """
-        Forward pass for the time series Transformer model.
+        # Pass through encoder
+        encoded_output = self.encoder(
+            word_embeds_with_pos, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask
+        )
 
-        Parameters
-        ----------
-        input_ids : torch.Tensor
-            Tensor of input token IDs with shape (batch_size, seq_len).
-        positions : torch.Tensor
-            Tensor of positions (timestamps) with shape (batch_size, seq_len).
-        src_mask : torch.Tensor, optional
-            Source mask for masking certain positions in the input.
-        src_key_padding_mask : torch.Tensor, optional
-            Mask for padding tokens in the input sequence.
+        # Apply pooler if specified
+        if self.dim_hidden:
+            cls_tkn = encoded_output[:, 0]  # [CLS] token
+            pooled_output = self.pool_activation(self.pool_dense(cls_tkn))
+            return pooled_output
 
-        Returns
-        -------
-        torch.Tensor
-            Output from the encoder, shape (batch_size, seq_len, d_model).
-        """
-        return self.transformer(input_sequence=input_ids, src_mask=src_mask, src_key_padding_mask=src_key_padding_mask)
+        return encoded_output
+
+
+# class TimeSeriesBert(nn.Module):
+#     """
+#     A Transformer-based Encoder-only model for time series data using BertBase and SinusoidalPositionalEncoding.
+#
+#     Parameters
+#     ----------
+#     vocab_size : int
+#         The size of the vocabulary.
+#     d_model : int
+#         The dimension of the embedding space.
+#     max_len : int
+#         The maximum sequence length.
+#     num_layers : int
+#         The number of layers in the Transformer encoder.
+#     num_heads : int
+#         The number of attention heads in the Transformer encoder.
+#     dim_feedforward : int
+#         The dimension of the feedforward network in the Transformer encoder.
+#     dropout : float, optional
+#         The dropout rate for regularization. Default is 0.1.
+#     dim_hidden : int, optional
+#         The hidden dimension for the pooler. If provided, a pooler is applied to the [CLS] token.
+#     sep_token_id : int, optional
+#         The token ID for [SEP]. Default is 102.
+#     """
+#
+#     def __init__(
+#         self,
+#         vocab_size: int,
+#         d_model: int,
+#         max_len: int,
+#         num_layers: int,
+#         num_heads: int,
+#         dim_feedforward: int,
+#         dropout: float = 0.1,
+#         dim_hidden: int = None,
+#         sep_token_id: int = 102,
+#     ):
+#         super(TimeSeriesBert, self).__init__()
+#
+#         # Word embedding layer
+#         self.word_embedding = nn.Embedding(vocab_size, d_model)
+#
+#         # Sinusoidal positional encoding
+#         self.positional_encoding = SinusoidalPositionalEncoding(d_model, max_len)
+#
+#         # Transformer encoder
+#         self.encoder = trx.EncoderBase(
+#             d_model=d_model,
+#             num_layers=num_layers,
+#             layer_factory=nn.TransformerEncoderLayer,
+#             dim_feedforward=dim_feedforward,
+#             dropout=dropout,
+#             num_heads=num_heads,
+#         )
+#
+#         # BertBase for the transformer
+#         self.transformer = trx.BertBase(
+#             encoder_embedding=self._embedding_with_position,
+#             encoder=self.encoder,
+#             dim_hidden=d_model,
+#             sep_token_id=sep_token_id,
+#         )
+#
+#         # Optional pooler
+#         self.dim_hidden = dim_hidden
+#         if self.dim_hidden:
+#             self.pool_dense = nn.Linear(self.dim_hidden, self.dim_hidden)
+#             self.pool_activation = nn.Tanh()
+#
+#     def _embedding_with_position(self, input_ids, positions, token_type_ids=None):
+#         """
+#         Embeds the input tokens and adds positional encoding.
+#
+#         Parameters
+#         ----------
+#         input_ids : torch.Tensor
+#             Tensor of input token IDs with shape (batch_size, seq_len).
+#         positions : torch.Tensor
+#             Tensor of positions (timestamps) with shape (batch_size, seq_len).
+#         token_type_ids : torch.Tensor, optional
+#             Tensor of token type IDs. Not used in this implementation.
+#
+#         Returns
+#         -------
+#         torch.Tensor
+#             The embedded input with positional encoding added.
+#         """
+#         # Get word embeddings
+#         word_embeds = self.word_embedding(input_ids)
+#
+#         # Add positional encoding
+#         word_embeds_with_pos = self.positional_encoding(word_embeds, positions)
+#         return word_embeds_with_pos
+#
+#     def forward(self, input_ids, positions=None, src_mask=None, src_key_padding_mask=None):
+#         """
+#         Forward pass for the TimeSeriesBert model.
+#
+#         Parameters
+#         ----------
+#         input_ids : torch.Tensor
+#             Tensor of input token IDs with shape (batch_size, seq_len).
+#         positions : torch.Tensor, optional
+#             Tensor of positions (timestamps) with shape (batch_size, seq_len).
+#             If None, default positions (0 to seq_len - 1) are used.
+#         src_mask : torch.Tensor, optional
+#             Source mask for masking certain positions in the input. Shape: (seq_len, seq_len).
+#         src_key_padding_mask : torch.Tensor, optional
+#             Mask for padding tokens in the input sequence. Shape: (batch_size, seq_len).
+#
+#         Returns
+#         -------
+#         torch.Tensor
+#             Output from the encoder or pooled output if dim_hidden is set.
+#         """
+#         return self.transformer(
+#             input_sequence=input_ids,
+#             src_mask=src_mask,
+#             src_key_padding_mask=src_key_padding_mask,
+#             positions=positions,  # Pass positions to the transformer
+#         )
