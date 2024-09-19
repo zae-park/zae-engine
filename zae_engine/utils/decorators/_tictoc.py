@@ -1,48 +1,22 @@
 import time
 from functools import wraps
-from typing import Callable
-
-
-def tictoc_fn(func: Callable) -> Callable:
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        print(f"Elapsed time [sec]: {elapsed_time}")
-        return result
-
-    return wrapper
-
-
-def tictoc_mtd(func: Callable) -> Callable:
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        start_time = time.time()
-        result = func(self, *args, **kwargs)
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        print(f"Elapsed time [sec]: {elapsed_time}")
-        return result
-
-    return wrapper
+from typing import Callable, Any
 
 
 def tictoc(func: Callable) -> Callable:
     """
-    Measure and print the elapsed time of a function execution.
-    This decorator automatically detects if it is used in a class method or a standalone function and behaves accordingly.
+    Measure and print the elapsed time of a function or method execution.
+    Automatically detects if it is used in a class method or a standalone function and behaves accordingly.
 
     Parameters
     ----------
-    func : function
-        The function to be timed.
+    func : Callable
+        The function or method to be timed.
 
     Returns
     -------
-    func
-        The decorated function with timing functionality.
+    Callable
+        The decorated function or method with timing functionality.
 
     Examples
     --------
@@ -60,14 +34,22 @@ def tictoc(func: Callable) -> Callable:
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs) -> Any:
+        # Determine if this is a method by checking if the first argument is an instance with the function as an attribute
         if len(args) > 0 and hasattr(args[0], func.__name__):
-            # 메소드인 경우
-            decorator = tictoc_mtd(func)
-            return decorator(*args, **kwargs)
+            # Likely a method; 'self' is the first argument
+            start_time = time.time()
+            result = func(*args, **kwargs)
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print(f"Elapsed time [sec] (method '{func.__name__}'): {elapsed_time:.6f}")
         else:
-            # 함수인 경우
-            decorator = tictoc_fn(func)
-            return decorator(*args, **kwargs)
+            # Likely a standalone function
+            start_time = time.time()
+            result = func(*args, **kwargs)
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print(f"Elapsed time [sec] (function '{func.__name__}'): {elapsed_time:.6f}")
+        return result
 
     return wrapper
