@@ -1,12 +1,11 @@
 from typing import Callable, Union, Any
 from functools import wraps
 import inspect
-import numpy as np
-import torch
-import pandas as pd
+
+GITHUB_REPO = "https://github.com/zae-park/zae-engine/blob/main/zae_engine/utils/decorators/_shape_check.py"
 
 
-def shape_check(*keys: Union[int, str], github_repo: str = "https://github.com/your-repo/shape_check") -> Callable:
+def shape_check(*keys: Union[int, str]) -> Callable:
     """
     Ensure that the shapes of specified arguments are the same.
     This decorator automatically detects if it is used in a class method or a standalone function and behaves accordingly.
@@ -107,7 +106,7 @@ def shape_check(*keys: Union[int, str], github_repo: str = "https://github.com/y
                 error_message = (
                     f'An error occurred in ({error_type}) "{func.__name__}": {e}'
                     f"\nThis might be due to incorrect argument shapes or usage.\n"
-                    f"For more information, visit: {github_repo}"
+                    f"For more information, visit: {GITHUB_REPO}"
                 )
                 # Re-raise the same exception type with new message
                 raise type(e)(error_message).with_traceback(e.__traceback__)
