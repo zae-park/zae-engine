@@ -1,10 +1,10 @@
+import copy
+import logging
+from functools import wraps
 from collections import defaultdict, OrderedDict
 from typing import Union, Callable, List, Tuple, Dict, Iterator, Sequence, Any
-from functools import wraps
-import logging
 
 import torch
-from zae_engine.utils.decorators import np2torch
 
 logger = logging.getLogger(__name__)
 
@@ -127,6 +127,9 @@ class CollateBase:
             """
             if not updated_sample_data:
                 raise ValueError("Sample data cannot be empty for io_check.")
+
+            # Make a deep copy to avoid modifying the original sample_data
+            updated_sample_data = copy.deepcopy(updated_sample_data)
 
             # Ensure the function list is iterated correctly
             for fn_name, fn in fn_list:
