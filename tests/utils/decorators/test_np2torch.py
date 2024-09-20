@@ -13,7 +13,7 @@ class TestNP2TorchDecorator(unittest.TestCase):
     def test_full_conversion_function(self):
         """Test full key conversion on a standalone function."""
 
-        @np2torch(torch.float32, "x", "y", device=torch.device("cpu"))
+        @np2torch(torch.float32, "x", "y")
         def process_batch(batch: Dict[str, Any]) -> Dict[str, Any]:
             return batch
 
@@ -160,38 +160,6 @@ class TestNP2TorchDecorator(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             process_batch(batch)
-
-    def test_device_conversion(self):
-        """Test that tensors are placed on the specified device."""
-        # Determine the device to test
-        device = torch.device("cuda", 0) if torch.cuda.is_available() else torch.device("cpu")
-
-        @np2torch(torch.float32, "x", "y", device=device)
-        def process_batch(batch: Dict[str, Any]) -> Dict[str, Any]:
-            return batch
-
-        batch = {"x": np.array([1, 2, 3]), "y": np.array([0]), "z": np.array([7, 8, 9])}
-
-        processed = process_batch(batch)
-
-        # Verify 'x' tensor
-        self.assertIsInstance(processed["x"], torch.Tensor)
-        self.assertEqual(processed["x"].dtype, torch.float32)
-        self.assertEqual(processed["x"].device.type, device.type, "Device type mismatch for 'x'.")
-        expected_index = device.index if device.index is not None else 0
-        actual_index = processed["x"].device.index if processed["x"].device.index is not None else 0
-        self.assertEqual(actual_index, expected_index, "Device index mismatch for 'x'.")
-
-        # Verify 'y' tensor
-        self.assertIsInstance(processed["y"], torch.Tensor)
-        self.assertEqual(processed["y"].dtype, torch.float32)
-        self.assertEqual(processed["y"].device.type, device.type, "Device type mismatch for 'y'.")
-        expected_index = device.index if device.index is not None else 0
-        actual_index = processed["y"].device.index if processed["y"].device.index is not None else 0
-        self.assertEqual(actual_index, expected_index, "Device index mismatch for 'y'.")
-
-        # 'z'는 변환되지 않았으므로 NumPy 배열로 남아있어야 함
-        self.assertTrue(np.array_equal(processed["z"], np.array([7, 8, 9])), "Mismatch in 'z'.")
 
     def test_all_arguments_conversion(self):
         """Test that all numpy array arguments are converted when no keys or n are specified."""
