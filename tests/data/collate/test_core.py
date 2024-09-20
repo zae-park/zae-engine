@@ -1,13 +1,15 @@
+import unittest
 from collections import OrderedDict
 from typing import Iterator
 
-import unittest
+
+import torch
 import numpy as np
 
 from zae_engine.data import CollateBase
 
 
-class TestCollateBase(unittest.TestCase):
+class TestCollateBase2(unittest.TestCase):
 
     def setUp(self):
         # Define some example functions for testing
@@ -110,6 +112,107 @@ class TestCollateBase(unittest.TestCase):
         batches = [self.sample_data, self.sample_data]
         accumulated = self.collate.accumulate(batches)
         self.assertEqual(accumulated["x"].shape[0], 2)
+
+
+# Sample preprocessing functions
+def preprocess_x(batch):
+    batch["x"] = torch.tensor(batch["x"]) * 2
+    return batch
+
+
+def preprocess_y(batch):
+    batch["y"] = torch.tensor(batch["y"]) + 1
+    return batch
+
+
+def preprocess_aux(batch):
+    batch["aux"] = torch.tensor(batch["aux"]).float()
+    return batch
+
+
+class TestCollateBase(unittest.TestCase):
+
+    def setUp(self):
+        """Set up the initial CollateBase instance and sample batch for testing."""
+        self.x_key = ["x"]
+        self.y_key = ["y"]
+        self.aux_key = ["aux"]
+        self.collator = CollateBase(x_key=self.x_key, y_key=self.y_key, aux_key=self.aux_key)
+
+        self.sample_batch = {"x": [1, 2, 3], "y": [10], "aux": [0.5], "filename": "sample.txt"}
+
+    def test_add_fn(self):
+        """Test if functions are correctly added to the preprocessing flow."""
+        self.collator.add_fn("preprocess_x", preprocess_x)
+        self.collator.add_fn("preprocess_y", preprocess_y)
+
+        self.assertEqual(len(self.collator), 2)  # Two functions should be added
+
+    def test_set_batch(self):
+        """Test setting a sample batch for validation."""
+        self.collator.set_batch(self.sample_batch)
+        self.assertEqual(self.collator.sample_batch, self.sample_batch)
+
+    def test_io_check(self):
+        """Test if io_check validates the structure and content of the sample batch."""
+        self.collator.set_batch(self.sample_batch)
+        self.collator.add_fn("preprocess_x", preprocess_x)
+        self.collator.add_fn("preprocess_y", preprocess_y)
+
+        # Call io_check and ensure no errors occur
+        try:
+            self.collator.io_check(self.sample_batch)
+        except AssertionError:
+            self.fail("io_check raised an AssertionError unexpectedly.")
+
+    def test_accumulate(self):
+        """Test accumulate function with a list of sample batches."""
+        batch_list = [self.sample_batch, self.sample_batch]
+        accumulated = self.collator.accumulate(batch_list)
+
+        # Verify that accumulate merges lists properly
+        self.assertEqual(len(accumulated["x"]), 2)
+        self.assertEqual(len(accumulated["y"]), 2)
+        self.assertEqual(len(accumulated["aux"]), 2)
+
+    def test_call_functionality(self):
+        """Test the full pipeline, ensuring all functions are applied in sequence."""
+        self.collator.add_fn("preprocess_x", preprocess_x)
+        self.collator.add_fn("preprocess_y", preprocess_y)
+        self.collator.add_fn("preprocess_aux", preprocess_aux)
+
+        batch_list = [self.sample_batch, self.sample_batch]
+        processed_batch = self.collator(batch_list)
+
+        # Check the output values
+        expected_x = torch.tensor([2, 4, 6])  # Original x * 2
+        expected_y = torch.tensor([11])  # Original y + 1
+        expected_aux = torch.tensor([0.5], dtype=torch.float32)
+
+        self.assertTrue(torch.equal(processed_batch["x"][0], expected_x))
+        self.assertTrue(torch.equal(processed_batch["y"][0], expected_y))
+        self.assertTrue(torch.equal(processed_batch["aux"][0], expected_aux))
+
+    def test_partial_io_check(self):
+        """Test that io_check only runs for new functions and skips checked ones."""
+        self.collator.set_batch(self.sample_batch)
+        self.collator.add_fn("preprocess_x", preprocess_x)
+        self.collator.add_fn("preprocess_y", preprocess_y)
+
+        # Run io_check for initial functions
+        self.collator.io_check(self.sample_batch)
+
+        # Add a new function and check that only it is validated
+        self.collator.add_fn("preprocess_aux", preprocess_aux)
+
+        try:
+            self.collator.io_check(self.sample_batch)
+        except AssertionError:
+            self.fail("io_check raised an AssertionError unexpectedly.")
+
+
+if __name__ == "__main__":
+    unittest.main()
 
 
 if __name__ == "__main__":
