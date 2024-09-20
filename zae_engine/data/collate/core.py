@@ -1,13 +1,15 @@
-from collections import defaultdict
-from typing import Union, Callable, List, Tuple, Dict, OrderedDict, overload, Iterator, Sequence
+from collections import defaultdict, OrderedDict
+from typing import Union, Callable, List, Tuple, Dict, Iterator, Sequence, Any
 from functools import wraps
-from abc import ABC, abstractmethod
+import logging
 
 import torch
 from zae_engine.utils.decorators import np2torch
 
+logger = logging.getLogger(__name__)
 
-class CollateBase(ABC):
+
+class CollateBase:
     """
     Base class for collating and processing batches of data using a sequence of functions.
 
@@ -17,14 +19,14 @@ class CollateBase(ABC):
 
     Parameters
     ----------
-    x_key : List[str]
-        The key in the batch dictionary that represents the input data.
-    y_key : List[str]
-        The key in the batch dictionary that represents the labels.
-    aux_key : List[str]
-        The key in the batch dictionary that represents the auxiliary data.
-    args : Union[OrderedDict[str, Callable], List[Callable]]
-        The functions to be applied to the batches in sequence.
+    x_key : Sequence[str], default=["x"]
+        The key(s) in the batch dictionary that represent the input data.
+    y_key : Sequence[str], default=["y"]
+        The key(s) in the batch dictionary that represent the labels.
+    aux_key : Sequence[str], default=["aux"]
+        The key(s) in the batch dictionary that represent the auxiliary data.
+    functions : Union[List[Callable], OrderedDict[str, Callable]], optional
+        The preprocessing functions to apply to the batches in sequence.
 
     Methods
     -------
@@ -32,13 +34,13 @@ class CollateBase(ABC):
         Returns the number of functions in the collator.
     __iter__():
         Returns an iterator over the functions in the collator.
-    io_check(sample_data: Union[dict, OrderedDict]) -> None:
+    io_check(sample_data: Union[dict, OrderedDict], check_all: bool = False) -> None:
         Checks if the registered functions maintain the structure of the sample data.
     set_batch(batch: Union[dict, OrderedDict]) -> None:
         Sets the sample batch for structure checking.
     add_fn(name: str, fn: Callable) -> None:
         Adds a function to the collator with the given name.
-    __call__(batch: Union[dict, OrderedDict]) -> Union[dict, OrderedDict]:
+    __call__(batch: List[Union[dict, OrderedDict]]) -> Union[dict, OrderedDict]:
         Applies the registered functions to the input batch in sequence.
     accumulate(batches: Union[Tuple, List]) -> Dict:
         Convert a list of dictionaries per data to a batch dictionary with list-type values.
@@ -52,48 +54,46 @@ class CollateBase(ABC):
     >>> def fn2(batch):
     >>>     # Another function to process batch
     >>>     return batch
-    >>> collator = CollateBase(x_key=['x'], y_key=['y'], aux_key=['aux'], fn1, fn2)
-    >>> batch = {'data': [1, 2, 3], 'label': [1], 'aux': [0.5], 'filename': 'sample.txt'}
+    >>> collator = CollateBase(x_key=['x'], y_key=['y'], aux_key=['aux'], functions=[fn1, fn2])
+    >>> batch = {'x': [1, 2, 3], 'y': [1], 'aux': [0.5], 'filename': 'sample.txt'}
     >>> processed_batch = collator([batch, batch])
 
     Example 2: Initialization with an OrderedDict
     >>> from collections import OrderedDict
     >>> functions = OrderedDict([('fn1', fn1), ('fn2', fn2)])
-    >>> collator = CollateBase(x_key=['x'], y_key=['y'], aux_key=['aux'], functions)
+    >>> collator = CollateBase(x_key=['x'], y_key=['y'], aux_key=['aux'], functions=functions)
     >>> processed_batch = collator([batch, batch])
 
     Example 3: Checking input-output consistency
     >>> sample_data = {'x': [1, 2, 3], 'y': [1], 'aux': [0.5], 'filename': 'sample.txt'}
-    >>> collator.io_check(sample_data)
     >>> collator.set_batch(sample_data)
     >>> collator.add_fn('fn3', fn3)  # This will check if fn3 maintains the structure of sample_data
     """
 
     _fn: OrderedDict[str, Callable]
 
-    @overload
-    def __init__(self, x_key: Sequence[str], y_key: Sequence[str], aux_key: Sequence[str], *args: Callable) -> None: ...
-
-    @overload
     def __init__(
-        self, x_key: Sequence[str], y_key: Sequence[str], aux_key: Sequence[str], arg: "OrderedDict[str, Callable]"
-    ) -> None: ...
-
-    def __init__(
-        self, *args, x_key: Sequence[str] = ["x"], y_key: Sequence[str] = ["y"], aux_key: Sequence[str] = ["aux"]
+        self,
+        *,
+        x_key: Sequence[str] = ("x",),
+        y_key: Sequence[str] = ("y",),
+        aux_key: Sequence[str] = ("aux",),
+        functions: Union[List[Callable], OrderedDict[str, Callable]] = None,
     ):
-        super().__init__()
         self.x_key, self.y_key, self.aux_key = x_key, y_key, aux_key
         self.sample_batch = {}
         self._fn = OrderedDict()  # Initialize the ordered dictionary
         self._fn_checked = OrderedDict()  # Track which functions have passed io_check
 
-        if len(args) == 1 and isinstance(args[0], OrderedDict):
-            for key, module in args[0].items():
-                self.add_fn(key, module)
-        else:
-            for idx, module in enumerate(args):
-                self.add_fn(str(idx), module)
+        if functions:
+            if isinstance(functions, OrderedDict):
+                for key, module in functions.items():
+                    self.add_fn(key, module)
+            elif isinstance(functions, list):
+                for idx, module in enumerate(functions):
+                    self.add_fn(str(idx), module)
+            else:
+                raise TypeError("functions must be a list or an OrderedDict of callables.")
 
     def __len__(self) -> int:
         return len(self._fn)
@@ -114,7 +114,6 @@ class CollateBase(ABC):
             If True, checks all registered functions. Otherwise, checks only the newly added function.
         """
 
-        @np2torch(torch.float, *(self.x_key + self.y_key))
         def check(updated_sample_data: Union[dict, OrderedDict], fn_list):
             """
             Internal function to check the sample data against the provided functions.
@@ -207,13 +206,29 @@ class CollateBase(ABC):
             A dictionary where keys are batch attributes and values are lists or concatenated tensors.
         """
 
-        @np2torch(torch.float, *(self.x_key + self.y_key))
-        def torch_sweep(**kwargs):
-            return kwargs
+        def convert_to_float(batch: Dict[str, Any]) -> Dict[str, Any]:
+            """
+            Convert specified keys in the batch to float tensors.
+
+            Parameters
+            ----------
+            batch : Dict[str, Any]
+                The data batch to convert.
+
+            Returns
+            -------
+            Dict[str, Any]
+                The converted data batch.
+            """
+            for key in self.x_key + self.y_key:
+                if key in batch and isinstance(batch[key], torch.Tensor):
+                    batch[key] = batch[key].float()
+            return batch
 
         accumulate_dict = defaultdict(list)
         for b in batches:
-            for k, v in torch_sweep(**b).items():
+            converted_batch = convert_to_float(b)
+            for k, v in converted_batch.items():
                 accumulate_dict[k].append(v)
 
         for k, v in accumulate_dict.items():
@@ -225,26 +240,30 @@ class CollateBase(ABC):
                 else:
                     accumulate_dict[k] = v
             except TypeError as e:
-                print(f"Error accumulating key {k}: {e}")
+                logger.error(f"Error accumulating key {k}: {e}")
                 raise  # Optionally, raise the exception to prevent silent failures
 
         return accumulate_dict
 
     def __call__(self, batch: List[Union[dict, OrderedDict]]) -> Union[dict, OrderedDict]:
         """
-        Applies the preprocessing functions to the input batch in order.
+        Applies the preprocessing functions to the input batch in sequence.
 
         Parameters
         ----------
-        batch : Union[dict, OrderedDict]
+        batch : List[Union[dict, OrderedDict]]
             The input batch to be processed.
 
         Returns
         -------
         Union[dict, OrderedDict]
-            The processed batch.
+            The processed and accumulated batch.
         """
-        processed_batches = [fn(b) for b in batch for fn in self._fn.values()]
+        processed_batches = []
+        for b in batch:
+            for fn in self._fn.values():
+                b = fn(b)
+            processed_batches.append(b)
         accumulated = self.accumulate(processed_batches)
         return accumulated
 
