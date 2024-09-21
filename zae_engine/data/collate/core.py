@@ -230,7 +230,7 @@ class CollateBase:
                     accumulate_dict[k] = v
             except (TypeError, RuntimeError) as e:
                 logger.error(f"Error accumulating key '{k}': {e}")
-                raise TypeError(f"Error accumulating key '{k}': {e}") from e  # Raise with additional context
+                raise type(e)(f"Error accumulating key '{k}': {e}") from e  # Raise with additional context
 
         return accumulate_dict
 
