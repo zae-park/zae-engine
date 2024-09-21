@@ -173,6 +173,8 @@ class CollateBase:
         fn : Callable
             The preprocessing function.
         """
+        if name in self._fn:
+            raise ValueError(f"Function with name '{name}' already exists.")
         self._fn[name] = fn
         self._fn_checked[name] = False  # Mark as unchecked
 
@@ -226,9 +228,9 @@ class CollateBase:
                     accumulate_dict[k] = torch.stack(v, dim=0).squeeze()
                 else:
                     accumulate_dict[k] = v
-            except TypeError as e:
-                logger.error(f"Error accumulating key {k}: {e}")
-                raise  # Optionally, raise the exception to prevent silent failures
+            except (TypeError, RuntimeError) as e:
+                logger.error(f"Error accumulating key '{k}': {e}")
+                raise TypeError(f"Error accumulating key '{k}': {e}") from e  # Raise with additional context
 
         return accumulate_dict
 
@@ -247,7 +249,7 @@ class CollateBase:
             The processed and accumulated batch.
         """
         processed_batches = []
-        for b in batch:
+        for b in copy.deepcopy(batch):
             for fn in self._fn.values():
                 b = fn(b)
             processed_batches.append(b)
