@@ -1,4 +1,4 @@
-from typing import Dict, Union, List, Any
+from typing import Dict, Any, List, Union
 import numpy as np
 import torch
 from torch.nn import functional as F
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class Chunker:
     """
-    Class for chunking the data in the batch.
+    Class for chunking data within a batch.
 
     Parameters
     ----------
@@ -21,10 +21,17 @@ class Chunker:
     th : float
         Threshold for binarization.
 
+    Expected Input Shapes
+    ---------------------
+    batch: Dict[str, Any]
+        - 'x': torch.Tensor of shape (batch_size, features)
+        - 'y': torch.Tensor of shape (batch_size,)
+        - 'fn': Optional[Any]
+
     Methods
     -------
     __call__(batch: Dict[str, Any]) -> Dict[str, Any]:
-        Chunk the data in the batch.
+        Splits the data in the batch into chunks.
     """
 
     def __init__(self, n: int, th: float):
@@ -58,17 +65,22 @@ class Chunker:
 
 class Chunk:
     """
-    Class for reshaping the 'x' tensor in the batch.
+    Class for reshaping the 'x' tensor within a batch.
 
     Parameters
     ----------
     n : int
         The size to reshape the 'x' tensor.
 
+    Expected Input Shapes
+    ---------------------
+    batch: Dict[str, Any]
+        - 'x': torch.Tensor of shape (batch_size, n * some_integer)
+
     Methods
     -------
     __call__(batch: Dict[str, Any]) -> Dict[str, Any]:
-        Reshape the 'x' tensor in the batch.
+        Reshapes the 'x' tensor in the batch.
     """
 
     def __init__(self, n: int):
@@ -104,13 +116,20 @@ class HotEncoder:
     n_cls : int
         Number of classes for one-hot encoding.
 
+    Expected Input Shapes
+    ---------------------
+    batch: Dict[str, Any]
+        - 'y': torch.Tensor of shape (batch_size,) or (batch_size, ...)
+
     Methods
     -------
     __call__(batch: Dict[str, Any]) -> Dict[str, Any]:
-        Apply one-hot encoding to the labels in the batch.
+        Applies one-hot encoding to the labels in the batch.
     """
 
     def __init__(self, n_cls: int):
+        if n_cls <= 0:
+            raise ValueError("Number of classes 'n_cls' must be positive.")
         self.n_cls = n_cls
 
     def __call__(self, batch: Dict[str, Any]) -> Dict[str, Any]:
@@ -130,7 +149,7 @@ class HotEncoder:
 
 class SignalFilter:
     """
-    Class for filtering signals in the batch.
+    Class for filtering signals within a batch.
 
     Parameters
     ----------
@@ -145,10 +164,15 @@ class SignalFilter:
     cutoff : float, optional
         Cut-off frequency for lowpass and highpass filters.
 
+    Expected Input Shapes
+    ---------------------
+    batch: Dict[str, Any]
+        - 'x': torch.Tensor of shape (sequence_length,) or (batch_size, sequence_length)
+
     Methods
     -------
     __call__(batch: Dict[str, Any]) -> Dict[str, Any]:
-        Apply the specified filter to the signal in the batch.
+        Applies the specified filter to the signals in the batch.
     """
 
     def __init__(self, fs: float, method: str, lowcut: float = None, highcut: float = None, cutoff: float = None):
@@ -211,7 +235,7 @@ class SignalFilter:
 
 class Spliter:
     """
-    Class for splitting signals in the batch with overlapping.
+    Class for splitting signals within a batch with overlapping.
 
     Parameters
     ----------
@@ -220,10 +244,15 @@ class Spliter:
     overlapped : int, default=0
         The number of overlapping samples between adjacent segments.
 
+    Expected Input Shapes
+    ---------------------
+    batch: Dict[str, Any]
+        - 'x': torch.Tensor of shape (sequence_length,)
+
     Methods
     -------
     __call__(batch: Dict[str, Any]) -> Dict[str, Any]:
-        Split the signal in the batch with the specified overlap.
+        Splits the signal in the batch with the specified overlap.
     """
 
     def __init__(self, chunk_size: int = 2560, overlapped: int = 0):
@@ -266,16 +295,21 @@ class Spliter:
 
 class SignalScaler:
     """
-    Class for scaling signals in the batch using MinMaxScaler.
+    Class for scaling signals within a batch using MinMaxScaler.
 
     Parameters
     ----------
     None
 
+    Expected Input Shapes
+    ---------------------
+    batch: Dict[str, Any]
+        - 'x': torch.Tensor of shape (features,) or (batch_size, features)
+
     Methods
     -------
     __call__(batch: Dict[str, Any]) -> Dict[str, Any]:
-        Apply MinMax scaling to the signal in the batch.
+        Applies MinMax scaling to the signals in the batch.
     """
 
     def __init__(self):
