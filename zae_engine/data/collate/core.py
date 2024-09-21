@@ -209,29 +209,13 @@ class CollateBase:
             A dictionary where keys are batch attributes and values are lists or concatenated tensors.
         """
 
-        def convert_to_float(batch: Dict[str, Any]) -> Dict[str, Any]:
-            """
-            Convert specified keys in the batch to float tensors.
-
-            Parameters
-            ----------
-            batch : Dict[str, Any]
-                The data batch to convert.
-
-            Returns
-            -------
-            Dict[str, Any]
-                The converted data batch.
-            """
-            for key in self.x_key + self.y_key:
-                if key in batch and isinstance(batch[key], torch.Tensor):
-                    batch[key] = batch[key].float()
-            return batch
-
         accumulate_dict = defaultdict(list)
-        for b in batches:
-            converted_batch = convert_to_float(b)
-            for k, v in converted_batch.items():
+        for idx, b in enumerate(batches):
+            # Check for missing keys
+            for key in self.x_key + self.y_key + self.aux_key:
+                if key not in b:
+                    raise KeyError(f"Batch at index {idx} is missing required key: '{key}'")
+            for k, v in b.items():
                 accumulate_dict[k].append(v)
 
         for k, v in accumulate_dict.items():
