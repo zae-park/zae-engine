@@ -157,3 +157,82 @@ class AutoEncoder(nn.Module):
             feat = dec(feat)
 
         return self.sig(self.fc(feat))
+
+
+class VAEEncoder(nn.Module):
+    def __init__(self, encoder: nn.Module, latent_dim: int):
+        super(VAEEncoder, self).__init__()
+        self.encoder = encoder
+        self.fc_mu = nn.Linear(encoder.output_dim, latent_dim)
+        self.fc_logvar = nn.Linear(encoder.output_dim, latent_dim)
+
+    def forward(self, x):
+        features = self.encoder(x)
+        mu = self.fc_mu(features)
+        logvar = self.fc_logvar(features)
+        return mu, logvar
+
+
+def reparameterize(mu: Tensor, logvar: Tensor) -> Tensor:
+    """
+    Reparameterization trick to sample from N(mu, var) from N(0,1).
+    """
+    std = torch.exp(0.5 * logvar)
+    eps = torch.randn_like(std)
+    return mu + eps * std
+
+
+class VAE(nn.Module):
+    """
+    Variational AutoEncoder (VAE) architecture.
+
+    Parameters
+    ----------
+    autoencoder : AutoEncoder
+        The base AutoEncoder model.
+    latent_dim : int
+        Dimension of the latent space.
+    """
+
+    def __init__(self, autoencoder: AutoEncoder, latent_dim: int):
+        super(VAE, self).__init__()
+        self.latent_dim = latent_dim
+        self.encoder = VAEEncoder(autoencoder.encoder, latent_dim)
+        self.bottleneck = autoencoder.bottleneck
+        self.decoder = autoencoder.decoder
+        self.up_pools = autoencoder.up_pools
+        self.fc = autoencoder.fc
+        self.sig = autoencoder.sig
+
+    def forward(self, x):
+        """
+        Defines the forward pass of the VAE.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor. Shape: (batch_size, channels, height, width).
+
+        Returns
+        -------
+        torch.Tensor
+            The reconstructed output tensor.
+        """
+        # 인코더를 통해 mu와 logvar 추출
+        mu, logvar = self.encoder(x)
+
+        # 잠재 변수 샘플링
+        z = reparameterize(mu, logvar)
+
+        # Bottleneck 처리
+        feat = self.bottleneck(z)
+
+        # 디코더를 통해 재구성
+        for up_pool, dec in zip(self.up_pools, self.decoder):
+            feat = up_pool(feat)
+            if self.encoder.encoder.skip_connect and len(self.encoder.encoder.feature_vectors) > 0:
+                feat = torch.cat((feat, self.encoder.encoder.feature_vectors.pop()), dim=1)
+            feat = dec(feat)
+
+        reconstructed = self.sig(self.fc(feat))
+        return reconstructed, mu, logvar
