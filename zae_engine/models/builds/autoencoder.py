@@ -218,16 +218,16 @@ class VAE(nn.Module):
         torch.Tensor
             The reconstructed output tensor.
         """
-        # 인코더를 통해 mu와 logvar 추출
+        # extract mean(mu) and logarithm variance(logvar) using encoder
         mu, logvar = self.encoder(x)
 
-        # 잠재 변수 샘플링
+        # sampling latent variable
         z = reparameterize(mu, logvar)
 
-        # Bottleneck 처리
+        # Bottleneck
         feat = self.bottleneck(z)
 
-        # 디코더를 통해 재구성
+        # reconstruct using decoder
         for up_pool, dec in zip(self.up_pools, self.decoder):
             feat = up_pool(feat)
             if self.encoder.encoder.skip_connect and len(self.encoder.encoder.feature_vectors) > 0:
