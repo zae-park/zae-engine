@@ -159,50 +159,90 @@ class AutoEncoder(nn.Module):
         return self.sig(self.fc(feat))
 
 
-class VAEEncoder(nn.Module):
-    def __init__(self, encoder: nn.Module, latent_dim: int):
-        super(VAEEncoder, self).__init__()
-        self.encoder = encoder
-        self.fc_mu = nn.Linear(encoder.output_dim, latent_dim)
-        self.fc_logvar = nn.Linear(encoder.output_dim, latent_dim)
-
-    def forward(self, x):
-        features = self.encoder(x)
-        mu = self.fc_mu(features)
-        logvar = self.fc_logvar(features)
-        return mu, logvar
-
-
-def reparameterize(mu: Tensor, logvar: Tensor) -> Tensor:
+class VAE(AutoEncoder):
     """
-    Reparameterization trick to sample from N(mu, var) from N(0,1).
-    """
-    std = torch.exp(0.5 * logvar)
-    eps = torch.randn_like(std)
-    return mu + eps * std
-
-
-class VAE(nn.Module):
-    """
-    Variational AutoEncoder (VAE) architecture.
+    Variational AutoEncoder (VAE) architecture extending AutoEncoder.
 
     Parameters
     ----------
-    autoencoder : AutoEncoder
-        The base AutoEncoder model.
-    latent_dim : int
-        Dimension of the latent space.
+    block : Type[Union[blk.UNetBlock, nn.Module]]
+        The basic building block for the encoder and decoder (e.g., ResNet block or UNetBlock).
+    ch_in : int
+        Number of input channels.
+    ch_out : int
+        Number of output channels.
+    width : int
+        Base width for the encoder and decoder layers.
+    layers : Union[Tuple[int], List[int]]
+        Number of blocks in each stage of the encoder and decoder.
+    groups : int, optional
+        Number of groups for group normalization in the block. Default is 1.
+    dilation : int, optional
+        Dilation rate for convolutional layers. Default is 1.
+    norm_layer : Callable[..., nn.Module], optional
+        Normalization layer to use. Default is `nn.BatchNorm2d`.
+    skip_connect : bool, optional
+        If True, adds skip connections for U-Net style. Default is False.
+    latent_dim : int, optional
+        Dimension of the latent space. Default is 128.
+
+    Attributes
+    ----------
+    encoder : VAEEncoder
+        The encoder module that outputs mu and logvar.
+    mu : Tensor
+        Mean of the latent distribution.
+    logvar : Tensor
+        Log variance of the latent distribution.
+    decoder : nn.ModuleList
+        The decoder module that reconstructs the input image.
+    feature_vectors : list
+        Stores intermediate feature maps for skip connections when `skip_connect` is True.
+    up_pools : nn.ModuleList
+        List of transposed convolution layers for upsampling in the decoder.
+    fc : nn.Conv2d
+        The final output convolutional layer.
+    sig : nn.Sigmoid
+        Sigmoid activation function for the output.
     """
 
-    def __init__(self, autoencoder: AutoEncoder, latent_dim: int):
-        super(VAE, self).__init__()
+    def __init__(
+        self,
+        block: Type[Union[blk.UNetBlock, nn.Module]],
+        ch_in: int,
+        ch_out: int,
+        width: int,
+        layers: Union[Tuple[int], List[int]],
+        groups: int = 1,
+        dilation: int = 1,
+        norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
+        skip_connect: bool = False,
+        latent_dim: int = 128,
+    ):
+        super(VAE, self).__init__(
+            block=block,
+            ch_in=ch_in,
+            ch_out=ch_out,
+            width=width,
+            layers=layers,
+            groups=groups,
+            dilation=dilation,
+            norm_layer=norm_layer,
+            skip_connect=skip_connect,
+        )
         self.latent_dim = latent_dim
-        self.encoder = VAEEncoder(autoencoder.encoder, latent_dim)
-        self.bottleneck = autoencoder.bottleneck
-        self.decoder = autoencoder.decoder
-        self.up_pools = autoencoder.up_pools
-        self.fc = autoencoder.fc
-        self.sig = autoencoder.sig
+
+        # Define layers to output mu and logvar
+        self.fc_mu = nn.Linear(self.encoder.output_dim, latent_dim)
+        self.fc_logvar = nn.Linear(self.encoder.output_dim, latent_dim)
+
+    def reparameterize(self, mu: Tensor, logvar: Tensor) -> Tensor:
+        """
+        Reparameterization trick to sample from N(mu, var) from N(0,1).
+        """
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std)
+        return mu + eps * std
 
     def forward(self, x):
         """
@@ -216,13 +256,17 @@ class VAE(nn.Module):
         Returns
         -------
         torch.Tensor
-            The reconstructed output tensor.
+            The reconstructed output tensor, along with mu and logvar.
         """
-        # extract mean(mu) and logarithm variance(logvar) using encoder
-        mu, logvar = self.encoder(x)
+        # extract feature vector from encoder
+        feat = self.encoder(x)
+
+        # generate random mean(mu) and logarithm variance(logvar)
+        mu = self.fc_mu(feat)
+        logvar = self.fc_logvar(feat)
 
         # sampling latent variable
-        z = reparameterize(mu, logvar)
+        z = self.reparameterize(mu, logvar)
 
         # Bottleneck
         feat = self.bottleneck(z)
@@ -230,8 +274,8 @@ class VAE(nn.Module):
         # reconstruct using decoder
         for up_pool, dec in zip(self.up_pools, self.decoder):
             feat = up_pool(feat)
-            if self.encoder.encoder.skip_connect and len(self.encoder.encoder.feature_vectors) > 0:
-                feat = torch.cat((feat, self.encoder.encoder.feature_vectors.pop()), dim=1)
+            if self.skip_connect and len(self.feature_vectors) > 0:
+                feat = torch.cat((feat, self.feature_vectors.pop()), dim=1)
             feat = dec(feat)
 
         reconstructed = self.sig(self.fc(feat))
