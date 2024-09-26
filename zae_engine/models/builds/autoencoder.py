@@ -294,7 +294,8 @@ class VAE(AutoEncoder):
         self.feature_vectors = []
 
         # Forward encoder
-        feat = self.encoder(x)
+        _ = self.encoder(x)
+        feat = self.feature_vectors.pop()
 
         # Flatten the encoder output
         feat_flat = feat.view(feat.size(0), -1)
