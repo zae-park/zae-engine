@@ -247,6 +247,199 @@
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.builds.autoencoder.</span></span><span class="sig-name descname"><span class="pre">VAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">block:</span> <span class="pre">~typing.Type[~zae_engine.nn_night.blocks.unet_block.UNetBlock</span> <span class="pre">|</span> <span class="pre">~torch.nn.modules.module.Module],</span> <span class="pre">ch_in:</span> <span class="pre">int,</span> <span class="pre">ch_out:</span> <span class="pre">int,</span> <span class="pre">width:</span> <span class="pre">int,</span> <span class="pre">layers:</span> <span class="pre">~typing.Tuple[int]</span> <span class="pre">|</span> <span class="pre">~typing.List[int],</span> <span class="pre">encoder_output_shape:</span> <span class="pre">~typing.List[int],</span> <span class="pre">groups:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">dilation:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">norm_layer:</span> <span class="pre">~typing.Callable[[...],</span> <span class="pre">~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.batchnorm.BatchNorm2d'&gt;,</span> <span class="pre">skip_connect:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">latent_dim:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">128</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#VAE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zae_engine.models.builds.autoencoder.AutoEncoder" title="zae_engine.models.builds.autoencoder.AutoEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">AutoEncoder</span></code></a></p>
+<p>Variational AutoEncoder (VAE) architecture extending AutoEncoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> (<em>Type</em><em>[</em><em>Union</em><em>[</em><em>blk.UNetBlock</em><em>, </em><em>nn.Module</em><em>]</em><em>]</em>) – The basic building block for the encoder and decoder (e.g., ResNet block or UNetBlock).</p></li>
+<li><p><strong>ch_in</strong> (<em>int</em>) – Number of input channels.</p></li>
+<li><p><strong>ch_out</strong> (<em>int</em>) – Number of output channels.</p></li>
+<li><p><strong>width</strong> (<em>int</em>) – Base width for the encoder and decoder layers.</p></li>
+<li><p><strong>layers</strong> (<em>Union</em><em>[</em><em>Tuple</em><em>[</em><em>int</em><em>]</em><em>, </em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Number of blocks in each stage of the encoder and decoder.</p></li>
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of groups for group normalization in the block. Default is 1.</p></li>
+<li><p><strong>dilation</strong> (<em>int</em><em>, </em><em>optional</em>) – Dilation rate for convolutional layers. Default is 1.</p></li>
+<li><p><strong>norm_layer</strong> (<em>Callable</em><em>[</em><em>...</em><em>, </em><em>nn.Module</em><em>]</em><em>, </em><em>optional</em>) – Normalization layer to use. Default is <cite>nn.BatchNorm2d</cite>.</p></li>
+<li><p><strong>skip_connect</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, adds skip connections for U-Net style. Default is False.</p></li>
+<li><p><strong>latent_dim</strong> (<em>int</em><em>, </em><em>optional</em>) – Dimension of the latent space. Default is 128.</p></li>
+<li><p><strong>encoder_output_shape</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – The shape of the encoder’s output (excluding batch size), e.g., [channels, height, width].</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.encoder">
+<span class="sig-name descname"><span class="pre">encoder</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.encoder" title="Link to this definition">¶</a></dt>
+<dd><p>The encoder module that encodes the input image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.bottleneck">
+<span class="sig-name descname"><span class="pre">bottleneck</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.bottleneck" title="Link to this definition">¶</a></dt>
+<dd><p>The bottleneck layer between the encoder and decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.decoder">
+<span class="sig-name descname"><span class="pre">decoder</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.decoder" title="Link to this definition">¶</a></dt>
+<dd><p>The decoder module that reconstructs the input image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.ModuleList</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.feature_vectors">
+<span class="sig-name descname"><span class="pre">feature_vectors</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.feature_vectors" title="Link to this definition">¶</a></dt>
+<dd><p>Stores intermediate feature maps for skip connections when <cite>skip_connect</cite> is True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.up_pools">
+<span class="sig-name descname"><span class="pre">up_pools</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.up_pools" title="Link to this definition">¶</a></dt>
+<dd><p>List of transposed convolution layers for upsampling in the decoder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.ModuleList</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.fc">
+<span class="sig-name descname"><span class="pre">fc</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.fc" title="Link to this definition">¶</a></dt>
+<dd><p>The final output convolutional layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Conv2d</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.sig">
+<span class="sig-name descname"><span class="pre">sig</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.sig" title="Link to this definition">¶</a></dt>
+<dd><p>Sigmoid activation function for the output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Sigmoid</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.fc_mu">
+<span class="sig-name descname"><span class="pre">fc_mu</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.fc_mu" title="Link to this definition">¶</a></dt>
+<dd><p>Fully connected layer to generate mean of latent distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.fc_logvar">
+<span class="sig-name descname"><span class="pre">fc_logvar</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.fc_logvar" title="Link to this definition">¶</a></dt>
+<dd><p>Fully connected layer to generate log variance of latent distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.fc_z">
+<span class="sig-name descname"><span class="pre">fc_z</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.fc_z" title="Link to this definition">¶</a></dt>
+<dd><p>Fully connected layer to map sampled latent variable back to encoder channels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.encoder_output_shape">
+<span class="sig-name descname"><span class="pre">encoder_output_shape</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.encoder_output_shape" title="Link to this definition">¶</a></dt>
+<dd><p>The shape of the encoder’s output (excluding batch size), e.g., [channels, height, width].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.encoder_output_features">
+<span class="sig-name descname"><span class="pre">encoder_output_features</span></span><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.encoder_output_features" title="Link to this definition">¶</a></dt>
+<dd><p>Total number of features after flattening the encoder’s output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#VAE.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the forward pass of the VAE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor. Shape: (batch_size, channels, height, width).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The reconstructed output tensor, along with mu and logvar.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[Tensor, Tensor, Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.builds.autoencoder.VAE.reparameterize">
+<span class="sig-name descname"><span class="pre">reparameterize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/models/builds/autoencoder.html#VAE.reparameterize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.autoencoder.VAE.reparameterize" title="Link to this definition">¶</a></dt>
+<dd><p>Reparameterization trick to sample from N(mu, var) from N(0,1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>torch.Tensor</em>) – Mean of the latent distribution.</p></li>
+<li><p><strong>logvar</strong> (<em>torch.Tensor</em>) – Log variance of the latent distribution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sampled latent variable z.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-zae_engine.models.builds.cnn">
 <span id="zae-engine-models-builds-cnn-module"></span><h2>zae_engine.models.builds.cnn module<a class="headerlink" href="#module-zae_engine.models.builds.cnn" title="Link to this heading">¶</a></h2>
@@ -266,6 +459,23 @@ this function, one should call the <code class="xref py py-class docutils litera
 instead of this since the former takes care of running the
 registered hooks while the latter silently ignores them.</p>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.builds.cnn.CNNBase.get_output_shape">
+<span class="sig-name descname"><span class="pre">get_output_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/models/builds/cnn.html#CNNBase.get_output_shape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.models.builds.cnn.CNNBase.get_output_shape" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the encoder’s output shape based on a dummy input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_size</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em>) – The size of the input tensor (batch_size, channels, height, width).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The shape of the encoder’s output tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[int, int, int, int]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

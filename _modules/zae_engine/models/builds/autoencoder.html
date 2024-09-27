@@ -162,7 +162,7 @@
             <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span>
             <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span>
         <span class="p">)</span>
-
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">skip_connect</span> <span class="o">=</span> <span class="n">skip_connect</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">stem</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">make_body</span><span class="p">(</span><span class="n">blocks</span><span class="o">=</span><span class="p">[</span><span class="n">block</span><span class="p">]</span> <span class="o">*</span> <span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ch_in</span><span class="o">=</span><span class="n">ch_in</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -240,6 +240,186 @@
             <span class="n">feat</span> <span class="o">=</span> <span class="n">dec</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="p">(</span><span class="n">feat</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="VAE">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.VAE">[docs]</a>
+<span class="k">class</span> <span class="nc">VAE</span><span class="p">(</span><span class="n">AutoEncoder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Variational AutoEncoder (VAE) architecture extending AutoEncoder.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    block : Type[Union[blk.UNetBlock, nn.Module]]</span>
+<span class="sd">        The basic building block for the encoder and decoder (e.g., ResNet block or UNetBlock).</span>
+<span class="sd">    ch_in : int</span>
+<span class="sd">        Number of input channels.</span>
+<span class="sd">    ch_out : int</span>
+<span class="sd">        Number of output channels.</span>
+<span class="sd">    width : int</span>
+<span class="sd">        Base width for the encoder and decoder layers.</span>
+<span class="sd">    layers : Union[Tuple[int], List[int]]</span>
+<span class="sd">        Number of blocks in each stage of the encoder and decoder.</span>
+<span class="sd">    groups : int, optional</span>
+<span class="sd">        Number of groups for group normalization in the block. Default is 1.</span>
+<span class="sd">    dilation : int, optional</span>
+<span class="sd">        Dilation rate for convolutional layers. Default is 1.</span>
+<span class="sd">    norm_layer : Callable[..., nn.Module], optional</span>
+<span class="sd">        Normalization layer to use. Default is `nn.BatchNorm2d`.</span>
+<span class="sd">    skip_connect : bool, optional</span>
+<span class="sd">        If True, adds skip connections for U-Net style. Default is False.</span>
+<span class="sd">    latent_dim : int, optional</span>
+<span class="sd">        Dimension of the latent space. Default is 128.</span>
+<span class="sd">    encoder_output_shape : List[int]</span>
+<span class="sd">        The shape of the encoder&#39;s output (excluding batch size), e.g., [channels, height, width].</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    encoder : nn.Module</span>
+<span class="sd">        The encoder module that encodes the input image.</span>
+<span class="sd">    bottleneck : nn.Module</span>
+<span class="sd">        The bottleneck layer between the encoder and decoder.</span>
+<span class="sd">    decoder : nn.ModuleList</span>
+<span class="sd">        The decoder module that reconstructs the input image.</span>
+<span class="sd">    feature_vectors : list</span>
+<span class="sd">        Stores intermediate feature maps for skip connections when `skip_connect` is True.</span>
+<span class="sd">    up_pools : nn.ModuleList</span>
+<span class="sd">        List of transposed convolution layers for upsampling in the decoder.</span>
+<span class="sd">    fc : nn.Conv2d</span>
+<span class="sd">        The final output convolutional layer.</span>
+<span class="sd">    sig : nn.Sigmoid</span>
+<span class="sd">        Sigmoid activation function for the output.</span>
+<span class="sd">    fc_mu : nn.Linear</span>
+<span class="sd">        Fully connected layer to generate mean of latent distribution.</span>
+<span class="sd">    fc_logvar : nn.Linear</span>
+<span class="sd">        Fully connected layer to generate log variance of latent distribution.</span>
+<span class="sd">    fc_z : nn.Linear</span>
+<span class="sd">        Fully connected layer to map sampled latent variable back to encoder channels.</span>
+<span class="sd">    encoder_output_shape : List[int]</span>
+<span class="sd">        The shape of the encoder&#39;s output (excluding batch size), e.g., [channels, height, width].</span>
+<span class="sd">    encoder_output_features : int</span>
+<span class="sd">        Total number of features after flattening the encoder&#39;s output.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">block</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">blk</span><span class="o">.</span><span class="n">UNetBlock</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]],</span>
+        <span class="n">ch_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">ch_out</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">layers</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+        <span class="n">encoder_output_shape</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">,</span>
+        <span class="n">skip_connect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">latent_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span>
+            <span class="n">ch_in</span><span class="o">=</span><span class="n">ch_in</span><span class="p">,</span>
+            <span class="n">ch_out</span><span class="o">=</span><span class="n">ch_out</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span>
+            <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span>
+            <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span>
+            <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span>
+            <span class="n">skip_connect</span><span class="o">=</span><span class="n">skip_connect</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span> <span class="o">=</span> <span class="n">latent_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_shape</span> <span class="o">=</span> <span class="n">encoder_output_shape</span>
+
+        <span class="c1"># Calculate the total number of features from encoder_output_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_shape</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span> <span class="o">*=</span> <span class="n">dim</span>
+
+        <span class="c1"># Define Linear layers to generate mu and logvar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc_mu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc_logvar</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+
+        <span class="c1"># Define Linear layer to map latent variable back to encoder channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc_z</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">latent_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VAE.reparameterize">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.VAE.reparameterize">[docs]</a>
+    <span class="k">def</span> <span class="nf">reparameterize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">logvar</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reparameterization trick to sample from N(mu, var) from N(0,1).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mu : torch.Tensor</span>
+<span class="sd">            Mean of the latent distribution.</span>
+<span class="sd">        logvar : torch.Tensor</span>
+<span class="sd">            Log variance of the latent distribution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            Sampled latent variable z.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">logvar</span><span class="p">)</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">std</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">std</span></div>
+
+
+<div class="viewcode-block" id="VAE.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.VAE.forward">[docs]</a>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines the forward pass of the VAE.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            The input tensor. Shape: (batch_size, channels, height, width).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tuple[Tensor, Tensor, Tensor]</span>
+<span class="sd">            The reconstructed output tensor, along with mu and logvar.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Ensure feature_vectors is cleared at the start of each forward pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Forward encoder</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="c1"># Flatten the encoder output</span>
+        <span class="n">feat_flat</span> <span class="o">=</span> <span class="n">feat</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">feat</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Generate mu and logvar using Linear layers</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_mu</span><span class="p">(</span><span class="n">feat_flat</span><span class="p">)</span>
+        <span class="n">logvar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_logvar</span><span class="p">(</span><span class="n">feat_flat</span><span class="p">)</span>
+
+        <span class="c1"># Reparameterize to obtain latent variable z</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reparameterize</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span><span class="p">)</span>
+
+        <span class="c1"># Map z back to feature space using Linear layer</span>
+        <span class="n">z_mapped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_z</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+        <span class="c1"># Reshape z_mapped to match encoder_output_shape</span>
+        <span class="c1"># Calculate the shape excluding the batch dimension</span>
+        <span class="n">z_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">feat</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_shape</span>
+        <span class="n">z_reshaped</span> <span class="o">=</span> <span class="n">z_mapped</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">z_shape</span><span class="p">)</span>
+
+        <span class="c1"># Bottleneck processing</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span><span class="p">(</span><span class="n">z_reshaped</span><span class="p">)</span>
+
+        <span class="c1"># Decoder with skip connections if enabled</span>
+        <span class="k">for</span> <span class="n">up_pool</span><span class="p">,</span> <span class="n">dec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_pools</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">):</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">up_pool</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_connect</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">feat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">feat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="o">.</span><span class="n">pop</span><span class="p">()),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">dec</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+
+        <span class="c1"># Final output</span>
+        <span class="n">reconstructed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="p">(</span><span class="n">feat</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">reconstructed</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span></div>
 </div>
 
 </pre></div>

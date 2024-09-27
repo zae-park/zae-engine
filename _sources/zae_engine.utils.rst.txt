@@ -12,14 +12,6 @@ Subpackages
 Submodules
 ----------
 
-zae\_engine.utils.deco module
------------------------------
-
-.. automodule:: zae_engine.utils.deco
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 zae\_engine.utils.io module
 ---------------------------
 
