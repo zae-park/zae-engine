@@ -23,7 +23,7 @@ class AutoEncoder(nn.Module):
         Number of output channels.
     width : int
         Base width for the encoder and decoder layers.
-    layers : Union[Tuple[int], List[int]]
+    layers : Sequence[int]
         Number of blocks in each stage of the encoder and decoder.
     groups : int, optional
         Number of groups for group normalization in the block. Default is 1.
@@ -67,7 +67,7 @@ class AutoEncoder(nn.Module):
         ch_in: int,
         ch_out: int,
         width: int,
-        layers: Union[Tuple[int], List[int]],
+        layers: Sequence[int],
         groups: int = 1,
         dilation: int = 1,
         # zero_init_residual: bool = False,
@@ -173,11 +173,11 @@ class VAE(AutoEncoder):
         Number of output channels.
     width : int
         Base width for the encoder and decoder layers.
-    layers : Union[Tuple[int], List[int]]
+    layers : Sequence[int]
         Number of blocks in each stage of the encoder and decoder.
-    encoder_output_shape : List[int]
+    encoder_output_shape : Sequence[int]
         The shape of the encoder's output (excluding batch size), e.g., [channels, height, width].
-    condition_dim : Optional[int]
+    condition_dim : int, optional
         Dimension of the condition vector (e.g., number of classes for one-hot encoding). Default is None.
     groups : int, optional
         Number of groups for group normalization in the block. Default is 1.
@@ -216,8 +216,8 @@ class VAE(AutoEncoder):
         The shape of the encoder's output (excluding batch size), e.g., [channels, height, width].
     encoder_output_features : int
         Total number of features after flattening the encoder's output.
-    condition_dim : Optional[int]
-        Dimension of the condition vector. If None, behaves as standard VAE.
+    condition_dim : int or None
+        Dimension of the condition vector. If None, operates as standard VAE.
     """
 
     def __init__(
@@ -256,14 +256,12 @@ class VAE(AutoEncoder):
             self.encoder_output_features *= dim
 
         if self.condition_dim is not None:
-            # Adjust fc_mu and fc_logvar to accept condition information
+            # If condition_dim is provided, adjust fc_mu and fc_logvar to accept condition
             self.fc_mu = nn.Linear(self.encoder_output_features + self.condition_dim, latent_dim)
             self.fc_logvar = nn.Linear(self.encoder_output_features + self.condition_dim, latent_dim)
-
-            # Adjust fc_z to accept latent vector and condition
             self.fc_z = nn.Linear(latent_dim + self.condition_dim, self.encoder_output_features)
         else:
-            # Standard VAE layers
+            # Standard VAE without condition
             self.fc_mu = nn.Linear(self.encoder_output_features, latent_dim)
             self.fc_logvar = nn.Linear(self.encoder_output_features, latent_dim)
             self.fc_z = nn.Linear(latent_dim, self.encoder_output_features)
@@ -296,8 +294,8 @@ class VAE(AutoEncoder):
         ----------
         x : torch.Tensor
             The input tensor. Shape: (batch_size, channels, height, width).
-        c : Optional[torch.Tensor]
-            The condition tensor. Shape: (batch_size, condition_dim). Default is None.
+        c : torch.Tensor or None, optional
+            The condition tensor. Shape: (batch_size, condition_dim). If None, operates as standard VAE.
 
         Returns
         -------
@@ -314,18 +312,23 @@ class VAE(AutoEncoder):
                 raise ValueError(f"Condition tensor 'c' has incorrect dimension {c.size(1)}, expected {self.condition_dim}.")
 
         # Forward encoder
-        feat = self.encoder(x)  # Shape: (batch_size, encoder_channels, encoder_height, encoder_width)
+        _ = self.encoder(x)
+        feat = self.feature_vectors.pop()   # Shape: (batch_size, channels, height, width)
         feat_flat = feat.view(feat.size(0), -1)  # Shape: (batch_size, encoder_output_features)
 
         if self.condition_dim is not None:
+            if c is None:
+                raise ValueError("Condition tensor 'c' must be provided when condition_dim is set.")
+            if c.size(1) != self.condition_dim:
+                raise ValueError(f"Condition tensor 'c' has incorrect dimension. Expected {self.condition_dim}, got {c.size(1)}.")
             # Concatenate condition with encoder features
             encoder_input = torch.cat([feat_flat, c], dim=1)  # Shape: (batch_size, encoder_output_features + condition_dim)
         else:
             encoder_input = feat_flat  # Shape: (batch_size, encoder_output_features)
 
-        # Generate mu and logvar
-        mu = self.fc_mu(encoder_input)  # Shape: (batch_size, latent_dim)
-        logvar = self.fc_logvar(encoder_input)  # Shape: (batch_size, latent_dim)
+        # Generate mu and logvar using Linear layers
+        mu = self.fc_mu(encoder_input)
+        logvar = self.fc_logvar(encoder_input)
 
         # Reparameterize to obtain latent variable z
         z = self.reparameterize(mu, logvar)  # Shape: (batch_size, latent_dim)
@@ -333,17 +336,18 @@ class VAE(AutoEncoder):
         if self.condition_dim is not None:
             # Concatenate condition with z
             z_cond = torch.cat([z, c], dim=1)  # Shape: (batch_size, latent_dim + condition_dim)
+            # Map z_cond back to feature space using Linear layer
+            z_mapped = self.fc_z(z_cond)  # Shape: (batch_size, encoder_output_features)
         else:
-            z_cond = z  # Shape: (batch_size, latent_dim)
+            # Map z back to feature space using Linear layer
+            z_mapped = self.fc_z(z)  # Shape: (batch_size, encoder_output_features)
 
-        # Map z_cond back to feature space
-        z_mapped = self.fc_z(z_cond)  # Shape: (batch_size, encoder_output_features)
-
-        # Reshape to encoder_output_shape
-        z_reshaped = z_mapped.view(*([z_mapped.size(0)] + self.encoder_output_shape))  # Shape: (batch_size, channels, height, width)
+        # Reshape z_mapped to match encoder_output_shape
+        z_shape = [z_mapped.size(0)] + self.encoder_output_shape
+        z_reshaped = z_mapped.view(*z_shape)  # Shape: (batch_size, channels, height, width)
 
         # Bottleneck processing
-        feat = self.bottleneck(z_reshaped)
+        feat = self.bottleneck(z_reshaped)  # Shape: adjusted by bottleneck
 
         # Decoder with skip connections if enabled
         for up_pool, dec in zip(self.up_pools, self.decoder):
@@ -354,5 +358,4 @@ class VAE(AutoEncoder):
 
         # Final output
         reconstructed = self.sig(self.fc(feat))  # Shape: (batch_size, ch_out, height, width)
-
         return reconstructed, mu, logvar
