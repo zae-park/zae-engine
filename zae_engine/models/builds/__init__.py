@@ -1,5 +1,5 @@
 from .cnn import CNNBase
-from .autoencoder import AutoEncoder
+from .autoencoder import AutoEncoder, VAE
 from .transformer import TransformerBase, BertBase, EncoderBase, DecoderBase
 
 # from .legacy import ResNet1D, Regressor1D, Segmentor, CNNBaseLegacy
