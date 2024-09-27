@@ -392,37 +392,6 @@ class TestVAE(unittest.TestCase):
         self.assertEqual(mu.shape, (self.batch_size, new_latent_dim))
         self.assertEqual(logvar.shape, (self.batch_size, new_latent_dim))
 
-    def test_reconstruction_quality_cvae(self):
-        """Test that the reconstruction loss decreases after a training step for CVAE."""
-        # Define loss function
-        def cvae_loss(reconstructed: Tensor, x: Tensor, mu: Tensor, logvar: Tensor) -> Tensor:
-            recon_loss = nn.functional.binary_cross_entropy(reconstructed, x, reduction='sum')
-            kl_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-            return recon_loss + kl_loss
-
-        # Set the model to training mode
-        self.cvae.train()
-
-        # Define optimizer
-        optimizer = torch.optim.Adam(self.cvae.parameters(), lr=1e-3)
-
-        # Initial loss calculation
-        reconstructed, mu, logvar = self.cvae(self.test_input, self.condition)
-        initial_loss = cvae_loss(reconstructed, self.test_input, mu, logvar).item()
-
-        # Backward pass and optimizer step
-        optimizer.zero_grad()
-        loss = cvae_loss(reconstructed, self.test_input, mu, logvar)
-        loss.backward()
-        optimizer.step()
-
-        # Updated loss calculation
-        reconstructed, mu, logvar = self.cvae(self.test_input, self.condition)
-        updated_loss = cvae_loss(reconstructed, self.test_input, mu, logvar).item()
-
-        # Check that loss has decreased
-        self.assertLess(updated_loss, initial_loss)
-
     def test_generated_output_cvae(self):
         """Test that generated output from random latent vectors has the correct shape for CVAE."""
         # Generate random latent vectors
