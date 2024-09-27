@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, Type, Union, List
+from typing import Callable, Tuple, Type, Union, Sequence, Optional
 from collections import OrderedDict
 
 import torch
@@ -161,7 +161,7 @@ class AutoEncoder(nn.Module):
 
 class VAE(AutoEncoder):
     """
-    Variational AutoEncoder (VAE) architecture extending AutoEncoder.
+    Variational AutoEncoder (VAE) architecture extending AutoEncoder with optional Conditional functionality.
 
     Parameters
     ----------
@@ -175,6 +175,10 @@ class VAE(AutoEncoder):
         Base width for the encoder and decoder layers.
     layers : Union[Tuple[int], List[int]]
         Number of blocks in each stage of the encoder and decoder.
+    encoder_output_shape : List[int]
+        The shape of the encoder's output (excluding batch size), e.g., [channels, height, width].
+    condition_dim : Optional[int]
+        Dimension of the condition vector (e.g., number of classes for one-hot encoding). Default is None.
     groups : int, optional
         Number of groups for group normalization in the block. Default is 1.
     dilation : int, optional
@@ -185,8 +189,6 @@ class VAE(AutoEncoder):
         If True, adds skip connections for U-Net style. Default is False.
     latent_dim : int, optional
         Dimension of the latent space. Default is 128.
-    encoder_output_shape : List[int]
-        The shape of the encoder's output (excluding batch size), e.g., [channels, height, width].
 
     Attributes
     ----------
@@ -214,6 +216,8 @@ class VAE(AutoEncoder):
         The shape of the encoder's output (excluding batch size), e.g., [channels, height, width].
     encoder_output_features : int
         Total number of features after flattening the encoder's output.
+    condition_dim : Optional[int]
+        Dimension of the condition vector. If None, behaves as standard VAE.
     """
 
     def __init__(
@@ -222,8 +226,9 @@ class VAE(AutoEncoder):
         ch_in: int,
         ch_out: int,
         width: int,
-        layers: Union[Tuple[int], List[int]],
-        encoder_output_shape: List[int],
+        layers: Sequence[int],
+        encoder_output_shape: Sequence[int],
+        condition_dim: Optional[int] = None,
         groups: int = 1,
         dilation: int = 1,
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
@@ -243,18 +248,25 @@ class VAE(AutoEncoder):
         )
         self.latent_dim = latent_dim
         self.encoder_output_shape = encoder_output_shape
+        self.condition_dim = condition_dim
 
         # Calculate the total number of features from encoder_output_shape
         self.encoder_output_features = 1
         for dim in self.encoder_output_shape:
             self.encoder_output_features *= dim
 
-        # Define Linear layers to generate mu and logvar
-        self.fc_mu = nn.Linear(self.encoder_output_features, latent_dim)
-        self.fc_logvar = nn.Linear(self.encoder_output_features, latent_dim)
+        if self.condition_dim is not None:
+            # Adjust fc_mu and fc_logvar to accept condition information
+            self.fc_mu = nn.Linear(self.encoder_output_features + self.condition_dim, latent_dim)
+            self.fc_logvar = nn.Linear(self.encoder_output_features + self.condition_dim, latent_dim)
 
-        # Define Linear layer to map latent variable back to encoder channels
-        self.fc_z = nn.Linear(latent_dim, self.encoder_output_features)
+            # Adjust fc_z to accept latent vector and condition
+            self.fc_z = nn.Linear(latent_dim + self.condition_dim, self.encoder_output_features)
+        else:
+            # Standard VAE layers
+            self.fc_mu = nn.Linear(self.encoder_output_features, latent_dim)
+            self.fc_logvar = nn.Linear(self.encoder_output_features, latent_dim)
+            self.fc_z = nn.Linear(latent_dim, self.encoder_output_features)
 
     def reparameterize(self, mu: Tensor, logvar: Tensor) -> Tensor:
         """
@@ -276,14 +288,16 @@ class VAE(AutoEncoder):
         eps = torch.randn_like(std)
         return mu + eps * std
 
-    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+    def forward(self, x: Tensor, c: Optional[Tensor] = None) -> Tuple[Tensor, Tensor, Tensor]:
         """
-        Defines the forward pass of the VAE.
+        Defines the forward pass of the VAE or CVAE.
 
         Parameters
         ----------
         x : torch.Tensor
             The input tensor. Shape: (batch_size, channels, height, width).
+        c : Optional[torch.Tensor]
+            The condition tensor. Shape: (batch_size, condition_dim). Default is None.
 
         Returns
         -------
@@ -293,27 +307,40 @@ class VAE(AutoEncoder):
         # Ensure feature_vectors is cleared at the start of each forward pass
         self.feature_vectors = []
 
+        if self.condition_dim is not None:
+            if c is None:
+                raise ValueError("Condition tensor 'c' must be provided when 'condition_dim' is set.")
+            if c.size(1) != self.condition_dim:
+                raise ValueError(f"Condition tensor 'c' has incorrect dimension {c.size(1)}, expected {self.condition_dim}.")
+
         # Forward encoder
-        _ = self.encoder(x)
-        feat = self.feature_vectors.pop()
+        feat = self.encoder(x)  # Shape: (batch_size, encoder_channels, encoder_height, encoder_width)
+        feat_flat = feat.view(feat.size(0), -1)  # Shape: (batch_size, encoder_output_features)
 
-        # Flatten the encoder output
-        feat_flat = feat.view(feat.size(0), -1)
+        if self.condition_dim is not None:
+            # Concatenate condition with encoder features
+            encoder_input = torch.cat([feat_flat, c], dim=1)  # Shape: (batch_size, encoder_output_features + condition_dim)
+        else:
+            encoder_input = feat_flat  # Shape: (batch_size, encoder_output_features)
 
-        # Generate mu and logvar using Linear layers
-        mu = self.fc_mu(feat_flat)
-        logvar = self.fc_logvar(feat_flat)
+        # Generate mu and logvar
+        mu = self.fc_mu(encoder_input)  # Shape: (batch_size, latent_dim)
+        logvar = self.fc_logvar(encoder_input)  # Shape: (batch_size, latent_dim)
 
         # Reparameterize to obtain latent variable z
-        z = self.reparameterize(mu, logvar)
+        z = self.reparameterize(mu, logvar)  # Shape: (batch_size, latent_dim)
 
-        # Map z back to feature space using Linear layer
-        z_mapped = self.fc_z(z)
+        if self.condition_dim is not None:
+            # Concatenate condition with z
+            z_cond = torch.cat([z, c], dim=1)  # Shape: (batch_size, latent_dim + condition_dim)
+        else:
+            z_cond = z  # Shape: (batch_size, latent_dim)
 
-        # Reshape z_mapped to match encoder_output_shape
-        # Calculate the shape excluding the batch dimension
-        z_shape = [feat.size(0)] + self.encoder_output_shape
-        z_reshaped = z_mapped.view(*z_shape)
+        # Map z_cond back to feature space
+        z_mapped = self.fc_z(z_cond)  # Shape: (batch_size, encoder_output_features)
+
+        # Reshape to encoder_output_shape
+        z_reshaped = z_mapped.view(*([z_mapped.size(0)] + self.encoder_output_shape))  # Shape: (batch_size, channels, height, width)
 
         # Bottleneck processing
         feat = self.bottleneck(z_reshaped)
@@ -326,5 +353,6 @@ class VAE(AutoEncoder):
             feat = dec(feat)
 
         # Final output
-        reconstructed = self.sig(self.fc(feat))
+        reconstructed = self.sig(self.fc(feat))  # Shape: (batch_size, ch_out, height, width)
+
         return reconstructed, mu, logvar
