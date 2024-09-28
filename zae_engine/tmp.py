@@ -1,4 +1,11 @@
 import torch
+import torch.nn as nn
+
+from zae_engine.data import CollateBase
+from zae_engine.models import AutoEncoder
+from zae_engine.nn_night.blocks import UNetBlock
+from zae_engine.trainer import Trainer
+
 
 class NoiseScheduler:
     """
@@ -192,15 +199,13 @@ if __name__ == "__main__":
         timesteps=1000,
         schedule='linear',  # 'linear' 또는 'cosine'
         beta_start=1e-4,
-        beta_end=0.02,
-        device='cuda' if torch.cuda.is_available() else 'cpu'
+        beta_end=0.02
     )
 
     # ForwardDiffusion 인스턴스 생성
     forward_diffusion = ForwardDiffusion(
         noise_scheduler=noise_scheduler,
-        x_key=["x"],  # 배치에서 'x' 키로 입력 데이터를 가져옵니다.
-        device='cuda' if torch.cuda.is_available() else 'cpu'
+        x_key=["x"]
     )
 
     # CollateBase 인스턴스 생성 및 ForwardDiffusion 추가
@@ -239,13 +244,15 @@ if __name__ == "__main__":
     )
 
     # 모델, NoiseScheduler, Optimizer 설정
-    model = UNet(in_channels=1, out_channels=1).to(device)
+    model = AutoEncoder(
+        block=UNetBlock, ch_in=3, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True
+    )
+
     noise_scheduler = NoiseScheduler(
         timesteps=1000,
         schedule='linear',  # 'linear' 또는 'cosine'
         beta_start=1e-4,
-        beta_end=0.02,
-        device=device
+        beta_end=0.02
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
@@ -306,7 +313,6 @@ if __name__ == "__main__":
     # Trainer 인스턴스 생성
     trainer = DDPMTrainer(
         model=model,
-        device=device,
         mode='train',
         optimizer=optimizer,
         scheduler=None,  # 필요시 설정
