@@ -1,10 +1,11 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Union
 from collections import OrderedDict
 
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+import matplotlib.pyplot as plt
 
 from zae_engine.data import CollateBase
 from zae_engine.models import AutoEncoder
@@ -116,8 +117,6 @@ class ForwardDiffusion:
     ----------
     noise_scheduler : NoiseScheduler
         Instance of NoiseScheduler managing the noise levels.
-    x_key : List[str]
-        The key in the batch dictionary that represents the input data.
 
     Attributes
     ----------
@@ -127,9 +126,8 @@ class ForwardDiffusion:
         Keys representing the input data in the batch.
     """
 
-    def __init__(self, noise_scheduler: NoiseScheduler, x_key: list = ["x"], device: str = 'cuda'):
+    def __init__(self, noise_scheduler: NoiseScheduler,):
         self.noise_scheduler = noise_scheduler
-        self.x_key = x_key
 
     def __call__(self, batch: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -150,11 +148,6 @@ class ForwardDiffusion:
                 - 't': Timestep.
                 - 'noise': Added noise.
         """
-        # Initialize dictionaries to hold results
-        batch_noised = {}
-        batch_original = {}
-        batch_timestep = {}
-        batch_noise = {}
 
         key = "x"
         origin = batch[key]
@@ -177,6 +170,38 @@ class ForwardDiffusion:
 
 
 class DDPMTrainer(Trainer):
+    """
+    Trainer class specialized for DDPM training and sampling.
+
+    Inherits from the abstract Trainer class and implements the train_step and test_step methods.
+    Additionally, it includes methods for generating and visualizing samples using the trained model.
+    """
+
+    def __init__(
+        self,
+        model,
+        device: torch.device,
+        mode: str,
+        optimizer: torch.optim.Optimizer,
+        scheduler: Optional[Union[torch.optim.lr_scheduler.LRScheduler, Any]],
+        noise_scheduler: NoiseScheduler,
+        *,
+        log_bar: bool = True,
+        scheduler_step_on_batch: bool = False,
+        gradient_clip: float = 0.0,
+    ):
+        super().__init__(
+            model=model,
+            device=device,
+            mode=mode,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            log_bar=log_bar,
+            scheduler_step_on_batch=scheduler_step_on_batch,
+            gradient_clip=gradient_clip
+        )
+        self.noise_scheduler = noise_scheduler
+
     def train_step(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         """
         Perform a training step for DDPM.
@@ -184,7 +209,7 @@ class DDPMTrainer(Trainer):
         Parameters
         ----------
         batch : Dict[str, torch.Tensor]
-            A batch of data containing 'x_t', 'x0', 't_x', 'noise_x'.
+            A batch of data containing 'x_t', 'x0', 't', 'noise'.
 
         Returns
         -------
@@ -192,8 +217,8 @@ class DDPMTrainer(Trainer):
             A dictionary containing the loss.
         """
         x_t = batch['x_t']
-        t = batch['t_x']
-        noise = batch['noise_x']
+        t = batch['t']
+        noise = batch['noise']
 
         # 모델은 x_t과 t를 입력으로 받아 노이즈를 예측
         noise_pred = self.model(x_t, t)
@@ -210,57 +235,154 @@ class DDPMTrainer(Trainer):
         Parameters
         ----------
         batch : Dict[str, torch.Tensor]
-            A batch of data containing 'x_t', 'x0', 't_x', 'noise_x'.
+            A batch of data containing 'x_t', 'x0', 't', 'noise'.
 
         Returns
         -------
         Dict[str, torch.Tensor]
             A dictionary containing the loss.
         """
-        x_t = batch['x_t']
-        t = batch['t_x']
-        noise = batch['noise_x']
+        return self.train_step(batch=batch)
 
-        # 모델은 x_t과 t를 입력으로 받아 노이즈를 예측
-        noise_pred = self.model(x_t, t)
+    def generate(self, batch_size: int, channels: int, height: int, width: int) -> torch.Tensor:
+        """
+        Generate new samples using the trained diffusion model.
 
-        # 손실 계산 (예: MSE)
-        loss = nn.MSELoss()(noise_pred, noise)
+        Parameters
+        ----------
+        batch_size : int
+            Number of samples to generate.
+        channels : int
+            Number of channels in the generated images.
+        height : int
+            Height of the generated images.
+        width : int
+            Width of the generated images.
 
-        return {"loss": loss}
+        Returns
+        -------
+        torch.Tensor
+            Generated samples. Shape: (batch_size, channels, height, width)
+        """
+        timesteps = self.noise_scheduler.timesteps
+        alpha = self.noise_scheduler.alpha
+        alpha_bar = self.noise_scheduler.alpha_bar
+        posterior_variance = self.noise_scheduler.posterior_variance
+
+        # Initialize with standard normal noise
+        x = torch.randn(batch_size, channels, height, width, device=self.device)
+
+        self.model.eval()
+        with torch.no_grad():
+            for t in reversed(range(timesteps)):
+                t_tensor = torch.full((batch_size,), t, dtype=torch.long, device=self.device)
+                # Predict the noise using the model
+                noise_pred = self.model(x, t_tensor)
+
+                if t > 0:
+                    # Calculate the mean (mu_theta)
+                    sqrt_recip_alpha = 1 / torch.sqrt(alpha[t])
+                    sqrt_recipm_alpha = torch.sqrt(1 / alpha[t] - 1)
+
+                    mu_theta = sqrt_recip_alpha * (x - (self.noise_scheduler.beta[t] / torch.sqrt(1 - alpha_bar[t])) * noise_pred)
+
+                    # Sample from the posterior
+                    noise = torch.randn_like(x)
+                    x = mu_theta + torch.sqrt(posterior_variance[t - 1]).view(-1, 1, 1, 1) * noise
+                else:
+                    # For the final step, no noise is added
+                    x = (x - (self.noise_scheduler.beta[t] / torch.sqrt(1 - alpha_bar[t])) * noise_pred) / torch.sqrt(alpha[t])
+
+        return x
+
+    def visualize_samples(self, samples: torch.Tensor, nrow: int = 4, ncol: int = 4):
+        """
+        Visualize generated samples.
+
+        Parameters
+        ----------
+        samples : torch.Tensor
+            Generated samples. Shape: (batch_size, channels, height, width)
+        nrow : int, optional
+            Number of rows in the grid, by default 4.
+        ncol : int, optional
+            Number of columns in the grid, by default 4.
+        """
+        # De-normalize the samples (assuming normalization was (0.5, 0.5))
+        samples = samples * 0.5 + 0.5
+
+        samples = samples.cpu().detach().numpy()
+        fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * 2, nrow * 2))
+        for i, ax in enumerate(axes.flatten()):
+            if i < samples.shape[0]:
+                img = samples[i].transpose(1, 2, 0) if samples.shape[1] > 1 else samples[i].squeeze()
+                cmap = None if samples.shape[1] > 1 else 'gray'
+                ax.imshow(img, cmap=cmap)
+            ax.axis('off')
+        plt.tight_layout()
+        plt.show()
 
 
 if __name__ == "__main__":
-    # ForwardDiffusion 인스턴스 생성
-    collator = CollateBase()
-    collator.add_fn(
-        name="forward_diffusion", 
-        fn=ForwardDiffusion(noise_scheduler=NoiseScheduler())
-    )
+    # 설정
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    # 'aux_key'를 빈 리스트로 설정 (MNIST에는 'aux' 키가 없으므로)
+    collator = CollateBase(
+        x_key=["x"],
+        y_key=["y"],
+        aux_key=[],  # No 'aux' key in MNIST
+    )
+    collator.add_fn(name="forward_diffusion", fn=ForwardDiffusion(noise_scheduler=NoiseScheduler()))
+
+    # 예시 데이터셋 (MNIST 사용)
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.5,), (0.5,))
     ])
 
-    dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-    
+    train_dataset = datasets.MNIST(
+        root='./data', 
+        train=True, 
+        transform=transform, 
+        download=True
+    )
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=128,
+        shuffle=True,
+        collate_fn=collator.wrap()
+    )
 
-    dataloader = DataLoader(dataset, batch_size=128,shuffle=True, collate_fn=collator.wrap())
-    model = AutoEncoder(block=UNetBlock, ch_in=3, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True)
+    # 모델 정의 (UNet 기반 AutoEncoder)
+    model = AutoEncoder(
+        block=UNetBlock, 
+        ch_in=1, 
+        ch_out=1, 
+        width=32, 
+        layers=[1, 1, 1, 1], 
+        skip_connect=True
+    )
+    # Note: Removed `.to(device)` as Trainer handles device placement
+
+    # 옵티마이저 및 스케줄러 정의
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    scheduler = CosineAnnealingScheduler(optimizer=optimizer)
-    
+    scheduler = CosineAnnealingScheduler(optimizer=optimizer, T_max=50)  # T_max은 에폭 수에 맞춤
+
     # Trainer 인스턴스 생성
     trainer = DDPMTrainer(
         model=model,
-        device=torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu"),
-        optimizer=optimizer, 
-        scheduler=scheduler
+        device=device,
+        mode='train',
+        optimizer=optimizer,
+        scheduler=scheduler,
+        log_bar=True,
+        scheduler_step_on_batch=False,
+        gradient_clip=0.0
     )
 
     # 학습 수행
-    trainer.run(n_epoch=50, loader=dataloader)
+    trainer.run(n_epoch=50, loader=train_loader, valid_loader=None)
 
     # 샘플 생성 및 시각화
     trainer.toggle("test")
