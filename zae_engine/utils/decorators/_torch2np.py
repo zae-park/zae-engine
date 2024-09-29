@@ -1,100 +1,83 @@
-from typing import Union, Callable, Type
+from typing import Callable, Optional, Any, Dict
 import numpy as np
 import torch
+from functools import wraps
 
 
-def getter(ts: torch.Tensor) -> np.ndarray:
-    return ts.detach().numpy()
-
-
-def torch2np_fn(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
-    def decorator(func: Callable) -> Callable:
-        def wrapper(*args, **kwargs):
-            new_args = list(args)
-            if keys:
-                for key in keys:
-                    v = new_args[0][key]
-                    new_args[0][key] = getter(v).astype(dtype) if isinstance(v, torch.Tensor) else v
-
-            else:
-                for i in range(n or len(new_args)):
-                    if isinstance(new_args[i], torch.Tensor):
-                        new_args[i] = getter(new_args[i]).astype(dtype)
-            return func(*new_args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-def torch2np_mtd(dtype: np.dtype, *keys: str, n: int = None) -> Callable:
-    def decorator(func: Callable) -> Callable:
-        def wrapper(self, *args, **kwargs):
-            new_args = list(args)
-            if keys:
-                for key in keys:
-                    v = new_args[0][key]
-                    new_args[0][key] = getter(v).astype(dtype) if isinstance(v, torch.Tensor) else v
-
-            else:
-                for i in range(n or len(new_args)):
-                    if isinstance(new_args[i], torch.Tensor):
-                        new_args[i] = getter(new_args[i]).astype(dtype)
-            return func(self, *new_args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-def torch2np(dtype: Type[np.dtype], *keys: str, n: int = None) -> Callable:
+def tensor_to_numpy(ts: torch.Tensor, dtype: Optional[np.dtype] = None) -> np.ndarray:
     """
-    Convert torch tensors to numpy arrays with a specified dtype.
-    This decorator automatically detects if it is used in a class method or a standalone function and behaves accordingly.
+    Convert a torch.Tensor to a numpy.ndarray.
+    Ensures the tensor is detached and moved to CPU before conversion.
+    """
+    np_array = ts.detach().cpu().numpy()
+    if dtype:
+        np_array = np_array.astype(dtype)
+    return np_array
+
+
+def torch2np(dtype: Optional[np.dtype] = None, *keys: str, n: Optional[int] = None) -> Callable:
+    """
+    Convert torch tensors to numpy arrays.
+    This decorator handles both class methods and standalone functions.
     If keys are specified, only the values corresponding to the keys in the dictionary are converted.
+    If n is specified, only the first n positional arguments (after 'self' for methods) are converted.
+    If 'n' is greater than the number of arguments, conversion proceeds without error.
 
     Parameters
     ----------
-    dtype : np.dtype
-        The desired dtype for the numpy arrays.
+    dtype : np.dtype, optional
+        The desired dtype for the numpy arrays. If None, keeps the default dtype of the tensors.
+    *keys : str, optional
+        The keys of the dictionary to convert. If not provided, positional arguments are used.
     n : int, optional
-        The number of initial arguments to convert. If None, all torch tensor arguments are converted.
-    keys : str, optional
-        The keys of the dictionary to convert. If None, all arguments are converted.
+        The number of initial arguments to convert. If None, all arguments are converted.
 
     Returns
     -------
-    func
+    Callable
         The decorated function with torch tensor arguments converted to numpy arrays.
-
-    Examples
-    --------
-    >>> @torch2np(np.float32, n=2)
-    ... def example_func(x, y, z):
-    ...     return x, y, z
-    >>> example_func(torch.tensor([1, 2, 3]), torch.tensor([4, 5, 6]), torch.tensor([7, 8, 9]))
-    # This will convert only the first two torch tensors to numpy arrays.
-
-    >>> class Example:
-    ...     @torch2np(np.float32, "x", "y")
-    ...     def example_method(self, batch):
-    ...         return batch
-    >>> example = Example()
-    >>> example.example_method({"x": torch.tensor([1, 2, 3]), "y": torch.tensor([4, 5, 6]), "z": torch.tensor([7, 8, 9])})
-    # This will convert the values of 'x' and 'y' keys in the dictionary to numpy arrays.
     """
 
-    def deco(func: Callable) -> Callable:
-        def wrapper(*args, **kwargs):
-            if len(args) > 0 and hasattr(args[0], func.__name__):
-                # 메소드인 경우
-                decorator = torch2np_mtd(dtype, *keys, n=n)
-                return decorator(func)(*args, **kwargs)
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(*args, **kwargs) -> Any:
+            # Check if the function is a method (e.g., first arg is 'self')
+            is_method = len(args) > 0 and hasattr(args[0], func.__name__)
+            offset = 1 if is_method else 0
+
+            modified_args = list(args)
+
+            # If keys are provided, convert only dictionary keys
+            if keys:
+                target_dict = modified_args[offset] if offset < len(modified_args) else None
+                if not isinstance(target_dict, dict):
+                    raise TypeError(f"Expected a dictionary at position {offset} but got {type(target_dict)}")
+
+                for key in keys:
+                    if key not in target_dict:
+                        raise KeyError(f"Key '{key}' not found in dictionary")
+                    if isinstance(target_dict[key], torch.Tensor):
+                        target_dict[key] = tensor_to_numpy(target_dict[key], dtype)
+
+            # If 'n' is provided, convert the first 'n' positional arguments
+            elif n is not None:
+                for i in range(offset, min(offset + n, len(modified_args))):
+                    if isinstance(modified_args[i], torch.Tensor):
+                        modified_args[i] = tensor_to_numpy(modified_args[i], dtype)
+
+            # Otherwise, convert all positional arguments that are tensors
             else:
-                # 함수인 경우
-                decorator = torch2np_fn(dtype, *keys, n=n)
-                return decorator(func)(*args, **kwargs)
+                for i in range(offset, len(modified_args)):
+                    if isinstance(modified_args[i], torch.Tensor):
+                        modified_args[i] = tensor_to_numpy(modified_args[i], dtype)
+
+            # Convert keyword arguments if they are specified in keys and are torch tensors
+            for key in keys:
+                if key in kwargs and isinstance(kwargs[key], torch.Tensor):
+                    kwargs[key] = tensor_to_numpy(kwargs[key], dtype)
+
+            return func(*modified_args, **kwargs)
 
         return wrapper
 
-    return deco
+    return decorator

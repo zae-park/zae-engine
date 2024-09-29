@@ -69,6 +69,25 @@ class CNNBase(nn.Module):
             elif isinstance(m, blk.BasicBlock) and m.norm2.weight is not None:
                 nn.init.constant_(m.norm2.weight, 0)  # type: ignore[arg-type]
 
+    def get_output_shape(self, input_size: Tuple[int, int, int, int]) -> Tuple[int, int, int, int]:
+        """
+        Calculate the encoder's output shape based on a dummy input.
+        
+        Parameters
+        ----------
+        input_size : Tuple[int, int, int, int]
+            The size of the input tensor (batch_size, channels, height, width).
+        
+        Returns
+        -------
+        Tuple[int, int, int, int]
+            The shape of the encoder's output tensor.
+        """
+        with torch.no_grad():
+            dummy_input = torch.zeros(input_size)
+            features = self.forward(dummy_input)
+            return features.shape
+
     def _make_stem(self, ch_in: int, ch_out: int, kernel_size: Union[int, tuple[int, int]]):
         conv = nn.Conv2d(ch_in, ch_out, kernel_size=kernel_size, stride=2, padding=3, bias=False)
         norm = self.norm_layer(ch_out)
