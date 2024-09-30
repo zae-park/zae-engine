@@ -87,38 +87,40 @@ class MorphologicalLayer(nn.Module):
 
 
 def label_to_onoff(
-    labels: Union[np.ndarray, torch.Tensor], sense: int = 2, middle_only: bool = False, outside_idx: Optional = True
+    labels: Union[np.ndarray, torch.Tensor], sense: int = 2, middle_only: bool = False, outside_idx: Optional[float] = np.nan
 ) -> list:
     """
-    Convert label sequence to on-off array.
+    Convert label sequence to Run-Length Encoding (RLE) on-off runs.
 
-    This function receives the label sequence and returns an on-off array.
-    The on-off array consists of [on, off, label] for every existing upper-step and lower-step.
-    If there is no label changing and only single label is in input, it returns an empty list.
+    This function takes a label sequence and encodes it into a list of runs.
+    Each run consists of [start, end, label], representing the start and end indices
+    of consecutive occurrences of a specific label. Runs where the label does not change
+    or the run length is below the specified sensitivity are ignored.
 
     Parameters
     ----------
     labels : Union[np.ndarray, torch.Tensor]
-        Sequence of annotation for each point. Expected shape is [N, points] or [points] where N is number of data.
-    sense : int
-        The sensitivity value. Ignore on-off if the (off - on) is less than sensitivity value.
-    middle_only : bool
-        Ignore both the left-most & right-most on-off.
-    outside_idx : Optional[int or float]
-        Outside index (default is np.nan). Fill on (or off) if beat is incomplete. Only use for left-most or right-most.
-        If middle_only is False, outside_idx is not used.
+        Sequence of labels. Expected shape is [N, points] or [points] where N is the number of data samples.
+    sense : int, optional
+        The minimum run length to consider. Runs shorter than this value are ignored. Default is 2.
+    middle_only : bool, optional
+        If True, ignores the first and last runs in the sequence. Default is False.
+    outside_idx : Optional[float], optional
+        Value to use for the start of the first run and the end of the last run if they are incomplete.
+        If set to `np.nan`, it indicates an undefined boundary. Only used when `middle_only` is False.
+        Default is `np.nan`.
 
     Returns
     -------
     list
-        On-off matrix: Shape of matrix is (N, # of on-offs, 3) or (# of on-offs, 3) where N is number of data.
-        Length of last dimension is 3 and consists of [on, off, label].
+        On-off runs encoded as a list of lists. Each inner list contains [start, end, label].
+        Shape is (N, # of runs, 3) if input is multi-dimensional, or (# of runs, 3) for single data.
     """
     SINGLE = False
     if isinstance(labels, torch.Tensor):
         labels = labels.detach().numpy()
     if not len(labels.shape):
-        raise IndexError("Receive empty array.")
+        raise IndexError("Received an empty array.")
     elif len(labels.shape) == 1:
         SINGLE = True
         labels = np.expand_dims(labels.copy(), 0)
@@ -130,30 +132,26 @@ def label_to_onoff(
     result = []
     for label in labels:
         cursor, res = 0, []
-        n_groups = len(list(groupby(label)))
-        groups = groupby(label)
+        groups = list(groupby(label))
+        n_groups = len(groups)
         for i, (cls, g) in enumerate(groups):
             g_length = len(list(g))
-            if cls:
+            if cls != 0:  # Assuming label 0 is background and not of interest
                 if i == 0:
-                    if middle_only:
-                        pass
-                    else:
-                        out_start = np.nan if outside_idx else 0
-                        res.append([out_start, cursor + g_length - 1, int(cls)])
+                    if not middle_only:
+                        start = outside_idx if np.isnan(outside_idx) else 0
+                        end = cursor + g_length - 1
+                        res.append([start, end, int(cls)])
                 elif i == n_groups - 1:
-                    if middle_only:
-                        pass
-                    else:
-                        out_end = np.nan if outside_idx else len(label) - 1
-                        res.append([cursor, out_end, int(cls)])
+                    if not middle_only:
+                        start = cursor
+                        end = outside_idx if np.isnan(outside_idx) else len(label) - 1
+                        res.append([start, end, int(cls)])
                 else:
-                    if g_length < sense:
-                        pass  # not enough length
-                    else:
-                        res.append([cursor, cursor + g_length - 1, int(cls)])
-            else:
-                pass  # class #0 is out of interest
+                    if g_length >= sense:
+                        start = cursor
+                        end = cursor + g_length - 1
+                        res.append([start, end, int(cls)])
             cursor += g_length
         if SINGLE:
             return res
@@ -163,42 +161,44 @@ def label_to_onoff(
 
 def onoff_to_label(onoff: Union[np.ndarray, torch.Tensor], length: int = 2500) -> np.ndarray:
     """
-    Convert on-off array to label sequence.
+    Convert Run-Length Encoding (RLE) on-off runs back to label sequence.
 
-    This function receives an on-off array and returns the label sequence.
-    The on-off array consists of [on, off, label] for existing on-off pairs.
-    If there is no beat, it returns an empty array.
+    This function takes a list of RLE on-off runs and reconstructs the original label sequence.
+    Each run consists of [start, end, label], indicating that the label is active from the start
+    index to the end index (inclusive).
 
     Parameters
     ----------
     onoff : Union[np.ndarray, torch.Tensor]
-        Array of on-off. Expected shape is [N, [on, off, cls]] where N is number of on-off pairs.
-    length : int
-        Length of label sequence. This value should be larger than maximum of onoff.
+        Array of RLE runs. Expected shape is [N, 3], where each row represents [start, end, label].
+    length : int, optional
+        Length of the output label sequence. This value should be greater than the maximum end index.
+        Default is 2500.
 
     Returns
     -------
     np.ndarray
-        The label sequence.
+        The reconstructed label sequence of shape [length].
     """
     if isinstance(onoff, torch.Tensor):
         onoff = onoff.detach().numpy()
     label = np.zeros(length, dtype=int)
     if len(onoff.shape) == 1:
         return label
-    elif len(onoff.shape) > 3:
+    elif len(onoff.shape) > 2:
         raise IndexError("Unexpected shape error.")
     else:
         assert len(onoff.shape) == 2
     if onoff.shape[-1] != 3:
-        raise ValueError("Unexpected shape error.")
+        raise ValueError("Last dimension of onoff must be 3.")
 
-    for on, off, cls in onoff:
+    for run in onoff:
+        on, off, cls = run
         on = 0 if np.isnan(on) else int(on)
         if np.isnan(off) or (int(off) >= length):
             label[on:] = cls
         else:
-            label[on : int(off) + 1] = cls
+            label[on:int(off) + 1] = cls
 
     return label
 
