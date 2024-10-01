@@ -12,6 +12,7 @@ class Run:
     start_index: int
     end_index: int
     value: int
+    # is_kept: bool
 
 
 class MorphologicalLayer(nn.Module):
@@ -267,3 +268,22 @@ def run_length_encoding(x: List[int], sense: int) -> List[Run]:
     output_runs = [run for run in runs if (run.end_index - run.start_index + 1) >= sense]
 
     return output_runs
+
+
+def run_length_decoding(runs: List[Run]) -> List[int]:
+    if not runs:
+        return []
+
+    # Determine the size of the original list based on the maximum end_index
+    max_index = max(run.end_index for run in runs)
+    decoded = [None] * (max_index + 1)
+
+    for run in runs:
+        for i in range(run.start_index, run.end_index + 1):
+            decoded[i] = run.value
+
+    # Replace None with a placeholder if needed, or remove them
+    # Here, we'll remove the None values to get the filtered list
+    decoded = [value for value in decoded if value is not None]
+
+    return decoded
