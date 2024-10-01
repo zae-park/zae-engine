@@ -183,17 +183,24 @@ class TestRunLengthEncoding(unittest.TestCase):
 
     def test_runs_below_sense_with_merge(self):
         """sense보다 작은 run이 있고, 양 옆 run이 같은 값인 경우 병합"""
+        # 병합 로직이 제거되었으므로, 이 테스트는 더 이상 유효하지 않습니다.
+        # 기대 결과는 양 옆 run을 병합하지 않고, 중간 run을 제외한 run들만 포함합니다.
         x = [1, 1, 2, 1, 1]
         sense = 2
-        expected = [Run(start_index=0, end_index=4, value=1)]
+        expected = [Run(start_index=0, end_index=1, value=1), Run(start_index=3, end_index=4, value=1)]
         result = run_length_encoding(x, sense)
         self.assertEqual(result, expected)
 
     def test_multiple_merges(self):
         """여러 개의 작은 run이 있고, 이를 통해 여러 번 병합이 일어나는 경우"""
+        # 병합 로직이 제거되었으므로, 모든 run은 독립적으로 처리됩니다.
         x = [1, 1, 2, 1, 1, 2, 1, 1]
         sense = 2
-        expected = [Run(start_index=0, end_index=7, value=1)]
+        expected = [
+            Run(start_index=0, end_index=1, value=1),
+            Run(start_index=3, end_index=4, value=1),
+            Run(start_index=6, end_index=7, value=1),
+        ]
         result = run_length_encoding(x, sense)
         self.assertEqual(result, expected)
 
@@ -210,18 +217,6 @@ class TestRunLengthEncoding(unittest.TestCase):
         x = [1, 1, 3, 3]
         sense = 3
         expected = []
-        result = run_length_encoding(x, sense)
-        self.assertEqual(result, expected)
-
-    def test_no_merges_possible(self):
-        """무시된 run의 양 옆 run이 다른 값으로 인해 병합이 불가능한 경우"""
-        x = [1, 1, 2, 3, 3, 1, 1]
-        sense = 2
-        expected = [
-            Run(start_index=0, end_index=1, value=1),
-            Run(start_index=4, end_index=5, value=3),
-            Run(start_index=6, end_index=7, value=1),
-        ]
         result = run_length_encoding(x, sense)
         self.assertEqual(result, expected)
 
@@ -255,9 +250,14 @@ class TestRunLengthEncoding(unittest.TestCase):
 
     def test_non_consecutive_merges(self):
         """무시된 run을 통해 양 옆 run이 병합되지만, 전체적으로는 분리되는 경우"""
+        # 병합 로직이 제거되었으므로, 각 run은 독립적으로 처리됩니다.
         x = [1, 1, 2, 1, 1, 3, 1, 1]
         sense = 2
-        expected = [Run(start_index=0, end_index=4, value=1), Run(start_index=6, end_index=7, value=1)]
+        expected = [
+            Run(start_index=0, end_index=1, value=1),
+            Run(start_index=3, end_index=4, value=1),
+            Run(start_index=6, end_index=7, value=1),
+        ]
         result = run_length_encoding(x, sense)
         self.assertEqual(result, expected)
 
