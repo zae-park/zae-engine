@@ -1,9 +1,17 @@
 from typing import Union, List, Tuple, Optional
 from itertools import groupby
+from dataclasses import dataclass
 
 import numpy as np
 import torch
 import torch.nn as nn
+
+
+@dataclass
+class Run:
+    start_index: int
+    end_index: int
+    value: int
 
 
 class MorphologicalLayer(nn.Module):
@@ -87,7 +95,10 @@ class MorphologicalLayer(nn.Module):
 
 
 def label_to_onoff(
-    labels: Union[np.ndarray, torch.Tensor], sense: int = 2, middle_only: bool = False, outside_idx: Optional[float] = np.nan
+    labels: Union[np.ndarray, torch.Tensor],
+    sense: int = 2,
+    middle_only: bool = False,
+    outside_idx: Optional[float] = np.nan,
 ) -> list:
     """
     Convert label sequence to Run-Length Encoding (RLE) on-off runs.
@@ -198,7 +209,7 @@ def onoff_to_label(onoff: Union[np.ndarray, torch.Tensor], length: int = 2500) -
         if np.isnan(off) or (int(off) >= length):
             label[on:] = cls
         else:
-            label[on:int(off) + 1] = cls
+            label[on : int(off) + 1] = cls
 
     return label
 
@@ -234,3 +245,57 @@ def find_nearest(arr: Union[np.ndarray, torch.Tensor], value: int):
             return i_gap - 1, left
         else:
             return i_gap, right
+
+
+def run_length_encoding(x: List[int], sense: int) -> List[Run]:
+    if not x:
+        return []
+
+    runs = []
+    current_index = 0
+
+    # Get all runs
+    for value, group in groupby(x):
+        group_list = list(group)
+        run_length = len(group_list)
+        start_index = current_index
+        end_index = current_index + run_length - 1
+        runs.append(Run(start_index=start_index, end_index=end_index, value=value))
+        current_index += run_length
+
+    # sense filtering
+    kept = [(run, (run.end_index - run.start_index + 1) >= sense) for run in runs]
+
+    output_runs = []
+
+    for i, (run, is_kept) in enumerate(kept):
+        if is_kept:
+            if output_runs and run.value == output_runs[-1].value:
+                # merge to pre-run if both have same value
+                output_runs[-1].end_index = run.end_index
+            else:
+                output_runs.append(Run(start_index=run.start_index, end_index=run.end_index, value=run.value))
+        else:
+            # Size of current run is less than sense
+            # check bi-side runs have same value
+            if (
+                (i > 0)
+                and (i < len(runs) - 1)
+                and kept[i - 1][1]
+                and kept[i + 1][1]
+                and (runs[i - 1].value == runs[i + 1].value)
+            ):
+                # If same value, merge 2 runs
+                merged_run = Run(
+                    start_index=runs[i - 1].start_index, end_index=runs[i + 1].end_index, value=runs[i - 1].value
+                )
+                # remove last run & add merged run
+                if (
+                    output_runs
+                    and output_runs[-1].start_index == runs[i - 1].start_index
+                    and output_runs[-1].value == runs[i - 1].value
+                ):
+                    output_runs.pop()
+                output_runs.append(merged_run)
+
+    return output_runs
