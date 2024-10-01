@@ -249,6 +249,27 @@ def find_nearest(arr: Union[np.ndarray, torch.Tensor], value: int):
 
 
 def run_length_encoding(x: List[int], sense: int) -> List[Run]:
+    """
+    Encode a list of integers using Run-Length Encoding (RLE).
+
+    This function converts a sequence of integers into a list of runs.
+    Each run is represented as a `Run` object containing the start index,
+    end index, and the value of the run. Runs with a length smaller than
+    the specified `sense` are ignored.
+
+    Parameters
+    ----------
+    x : List[int]
+        The input list of integers to be encoded.
+    sense : int
+        The minimum length of runs to be considered. Runs shorter than this
+        value are excluded from the output.
+
+    Returns
+    -------
+    List[Run]
+        A list of `Run` objects representing the encoded runs.
+    """
     if not x:
         return []
 
@@ -271,6 +292,28 @@ def run_length_encoding(x: List[int], sense: int) -> List[Run]:
 
 
 def run_length_decoding(runs: List[Run]) -> List[int]:
+    """
+    Decode a list of RLE runs back to the original list of integers.
+
+    This function reconstructs the original sequence of integers from a list
+    of `Run` objects. Each `Run` specifies the start index, end index, and
+    the value to be filled in that range. The `length` parameter defines the
+    total length of the output list. If a run's end index exceeds the specified
+    length, it is clamped to the maximum index.
+
+    Parameters
+    ----------
+    runs : List[Run]
+        A list of `Run` objects representing the encoded runs.
+    length : int, optional
+        The length of the output list. This should be greater than or equal
+        to the maximum end index in the runs. Default is 2500.
+
+    Returns
+    -------
+    List[int]
+        The decoded list of integers reconstructed from the runs.
+    """
     if not runs:
         return []
 
