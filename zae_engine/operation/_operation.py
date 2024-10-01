@@ -254,7 +254,7 @@ def run_length_encoding(x: List[int], sense: int) -> List[Run]:
     runs = []
     current_index = 0
 
-    # Get all runs
+    # Collect all runs
     for value, group in groupby(x):
         group_list = list(group)
         run_length = len(group_list)
@@ -263,39 +263,7 @@ def run_length_encoding(x: List[int], sense: int) -> List[Run]:
         runs.append(Run(start_index=start_index, end_index=end_index, value=value))
         current_index += run_length
 
-    # sense filtering
-    kept = [(run, (run.end_index - run.start_index + 1) >= sense) for run in runs]
-
-    output_runs = []
-
-    for i, (run, is_kept) in enumerate(kept):
-        if is_kept:
-            if output_runs and run.value == output_runs[-1].value:
-                # merge to pre-run if both have same value
-                output_runs[-1].end_index = run.end_index
-            else:
-                output_runs.append(Run(start_index=run.start_index, end_index=run.end_index, value=run.value))
-        else:
-            # Size of current run is less than sense
-            # check bi-side runs have same value
-            if (
-                (i > 0)
-                and (i < len(runs) - 1)
-                and kept[i - 1][1]
-                and kept[i + 1][1]
-                and (runs[i - 1].value == runs[i + 1].value)
-            ):
-                # If same value, merge 2 runs
-                merged_run = Run(
-                    start_index=runs[i - 1].start_index, end_index=runs[i + 1].end_index, value=runs[i - 1].value
-                )
-                # remove last run & add merged run
-                if (
-                    output_runs
-                    and output_runs[-1].start_index == runs[i - 1].start_index
-                    and output_runs[-1].value == runs[i - 1].value
-                ):
-                    output_runs.pop()
-                output_runs.append(merged_run)
+    # Filter runs based on sense
+    output_runs = [run for run in runs if (run.end_index - run.start_index + 1) >= sense]
 
     return output_runs
