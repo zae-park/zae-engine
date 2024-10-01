@@ -4,7 +4,14 @@ import torch
 import numpy as np
 
 from zae_engine.metrics.confusion import confusion_matrix, print_confusion_matrix
-from zae_engine.operation import MorphologicalLayer, label_to_onoff, onoff_to_label, Run, run_length_encoding
+from zae_engine.operation import (
+    MorphologicalLayer,
+    label_to_onoff,
+    onoff_to_label,
+    Run,
+    run_length_encoding,
+    run_length_decoding,
+)
 
 
 class TestMorphology(unittest.TestCase):
@@ -259,6 +266,102 @@ class TestRunLengthEncoding(unittest.TestCase):
             Run(start_index=6, end_index=7, value=1),
         ]
         result = run_length_encoding(x, sense)
+        self.assertEqual(result, expected)
+
+
+class TestRunLengthDecoding(unittest.TestCase):
+    def test_empty_runs(self):
+        """입력 run 리스트가 비어있는 경우"""
+        runs = []
+        expected = []
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_single_run(self):
+        """단일 run을 복원하는 경우"""
+        runs = [Run(start_index=0, end_index=2, value=1)]
+        expected = [1, 1, 1]
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_multiple_runs(self):
+        """여러 개의 run을 복원하는 경우"""
+        runs = [
+            Run(start_index=0, end_index=1, value=1),
+            Run(start_index=2, end_index=4, value=2),
+            Run(start_index=5, end_index=6, value=3),
+        ]
+        expected = [1, 1, 2, 2, 2, 3, 3]
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_non_consecutive_runs(self):
+        """비연속적인 run을 복원하는 경우"""
+        runs = [Run(start_index=0, end_index=1, value=1), Run(start_index=4, end_index=5, value=3)]
+        expected = [1, 1, 3, 3]
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_runs_with_large_indices(self):
+        """큰 인덱스를 가진 run을 복원하는 경우"""
+        runs = [Run(start_index=0, end_index=9, value=2), Run(start_index=10, end_index=14, value=4)]
+        expected = [2] * 10 + [4] * 5
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_runs_with_single_element(self):
+        """단일 요소로 구성된 run을 복원하는 경우"""
+        runs = [Run(start_index=0, end_index=0, value=5), Run(start_index=1, end_index=1, value=6)]
+        expected = [5, 6]
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_overlapping_runs(self):
+        """인덱스가 겹치는 run이 있는 경우 (비정상적인 경우)"""
+        runs = [Run(start_index=0, end_index=3, value=1), Run(start_index=2, end_index=5, value=2)]
+        expected = [1, 1, 2, 2, 2, 2]
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_runs_with_gaps(self):
+        """run 간에 간격이 있는 경우 (비정상적인 경우)"""
+        runs = [Run(start_index=0, end_index=1, value=1), Run(start_index=3, end_index=4, value=2)]
+        expected = [1, 1, 2, 2]
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_runs_with_negative_indices(self):
+        """음수 인덱스를 가진 run을 복원하는 경우 (비정상적인 경우)"""
+        runs = [Run(start_index=-2, end_index=-1, value=1), Run(start_index=0, end_index=1, value=2)]
+        # 음수 인덱스는 리스트에 포함되지 않으므로, 무시하고 [2, 2]가 되어야 함
+        expected = [2, 2]
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_runs_with_zero_length(self):
+        """길이가 0인 run을 복원하는 경우 (비정상적인 경우)"""
+        runs = [Run(start_index=0, end_index=-1, value=1), Run(start_index=1, end_index=3, value=2)]
+        # 길이가 0인 run은 리스트에 영향을 미치지 않음
+        expected = [2, 2, 2]
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_runs_with_same_value(self):
+        """같은 값을 가지는 여러 run을 복원하는 경우"""
+        runs = [Run(start_index=0, end_index=1, value=1), Run(start_index=2, end_index=3, value=1)]
+        expected = [1, 1, 1, 1]
+        result = run_length_decoding(runs)
+        self.assertEqual(result, expected)
+
+    def test_runs_with_varied_lengths(self):
+        """다양한 길이를 가진 run을 복원하는 경우"""
+        runs = [
+            Run(start_index=0, end_index=2, value=1),
+            Run(start_index=3, end_index=3, value=2),
+            Run(start_index=4, end_index=7, value=3),
+        ]
+        expected = [1, 1, 1, 2, 3, 3, 3, 3]
+        result = run_length_decoding(runs)
         self.assertEqual(result, expected)
 
 
