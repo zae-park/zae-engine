@@ -9,6 +9,7 @@ from .signals import signal_to_noise
 from .signals import peak_signal_to_noise
 from .iou import miou
 from .iou import giou
+from .bijective import BijectiveMetrix
 
 # from .signal import cpsc2021
 # from .signal import iec_60601
