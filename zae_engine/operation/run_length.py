@@ -1,8 +1,6 @@
 from dataclasses import dataclass
-from typing import List, Union, Optional, Tuple
+from typing import List, Union, Optional
 from itertools import groupby
-import numpy as np
-import torch
 
 
 @dataclass
@@ -86,14 +84,14 @@ class RunLengthCodec:
 
     Parameters
     ----------
-    tol_interval : int, optional
-        The tolerance value to find close runs. Default is 30.
     tol_merge : int, optional
         The tolerance value to merge close runs. Default is 20.
     remove_incomplete : bool, optional
         Whether to remove incomplete runs during sanitization. Default is False.
     merge_closed : bool, optional
         Whether to merge close runs during sanitization. Default is False.
+    base_class : int, optional
+        The base class value to be excluded from runs. Default is 0.
 
     Methods
     -------
@@ -102,32 +100,32 @@ class RunLengthCodec:
     decode(encoded_runs: RunList) -> List[int]:
         Decodes RLE runs back into the original list of integers.
     sanitize(run_list: RunList) -> RunList:
-        Cleans and merges runs based on tolerance parameters.
+        Cleans and merges runs based on the codec's parameters.
     __call__(data: Union[List[int], List[List[int]], RunList, List[RunList]], sense: Optional[int] = None) -> Union[RunList, List[RunList], List[int], List[List[int]]]:
-        Encodes or decodes based on the input type.
+        Encodes or decodes data based on the input type.
     """
 
     def __init__(
-        self, tol_interval: int = 30, tol_merge: int = 20, remove_incomplete: bool = False, merge_closed: bool = False
+        self, tol_merge: int = 20, remove_incomplete: bool = False, merge_closed: bool = False, base_class: int = 0
     ):
         """
-        Initialize the RunLengthCodec with tolerance parameters.
+        Initialize the RunLengthCodec with specified parameters.
 
         Parameters
         ----------
-        tol_interval : int, optional
-            The tolerance value to find close runs. Default is 30.
         tol_merge : int, optional
             The tolerance value to merge close runs. Default is 20.
         remove_incomplete : bool, optional
-            Whether to remove incomplete runs during sanitization. Default is False.
+            Whether to remove runs that start at index 0 or end at the last index. Default is False.
         merge_closed : bool, optional
-            Whether to merge close runs during sanitization. Default is False.
+            Whether to merge runs that are close to each other. Default is False.
+        base_class : int, optional
+            The base class value to exclude from runs. Runs with this value will not be encoded. Default is 0.
         """
-        self.tol_interval = tol_interval
         self.tol_merge = tol_merge
         self.remove_incomplete = remove_incomplete
         self.merge_closed = merge_closed
+        self.base_class = base_class
 
     def encode(self, x: List[int], sense: int) -> RunList:
         """
@@ -162,7 +160,8 @@ class RunLengthCodec:
                 run_length = len(group_list)
                 start_index = current_index
                 end_index = current_index + run_length - 1
-                all_runs.append(Run(start_index=start_index, end_index=end_index, value=value))
+                if value != self.base_class:
+                    all_runs.append(Run(start_index=start_index, end_index=end_index, value=value))
                 current_index += run_length
         run_list = RunList(all_runs=all_runs, sense=sense, original_length=original_length)
         sanitized_run_list = self.sanitize(run_list)
@@ -187,17 +186,14 @@ class RunLengthCodec:
             The decoded list of integers reconstructed from the runs.
         """
         if not encoded_runs.all_runs:
-            return [0] * encoded_runs.original_length  # Return background if no runs
+            return [self.base_class] * encoded_runs.original_length  # Return background if no runs
 
-        decoded = [0] * encoded_runs.original_length  # Initialize with background label 0
+        decoded = [self.base_class] * encoded_runs.original_length  # Initialize with background label 0
 
         for run in encoded_runs.all_runs:
-            on = run.start_index if run.start_index >= 0 else 0  # Ensure non-negative start index
-            off = run.end_index
+            on = max(run.start_index, 0)  # Ensure non-negative start index
+            off = min(run.end_index, encoded_runs.original_length - 1)  # Clamp to maximum index
             cls = run.value
-
-            if off >= encoded_runs.original_length:
-                off = encoded_runs.original_length - 1  # Clamp to maximum index
 
             # Assign the class label to the specified range
             for i in range(on, off + 1):
@@ -207,11 +203,11 @@ class RunLengthCodec:
 
     def sanitize(self, run_list: RunList) -> RunList:
         """
-        Clean and merge runs based on tolerance parameters.
+        Clean and merge runs based on the codec's parameters.
 
-        This function trims inappropriate runs in the RunList by performing:
-            1. Remove incomplete runs (if remove_incomplete is True)
-            2. Merge or remove close runs (if merge_closed is True)
+        This function processes the RunList by:
+            1. Removing incomplete runs (if remove_incomplete is True).
+            2. Merging close runs (if merge_closed is True), while respecting the base_class.
 
         Parameters
         ----------
@@ -234,39 +230,41 @@ class RunLengthCodec:
         else:
             sanitized_runs = all_runs
 
-        # 2. Merge or remove close runs
-        if self.merge_closed:
-            # Merge runs only if they have the same value and are within tol_interval
-            merged_runs = []
-            if not sanitized_runs:
-                return RunList(all_runs=merged_runs, sense=run_list.sense, original_length=run_list.original_length)
+        # 2. Merge close runs
+        if self.merge_closed and sanitized_runs:
+            # Sort runs by start_index to ensure order
+            sanitized_runs.sort(key=lambda run: run.start_index)
 
+            merged_runs = []
             current_run = sanitized_runs[0]
+
             for next_run in sanitized_runs[1:]:
                 gap = next_run.start_index - current_run.end_index - 1
-                if gap <= self.tol_interval and current_run.value == next_run.value:
-                    # Merge runs
-                    current_run.end_index = next_run.end_index
+
+                if gap <= self.tol_merge:
+                    if current_run.value == next_run.value:
+                        # Same value runs, merge them
+                        current_run.end_index = next_run.end_index
+                    else:
+                        # Different value runs, decide which one to merge based on class
+                        # Base class should not be involved in merging
+                        if current_run.value == self.base_class or next_run.value == self.base_class:
+                            # Do not merge with base class
+                            merged_runs.append(current_run)
+                            current_run = next_run
+                        elif next_run.value < current_run.value:
+                            # Merge current_run into next_run (retain next_run's value)
+                            current_run.end_index = next_run.end_index
+                            current_run.value = next_run.value
+                        else:
+                            # Merge next_run into current_run (retain current_run's value)
+                            current_run.end_index = next_run.end_index
                 else:
                     merged_runs.append(current_run)
                     current_run = next_run
+
             merged_runs.append(current_run)
             sanitized_runs = merged_runs
-
-            # Further merging based on tol_merge
-            final_runs = []
-            if sanitized_runs:
-                current_run = sanitized_runs[0]
-                for next_run in sanitized_runs[1:]:
-                    gap = next_run.start_index - current_run.end_index - 1
-                    if gap <= self.tol_merge and current_run.value == next_run.value:
-                        # Merge runs
-                        current_run.end_index = next_run.end_index
-                    else:
-                        final_runs.append(current_run)
-                        current_run = next_run
-                final_runs.append(current_run)
-                sanitized_runs = final_runs
 
         return RunList(all_runs=sanitized_runs, sense=run_list.sense, original_length=run_list.original_length)
 
