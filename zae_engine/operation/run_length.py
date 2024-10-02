@@ -1,6 +1,8 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Union, Optional
 from itertools import groupby
+import numpy as np
+import torch
 
 
 @dataclass
@@ -34,9 +36,11 @@ class RunList:
         A list of all runs without any filtering.
     sense : int
         The minimum length of runs to be considered in filtering.
+    original_length : int
+        The length of the original list that was encoded.
     """
 
-    def __init__(self, all_runs: List[Run], sense: int):
+    def __init__(self, all_runs: List[Run], sense: int, original_length: int):
         """
         Initializes the RunList object.
 
@@ -46,9 +50,12 @@ class RunList:
             A list of all runs obtained from encoding.
         sense : int
             The minimum length of runs to be considered in filtering.
+        original_length : int
+            The length of the original list that was encoded.
         """
         self.all_runs = all_runs
         self.sense = sense
+        self.original_length = original_length
 
     def raw(self) -> List[Run]:
         """
@@ -81,8 +88,10 @@ class RunLengthCodec:
     -------
     encode(x: List[int], sense: int) -> RunList:
         Encodes a list of integers into RLE runs.
-    decode(encoded_runs: RunList, length: Optional[int] = 2500) -> List[int]:
+    decode(encoded_runs: RunList) -> List[int]:
         Decodes RLE runs back into the original list of integers.
+    __call__(data: Union[List[int], RunList], sense: Optional[int] = None) -> Union[RunList, List[int]]:
+        Encodes or decodes based on the input type.
     """
 
     def encode(self, x: List[int], sense: int) -> RunList:
@@ -105,8 +114,9 @@ class RunLengthCodec:
         Returns
         -------
         RunList
-            A `RunList` object containing all runs and the sense value.
+            A `RunList` object containing all runs, the sense value, and the original list length.
         """
+        original_length = len(x)
         if not x:
             all_runs = []
         else:
@@ -119,24 +129,20 @@ class RunLengthCodec:
                 end_index = current_index + run_length - 1
                 all_runs.append(Run(start_index=start_index, end_index=end_index, value=value))
                 current_index += run_length
-        return RunList(all_runs=all_runs, sense=sense)
+        return RunList(all_runs=all_runs, sense=sense, original_length=original_length)
 
-    def decode(self, encoded_runs: RunList, length: Optional[int] = 2500) -> List[int]:
+    def decode(self, encoded_runs: RunList) -> List[int]:
         """
         Decode a list of RLE runs back to the original list of integers.
 
         This method reconstructs the original sequence of integers from a `RunList` object.
         Each `Run` specifies the start index, end index, and the value to be filled in that range.
-        The `length` parameter defines the total length of the output list.
-        If a run's end index exceeds the specified length, it is clamped to the maximum index.
+        The length of the output list is determined by the `original_length` stored in `RunList`.
 
         Parameters
         ----------
         encoded_runs : RunList
             A `RunList` object containing runs to be decoded.
-        length : int, optional
-            The length of the output list. This should be greater than or equal
-            to the maximum end index in the runs. Default is 2500.
 
         Returns
         -------
@@ -144,25 +150,60 @@ class RunLengthCodec:
             The decoded list of integers reconstructed from the runs.
         """
         if not encoded_runs.all_runs:
-            return [0] * length  # Return background if no runs
+            return [0] * encoded_runs.original_length  # Return background if no runs
 
-        max_index = max(run.end_index for run in encoded_runs.all_runs)
-        required_length = max(max_index + 1, length)
-        decoded = [0] * required_length  # Initialize with background label 0
+        decoded = [0] * encoded_runs.original_length  # Initialize with background label 0
 
         for run in encoded_runs.all_runs:
             on = run.start_index if run.start_index >= 0 else 0  # Ensure non-negative start index
             off = run.end_index
             cls = run.value
 
-            if off >= required_length:
-                off = required_length - 1  # Clamp to maximum index
+            if off >= encoded_runs.original_length:
+                off = encoded_runs.original_length - 1  # Clamp to maximum index
 
             # Assign the class label to the specified range
             for i in range(on, off + 1):
                 decoded[i] = cls
 
-        # Truncate to specified length if necessary
-        decoded = decoded[:length]
-
         return decoded
+
+    def __call__(self, data: Union[List[int], RunList], sense: Optional[int] = None) -> Union[RunList, List[int]]:
+        """
+        Encode or decode data based on its type.
+
+        If the input `data` is a list of integers, it encodes the list using RLE.
+        If the input `data` is a `RunList`, it decodes it back to the original list of integers.
+
+        Parameters
+        ----------
+        data : Union[List[int], RunList]
+            The data to be encoded or decoded.
+            - If `List[int]`, the data will be encoded.
+            - If `RunList`, the data will be decoded.
+        sense : Optional[int], optional
+            The minimum length of runs to be considered during encoding.
+            Required if `data` is a `List[int]`. Ignored if `data` is a `RunList`.
+            Default is None.
+
+        Returns
+        -------
+        Union[RunList, List[int]]
+            - Returns a `RunList` object if encoding.
+            - Returns a list of integers if decoding.
+
+        Raises
+        ------
+        ValueError
+            If `sense` is not provided when encoding.
+        TypeError
+            If `data` is neither a `List[int]` nor a `RunList`.
+        """
+        if isinstance(data, list):
+            if sense is None:
+                raise ValueError("Parameter 'sense' must be provided for encoding.")
+            return self.encode(data, sense)
+        elif isinstance(data, RunList):
+            return self.decode(data)
+        else:
+            raise TypeError("Input data must be a list of integers or a RunList object.")
