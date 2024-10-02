@@ -3,6 +3,25 @@ import unittest
 from zae_engine.operation.run_length import RunLengthCodec, Run, RunList
 
 
+class TestRunListRepr(unittest.TestCase):
+    def test_runlist_repr(self):
+        """Test the __repr__ method of RunList."""
+        runs = [Run(0, 2, 1), Run(3, 5, 2)]
+        run_list = RunList(all_runs=runs, sense=1, original_length=6)
+
+        self.assertIn("RunList(all_runs=[", repr(run_list))
+        self.assertIn("Run(start_index=0, end_index=2, value=1)", repr(run_list))
+        self.assertIn("Run(start_index=3, end_index=5, value=2)", repr(run_list))
+        self.assertIn("sense=1, original_length=6)", repr(run_list))
+
+    def test_empty_runlist_repr(self):
+        """Test the __repr__ method of RunList with empty runs."""
+        runs = []
+        run_list = RunList(all_runs=runs, sense=1, original_length=0)
+        expected_repr = "RunList(all_runs=[], sense=1, original_length=0)"
+        self.assertEqual(repr(run_list), expected_repr)
+
+
 class TestRunLengthCodec(unittest.TestCase):
     def setUp(self):
         # 기본 설정: tol_merge=20, remove_incomplete=False, merge_closed=False
