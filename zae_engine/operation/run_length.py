@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Union, Optional
 from itertools import groupby
-import numpy as np
-import torch
 
 
 @dataclass
@@ -90,7 +88,7 @@ class RunLengthCodec:
         Encodes a list of integers into RLE runs.
     decode(encoded_runs: RunList) -> List[int]:
         Decodes RLE runs back into the original list of integers.
-    __call__(data: Union[List[int], RunList], sense: Optional[int] = None) -> Union[RunList, List[int]]:
+    __call__(data: Union[List[int], List[List[int]], RunList, List[RunList]], sense: Optional[int] = None) -> Union[RunList, List[RunList], List[int], List[List[int]]]:
         Encodes or decodes based on the input type.
     """
 
@@ -168,42 +166,66 @@ class RunLengthCodec:
 
         return decoded
 
-    def __call__(self, data: Union[List[int], RunList], sense: Optional[int] = None) -> Union[RunList, List[int]]:
+    def __call__(
+        self, data: Union[List[int], List[List[int]], RunList, List[RunList]], sense: Optional[int] = None
+    ) -> Union[RunList, List[RunList], List[int], List[List[int]]]:
         """
         Encode or decode data based on its type.
 
         If the input `data` is a list of integers, it encodes the list using RLE.
+        If the input `data` is a list of lists of integers (batch), it encodes each list.
         If the input `data` is a `RunList`, it decodes it back to the original list of integers.
+        If the input `data` is a list of `RunList` (batch), it decodes each `RunList`.
 
         Parameters
         ----------
-        data : Union[List[int], RunList]
+        data : Union[List[int], List[List[int]], RunList, List[RunList]]
             The data to be encoded or decoded.
             - If `List[int]`, the data will be encoded.
+            - If `List[List[int]]`, the data will be batch encoded.
             - If `RunList`, the data will be decoded.
+            - If `List[RunList]`, the data will be batch decoded.
         sense : Optional[int], optional
             The minimum length of runs to be considered during encoding.
-            Required if `data` is a `List[int]`. Ignored if `data` is a `RunList`.
+            Required if `data` is a `List[int]` or `List[List[int]]`.
+            Ignored if `data` is a `RunList` or `List[RunList]`.
             Default is None.
 
         Returns
         -------
-        Union[RunList, List[int]]
-            - Returns a `RunList` object if encoding.
-            - Returns a list of integers if decoding.
+        Union[RunList, List[RunList], List[int], List[List[int]]]
+            - Returns a `RunList` object if encoding a single list.
+            - Returns a list of `RunList` objects if encoding a batch of lists.
+            - Returns a list of integers if decoding a single `RunList`.
+            - Returns a list of lists of integers if decoding a batch of `RunList`s.
 
         Raises
         ------
         ValueError
             If `sense` is not provided when encoding.
         TypeError
-            If `data` is neither a `List[int]` nor a `RunList`.
+            If `data` is neither a list of integers, list of lists of integers, `RunList`, nor a list of `RunList`s.
         """
         if isinstance(data, list):
-            if sense is None:
-                raise ValueError("Parameter 'sense' must be provided for encoding.")
-            return self.encode(data, sense)
+            if all(isinstance(item, list) for item in data):
+                # Batch encoding
+                if sense is None:
+                    raise ValueError("Parameter 'sense' must be provided for encoding.")
+                return [self.encode(sample, sense) for sample in data]
+            elif all(isinstance(item, int) for item in data):
+                # Single encoding
+                if sense is None:
+                    raise ValueError("Parameter 'sense' must be provided for encoding.")
+                return self.encode(data, sense)
+            else:
+                raise TypeError("Input list must be a list of integers or a list of lists of integers.")
         elif isinstance(data, RunList):
+            # Single decoding
             return self.decode(data)
+        elif isinstance(data, list) and all(isinstance(item, RunList) for item in data):
+            # Batch decoding
+            return [self.decode(run_list) for run_list in data]
         else:
-            raise TypeError("Input data must be a list of integers or a RunList object.")
+            raise TypeError(
+                "Input data must be a list of integers, list of lists of integers, RunList, or list of RunList objects."
+            )
