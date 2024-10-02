@@ -5,6 +5,7 @@ from zae_engine.operation.run_length import RunLengthCodec, Run, RunList
 
 class TestRunLengthCodec(unittest.TestCase):
     def setUp(self):
+        # 기본 설정: tol_interval=30, tol_merge=20, remove_incomplete=False, merge_closed=False
         self.codec = RunLengthCodec()
 
     def test_empty_list(self):
@@ -171,7 +172,7 @@ class TestRunLengthCodec(unittest.TestCase):
             Run(start_index=4, end_index=4, value=3),
             Run(start_index=5, end_index=6, value=1),
         ]
-        expected_filtered = []
+        expected_filtered = []  # No runs meet sense=3
         self.assertEqual(encoded_runs.raw(), expected_raw)
         self.assertEqual(encoded_runs.filtered(), expected_filtered)
         # Decode filtered runs
@@ -219,7 +220,7 @@ class TestRunLengthCodec(unittest.TestCase):
         x_batch = [[1, 1, 2, 2, 2], [3, 3, 3, 4, 4], [5, 5, 5, 5, 5]]
         sense = 2
         encoded_batch = self.codec.encode(x_batch, sense=sense)
-        decoded_batch = self.codec(encoded_batch)
+        decoded_batch = self.codec.decode(encoded_batch)
         self.assertEqual(decoded_batch, x_batch)
 
     def test_call_encode_batch(self):
@@ -240,8 +241,106 @@ class TestRunLengthCodec(unittest.TestCase):
         x_batch = [[1, 1, 2, 2, 2], [3, 3, 3, 4, 4], [5, 5, 5, 5, 5]]
         sense = 2
         encoded_batch = self.codec.encode(x_batch, sense=sense)
-        decoded_batch = self.codec(encoded_batch)
+        decoded_batch = self.codec.decode(encoded_batch)
         self.assertEqual(decoded_batch, x_batch)
+
+    def test_encode_and_decode(self):
+        x = [1, 1, 2, 2, 2, 3, 3, 1, 1, 4]
+        sense = 2
+        run_list = self.codec.encode(x, sense)
+        decoded = self.codec.decode(run_list)
+        self.assertEqual(decoded, x)
+
+    def test_sanitize_remove_incomplete(self):
+        # Runs with incomplete runs (start_index == 0 or end_index == original_length -1)
+        runs = [Run(start_index=0, end_index=1, value=1), Run(2, 4, 2), Run(5, 6, 3), Run(7, 9, 1)]
+        run_list = RunList(all_runs=runs, sense=2, original_length=10)
+        self.codec.remove_incomplete = True
+        self.codec.merge_closed = False
+        sanitized = self.codec.sanitize(run_list)
+        expected = [Run(2, 4, 2), Run(5, 6, 3)]
+        self.assertEqual(sanitized.all_runs, expected)
+
+    def test_sanitize_merge_closed(self):
+        # Runs that should be merged based on tol_interval and tol_merge
+        runs = [Run(2, 4, 2), Run(5, 6, 2), Run(7, 8, 2)]
+        run_list = RunList(all_runs=runs, sense=2, original_length=9)
+        self.codec.merge_closed = True
+        self.codec.remove_incomplete = False
+        sanitized = self.codec.sanitize(run_list)
+        expected = [Run(2, 8, 2)]  # All runs have same value and are close
+        self.assertEqual(sanitized.all_runs, expected)
+
+    def test_sanitize_no_merge(self):
+        # Runs that should not be merged because they have different values
+        runs = [Run(0, 2, 1), Run(5, 7, 2)]
+        run_list = RunList(all_runs=runs, sense=2, original_length=8)
+        self.codec.merge_closed = True
+        self.codec.remove_incomplete = False
+        sanitized = self.codec.sanitize(run_list)
+        expected = [Run(0, 2, 1), Run(5, 7, 2)]
+        self.assertEqual(sanitized.all_runs, expected)
+
+    def test_sanitize_remove_incomplete_and_merge_closed(self):
+        # Runs with incomplete runs and runs that should be merged
+        runs = [Run(0, 1, 1), Run(2, 4, 2), Run(5, 7, 2), Run(8, 9, 2)]
+        run_list = RunList(all_runs=runs, sense=2, original_length=10)
+        self.codec.remove_incomplete = True
+        self.codec.merge_closed = True
+        sanitized = self.codec.sanitize(run_list)
+        expected = [Run(2, 9, 2)]  # Runs 2-4, 5-7, 8-9 merged
+        self.assertEqual(sanitized.all_runs, expected)
+
+    def test_no_remove_no_merge(self):
+        # Runs without removing incomplete and without merging
+        runs = [Run(2, 4, 2), Run(5, 6, 3), Run(7, 8, 1)]
+        run_list = RunList(all_runs=runs, sense=2, original_length=9)
+        self.codec.merge_closed = False
+        self.codec.remove_incomplete = False
+        sanitized = self.codec.sanitize(run_list)
+        expected = [Run(2, 4, 2), Run(5, 6, 3), Run(7, 8, 1)]
+        self.assertEqual(sanitized.all_runs, expected)
+
+    def test_encode_with_sanitization(self):
+        # Encode and ensure sanitization is applied
+        x = [1, 1, 2, 2, 2, 3, 3, 1, 1, 4]
+        sense = 2
+        # Initialize codec with sanitization options
+        codec = RunLengthCodec(tol_interval=2, tol_merge=1, remove_incomplete=True, merge_closed=True)
+        run_list = codec.encode(x, sense)
+        expected_runs = [
+            Run(start_index=2, end_index=4, value=2),
+            Run(start_index=5, end_index=6, value=3),
+            Run(start_index=7, end_index=8, value=1),
+        ]
+        self.assertEqual(run_list.all_runs, expected_runs)
+
+    def test_encode_with_merge_closed(self):
+        """Test encoding with merging closed runs of the same value."""
+        x = [1, 1, 2, 2, 1, 1, 1, 2, 2, 2]
+        sense = 2
+        codec = RunLengthCodec(tol_interval=1, tol_merge=1, remove_incomplete=False, merge_closed=True)
+        run_list = codec.encode(x, sense)
+        expected_runs = [
+            Run(start_index=0, end_index=1, value=1),
+            Run(start_index=2, end_index=3, value=2),
+            Run(start_index=4, end_index=6, value=1),
+            Run(start_index=7, end_index=9, value=2),
+        ]
+        self.assertEqual(run_list.all_runs, expected_runs)
+
+    def test_encode_with_remove_incomplete(self):
+        """Test encoding with removing incomplete runs."""
+        x = [1, 1, 2, 2, 2, 3, 3, 1, 1, 4]
+        sense = 2
+        codec = RunLengthCodec(tol_interval=30, tol_merge=20, remove_incomplete=True, merge_closed=False)
+        run_list = codec.encode(x, sense)
+        expected_runs = [
+            Run(start_index=2, end_index=4, value=2),
+            Run(start_index=5, end_index=6, value=3),
+            Run(start_index=7, end_index=8, value=1),
+        ]
+        self.assertEqual(run_list.all_runs, expected_runs)
 
 
 # 테스트 실행
