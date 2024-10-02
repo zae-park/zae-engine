@@ -66,6 +66,8 @@ class BijectiveMetrix:
         self.eps = torch.finfo(torch.float32).eps
         assert prediction.shape == label.shape, f"Unmatched shape error. {prediction.shape} =/= {label.shape}"
         assert len(label.shape) == 1, f"Unexpected shape error. Expect 1-D array but receive {label.shape}."
+        assert prediction.size > 0, "Prediction array is empty."
+        assert label.size > 0, "Label array is empty."
 
         # Initialize RunLengthCodec
         codec = RunLengthCodec(base_class=0, merge_closed=True, tol_merge=5)
@@ -112,19 +114,19 @@ class BijectiveMetrix:
             pred_run_starts = torch.tensor([run.start_index for run in self.pred_runs])
             label_run_starts = torch.tensor([run.start_index for run in self.label_runs])
             for i_p, p_run in enumerate(self.pred_runs):
-                p_run_values = [p_run.start_index, p_run.end_index, p_run.value]
-                i_nearest, _ = arg_nearest(label_run_starts, p_run_values[0])  # find nearest label run
+                p_run_values = np.array([p_run.start_index, p_run.end_index, p_run.value])
+                i_nearest, _ = arg_nearest(label_run_starts, p_run.start_index)  # find nearest label run
                 l_run = self.label_runs[i_nearest]
-                l_run_values = [l_run.start_index, l_run.end_index, l_run.value]
+                l_run_values = np.array([l_run.start_index, l_run.end_index, l_run.value])
                 iou = giou(p_run_values[:-1], l_run_values[:-1])[0]
                 if iou > 0.5:
                     injective_run_pair.append([i_p, i_nearest, p_run_values[-1], l_run_values[-1]])
 
             for i_l, l_run in enumerate(self.label_runs):
-                l_run_values = [l_run.start_index, l_run.end_index, l_run.value]
-                i_nearest, _ = arg_nearest(pred_run_starts, l_run_values[0])  # find nearest pred run
+                l_run_values = np.array([l_run.start_index, l_run.end_index, l_run.value])
+                i_nearest, _ = arg_nearest(pred_run_starts, l_run.start_index)  # find nearest pred run
                 p_run = self.pred_runs[i_nearest]
-                p_run_values = [p_run.start_index, p_run.end_index, p_run.value]
+                p_run_values = np.array([p_run.start_index, p_run.end_index, p_run.value])
                 iou = giou(l_run_values[:-1], p_run_values[:-1])[0]
                 if iou > 0.5:
                     surjective_run_pair.append([i_nearest, i_l, p_run_values[-1], l_run_values[-1]])
