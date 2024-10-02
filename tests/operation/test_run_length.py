@@ -122,7 +122,7 @@ class TestRunLengthCodec(unittest.TestCase):
         expected_filtered = expected_raw  # All runs meet sense
         self.assertEqual(encoded_runs.raw(), expected_raw)
         self.assertEqual(encoded_runs.filtered(), expected_filtered)
-        # Decode with larger length by using original_length
+        # Decode with original_length
         decoded = self.codec.decode(encoded_runs)
         expected_decoded = [1, 1, 2, 2, 2]
         self.assertEqual(decoded, expected_decoded)
@@ -200,6 +200,48 @@ class TestRunLengthCodec(unittest.TestCase):
         encoded_runs = self.codec.encode(x, sense)
         decoded = self.codec(encoded_runs)
         self.assertEqual(decoded, x)
+
+    def test_batch_encode(self):
+        """Test batch encoding with multiple lists."""
+        x_batch = [[1, 1, 2, 2, 2], [3, 3, 3, 4, 4], [5, 5, 5, 5, 5]]
+        sense = 2
+        encoded_batch = self.codec(x_batch, sense=sense)
+        expected_filtered = [
+            [Run(start_index=0, end_index=1, value=1), Run(start_index=2, end_index=4, value=2)],
+            [Run(start_index=0, end_index=2, value=3), Run(start_index=3, end_index=4, value=4)],
+            [Run(start_index=0, end_index=4, value=5)],
+        ]
+        for encoded, expected in zip(encoded_batch, expected_filtered):
+            self.assertEqual(encoded.filtered(), expected)
+
+    def test_batch_decode(self):
+        """Test batch decoding with multiple RunList objects."""
+        x_batch = [[1, 1, 2, 2, 2], [3, 3, 3, 4, 4], [5, 5, 5, 5, 5]]
+        sense = 2
+        encoded_batch = self.codec.encode(x_batch, sense=sense)
+        decoded_batch = self.codec(encoded_batch)
+        self.assertEqual(decoded_batch, x_batch)
+
+    def test_call_encode_batch(self):
+        """Test the __call__ method for batch encoding."""
+        x_batch = [[1, 1, 2, 2, 2], [3, 3, 3, 4, 4], [5, 5, 5, 5, 5]]
+        sense = 2
+        encoded_batch = self.codec(x_batch, sense=sense)
+        expected_filtered = [
+            [Run(start_index=0, end_index=1, value=1), Run(start_index=2, end_index=4, value=2)],
+            [Run(start_index=0, end_index=2, value=3), Run(start_index=3, end_index=4, value=4)],
+            [Run(start_index=0, end_index=4, value=5)],
+        ]
+        for encoded, expected in zip(encoded_batch, expected_filtered):
+            self.assertEqual(encoded.filtered(), expected)
+
+    def test_call_decode_batch(self):
+        """Test the __call__ method for batch decoding."""
+        x_batch = [[1, 1, 2, 2, 2], [3, 3, 3, 4, 4], [5, 5, 5, 5, 5]]
+        sense = 2
+        encoded_batch = self.codec.encode(x_batch, sense=sense)
+        decoded_batch = self.codec(encoded_batch)
+        self.assertEqual(decoded_batch, x_batch)
 
 
 # 테스트 실행
