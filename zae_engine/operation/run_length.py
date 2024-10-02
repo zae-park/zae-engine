@@ -22,6 +22,10 @@ class Run:
     end_index: int
     value: int
 
+    def __repr__(self):
+        """Provide a string representation of the Run object."""
+        return f"Run(start_index={self.start_index}, end_index={self.end_index}, value={self.value})"
+
 
 class RunList:
     """
@@ -77,16 +81,9 @@ class RunList:
         """
         return [run for run in self.all_runs if (run.end_index - run.start_index + 1) >= self.sense]
 
-    def __repr__(self) -> str:
-        """
-        Returns a string representation of the RunList object.
-
-        Returns
-        -------
-        str
-            A string showing the content of the RunList.
-        """
-        return f"RunList(all_runs={self.all_runs}, " f"sense={self.sense}, original_length={self.original_length})"
+    def __repr__(self):
+        """Provide a string representation of the RunList object."""
+        return f"RunList(all_runs={self.all_runs}, sense={self.sense}, original_length={self.original_length})"
 
 
 class RunLengthCodec:
