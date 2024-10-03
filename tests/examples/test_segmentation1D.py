@@ -109,7 +109,7 @@ class TestInference(unittest.TestCase):
             # 따라서 expected는 1이 될 것으로 가정
             self.assertEqual(set(result), {1})
 
-    @patch("zae_engine.models.builds.autoencoder.AutoEncoder")
+    @patch("zae_engine.examples.segmentation1D.autoencoder.AutoEncoder")
     def test_core_model_initialization_failure(self, mock_autoencoder):
         # 모델 초기화 중 예외가 발생하는 경우 테스트
         mock_autoencoder.side_effect = Exception("Model initialization failed")
