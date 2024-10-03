@@ -10,13 +10,13 @@ class TestInference(unittest.TestCase):
     def setUp(self):
         pass
 
-    @patch("zae_engine.inference.InferenceTrainer.inference")
+    @patch("zae_engine.examples.classification1D.InferenceTrainer.inference")
     def test_core_with_valid_numpy_input(self, mock_inference):
         """
         Test core function with valid 2-D numpy input.
         """
         # Prepare input data: 10 samples, each of length 2048
-        x = np.zeros(20480).reshape(-1, 2048)  # Shape: (10, 2048)
+        x = np.zeros(20480)
 
         # Mock the inference method to return predetermined outputs
         # Assume the model outputs class probabilities over 7 classes (as per HotEncoder n_cls=7)
@@ -33,13 +33,13 @@ class TestInference(unittest.TestCase):
         # Verify the result
         np.testing.assert_array_equal(result, expected)
 
-    @patch("zae_engine.inference.InferenceTrainer.inference")
+    @patch("zae_engine.examples.classification1D.InferenceTrainer.inference")
     def test_core_with_valid_torch_tensor_input(self, mock_inference):
         """
         Test core function with valid torch.Tensor input.
         """
         # Prepare input data: 5 samples, each of length 2048
-        x = torch.zeros(10240).reshape(-1, 2048)  # Shape: (5, 2048)
+        x = torch.zeros(10240)
 
         # Mock the inference method to return predetermined outputs
         # Simulate different class predictions
@@ -73,7 +73,7 @@ class TestInference(unittest.TestCase):
         with self.assertRaises(AssertionError) as context:
             core(x)
 
-        self.assertIn("Expect less than 3-D array", str(context.exception))
+        self.assertIn("Expect 1-D array", str(context.exception))
 
     def test_core_with_empty_input(self):
         """
@@ -83,11 +83,7 @@ class TestInference(unittest.TestCase):
         # Prepare empty input data
         x = np.array([])
 
-        # Execute core function and expect AssertionError
-        with self.assertRaises(AssertionError) as context:
-            core(x)
-
-        self.assertIn("Expect less than 3-D array", str(context.exception))
+        self.assertEqual(core(x), [])
 
     def test_core_with_non_numpy_input(self):
         """
@@ -95,21 +91,19 @@ class TestInference(unittest.TestCase):
         Should raise AssertionError.
         """
         # Prepare input data as list
-        x = [0] * 20480  # Equivalent to shape (10, 2048)
+        x = [0] * 20480
 
         # Execute core function and expect AssertionError
-        with self.assertRaises(AssertionError) as context:
+        with self.assertRaises(AttributeError):
             core(x)
 
-        self.assertIn("Expect less than 3-D array", str(context.exception))
-
-    @patch("zae_engine.inference.InferenceTrainer.inference")
+    @patch("zae_engine.examples.classification1D.InferenceTrainer.inference")
     def test_core_no_non_background_runs(self, mock_inference):
         """
         Test core function with all background labels (assuming background is class 0).
         """
         # Prepare input data: 5 samples, all zeros (background)
-        x = np.zeros(10240).reshape(-1, 2048)  # Shape: (5, 2048)
+        x = np.zeros(10240)
 
         # Mock the inference method to return class 0 for all samples
         mock_outputs = [torch.tensor([[1, 0, 0, 0, 0, 0, 0]])] * 5  # Assuming class 0 is background
@@ -124,13 +118,13 @@ class TestInference(unittest.TestCase):
         # Verify the result
         np.testing.assert_array_equal(result, expected)
 
-    @patch("zae_engine.inference.InferenceTrainer.inference")
+    @patch("zae_engine.examples.classification1D.InferenceTrainer.inference")
     def test_core_with_partial_runs_below_sense(self, mock_inference):
         """
         Test core function where some runs are below the sensitivity threshold.
         """
         # Prepare input data: 6 samples, with varying class indices
-        x = np.zeros(12288).reshape(-1, 2048)  # Shape: (6, 2048)
+        x = np.zeros(12288)
         # Simulate that some segments will have classes below sensitivity
 
         # Mock the inference method to return a mix of classes
@@ -153,7 +147,7 @@ class TestInference(unittest.TestCase):
         # Verify the result
         np.testing.assert_array_equal(result, expected)
 
-    @patch("zae_engine.inference.CNNBase")
+    @patch("zae_engine.examples.classification1D.CNNBase")
     def test_core_model_initialization_failure(self, mock_cnn_base):
         """
         Test core function when model initialization fails.
@@ -163,7 +157,7 @@ class TestInference(unittest.TestCase):
         mock_cnn_base.side_effect = Exception("Model initialization failed")
 
         # Prepare input data
-        x = np.zeros(20480).reshape(-1, 2048)  # Shape: (10, 2048)
+        x = np.zeros(20480)
 
         # Execute core function and expect Exception
         with self.assertRaises(Exception) as context:
