@@ -223,7 +223,7 @@ class CollateBase:
         for k, v in accumulate_dict.items():
             try:
                 if k in self.x_key:
-                    accumulate_dict[k] = torch.stack(v, dim=0).unsqueeze(1) if v else []
+                    accumulate_dict[k] = torch.stack(v, dim=0) if v else []
                 elif k in self.y_key:
                     accumulate_dict[k] = torch.stack(v, dim=0).squeeze()
                 else:

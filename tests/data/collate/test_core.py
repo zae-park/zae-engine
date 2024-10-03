@@ -206,7 +206,7 @@ class TestCollateBase(unittest.TestCase):
         self.assertIn("filename", accumulated)
 
         # Check 'x' stacking and unsqueeze
-        expected_x = torch.stack([batch["x"] for batch in batches], dim=0).unsqueeze(1)
+        expected_x = torch.stack([batch["x"] for batch in batches], dim=0)
         self.assertTrue(torch.allclose(accumulated["x"], expected_x))
 
         # Check 'y' stacking and squeeze
