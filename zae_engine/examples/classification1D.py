@@ -52,7 +52,7 @@ class InferenceTrainer(Trainer):
 # ------------------------------- Core ----------------------------------- #
 
 
-def core(x: np.ndarray):
+def core(x: Union[np.ndarray, torch.Tensor]) -> list:
     """
     Perform inference on a given input array using a predefined CNN model and data pipeline.
 
@@ -100,13 +100,15 @@ def core(x: np.ndarray):
     The input data is preprocessed using filtering, scaling, and one-hot encoding before being fed into the model.
     Inference is performed in batches to handle large input arrays efficiently.
     """
-    assert len(x.shape) < 3, f"Expect less than 3-D array, but receive {len(x.shape)}-D array."
+    assert len(x.shape) == 1, f"Expect 1-D array, but receive {len(x.shape)}-D array."
+    if not x.size:
+        return []
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
 
     try:
         # --------------------------------- Data Pipeline --------------------------------- #
-        inference_dataset = InferenceDataset(x)
+        inference_dataset = InferenceDataset(x.reshape(-1, 2048))
 
         collator = CollateBase(x_key=["x"], y_key=["y"], aux_key=[])
         collator.set_batch(inference_dataset[0])
@@ -125,13 +127,13 @@ def core(x: np.ndarray):
 
         # --------------------------------- Inference --------------------------------- #
         result = trainer.inference(inference_loader)
-        result = np.concatenate(result).reshape(len(inference_dataset), -1)
-        return result
+        result = np.concatenate(result).reshape(len(inference_dataset), -1).argmax(-1)
+        return result.tolist()
     except Exception as e:
         logger.error(f"Error during inference: {e}")
         raise
 
 
 if __name__ == "__main__":
-    x = np.zeros(20480).reshape(-1, 2048)
+    x = np.zeros(20480)
     core(x)
