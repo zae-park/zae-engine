@@ -1,5 +1,5 @@
 import logging
-from typing import Union, Dict, Optional, List, Tuple
+from typing import Union, Dict
 
 import numpy as np
 import torch
@@ -52,7 +52,7 @@ class InferenceTrainer(Trainer):
 # ------------------------------- Core ----------------------------------- #
 
 
-def core(x: np.ndarray, batch_size: int):
+def core(x: np.ndarray):
     assert len(x.shape) < 3, f"Expect less than 3-D array, but receive {len(x.shape)}-D array."
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
@@ -65,10 +65,9 @@ def core(x: np.ndarray, batch_size: int):
         collator.set_batch(inference_dataset[0])
         collator.add_fn("filtering", SignalFilter(fs=250, method="bandpass", lowcut=0.5, highcut=50))
         collator.add_fn("scaling", SignalScaler())
-        collator.add_fn("chunk", Chunk(n=2500))
         collator.add_fn("hot", HotEncoder(n_cls=7))
 
-        inference_loader = DataLoader(dataset=inference_dataset, batch_size=batch_size, collate_fn=collator.wrap())
+        inference_loader = DataLoader(dataset=inference_dataset, batch_size=1, collate_fn=collator.wrap())
 
         # --------------------------------- Setting --------------------------------- #
         model = CNNBase(BasicBlock, 1, 9, 16, [2, 2, 2, 2])
@@ -87,5 +86,5 @@ def core(x: np.ndarray, batch_size: int):
 
 
 if __name__ == "__main__":
-    x = np.zeros(2048000)
+    x = np.zeros(20480).reshape(-1, 2048)
     core(x)
