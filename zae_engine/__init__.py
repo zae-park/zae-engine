@@ -1,4 +1,4 @@
-from .inference import *
+from .examples import *
 from .loss import *
 from .metrics import *
 from .models import *
