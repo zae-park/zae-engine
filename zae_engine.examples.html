@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>zae_engine.inference package &mdash; zae-engine  documentation</title>
+  <title>zae_engine.examples package &mdash; zae-engine  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -49,7 +49,7 @@
 <li class="toctree-l2 current"><a class="reference internal" href="zae_engine.html">zae_engine package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="zae_engine.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.data.html">zae_engine.data package</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">zae_engine.inference package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">zae_engine.examples package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.loss.html">zae_engine.loss package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.metrics.html">zae_engine.metrics package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="zae_engine.models.html">zae_engine.models package</a></li>
@@ -83,9 +83,9 @@
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="modules.html">zae_engine</a></li>
           <li class="breadcrumb-item"><a href="zae_engine.html">zae_engine package</a></li>
-      <li class="breadcrumb-item active">zae_engine.inference package</li>
+      <li class="breadcrumb-item active">zae_engine.examples package</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/zae_engine.inference.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/zae_engine.examples.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -93,26 +93,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="zae-engine-inference-package">
-<h1>zae_engine.inference package<a class="headerlink" href="#zae-engine-inference-package" title="Link to this heading">¶</a></h1>
+  <section id="zae-engine-examples-package">
+<h1>zae_engine.examples package<a class="headerlink" href="#zae-engine-examples-package" title="Link to this heading">¶</a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-zae_engine.inference.beat">
-<span id="zae-engine-inference-beat-module"></span><h2>zae_engine.inference.beat module<a class="headerlink" href="#module-zae_engine.inference.beat" title="Link to this heading">¶</a></h2>
+<section id="module-zae_engine.examples.classification1D">
+<span id="zae-engine-examples-classification1d-module"></span><h2>zae_engine.examples.classification1D module<a class="headerlink" href="#module-zae_engine.examples.classification1D" title="Link to this heading">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.inference.beat.InferenceDataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.beat.</span></span><span class="sig-name descname"><span class="pre">InferenceDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/beat.html#InferenceDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.beat.InferenceDataset" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="zae_engine.examples.classification1D.InferenceDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.classification1D.</span></span><span class="sig-name descname"><span class="pre">InferenceDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/classification1D.html#InferenceDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.classification1D.InferenceDataset" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.inference.beat.InferenceTrainer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.beat.</span></span><span class="sig-name descname"><span class="pre">InferenceTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/beat.html#InferenceTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.beat.InferenceTrainer" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="zae_engine.examples.classification1D.InferenceTrainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.classification1D.</span></span><span class="sig-name descname"><span class="pre">InferenceTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/classification1D.html#InferenceTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.classification1D.InferenceTrainer" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Trainer</span></code></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.inference.beat.InferenceTrainer.test_step">
-<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/beat.html#InferenceTrainer.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.beat.InferenceTrainer.test_step" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="zae_engine.examples.classification1D.InferenceTrainer.test_step">
+<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/classification1D.html#InferenceTrainer.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.classification1D.InferenceTrainer.test_step" title="Link to this definition">¶</a></dt>
 <dd><p>Perform a testing step.</p>
 <p>This method must be implemented by subclasses.
 This unused dummy function exists to provide I/O format information.</p>
@@ -140,8 +140,8 @@ Note that this function works only in ‘test’ mode, and the <cite>backward()<
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.inference.beat.InferenceTrainer.train_step">
-<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/beat.html#InferenceTrainer.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.beat.InferenceTrainer.train_step" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="zae_engine.examples.classification1D.InferenceTrainer.train_step">
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/examples/classification1D.html#InferenceTrainer.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.classification1D.InferenceTrainer.train_step" title="Link to this definition">¶</a></dt>
 <dd><p>Perform a training step.</p>
 <p>This method must be implemented by subclasses.
 This unused dummy function exists to provide I/O format information.</p>
@@ -171,8 +171,127 @@ Note that this function works only in ‘train’ mode, hence the <cite>backward
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.inference.beat.core">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.inference.beat.</span></span><span class="sig-name descname"><span class="pre">core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/beat.html#core"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.beat.core" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="zae_engine.examples.classification1D.core">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.examples.classification1D.</span></span><span class="sig-name descname"><span class="pre">core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/classification1D.html#core"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.classification1D.core" title="Link to this definition">¶</a></dt>
+<dd><p>Perform inference on a given input array using a predefined CNN model and data pipeline.</p>
+<p>This function processes the input data through a series of preprocessing steps,
+feeds it into a Convolutional Neural Network (CNN) model, and returns the
+predicted class indices for each input segment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>np.ndarray</em>) – Input array to be processed. The array should be less than 3-D (i.e., 1-D or 2-D).
+For 2-D inputs, the shape should be <cite>(num_samples, 2048)</cite>, where <cite>2048</cite> is the
+expected segment length.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A NumPy array containing the predicted class indices for each input sample.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If the input array has 3 or more dimensions.</p></li>
+<li><p><strong>Exception</strong> – If any error occurs during the inference process.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20480</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2048</span><span class="p">)</span>  <span class="c1"># 10 samples of length 2048 each</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">predictions</span> <span class="o">=</span> <span class="n">core</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
+<span class="go">[0 1 0 2 1 0 1 0 1 2]</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<p>This function performs the following steps:
+1. Validates the input array dimensions.
+2. Sets up the computation device (CPU or GPU).
+3. Initializes the data pipeline, including dataset and data loader with preprocessing modules.
+4. Sets up the CNN model, optimizer, and learning rate scheduler.
+5. Executes the inference process using the model and returns the predicted class indices.</p>
+<p>The model used is a CNN-based architecture (<cite>CNNBase</cite> with <cite>BasicBlock</cite>), converted from 2D to 1D.
+The input data is preprocessed using filtering, scaling, and one-hot encoding before being fed into the model.
+Inference is performed in batches to handle large input arrays efficiently.</p>
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.examples.segmentation1D">
+<span id="zae-engine-examples-segmentation1d-module"></span><h2>zae_engine.examples.segmentation1D module<a class="headerlink" href="#module-zae_engine.examples.segmentation1D" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.segmentation1D.InferenceDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.segmentation1D.</span></span><span class="sig-name descname"><span class="pre">InferenceDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/segmentation1D.html#InferenceDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.segmentation1D.InferenceDataset" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.segmentation1D.InferenceTrainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.segmentation1D.</span></span><span class="sig-name descname"><span class="pre">InferenceTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/segmentation1D.html#InferenceTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.segmentation1D.InferenceTrainer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Trainer</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.segmentation1D.InferenceTrainer.test_step">
+<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/segmentation1D.html#InferenceTrainer.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.segmentation1D.InferenceTrainer.test_step" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a testing step.</p>
+<p>This method must be implemented by subclasses.
+This unused dummy function exists to provide I/O format information.</p>
+<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
+The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
+Note that this function works only in ‘test’ mode, and the <cite>backward()</cite> method is not necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the results of the testing step, including the loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;fn&#39;</span><span class="p">]</span>  <span class="c1"># or x, y, fn = batch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">criteria</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;mean_output&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outputs</span><span class="p">)}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.segmentation1D.InferenceTrainer.train_step">
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/segmentation1D.html#InferenceTrainer.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.segmentation1D.InferenceTrainer.train_step" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a training step.</p>
+<p>This method must be implemented by subclasses.
+This unused dummy function exists to provide I/O format information.</p>
+<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
+The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
+Note that this function works only in ‘train’ mode, hence the <cite>backward()</cite> method in <cite>nn.Module</cite> is necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the results of the training step, including the loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;fn&#39;</span><span class="p">]</span>  <span class="c1"># or x, y, fn = batch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">criteria</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;mean_output&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outputs</span><span class="p">)}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.examples.segmentation1D.core">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.examples.segmentation1D.</span></span><span class="sig-name descname"><span class="pre">core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/segmentation1D.html#core"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.segmentation1D.core" title="Link to this definition">¶</a></dt>
 <dd><p>Core function to perform inference on a given 1-D input array using a predefined model and data pipeline.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -207,86 +326,8 @@ to handle large input arrays efficiently.</p>
 </dd></dl>
 
 </section>
-<section id="module-zae_engine.inference.sec10">
-<span id="zae-engine-inference-sec10-module"></span><h2>zae_engine.inference.sec10 module<a class="headerlink" href="#module-zae_engine.inference.sec10" title="Link to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.inference.sec10.InferenceDataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">InferenceDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/sec10.html#InferenceDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.sec10.InferenceDataset" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="zae_engine.inference.sec10.InferenceTrainer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">InferenceTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/sec10.html#InferenceTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.sec10.InferenceTrainer" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Trainer</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.inference.sec10.InferenceTrainer.test_step">
-<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/sec10.html#InferenceTrainer.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.sec10.InferenceTrainer.test_step" title="Link to this definition">¶</a></dt>
-<dd><p>Perform a testing step.</p>
-<p>This method must be implemented by subclasses.
-This unused dummy function exists to provide I/O format information.</p>
-<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
-The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
-Note that this function works only in ‘test’ mode, and the <cite>backward()</cite> method is not necessary.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A dictionary containing the results of the testing step, including the loss.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;fn&#39;</span><span class="p">]</span>  <span class="c1"># or x, y, fn = batch</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">criteria</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;mean_output&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outputs</span><span class="p">)}</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="zae_engine.inference.sec10.InferenceTrainer.train_step">
-<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/inference/sec10.html#InferenceTrainer.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.sec10.InferenceTrainer.train_step" title="Link to this definition">¶</a></dt>
-<dd><p>Perform a training step.</p>
-<p>This method must be implemented by subclasses.
-This unused dummy function exists to provide I/O format information.</p>
-<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
-The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
-Note that this function works only in ‘train’ mode, hence the <cite>backward()</cite> method in <cite>nn.Module</cite> is necessary.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A dictionary containing the results of the training step, including the loss.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;fn&#39;</span><span class="p">]</span>  <span class="c1"># or x, y, fn = batch</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">criteria</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;mean_output&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outputs</span><span class="p">)}</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="zae_engine.inference.sec10.core">
-<span class="sig-prename descclassname"><span class="pre">zae_engine.inference.sec10.</span></span><span class="sig-name descname"><span class="pre">core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/inference/sec10.html#core"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.inference.sec10.core" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</section>
-<section id="module-zae_engine.inference">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.inference" title="Link to this heading">¶</a></h2>
+<section id="module-zae_engine.examples">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.examples" title="Link to this heading">¶</a></h2>
 </section>
 </section>
 
