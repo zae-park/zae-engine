@@ -22,13 +22,15 @@ logger = logging.getLogger(__name__)
 class InferenceDataset(Dataset):
     def __init__(self, x):
         self.x = torch.tensor(x, dtype=torch.float32)
+        self.y = torch.zeros_like(self.x)
+        self.fn = ["example"] * x.shape[0]
         print(f"\t # of data: %d" % len(self.x))
 
     def __len__(self):
         return len(self.x)
 
     def __getitem__(self, idx):
-        return {"x": self.x[idx].unsqueeze(0)}
+        return {"x": self.x[idx].unsqueeze(0), "y": self.y[idx], "fn": self.fn[idx]}
 
 
 class InferenceTrainer(Trainer):
@@ -49,7 +51,7 @@ class InferenceTrainer(Trainer):
 # ------------------------------- Core ----------------------------------- #
 
 
-def core(x: Union[np.ndarray, torch.Tensor]):
+def core(x: Union[np.ndarray, torch.Tensor]) -> list:
     """
     Core function to perform inference on a given 1-D input array using a predefined model and data pipeline.
 
@@ -89,16 +91,17 @@ def core(x: Union[np.ndarray, torch.Tensor]):
     """
 
     assert len(x.shape) == 1, f"Expect 1-D array, but receive {len(x.shape)}-D array."
+    if not x.size:
+        return []
     device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
 
     try:
         # --------------------------------- Data Pipeline --------------------------------- #
-        inference_dataset = InferenceDataset(x=x.reshape(1, -1))
+        inference_dataset = InferenceDataset(x=x.reshape(-1, 2048))
 
         collator = CollateBase(x_key=["x"], y_key=["y"], aux_key=["fn"])
         collator.set_batch(inference_dataset[0])
-        collator.add_fn(name="split", fn=Spliter(560))
 
         inference_loader = DataLoader(inference_dataset, batch_size=1, shuffle=False, collate_fn=collator.wrap())
 
@@ -110,7 +113,7 @@ def core(x: Union[np.ndarray, torch.Tensor]):
         trainer1 = InferenceTrainer(model=model, device=device, mode="test", optimizer=optimizer, scheduler=scheduler)
 
         # --------------------------------- Inference --------------------------------- #
-        return np.concatenate(trainer1.inference(inference_loader)).argmax(1)
+        return np.concatenate(trainer1.inference(inference_loader)).argmax(1).tolist()
 
     except Exception as e:
         logger.error(f"An error occurred during inference: {e}")
@@ -118,5 +121,5 @@ def core(x: Union[np.ndarray, torch.Tensor]):
 
 
 if __name__ == "__main__":
-    x = np.zeros(2048000)
+    x = np.zeros(20480)
     core(x)
