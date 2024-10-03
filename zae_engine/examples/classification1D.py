@@ -53,6 +53,53 @@ class InferenceTrainer(Trainer):
 
 
 def core(x: np.ndarray):
+    """
+    Perform inference on a given input array using a predefined CNN model and data pipeline.
+
+    This function processes the input data through a series of preprocessing steps,
+    feeds it into a Convolutional Neural Network (CNN) model, and returns the
+    predicted class indices for each input segment.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array to be processed. The array should be less than 3-D (i.e., 1-D or 2-D).
+        For 2-D inputs, the shape should be `(num_samples, 2048)`, where `2048` is the
+        expected segment length.
+
+    Returns
+    -------
+    np.ndarray
+        A NumPy array containing the predicted class indices for each input sample.
+
+    Raises
+    ------
+    AssertionError
+        If the input array has 3 or more dimensions.
+    Exception
+        If any error occurs during the inference process.
+
+    Example
+    -------
+    >>> import numpy as np
+    >>> x = np.zeros(20480).reshape(-1, 2048)  # 10 samples of length 2048 each
+    >>> predictions = core(x)
+    >>> print(predictions)
+    [0 1 0 2 1 0 1 0 1 2]
+
+    Notes
+    -----
+    This function performs the following steps:
+    1. Validates the input array dimensions.
+    2. Sets up the computation device (CPU or GPU).
+    3. Initializes the data pipeline, including dataset and data loader with preprocessing modules.
+    4. Sets up the CNN model, optimizer, and learning rate scheduler.
+    5. Executes the inference process using the model and returns the predicted class indices.
+
+    The model used is a CNN-based architecture (`CNNBase` with `BasicBlock`), converted from 2D to 1D.
+    The input data is preprocessed using filtering, scaling, and one-hot encoding before being fed into the model.
+    Inference is performed in batches to handle large input arrays efficiently.
+    """
     assert len(x.shape) < 3, f"Expect less than 3-D array, but receive {len(x.shape)}-D array."
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
