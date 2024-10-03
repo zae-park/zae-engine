@@ -205,7 +205,7 @@ class TestHotEncoder(unittest.TestCase):
         processed_batch = hot_encoder(self.batch)
 
         expected_y = torch.tensor([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])  # One-hot for class 0  # One-hot for class 2
-        self.assertTrue(torch.equal(processed_batch["y"], expected_y))
+        self.assertTrue(torch.equal(processed_batch["y_hot"], expected_y))
 
     def test_hot_encoder_multi_dimensional_y(self):
         """Test HotEncoder correctly handles multi-dimensional 'y' tensors."""
@@ -220,7 +220,7 @@ class TestHotEncoder(unittest.TestCase):
         expected_y = torch.tensor(
             [[[0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0]], [[1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]]]
         )
-        self.assertTrue(torch.equal(processed_batch["y"], expected_y))
+        self.assertTrue(torch.equal(processed_batch["y_hot"], expected_y))
 
     def test_hot_encoder_missing_y_key(self):
         """Test HotEncoder raises KeyError when 'y' key is missing."""
