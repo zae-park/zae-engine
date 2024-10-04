@@ -1,9 +1,15 @@
-
+<div align="center">
 
 <p align="center">
   <img src="assets/img/spinning_ascii_donut.gif" style="border-radius: 20px">
   <br />
 </p>
+
+# zae-engine
+[ <a href="./README.md">English</a> ]
+<span style="display: inline-block; width: 20px;"></span>
+[ <a href="./README-ko.md">Korean</a> ]
+</div>
 
 <p align="center">
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/build_test.yml/badge.svg">
@@ -18,9 +24,7 @@
   <br />
 </p>
 
-# zae-engine
-
-**Accelerate AI project !**
+# Accelerate AI project !
 
 `zae-engine`은 PyTorch, TensorFlow, Flax와 같은 딥러닝 프레임워크들을 정리한 package입니다. 
 AI 프로젝트의 모든 단계를 표준화하여 반복적인 코드를 줄이고 데이터 과학을 가속화합니다.

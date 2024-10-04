@@ -1,7 +1,15 @@
+<div align="center">
+
 <p align="center">
   <img src="assets/img/spinning_ascii_donut.gif" style="border-radius: 20px">
   <br />
 </p>
+
+# zae-engine
+[ <a href="./README.md">English</a> ]
+<span style="display: inline-block; width: 20px;"></span>
+[ <a href="./README-ko.md">Korean</a> ]
+</div>
 
 <p align="center">
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/build_test.yml/badge.svg">
@@ -16,9 +24,7 @@
   <br />
 </p>
 
-# zae-engine
-
-**Accelerate AI projects!**
+# Accelerate AI project !
 
 `zae-engine` is a modular package that consolidates popular deep learning frameworks like PyTorch, TensorFlow, and Flax.
 It aims to standardize every step of AI projects, reduce repetitive code, and accelerate data science workflows.
