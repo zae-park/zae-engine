@@ -1,6 +1,17 @@
 zae\_engine.operation package
 =============================
 
+Submodules
+----------
+
+zae\_engine.operation.run\_length module
+----------------------------------------
+
+.. automodule:: zae_engine.operation.run_length
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

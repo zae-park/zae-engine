@@ -4,6 +4,14 @@ zae\_engine.metrics package
 Submodules
 ----------
 
+zae\_engine.metrics.bijective module
+------------------------------------
+
+.. automodule:: zae_engine.metrics.bijective
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 zae\_engine.metrics.confusion module
 ------------------------------------
 
