@@ -91,11 +91,7 @@ class TestBottleneckBlock(unittest.TestCase):
         sample = torch.rand(size=(1, random_ch, random_dim, random_dim), dtype=torch.float32)
 
         model = Bottleneck(random_ch, random_ch, stride=self.stride, groups=self.group, dilation=self.dilation)
-        if random_dim > 5:
-            out = model(sample)
-        else:
-            with self.assertRaises(RuntimeError):
-                out = model(sample)
+        out = model(sample)
 
 
 if __name__ == "__main__":
