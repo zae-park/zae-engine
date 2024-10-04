@@ -1,5 +1,4 @@
-from typing import Union, List, Tuple, Optional
-from itertools import groupby
+from typing import Union, List, Tuple
 
 import numpy as np
 import torch
@@ -86,151 +85,95 @@ class MorphologicalLayer(nn.Module):
         return torch.concat(temp, dim=1)
 
 
-def label_to_onoff(
-    labels: Union[np.ndarray, torch.Tensor], sense: int = 2, middle_only: bool = False, outside_idx: Optional = True
-) -> list:
+def arg_nearest(
+    arr: Union[np.ndarray, torch.Tensor], value: int, return_value: bool = True
+) -> Union[int, Tuple[int, int]]:
     """
-    Convert label sequence to on-off array.
-
-    This function receives the label sequence and returns an on-off array.
-    The on-off array consists of [on, off, label] for every existing upper-step and lower-step.
-    If there is no label changing and only single label is in input, it returns an empty list.
-
-    Parameters
-    ----------
-    labels : Union[np.ndarray, torch.Tensor]
-        Sequence of annotation for each point. Expected shape is [N, points] or [points] where N is number of data.
-    sense : int
-        The sensitivity value. Ignore on-off if the (off - on) is less than sensitivity value.
-    middle_only : bool
-        Ignore both the left-most & right-most on-off.
-    outside_idx : Optional[int or float]
-        Outside index (default is np.nan). Fill on (or off) if beat is incomplete. Only use for left-most or right-most.
-        If middle_only is False, outside_idx is not used.
-
-    Returns
-    -------
-    list
-        On-off matrix: Shape of matrix is (N, # of on-offs, 3) or (# of on-offs, 3) where N is number of data.
-        Length of last dimension is 3 and consists of [on, off, label].
-    """
-    SINGLE = False
-    if isinstance(labels, torch.Tensor):
-        labels = labels.detach().numpy()
-    if not len(labels.shape):
-        raise IndexError("Receive empty array.")
-    elif len(labels.shape) == 1:
-        SINGLE = True
-        labels = np.expand_dims(labels.copy(), 0)
-    elif len(labels.shape) > 3:
-        raise IndexError("Unexpected shape error.")
-    else:
-        assert len(labels.shape) == 2
-
-    result = []
-    for label in labels:
-        cursor, res = 0, []
-        n_groups = len(list(groupby(label)))
-        groups = groupby(label)
-        for i, (cls, g) in enumerate(groups):
-            g_length = len(list(g))
-            if cls:
-                if i == 0:
-                    if middle_only:
-                        pass
-                    else:
-                        out_start = np.nan if outside_idx else 0
-                        res.append([out_start, cursor + g_length - 1, int(cls)])
-                elif i == n_groups - 1:
-                    if middle_only:
-                        pass
-                    else:
-                        out_end = np.nan if outside_idx else len(label) - 1
-                        res.append([cursor, out_end, int(cls)])
-                else:
-                    if g_length < sense:
-                        pass  # not enough length
-                    else:
-                        res.append([cursor, cursor + g_length - 1, int(cls)])
-            else:
-                pass  # class #0 is out of interest
-            cursor += g_length
-        if SINGLE:
-            return res
-        result.append(res)
-    return result
-
-
-def onoff_to_label(onoff: Union[np.ndarray, torch.Tensor], length: int = 2500) -> np.ndarray:
-    """
-    Convert on-off array to label sequence.
-
-    This function receives an on-off array and returns the label sequence.
-    The on-off array consists of [on, off, label] for existing on-off pairs.
-    If there is no beat, it returns an empty array.
-
-    Parameters
-    ----------
-    onoff : Union[np.ndarray, torch.Tensor]
-        Array of on-off. Expected shape is [N, [on, off, cls]] where N is number of on-off pairs.
-    length : int
-        Length of label sequence. This value should be larger than maximum of onoff.
-
-    Returns
-    -------
-    np.ndarray
-        The label sequence.
-    """
-    if isinstance(onoff, torch.Tensor):
-        onoff = onoff.detach().numpy()
-    label = np.zeros(length, dtype=int)
-    if len(onoff.shape) == 1:
-        return label
-    elif len(onoff.shape) > 3:
-        raise IndexError("Unexpected shape error.")
-    else:
-        assert len(onoff.shape) == 2
-    if onoff.shape[-1] != 3:
-        raise ValueError("Unexpected shape error.")
-
-    for on, off, cls in onoff:
-        on = 0 if np.isnan(on) else int(on)
-        if np.isnan(off) or (int(off) >= length):
-            label[on:] = cls
-        else:
-            label[on : int(off) + 1] = cls
-
-    return label
-
-
-def find_nearest(arr: Union[np.ndarray, torch.Tensor], value: int):
-    """
-    Find the nearest value and its index in the array.
+    Find the index of the nearest value in the array to the given reference value.
+    Optionally, also return the nearest value itself.
 
     Parameters
     ----------
     arr : Union[np.ndarray, torch.Tensor]
-        The input array.
+        The input sorted array. Must be in ascending order.
     value : int
-        The reference value.
+        The reference value to find the nearest element for.
+    return_value : bool, optional
+        Whether to return the nearest value along with its index.
+        - If `True`, returns a tuple `(index, nearest_value)`.
+        - If `False`, returns only the `index` of the nearest value.
+        Default is `True`.
 
     Returns
     -------
-    Tuple[int, int]
-        The index and value of the nearest element.
+    Union[int, Tuple[int, int]]
+        - If `return_value` is `True`, returns a tuple containing:
+            - `index` (int): The index of the nearest element in the array.
+            - `nearest_value` (int): The nearest value to the reference `value`.
+        - If `return_value` is `False`, returns only:
+            - `index` (int): The index of the nearest element in the array.
+
+    Raises
+    ------
+    ValueError
+        If `arr` is not a one-dimensional sorted array.
+    TypeError
+        If `arr` is neither a NumPy array nor a PyTorch tensor.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> arr = np.array([1, 3, 5, 7, 9])
+    >>> arg_nearest(arr, 6)
+    (2, 5)
+
+    >>> arg_nearest(arr, 6, return_value=False)
+    2
+
+    >>> import torch
+    >>> arr_tensor = torch.tensor([2, 4, 6, 8, 10])
+    >>> arg_nearest(arr_tensor, 7)
+    (2, 6)
+
+    >>> arg_nearest(arr_tensor, 7, return_value=False)
+    2
     """
+    # Check if the input array is a PyTorch tensor and convert it to a NumPy array
     if isinstance(arr, torch.Tensor):
         arr = arr.numpy()
+    elif not isinstance(arr, np.ndarray):
+        raise TypeError("Input array must be a NumPy array or a PyTorch tensor.")
 
+    # Ensure the array is one-dimensional
+    if arr.ndim != 1:
+        raise ValueError("Input array must be one-dimensional.")
+
+    # Check if the array is sorted in ascending order
+    if not np.all(arr[:-1] <= arr[1:]):
+        raise ValueError("Input array must be sorted in ascending order.")
+
+    # Use np.searchsorted to find the insertion index for the reference value
     i_gap = np.searchsorted(arr, value)
 
+    # Handle boundary conditions
     if i_gap == 0:
-        return i_gap, arr[0]  # arr의 최소값보다 작은 value
+        nearest_index = 0
+        nearest_value = arr[0]  # Value is smaller than the smallest element in the array
     elif i_gap == len(arr):
-        return len(arr) - 1, arr[-1]  # arr의 최대값보다 큰 value
+        nearest_index = len(arr) - 1
+        nearest_value = arr[-1]  # Value is larger than the largest element in the array
     else:
         left, right = arr[i_gap - 1], arr[i_gap]
+        # Determine which of the two neighboring values is closer to the reference value
         if abs(value - left) <= abs(right - value):
-            return i_gap - 1, left
+            nearest_index = i_gap - 1
+            nearest_value = left
         else:
-            return i_gap, right
+            nearest_index = i_gap
+            nearest_value = right
+
+    # Return the result based on the return_value flag
+    if return_value:
+        return nearest_index, int(nearest_value)
+    else:
+        return nearest_index
