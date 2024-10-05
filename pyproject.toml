@@ -1,6 +1,6 @@
 [tool.poetry]
 name = 'zae-engine'
-version = '0.5.1'
+version = '0.6.1'
 description = 'Deep learning engine powered by zae-park.'
 authors = ["zae-park <tom941105@gmail.com>"]
 packages = [
