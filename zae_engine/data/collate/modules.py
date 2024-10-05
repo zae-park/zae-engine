@@ -314,10 +314,10 @@ class HotEncoder:
         y = batch["y"]
 
         if y.dim() == 1:
-            batch["y"] = torch.eye(self.n_cls, device=y.device)[y.long()]
+            batch["y_hot"] = torch.eye(self.n_cls, device=y.device)[y.long()]
         else:
             # Apply one-hot encoding to the last dimension if y is multi-dimensional
-            batch["y"] = torch.eye(self.n_cls, device=y.device)[y.long()]
+            batch["y_hot"] = torch.eye(self.n_cls, device=y.device)[y.long()]
 
         return batch
 
