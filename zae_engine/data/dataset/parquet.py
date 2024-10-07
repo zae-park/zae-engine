@@ -1,6 +1,6 @@
 import time
-from collections import defaultdict, namedtuple
-from typing import Type, Union
+from typing import List, Tuple, Union
+from bisect import bisect_right
 
 import numpy as np
 import pandas as pd
@@ -9,102 +9,108 @@ from torch.utils import data
 
 
 class ParquetDataset(data.Dataset):
+    """
+    Custom PyTorch Dataset for loading and accessing data from multiple Parquet files efficiently.
+
+    This dataset handles multiple Parquet files by caching them and provides indexing to access individual samples.
+    It supports shuffling of data and selecting specific columns for use.
+
+    Args:
+        parquet_paths (List[str] | Tuple[str, ...]):
+            List or tuple of paths to Parquet files.
+        fs:
+            Filesystem object (e.g., fsspec filesystem) to handle file operations.
+        raw_cols (Tuple[str, ...], optional):
+            Columns to read from the Parquet files. Defaults to ().
+        use_cols (Tuple[str, ...], optional):
+            Columns to include in the output samples. Defaults to ().
+        shuffle (bool, optional):
+            Whether to shuffle the dataset indices. Defaults to False.
+    """
+
     def __init__(
         self,
-        parquet_path: Union[list | tuple],
+        parquet_paths: Union[List[str], Tuple[str, ...]],
         fs,
-        raw_cols: tuple[str] = (),
-        use_cols: tuple[str] = (),
-        num_cached_parquet=5,
+        raw_cols: Tuple[str, ...] = (),
+        use_cols: Tuple[str, ...] = (),
         shuffle: bool = False,
-        batched_output: bool = False,
     ):
-
         self.fs = fs
         self.shuffle = shuffle
-        self.batched_output = batched_output
-        self.row_canvas = namedtuple("row", field_names=use_cols)
-        self.raw_cols = raw_cols  # parquet file에서 사용할 column
-        self.use_cols = use_cols  # 출력 sample에서 사용할 column
+        self.raw_cols = raw_cols
+        self.use_cols = list(use_cols)
 
-        # self.parquet_list = sorted(glob.glob(os.path.join(parquet_path, '*.parquet')))
-        self.parquet_list = parquet_path
-        self.num_cached_parquet = num_cached_parquet  # 캐시할 파일 개수
+        self.parquet_list = parquet_paths
 
-        self.steps_cache = int(np.ceil(len(self.parquet_list) / self.num_cached_parquet))  # cache step
-        self.current_parquet_idx = 0
-        self.current_pd_parquets = None  # cached parquets
-        self.current_indices_in_cache = []  # data index in cached parquet
-        self.steps_per_epoch = 0
-        self.total_len = self.get_total_length()
+        # compute cumulated rows
+        self.cumulative_sizes = []
+        total = 0
+        self.parquet_sizes = []
+        for parquet_file in self.parquet_list:
+            fdf = fastparquet.ParquetFile(parquet_file, open_with=self.fs.open)
+            num_rows = fdf.info["rows"]
+            total += num_rows
+            self.cumulative_sizes.append(total)
+            self.parquet_sizes.append(num_rows)
+        self.total_len = total
 
-        self._cache_setting()
+        # create index & shuffle
+        self.indices = np.arange(self.total_len)
+        if self.shuffle:
+            np.random.shuffle(self.indices)
 
-    def _cache_setting(self):
-        cur_pd, cur_indices = self._cache_parquet(self.current_parquet_idx)
-        self.current_pd_parquets = cur_pd
-        self.current_indices_in_cache = cur_indices
-
-    def get_total_length(self):
-        fdf = fastparquet.ParquetFile(self.parquet_list, open_with=self.fs.open)
-        total_len = 0
-        for df in fdf.iter_row_groups(columns=["unique_id"]):
-            total_len += len(df)
-        return total_len
-
-    def _cache_parquet(self, idx):
-        next_idx = (idx + 1) * self.num_cached_parquet
-        next_idx = None if next_idx > len(self.parquet_list) else next_idx
-
-        list_part_parquet = self.parquet_list[idx * self.num_cached_parquet : next_idx]
-
-        fparquet = fastparquet.ParquetFile(list_part_parquet, open_with=self.fs.open)
-
-        list_df = []
-        for df, fpar in zip(fparquet.iter_row_groups(columns=self.raw_cols), fparquet):
-            list_df.append(df)
-
-        df_data = pd.concat(list_df)
-        now = time.time()
-        seed = int((now - int(now)) * 1e5)
-        rng = np.random.RandomState(seed=seed)
-        np_indices = rng.permutation(len(df_data)) if self.shuffle else np.arange(len(df_data))
-        list_indices = np_indices.tolist()
-
-        return df_data, list_indices
-
-    def _transform_raw_to_array(self, pd_raw_data):
-        # pd_raw_data['request_list'] = torch.zeros((16, 16), dtype=torch.float32)
-        # if pd_raw_data['request_list'] is not None:
-        #     pass
-        # else:
-        #     pd_raw_data['request_list'] = []
-        sample = self.row_canvas(**pd_raw_data)
-        return sample
+        # initial cache
+        self.current_parquet_idx = None
+        self.current_pd_parquets = None
 
     def __len__(self):
+        """
+        Returns the total number of samples in the dataset.
+
+        Returns:
+            int: Total number of samples.
+        """
         return self.total_len
 
     def __getitem__(self, idx):
-        # https://d2.naver.com/helloworld/3773258
-        # idx는 사용하지 않고 parquet data queue에서 pop
+        """
+        Retrieves the sample corresponding to the given index.
 
-        refresh_idx = 1
-        # 현재 캐시 파일 내 데이터를 모두 탐색한 경우
-        if len(self.current_indices_in_cache) < refresh_idx:
-            # 다음 parquet 파일들을 로딩
-            self.current_parquet_idx += 1
+        Args:
+            idx (int):
+                Index of the sample to retrieve.
 
-            # 모든 parquet 파일 로딩한 경우 첫 번째 파일로
-            if self.current_parquet_idx >= self.steps_cache:
-                self.current_parquet_idx = 0
+        Returns:
+            dict:
+                A dictionary containing the requested sample's data.
+        """
+        actual_idx = self.indices[idx]
+        parquet_idx = bisect_right(self.cumulative_sizes, actual_idx)
+        if parquet_idx == 0:
+            row_idx = actual_idx
+        else:
+            row_idx = actual_idx - self.cumulative_sizes[parquet_idx - 1]
 
-            # parquet cache loading
-            self._cache_setting()
+        # update cache if current parquet is different with cached.
+        if parquet_idx != self.current_parquet_idx:
+            self.current_parquet_idx = parquet_idx
+            self._cache_setting(parquet_idx)
 
-        pd_idx = self.current_indices_in_cache.pop()
-        pd_raw = self.current_pd_parquets.iloc[pd_idx]
-
-        sample = self._transform_raw_to_array(pd_raw)
-
+        # get row
+        pd_raw = self.current_pd_parquets.iloc[row_idx]
+        sample = pd_raw[self.use_cols].to_dict()
         return sample
+
+    def _cache_setting(self, parquet_idx):
+        """
+        Loads the specified Parquet file into cache.
+
+        Args:
+            parquet_idx (int):
+                Index of the Parquet file to load.
+        """
+        parquet_file = self.parquet_list[parquet_idx]
+        fparquet = fastparquet.ParquetFile(parquet_file, open_with=self.fs.open)
+        list_df = [df for df in fparquet.iter_row_groups(columns=self.raw_cols)]
+        self.current_pd_parquets = pd.concat(list_df, ignore_index=True)
