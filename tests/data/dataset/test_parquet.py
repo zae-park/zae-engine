@@ -8,7 +8,6 @@ import fastparquet
 import fsspec
 from torch.utils.data import DataLoader
 
-# Import the ParquetDataset class
 from zae_engine.data.dataset import ParquetDataset
 
 
@@ -22,8 +21,7 @@ class TestParquetDataset(unittest.TestCase):
         self.fs = fsspec.filesystem("file")
 
         # 사용할 컬럼 정의
-        self.raw_cols = ("id", "feature1", "feature2")
-        self.use_cols = ("id", "feature1", "feature2")
+        self.columns = ["id", "feature1", "feature2"]  # 리스트 형태로 변경
 
     def tearDown(self):
         # 임시 디렉토리 정리
@@ -54,9 +52,7 @@ class TestParquetDataset(unittest.TestCase):
         """
         데이터셋의 전체 길이가 올바른지 테스트.
         """
-        dataset = ParquetDataset(
-            parquet_paths=self.parquet_paths, fs=self.fs, raw_cols=self.raw_cols, use_cols=self.use_cols, shuffle=False
-        )
+        dataset = ParquetDataset(parquet_paths=self.parquet_paths, fs=self.fs, columns=self.columns, shuffle=False)
         expected_length = 300  # 3 파일 * 100 행
         self.assertEqual(len(dataset), expected_length, "Dataset length should be 300")
 
@@ -64,9 +60,7 @@ class TestParquetDataset(unittest.TestCase):
         """
         특정 인덱스의 샘플이 올바르게 반환되는지 테스트.
         """
-        dataset = ParquetDataset(
-            parquet_paths=self.parquet_paths, fs=self.fs, raw_cols=self.raw_cols, use_cols=self.use_cols, shuffle=False
-        )
+        dataset = ParquetDataset(parquet_paths=self.parquet_paths, fs=self.fs, columns=self.columns, shuffle=False)
         # 첫 번째 샘플 테스트
         sample = dataset[0]
         expected = {"id": 0, "feature1": "feat1_0", "feature2": "feat2_0"}
@@ -81,12 +75,8 @@ class TestParquetDataset(unittest.TestCase):
         """
         데이터셋이 셔플될 때 순서가 변경되는지 테스트.
         """
-        dataset1 = ParquetDataset(
-            parquet_paths=self.parquet_paths, fs=self.fs, raw_cols=self.raw_cols, use_cols=self.use_cols, shuffle=True
-        )
-        dataset2 = ParquetDataset(
-            parquet_paths=self.parquet_paths, fs=self.fs, raw_cols=self.raw_cols, use_cols=self.use_cols, shuffle=True
-        )
+        dataset1 = ParquetDataset(parquet_paths=self.parquet_paths, fs=self.fs, columns=self.columns, shuffle=True)
+        dataset2 = ParquetDataset(parquet_paths=self.parquet_paths, fs=self.fs, columns=self.columns, shuffle=True)
         # 두 데이터셋의 첫 번째 샘플이 다를 확률이 높습니다.
         sample1 = dataset1[0]
         sample2 = dataset2[0]
@@ -100,16 +90,16 @@ class TestParquetDataset(unittest.TestCase):
         """
         DataLoader와의 통합 테스트.
         """
-        dataset = ParquetDataset(
-            parquet_paths=self.parquet_paths, fs=self.fs, raw_cols=self.raw_cols, use_cols=self.use_cols, shuffle=False
-        )
+        dataset = ParquetDataset(parquet_paths=self.parquet_paths, fs=self.fs, columns=self.columns, shuffle=False)
         dataloader = DataLoader(dataset, batch_size=50, shuffle=False)
         batch_count = 0
         for batch in dataloader:
-            self.assertEqual(len(batch["id"]), 50, f"Each batch should have 50 samples, got {len(batch['id'])}")
-            # 배치의 구조 확인
-            for key in self.use_cols:
+            # 각 키에 대한 샘플 수 확인
+            for key in self.columns:
                 self.assertIn(key, batch, f"Batch should contain key '{key}'")
+                self.assertEqual(
+                    len(batch[key]), 50, f"Each batch should have 50 samples for key '{key}', got {len(batch[key])}"
+                )
             batch_count += 1
         self.assertEqual(batch_count, 6, "There should be 6 batches (300 / 50)")
 
