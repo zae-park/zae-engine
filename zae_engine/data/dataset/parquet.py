@@ -1,3 +1,5 @@
+# parquet_dataset.py
+
 import time
 from typing import List, Tuple, Union
 from bisect import bisect_right
@@ -20,30 +22,22 @@ class ParquetDataset(data.Dataset):
             List or tuple of paths to Parquet files.
         fs:
             Filesystem object (e.g., fsspec filesystem) to handle file operations.
-        raw_cols (Tuple[str, ...], optional):
-            Columns to read from the Parquet files. Defaults to ().
-        use_cols (Tuple[str, ...], optional):
-            Columns to include in the output samples. Defaults to ().
+        columns (List[str], optional):
+            Columns to read from the Parquet files. Defaults to None, which reads all columns.
         shuffle (bool, optional):
             Whether to shuffle the dataset indices. Defaults to False.
     """
 
     def __init__(
-        self,
-        parquet_paths: Union[List[str], Tuple[str, ...]],
-        fs,
-        raw_cols: Tuple[str, ...] = (),
-        use_cols: Tuple[str, ...] = (),
-        shuffle: bool = False,
+        self, parquet_paths: Union[List[str], Tuple[str, ...]], fs, columns: List[str] = None, shuffle: bool = False
     ):
         self.fs = fs
         self.shuffle = shuffle
-        self.raw_cols = raw_cols
-        self.use_cols = list(use_cols)
+        self.columns = columns  # 읽어올 컬럼 리스트
 
         self.parquet_list = parquet_paths
 
-        # compute cumulated rows
+        # 누적 행 수 계산
         self.cumulative_sizes = []
         total = 0
         self.parquet_sizes = []
@@ -55,16 +49,16 @@ class ParquetDataset(data.Dataset):
             self.parquet_sizes.append(num_rows)
         self.total_len = total
 
-        # create index & shuffle
+        # 인덱스 생성 및 셔플
         self.indices = np.arange(self.total_len)
         if self.shuffle:
             np.random.shuffle(self.indices)
 
-        # initial cache
+        # 캐시 초기화
         self.current_parquet_idx = None
         self.current_pd_parquets = None
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
         Returns the total number of samples in the dataset.
 
@@ -73,7 +67,7 @@ class ParquetDataset(data.Dataset):
         """
         return self.total_len
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> dict:
         """
         Retrieves the sample corresponding to the given index.
 
@@ -92,17 +86,17 @@ class ParquetDataset(data.Dataset):
         else:
             row_idx = actual_idx - self.cumulative_sizes[parquet_idx - 1]
 
-        # update cache if current parquet is different with cached.
+        # 현재 캐시된 Parquet 파일과 다르면 캐시를 갱신
         if parquet_idx != self.current_parquet_idx:
             self.current_parquet_idx = parquet_idx
             self._cache_setting(parquet_idx)
 
-        # get row
+        # 해당 행 가져오기
         pd_raw = self.current_pd_parquets.iloc[row_idx]
-        sample = pd_raw[self.use_cols].to_dict()
+        sample = pd_raw.to_dict()  # 모든 컬럼을 딕셔너리로 반환
         return sample
 
-    def _cache_setting(self, parquet_idx):
+    def _cache_setting(self, parquet_idx: int):
         """
         Loads the specified Parquet file into cache.
 
@@ -112,5 +106,9 @@ class ParquetDataset(data.Dataset):
         """
         parquet_file = self.parquet_list[parquet_idx]
         fparquet = fastparquet.ParquetFile(parquet_file, open_with=self.fs.open)
-        list_df = [df for df in fparquet.iter_row_groups(columns=self.raw_cols)]
+        list_df = (
+            [df for df in fparquet.iter_row_groups(columns=self.columns)]
+            if self.columns
+            else [df for df in fparquet.iter_row_groups()]
+        )
         self.current_pd_parquets = pd.concat(list_df, ignore_index=True)
