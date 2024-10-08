@@ -25,7 +25,7 @@ from zae_engine.data.dataset import ParquetDataset
 
 # ParquetDataset 초기화 예시
 parquet_paths = ["data/file1.parquet", "data/file2.parquet"]
-dataset = ParquetDataset(parquet_path=parquet_paths, fs=None, raw_cols=("col1", "col2"), use_cols=("col1",))
+dataset = ParquetDataset(parquet_path=parquet_paths, fs=None, columns=("col1", "col2"))
 
 # DataLoader와 함께 사용
 loader = DataLoader(dataset, batch_size=32, shuffle=True)
