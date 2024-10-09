@@ -1,77 +1,63 @@
-# Trainer Sub-Package
+# Trainer Sub-package Overview
 
-The Trainer sub-package of the `zae-engine` is designed to facilitate and manage the training and evaluation process of deep learning models. It provides an abstract base class for defining custom training workflows and also includes several add-ons to extend the core functionality. The flexibility of the Trainer class allows users to customize their training, testing, and validation steps, making it suitable for a wide range of machine learning experiments.
+The Trainer sub-package of the **zae-engine** library provides essential features for managing model training and extending functionality through a variety of add-ons. The `Trainer` class is the core component that oversees the entire training process, offering abstract methods for implementing custom training and testing steps. With the add-on system, users can easily enhance and customize their training workflows.
 
-## Core Components
+## Key Classes and Features
 
-### `_trainer.py`
-The main file in this sub-package contains the core class `Trainer`, an abstract base class for managing training and evaluation.
+### Trainer
 
-#### `Trainer` Class
-The `Trainer` class is an abstract class that requires users to define `train_step` and `test_step` methods for training and testing logic, respectively. This class has several features:
+`Trainer` is an abstract base class designed for managing the training routines of a model. It requires users to subclass it and implement the `train_step` and `test_step` methods, which define the behavior during training and testing, respectively.
 
-- **Model Management**: Handles model transfer between devices (e.g., CPU and GPU).
-- **Training Loop**: Manages the training loop, including data loading, logging, and scheduler updates.
-- **Logging**: Logs training and evaluation metrics for each batch and epoch.
-- **Add-ons**: The trainer class can be extended with additional functionalities using add-ons.
+#### Main Attributes
+- **model**: The model to be trained (`torch.nn.Module`).
+- **device**: Device(s) for training the model (e.g., 'cuda' or ['cuda:0', 'cuda:1']).
+- **optimizer**: Optimizer used for training (`torch.optim.Optimizer`).
+- **scheduler**: Learning rate scheduler (`torch.optim.lr_scheduler._LRScheduler`).
+- **log_bar**: Whether to display a progress bar during training.
+- **gradient_clip**: Value for gradient clipping (default: 0.0).
 
-Key features include:
-- **Gradient Clipping**: Clips gradients to prevent exploding gradients.
-- **Learning Rate Scheduler**: Supports learning rate scheduling.
-- **Device Management**: Handles both single and multi-GPU setups.
-- **Logging and Progress Tracking**: Provides support for logging metrics and showing training progress.
-- **Model Saving and Loading**: Saves model states and allows loading for resuming training.
+#### Main Methods
+- **train_step(batch)**: Defines the operations for each training step.
+- **test_step(batch)**: Defines the operations for each testing step.
+- **run(n_epoch, loader, valid_loader)**: Runs the training or testing for the specified number of epochs.
+- **run_epoch(loader)**: Runs training or testing for a single epoch.
+- **run_batch(batch)**: Runs training or testing for a single batch.
+- **add_on(*add_on_cls)**: Adds functionality to the `Trainer` class via add-ons.
 
-The `Trainer` class provides a flexible structure for managing machine learning experiments, offering customization points for the user to define their training and evaluation logic.
+### ProgressChecker
 
-#### `ProgressChecker` Class
-This helper class is used to track the progress of training and evaluation, such as counting steps and epochs.
+`ProgressChecker` is a helper class for tracking training or testing progress. It manages epoch and step counts, allowing users to easily monitor the status of their training process.
 
-### Add-ons
-The Trainer sub-package includes an add-ons feature that allows extending the functionality of the core `Trainer` class with minimal effort. This is useful for adding common features without modifying the core trainer code.
+## Add-on Features
+The Trainer sub-package supports various add-ons via the `AddOnBase` class, which allows for extending functionality such as distributed training, state management, and web logging.
 
-#### `AddOnBase` Class (in `addons/core.py`)
-This is the base class for creating add-ons that can extend the functionality of the Trainer. Add-ons can be installed by calling `Trainer.add_on()` and passing in one or more add-on classes.
+### Main Add-ons
 
-#### State Management (`addons/state_manager.py`)
-Provides state saving and loading capabilities. It allows users to save model, optimizer, and scheduler states, and then load them to resume training seamlessly. The state can be saved in different formats such as checkpoint or `safetensors`.
+- **StateManagerAddon**: Provides functionality to save and load checkpoints during model training, including the model state, optimizer state, and scheduler state.
+- **WandBLoggerAddon / NeptuneLoggerAddon**: Enables real-time monitoring of the training process using Weights & Biases or Neptune.
+- **MultiGPUAddon**: Adds multi-GPU support for distributed training using DDP (Distributed Data Parallel), allowing models to be trained across multiple GPUs in parallel.
 
-#### Web Logger (`addons/web_logger.py`)
-Provides integration with popular logging services such as WandB and Neptune to facilitate remote experiment tracking. These services allow you to monitor and visualize metrics during training.
-
-#### Multi-GPU Training (`addons/mpu.py`)
-Adds multi-GPU support using PyTorch's DistributedDataParallel (DDP). It allows the training process to be distributed across multiple GPUs to improve training speed and handle large models.
-
-## Usage
-To create a custom trainer, inherit from the `Trainer` class and implement the `train_step` and `test_step` methods:
+## Usage Example
+The Trainer sub-package makes it easy to manage and extend model training in various scenarios. Users can inherit from the `Trainer` class, implement their custom `train_step` and `test_step` methods, and add necessary add-ons to set up their training environment.
 
 ```python
 from zae_engine.trainer import Trainer
+from zae_engine.trainer.addons import StateManagerAddon, WandBLoggerAddon
 
-class CustomTrainer(Trainer):
-    def train_step(self, batch):
-        x, y = batch
-        outputs = self.model(x)
-        loss = self.criterion(outputs, y)
-        return {"loss": loss}
+# Add StateManager and WandBLogger add-ons to Trainer
+MyTrainer = Trainer.add_on(StateManagerAddon, WandBLoggerAddon)
 
-    def test_step(self, batch):
-        x, y = batch
-        outputs = self.model(x)
-        loss = self.criterion(outputs, y)
-        return {"loss": loss}
+trainer = MyTrainer(
+    model=my_model,
+    device='cuda',
+    mode='train',
+    optimizer=my_optimizer,
+    scheduler=my_scheduler,
+    save_path='./checkpoints',
+    web_logger={"wandb": {"project": "my_project"}},
+)
+
+trainer.run(n_epoch=10, loader=train_loader, valid_loader=valid_loader)
 ```
-
-To add state management and multi-GPU support:
-
-```python
-from zae_engine.trainer import Trainer
-from zae_engine.trainer.addons import StateManagerAddon, MultiGPUAddon
-
-ExtendedTrainer = Trainer.add_on(StateManagerAddon, MultiGPUAddon)
-trainer = ExtendedTrainer(model, device, mode='train', optimizer=optimizer, scheduler=scheduler, save_path='checkpoints/')
-```
-
-## Summary
-The Trainer sub-package in `zae-engine` provides a flexible and extensible solution for managing machine learning experiments. With the core `Trainer` class, users can easily create customized training workflows. The add-ons feature allows for extending functionality with minimal code, providing a modular way to enhance training capabilities.
+This example shows how to extend the `Trainer` class with state management and web logging capabilities, allowing users to effectively monitor the model training process and manage checkpoints.
 
