@@ -1,82 +1,77 @@
-# Example of Training Using Trainer
+# Trainer Sub-Package
 
-This is an example of how to perform training using a custom Trainer class.
+The Trainer sub-package of the `zae-engine` is designed to facilitate and manage the training and evaluation process of deep learning models. It provides an abstract base class for defining custom training workflows and also includes several add-ons to extend the core functionality. The flexibility of the Trainer class allows users to customize their training, testing, and validation steps, making it suitable for a wide range of machine learning experiments.
 
-## Requirements
+## Core Components
 
-- Python 3.10 or higher
-- PyTorch 2.0 or higher
-- CUDA-compatible GPU (Optional: If no GPU is available, the code will run on the CPU)
+### `_trainer.py`
+The main file in this sub-package contains the core class `Trainer`, an abstract base class for managing training and evaluation.
 
-## Script
+#### `Trainer` Class
+The `Trainer` class is an abstract class that requires users to define `train_step` and `test_step` methods for training and testing logic, respectively. This class has several features:
+
+- **Model Management**: Handles model transfer between devices (e.g., CPU and GPU).
+- **Training Loop**: Manages the training loop, including data loading, logging, and scheduler updates.
+- **Logging**: Logs training and evaluation metrics for each batch and epoch.
+- **Add-ons**: The trainer class can be extended with additional functionalities using add-ons.
+
+Key features include:
+- **Gradient Clipping**: Clips gradients to prevent exploding gradients.
+- **Learning Rate Scheduler**: Supports learning rate scheduling.
+- **Device Management**: Handles both single and multi-GPU setups.
+- **Logging and Progress Tracking**: Provides support for logging metrics and showing training progress.
+- **Model Saving and Loading**: Saves model states and allows loading for resuming training.
+
+The `Trainer` class provides a flexible structure for managing machine learning experiments, offering customization points for the user to define their training and evaluation logic.
+
+#### `ProgressChecker` Class
+This helper class is used to track the progress of training and evaluation, such as counting steps and epochs.
+
+### Add-ons
+The Trainer sub-package includes an add-ons feature that allows extending the functionality of the core `Trainer` class with minimal effort. This is useful for adding common features without modifying the core trainer code.
+
+#### `AddOnBase` Class (in `addons/core.py`)
+This is the base class for creating add-ons that can extend the functionality of the Trainer. Add-ons can be installed by calling `Trainer.add_on()` and passing in one or more add-on classes.
+
+#### State Management (`addons/state_manager.py`)
+Provides state saving and loading capabilities. It allows users to save model, optimizer, and scheduler states, and then load them to resume training seamlessly. The state can be saved in different formats such as checkpoint or `safetensors`.
+
+#### Web Logger (`addons/web_logger.py`)
+Provides integration with popular logging services such as WandB and Neptune to facilitate remote experiment tracking. These services allow you to monitor and visualize metrics during training.
+
+#### Multi-GPU Training (`addons/mpu.py`)
+Adds multi-GPU support using PyTorch's DistributedDataParallel (DDP). It allows the training process to be distributed across multiple GPUs to improve training speed and handle large models.
+
+## Usage
+To create a custom trainer, inherit from the `Trainer` class and implement the `train_step` and `test_step` methods:
 
 ```python
-import torch
-from torch.utils.data import Dataset, DataLoader
-import torch.nn as nn
-import torch.optim as optim
-from zae_engine.trainer import Trainer  # Importing the custom Trainer class
+from zae_engine.trainer import Trainer
 
-# Dummy Dataset
-class DummyDataset(Dataset):
-    def __init__(self, size):
-        self.data = torch.rand(size, 10)
-        self.labels = (self.data.mean(dim=1) > 0.5).long()  # Label 1 if mean > 0.5, else 0
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        return self.data[idx], self.labels[idx]
-
-# Custom Trainer Class
-class MyTrainer(Trainer):
+class CustomTrainer(Trainer):
     def train_step(self, batch):
-        data, labels = batch
-        outputs = self.model(data)
-        loss = nn.CrossEntropyLoss()(outputs, labels)
-        return {'loss': loss}
+        x, y = batch
+        outputs = self.model(x)
+        loss = self.criterion(outputs, y)
+        return {"loss": loss}
 
     def test_step(self, batch):
-        return self.train_step(batch)
-
-def main():
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-    # Dataset and DataLoader
-    dataset = DummyDataset(1000)
-    train_loader = DataLoader(dataset, batch_size=32, shuffle=True)
-
-    # Model, Optimizer, and Scheduler Setup
-    model = nn.Linear(10, 2)
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
-    scheduler = None  # Set a scheduler if needed
-
-    # Create Trainer instance & Train
-    trainer = MyTrainer(model=model, device=device, mode='train', optimizer=optimizer, scheduler=scheduler)
-    trainer.run(n_epoch=10, loader=train_loader)
-
-    # Save the model
-    torch.save(model.state_dict(), 'dummy_model.pth')
-    print("The model has been saved as 'dummy_model.pth'.")
-
-if __name__ == "__main__":
-    main()
+        x, y = batch
+        outputs = self.model(x)
+        loss = self.criterion(outputs, y)
+        return {"loss": loss}
 ```
-The script automatically detects if a GPU is available and uses it for training. If no GPU is available, training will proceed on the CPU.
 
-### Explanation
+To add state management and multi-GPU support:
 
-	•	DummyDataset: Generates random data and labels within the [0, 1] range.
-	•	DummyModel: Prepares a simple neural network with a single linear layer for binary classification.
-	•	MyTrainer: A custom trainer class that handles forward and backward propagation, loss calculation, and model optimization.
-	•	Training Process: Uses the Trainer.run method to train the model for a specified number of epochs. After training, the model is saved to a file (dummy_model.pth).
+```python
+from zae_engine.trainer import Trainer
+from zae_engine.trainer.addons import StateManagerAddon, MultiGPUAddon
 
-### Notes
+ExtendedTrainer = Trainer.add_on(StateManagerAddon, MultiGPUAddon)
+trainer = ExtendedTrainer(model, device, mode='train', optimizer=optimizer, scheduler=scheduler, save_path='checkpoints/')
+```
 
-	•	The provided Trainer class is an abstract class, so the train_step and test_step methods must be implemented in a subclass. In this example, MyTrainer implements these methods.
-	•	The training script is designed to be easily modified for different datasets, models, and training configurations.
+## Summary
+The Trainer sub-package in `zae-engine` provides a flexible and extensible solution for managing machine learning experiments. With the core `Trainer` class, users can easily create customized training workflows. The add-ons feature allows for extending functionality with minimal code, providing a modular way to enhance training capabilities.
 
-**License**
-
-This project is licensed under the MIT License.
