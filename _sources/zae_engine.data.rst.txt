@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    zae_engine.data.collate
+   zae_engine.data.dataset
 
 Module contents
 ---------------
