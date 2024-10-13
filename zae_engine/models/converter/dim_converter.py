@@ -1,12 +1,6 @@
-import re
 from copy import deepcopy
-from typing import Union, Any, Dict
-from collections import defaultdict
 
-import torch
 import torch.nn as nn
-from einops import parsing
-from torch.nn import Module
 
 
 class DimConverter:
