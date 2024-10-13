@@ -1,9 +1,7 @@
 from typing import Union
 
-from typeguard import typechecked
 import numpy as np
 import torch
-import torch.nn.functional as F
 
 from ..metrics import giou as _giou, miou as _miou
 from ..utils.decorators import shape_check
