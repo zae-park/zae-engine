@@ -70,15 +70,9 @@
            <div itemprop="articleBody">
              
   <h1>Source code for zae_engine.models.converter.dim_converter</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">parsing</span>
-<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">Module</span>
 
 
 <div class="viewcode-block" id="DimConverter">
@@ -308,109 +302,6 @@
         <span class="k">return</span> <span class="n">new_model</span></div>
 </div>
 
-    
-    <span class="c1"># def convert_weights(self, original_module: nn.Module, corrected_module: nn.Module, reduce: bool):</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     Converts and assigns weights from the original module to the corrected module.</span>
-
-    <span class="c1">#     Parameters</span>
-    <span class="c1">#     ----------</span>
-    <span class="c1">#     original_module : nn.Module</span>
-    <span class="c1">#         The original convolutional module.</span>
-    <span class="c1">#     corrected_module : nn.Module</span>
-    <span class="c1">#         The corrected convolutional module with different dimensionality.</span>
-    <span class="c1">#     reduce : bool</span>
-    <span class="c1">#         Whether the dimensionality is being reduced or expanded.</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     with torch.no_grad():</span>
-    <span class="c1">#         if isinstance(original_module, (nn.Conv1d, nn.Conv2d, nn.Conv3d)):</span>
-    <span class="c1">#             # Handle Conv layers</span>
-    <span class="c1">#             if reduce:</span>
-    <span class="c1">#                 # e.g., Conv2d -&gt; Conv1d: average over the last dimension (e.g., kernel_w)</span>
-    <span class="c1">#                 # Original weight shape: (out_channels, in_channels, kH, kW)</span>
-    <span class="c1">#                 # New weight shape: (out_channels, in_channels, k)</span>
-    <span class="c1">#                 # Assuming kernel_size is being reduced from (kH, kW) to k</span>
-    <span class="c1">#                 # Here, we&#39;ll average over the last dimension (kW)</span>
-    <span class="c1">#                 if isinstance(original_module, nn.Conv1d):</span>
-    <span class="c1">#                     # Conv1d cannot be reduced further, skip</span>
-    <span class="c1">#                     return</span>
-    <span class="c1">#                 elif isinstance(original_module, nn.Conv2d):</span>
-    <span class="c1">#                     # Conv2d -&gt; Conv1d</span>
-    <span class="c1">#                     # Take the mean over the last spatial dimension (kW)</span>
-    <span class="c1">#                     original_weight = original_module.weight.data</span>
-    <span class="c1">#                     new_weight = original_weight.mean(dim=3)  # Shape: (out_channels, in_channels, kH)</span>
-    <span class="c1">#                     # If kH &gt; 1, you might want to further reduce or handle accordingly</span>
-    <span class="c1">#                     # For simplicity, let&#39;s assume kH=1 after reduction</span>
-    <span class="c1">#                     if new_weight.shape[2] != 1:</span>
-    <span class="c1">#                         # Average over kH as well to get a single dimension</span>
-    <span class="c1">#                         new_weight = new_weight.mean(dim=2)  # Shape: (out_channels, in_channels, 1)</span>
-    <span class="c1">#                     corrected_module.weight.data = new_weight</span>
-    <span class="c1">#                     # If bias exists, copy it</span>
-    <span class="c1">#                     if original_module.bias is not None and corrected_module.bias is not None:</span>
-    <span class="c1">#                         corrected_module.bias.data = original_module.bias.data</span>
-    <span class="c1">#             else:</span>
-    <span class="c1">#                 # e.g., Conv1d -&gt; Conv2d: replicate weights along the new dimension</span>
-    <span class="c1">#                 # Original weight shape: (out_channels, in_channels, k)</span>
-    <span class="c1">#                 # New weight shape: (out_channels, in_channels, kH, kW)</span>
-    <span class="c1">#                 if isinstance(original_module, nn.Conv1d):</span>
-    <span class="c1">#                     # Conv1d -&gt; Conv2d</span>
-    <span class="c1">#                     original_weight = original_module.weight.data</span>
-    <span class="c1">#                     # Decide on kernel_size for new dimension, e.g., (k, 1) or (1, k)</span>
-    <span class="c1">#                     # Here, we&#39;ll expand to (k, k) by replicating</span>
-    <span class="c1">#                     k = original_module.kernel_size[0]</span>
-    <span class="c1">#                     new_kH, new_kW = k, k  # Example: (k, k)</span>
-    <span class="c1">#                     # Expand the weight</span>
-    <span class="c1">#                     new_weight = original_weight.unsqueeze(-1).repeat(1, 1, 1, new_kW)  # Shape: (out_channels, in_channels, k, k)</span>
-    <span class="c1">#                     corrected_module.weight.data = new_weight</span>
-    <span class="c1">#                     # If bias exists, copy it</span>
-    <span class="c1">#                     if original_module.bias is not None and corrected_module.bias is not None:</span>
-    <span class="c1">#                         corrected_module.bias.data = original_module.bias.data</span>
-    <span class="c1">#                 elif isinstance(original_module, nn.Conv2d):</span>
-    <span class="c1">#                     # Conv2d -&gt; Conv3d</span>
-    <span class="c1">#                     original_weight = original_module.weight.data</span>
-    <span class="c1">#                     # Decide on kernel_size for new dimension, e.g., (k, 1, 1)</span>
-    <span class="c1">#                     # Here, we&#39;ll expand to (k, kH, kW) by replicating</span>
-    <span class="c1">#                     kH, kW = original_module.kernel_size</span>
-    <span class="c1">#                     new_kD = 1  # Example: add a new dimension with size 1</span>
-    <span class="c1">#                     new_weight = original_weight.unsqueeze(2).repeat(1, 1, new_kD, 1, 1)  # Shape: (out_channels, in_channels, kD, kH, kW)</span>
-    <span class="c1">#                     # However, Conv3d expects (out_channels, in_channels, kD, kH, kW)</span>
-    <span class="c1">#                     if isinstance(corrected_module, nn.Conv3d):</span>
-    <span class="c1">#                         corrected_module.weight.data = new_weight.squeeze(2)  # Adjust as needed</span>
-    <span class="c1">#                     # If bias exists, copy it</span>
-    <span class="c1">#                     if original_module.bias is not None and corrected_module.bias is not None:</span>
-    <span class="c1">#                         corrected_module.bias.data = original_module.bias.data</span>
-
-    <span class="c1">#         elif isinstance(original_module, (nn.ConvTranspose1d, nn.ConvTranspose2d, nn.ConvTranspose3d)):</span>
-    <span class="c1">#             # Handle ConvTranspose layers similarly</span>
-    <span class="c1">#             if reduce:</span>
-    <span class="c1">#                 if isinstance(original_module, nn.ConvTranspose2d):</span>
-    <span class="c1">#                     # ConvTranspose2d -&gt; ConvTranspose1d</span>
-    <span class="c1">#                     original_weight = original_module.weight.data</span>
-    <span class="c1">#                     new_weight = original_weight.mean(dim=3)  # Shape: (out_channels, in_channels, kH)</span>
-    <span class="c1">#                     if new_weight.shape[2] != 1:</span>
-    <span class="c1">#                         new_weight = new_weight.mean(dim=2)  # Shape: (out_channels, in_channels, 1)</span>
-    <span class="c1">#                     corrected_module.weight.data = new_weight</span>
-    <span class="c1">#                     if original_module.bias is not None and corrected_module.bias is not None:</span>
-    <span class="c1">#                         corrected_module.bias.data = original_module.bias.data</span>
-    <span class="c1">#             else:</span>
-    <span class="c1">#                 if isinstance(original_module, nn.ConvTranspose1d):</span>
-    <span class="c1">#                     # ConvTranspose1d -&gt; ConvTranspose2d</span>
-    <span class="c1">#                     original_weight = original_module.weight.data</span>
-    <span class="c1">#                     k = original_module.kernel_size[0]</span>
-    <span class="c1">#                     new_kH, new_kW = k, k</span>
-    <span class="c1">#                     new_weight = original_weight.unsqueeze(-1).repeat(1, 1, 1, new_kW)  # Shape: (out_channels, in_channels, kH, kW)</span>
-    <span class="c1">#                     corrected_module.weight.data = new_weight</span>
-    <span class="c1">#                     if original_module.bias is not None and corrected_module.bias is not None:</span>
-    <span class="c1">#                         corrected_module.bias.data = original_module.bias.data</span>
-
-    <span class="c1">#         elif isinstance(original_module, (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d)):</span>
-    <span class="c1">#             # Handle BatchNorm layers by copying the parameters directly</span>
-    <span class="c1">#             corrected_module.weight.data = original_module.weight.data.clone()</span>
-    <span class="c1">#             corrected_module.bias.data = original_module.bias.data.clone()</span>
-    <span class="c1">#             corrected_module.running_mean = original_module.running_mean.clone()</span>
-    <span class="c1">#             corrected_module.running_var = original_module.running_var.clone()</span>
-    <span class="c1">#             if hasattr(corrected_module, &#39;num_batches_tracked&#39;) and hasattr(original_module, &#39;num_batches_tracked&#39;):</span>
-    <span class="c1">#                 corrected_module.num_batches_tracked = original_module.num_batches_tracked.clone()</span>
 </pre></div>
 
            </div>
