@@ -1,6 +1,6 @@
 [tool.poetry]
 name = 'zae-engine'
-version = '0.6.1'
+version = '0.7.1'
 description = 'Deep learning engine powered by zae-park.'
 authors = ["zae-park <tom941105@gmail.com>"]
 packages = [
@@ -16,33 +16,32 @@ packages = [
 #]
 python = "^3.10"
 
-psutil = "^5.9.5"
-future = "^0.18.3"
-requests = "^2.31.0"
-openpyxl = "^3.1.2"
-
 pandas = "^2.1.2"
+
+# For data IO
 wfdb = "^4.1.2"
-neurokit2 = "^0.2.6"
 nibabel = "^5.1.0"
 pillow = "^10.1.0"
 
-click = "^8.1.7"
+# For Log
 tqdm = "^4.65.0"
 rich = "^13.5.2"
-termcolor = "2.2.0"
-gensim = "^4.3.3"
-fastparquet = "^2024.5.0"
+
+# For cli
+click = "^8.1.7"
+psutil = "^5.9.5"
 
 [tool.poetry.group.dev.dependencies]
-typeguard = "^4.1.2"
-safetensors = "^0.4.3"
 matplotlib = "^3.7.2"
 seaborn = "^0.12.2"
-
+safetensors = "^0.4.3"
 jupyter = "^1.0.0"
 minio = "^7.1.17"
-transformers = "^4.44.1"    # warning message @ low version
+
+# neurokit2 = "^0.2.6"
+# future = "^0.18.3"
+# requests = "^2.31.0"
+# openpyxl = "^3.1.2"
 
 [tool.poetry.group.test.dependencies]
 coverage = "^7.4.4"
@@ -60,7 +59,10 @@ sphinx = "^7.2.6"
 sphinx-rtd-theme = "^2.0.0"
 
 [tool.poetry.group.deep.dependencies]
+gensim = "^4.3.3"
+fastparquet = "^2024.5.0"
 scikit-learn = "^1.3.1"
+transformers = "^4.44.1"    # warning message @ low version
 torch = [
     { version = "^2.0.0", source = "PyPI", markers = "sys_platform == 'darwin'"},
     { platform = "!= darwin", source = "pytorch", version = "^2.0.0"},
