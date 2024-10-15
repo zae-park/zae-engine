@@ -4,15 +4,28 @@ from collections import OrderedDict
 
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 
 from zae_engine.data import CollateBase
-from zae_engine.models import AutoEncoder, unet_brain
+from zae_engine.models import AutoEncoder
+from zae_engine.models.converter import DimConverter
 from zae_engine.schedulers import CosineAnnealingScheduler
 from zae_engine.nn_night.blocks import UNetBlock
 from zae_engine.trainer import Trainer
+
+
+class CustomMNISTDataset(Dataset):
+    def __init__(self, root, train=True, transform=None, download=False):
+        self.mnist = datasets.MNIST(root=root, train=train, transform=transform, download=download)
+
+    def __len__(self):
+        return len(self.mnist)
+
+    def __getitem__(self, idx):
+        image, label = self.mnist[idx]
+        return {"pixel_values": image}
 
 
 class TimestepEmbedding(nn.Module):
@@ -170,7 +183,7 @@ class ForwardDiffusion:
                 - 'noise': Added noise.
         """
 
-        key = "x"
+        key = "pixel_values"
         origin = batch[key]
         if key not in batch:
             raise KeyError(f"Batch must contain '{key}' key.")
@@ -190,7 +203,7 @@ class ForwardDiffusion:
         return batch
 
 
-class DDOM(AutoEncoder):
+class DDPM(AutoEncoder):
 
     def __init__(
         self,
@@ -205,9 +218,7 @@ class DDOM(AutoEncoder):
         skip_connect: bool = False,
         timestep_embed_dim: int = 256,  # 타임스탬프 임베딩 차원
     ):
-        super(AutoEncoder, self).__init__(
-            block, ch_in, ch_out, width, layers, groups, dilation, norm_layer, skip_connect
-        )
+        super(DDPM, self).__init__(block, ch_in, ch_out, width, layers, groups, dilation, norm_layer, skip_connect)
 
         # 타임스탬프 임베딩 모듈 추가
         self.timestep_embedding = TimestepEmbedding(timestep_embed_dim)
@@ -222,7 +233,9 @@ class DDOM(AutoEncoder):
         self.feature_vectors = []
 
         # Forwarding encoder & hook immediate outputs
-        feat = self.encoder(x)
+        _ = self.encoder(x)
+        feat = self.bottleneck(self.feature_vectors.pop())
+        self.feature_vectors = []
 
         # 타임스탬프 임베딩
         t_emb = self.timestep_embedding(t)  # Shape: (batch_size, embed_dim)
@@ -231,7 +244,7 @@ class DDOM(AutoEncoder):
         feat = feat + t_emb  # Broadcasting addition
 
         # Bottleneck processing
-        feat = self.bottleneck(feat)
+        # feat = self.bottleneck(feat)
 
         # Decoder with skip connections if enabled
         for up_pool, dec in zip(self.up_pools, self.decoder):
@@ -295,7 +308,7 @@ class DDPMTrainer(Trainer):
         noise = batch["noise"]
 
         # 모델은 x_t과 t를 입력으로 받아 노이즈를 예측
-        noise_pred = self.model(x_t, t)
+        noise_pred = self.model(x_t, t.squeeze())
 
         # 손실 계산 (예: MSE)
         loss = nn.MSELoss()(noise_pred, noise)
@@ -387,27 +400,27 @@ class DDPMTrainer(Trainer):
 
 if __name__ == "__main__":
     # 설정
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # NoiseScheduler 인스턴스 생성
     noise_scheduler = NoiseScheduler()
 
-    # 'aux_key'를 빈 리스트로 설정 (MNIST에는 'aux' 키가 없으므로)
-    collator = CollateBase(aux_key=())
-    collator.add_fn(name="forward_diffusion", fn=ForwardDiffusion(noise_scheduler=noise_scheduler))
-
     # 예시 데이터셋 (MNIST 사용)
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
 
-    dataset = datasets.MNIST(root="./data", train=True, transform=transform, download=True)
+    dataset = CustomMNISTDataset(root="./data", train=True, transform=transform, download=True)
+
+    # 'aux_key'를 빈 리스트로 설정 (MNIST에는 'aux' 키가 없으므로)
+    collator = CollateBase(x_key=["pixel_values", "t", "noise", "x_t"], y_key=[], aux_key=[])
+    collator.add_fn(name="forward_diffusion", fn=ForwardDiffusion(noise_scheduler=noise_scheduler))
     train_loader = DataLoader(dataset, batch_size=128, shuffle=True, collate_fn=collator.wrap())
 
     # 모델 정의 (UNet 기반 AutoEncoder)
-    model = AutoEncoder(block=UNetBlock, ch_in=1, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True)
+    model = DDPM(block=UNetBlock, ch_in=1, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True)
 
     # 옵티마이저 및 스케줄러 정의
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    scheduler = CosineAnnealingScheduler(optimizer=optimizer, T_max=50)  # T_max은 에폭 수에 맞춤
+    scheduler = CosineAnnealingScheduler(optimizer=optimizer, total_iters=50)  # total_iters를 에폭 수에 맞춤
 
     # Trainer 인스턴스 생성
     trainer = DDPMTrainer(
