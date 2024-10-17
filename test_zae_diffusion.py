@@ -192,19 +192,19 @@ class ForwardDiffusion:
             raise KeyError(f"Batch must contain '{key}' key.")
 
         origin = batch[key]
-        batch_size = origin.size(0)
-        print(f"ForwardDiffusion batch_size: {batch_size}")
+        # origin has shape [channel, height, width]
+        print(f"ForwardDiffusion processing single sample with shape: {origin.shape}")
 
-        # Sample random timesteps for each sample in the batch
-        t = torch.randint(0, self.noise_scheduler.timesteps, (batch_size,), device=origin.device).long()
-        print(f"Sampled t shape: {t.shape}")
+        # Sample random timestep
+        t = torch.randint(0, self.noise_scheduler.timesteps, (1,)).long()
+        print(f"Sampled t: {t.item()}")
 
         noise = torch.randn_like(origin)
         print(f"Noise shape: {noise.shape}")
 
         # Calculate x_t
-        sqrt_alpha_bar_t = self.noise_scheduler.sqrt_alpha_bar[t].view(batch_size, 1, 1, 1)
-        sqrt_one_minus_alpha_bar_t = self.noise_scheduler.sqrt_one_minus_alpha_bar[t].view(batch_size, 1, 1, 1)
+        sqrt_alpha_bar_t = self.noise_scheduler.sqrt_alpha_bar[t].view(1, 1, 1)
+        sqrt_one_minus_alpha_bar_t = self.noise_scheduler.sqrt_one_minus_alpha_bar[t].view(1, 1, 1)
         x_t = sqrt_alpha_bar_t * origin + sqrt_one_minus_alpha_bar_t * noise
         print(f"x_t shape: {x_t.shape}")
 
@@ -217,16 +217,17 @@ class ForwardDiffusion:
 
 
 class DDPM(AutoEncoder):
+
     def __init__(
         self,
-        block,
-        ch_in,
-        ch_out,
-        width,
-        layers,
+        block: Type[Union[UNetBlock, nn.Module]],
+        ch_in: int,
+        ch_out: int,
+        width: int,
+        layers: Sequence[int],
         groups: int = 1,
         dilation: int = 1,
-        norm_layer=nn.BatchNorm2d,
+        norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
         skip_connect: bool = False,
         timestep_embed_dim: int = 256,  # 타임스탬프 임베딩 차원
     ):
@@ -240,8 +241,8 @@ class DDPM(AutoEncoder):
 
     def forward(self, x: torch.Tensor, t: torch.Tensor):
         """
-        x: 노이즈가 추가된 입력 이미지 (x_t)
-        t: 타임스탬프 (timestep)
+        x: 노이즈가 추가된 입력 이미지 (x_t) - Shape: (batch_size, channels, height, width)
+        t: 타임스탬프 (timestep) - Shape: (batch_size,)
         """
         # Ensure t is (batch_size,)
         if t.dim() > 1:
@@ -255,6 +256,7 @@ class DDPM(AutoEncoder):
         if not self.feature_vectors:
             raise ValueError("No feature vectors collected from encoder.")
         feat = self.bottleneck(self.feature_vectors.pop())
+        self.feature_vectors = []
         print(f"Encoder output shape after bottleneck: {feat.shape}")
 
         # 타임스탬프 임베딩
@@ -443,23 +445,28 @@ if __name__ == "__main__":
 
     # NoiseScheduler 인스턴스 생성
     noise_scheduler = NoiseScheduler()
+    print("NoiseScheduler initialized.")
 
     # ForwardDiffusion 인스턴스 생성
     forward_diffusion = ForwardDiffusion(noise_scheduler=noise_scheduler)
+    print("ForwardDiffusion initialized.")
 
     # 예시 데이터셋 (MNIST 사용)
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
 
     dataset = CustomMNISTDataset(root="./data", train=True, transform=transform, download=True)
+    print("CustomMNISTDataset initialized.")
 
     # 'aux_key'를 빈 리스트로 설정 (MNIST에는 'aux' 키가 없으므로)
-    collator = CollateBase(x_key=["pixel_values", "t", "x_t"], y_key=[], aux_key=[])
+    collator = CollateBase(x_key=["pixel_values", "t", "x_t", "noise"], y_key=[], aux_key=[])
     collator.add_fn(name="forward_diffusion", fn=forward_diffusion)
     train_loader = DataLoader(dataset, batch_size=128, shuffle=True, collate_fn=collator.wrap())
     print("DataLoader initialized.")
 
     # 모델 정의 (UNet 기반 AutoEncoder)
-    model = DDPM(block=UNetBlock, ch_in=1, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True).to(device)
+    model = DDPM(
+        block=UNetBlock, ch_in=1, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=False, timestep_embed_dim=256
+    )
     print("Model defined and moved to device.")
 
     # 옵티마이저 및 스케줄러 정의
@@ -482,10 +489,12 @@ if __name__ == "__main__":
     print("Trainer initialized.")
 
     # 학습 수행
+    print("Starting training...")
     trainer.run(n_epoch=50, loader=train_loader, valid_loader=None)
     print("Training completed.")
 
     # 샘플 생성 및 시각화
+    print("Generating samples...")
     trainer.toggle("test")
     generated_samples = trainer.generate(batch_size=16, channels=1, height=28, width=28)
     trainer.visualize_samples(generated_samples, nrow=4, ncol=4)
