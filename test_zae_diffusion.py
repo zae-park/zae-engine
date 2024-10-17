@@ -452,7 +452,9 @@ if __name__ == "__main__":
     print("ForwardDiffusion initialized.")
 
     # 예시 데이터셋 (MNIST 사용)
-    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+    transform = transforms.Compose(
+        [transforms.Resize((256, 256)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
+    )
 
     dataset = CustomMNISTDataset(root="./data", train=True, transform=transform, download=True)
     print("CustomMNISTDataset initialized.")
