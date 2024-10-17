@@ -1,4 +1,5 @@
 import math
+import os
 from typing import Dict, Any, Optional, Union, Type, Sequence, Callable
 from collections import OrderedDict
 
@@ -50,12 +51,12 @@ class TimestepEmbedding(nn.Module):
         emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=1)  # (batch_size, embed_dim)
 
         # Debugging prints
-        print(f"TimestepEmbedding input t shape: {t.shape}")  # Should be (batch_size,)
-        print(f"Sin/Cos embedding shape: {emb.shape}")  # Should be (batch_size, embed_dim)
+        # print(f"TimestepEmbedding input t shape: {t.shape}")  # Should be (batch_size,)
+        # print(f"Sin/Cos embedding shape: {emb.shape}")  # Should be (batch_size, embed_dim)
 
         emb = self.linear(emb)  # (batch_size, embed_dim)
 
-        print(f"TimestepEmbedding output emb shape: {emb.shape}")  # Should be (batch_size, embed_dim)
+        # print(f"TimestepEmbedding output emb shape: {emb.shape}")  # Should be (batch_size, embed_dim)
 
         return emb
 
@@ -193,20 +194,16 @@ class ForwardDiffusion:
 
         origin = batch[key]
         # origin has shape [channel, height, width]
-        print(f"ForwardDiffusion processing single sample with shape: {origin.shape}")
 
         # Sample random timestep
         t = torch.randint(0, self.noise_scheduler.timesteps, (1,)).long()
-        print(f"Sampled t: {t.item()}")
 
         noise = torch.randn_like(origin)
-        print(f"Noise shape: {noise.shape}")
 
         # Calculate x_t
         sqrt_alpha_bar_t = self.noise_scheduler.sqrt_alpha_bar[t].view(1, 1, 1)
         sqrt_one_minus_alpha_bar_t = self.noise_scheduler.sqrt_one_minus_alpha_bar[t].view(1, 1, 1)
         x_t = sqrt_alpha_bar_t * origin + sqrt_one_minus_alpha_bar_t * noise
-        print(f"x_t shape: {x_t.shape}")
 
         batch["x_t"] = x_t
         batch["x0"] = origin
@@ -237,7 +234,7 @@ class DDPM(AutoEncoder):
         self.timestep_embedding = TimestepEmbedding(timestep_embed_dim)
         # 타임스탬프 임베딩을 추가하기 위한 추가 레이어
         self.t_embed_proj = nn.Linear(timestep_embed_dim, width * 16)
-        print(f"DDPM initialized with timestep_embed_dim={timestep_embed_dim}")
+        # print(f"DDPM initialized with timestep_embed_dim={timestep_embed_dim}")
 
     def forward(self, x: torch.Tensor, t: torch.Tensor):
         """
@@ -247,7 +244,6 @@ class DDPM(AutoEncoder):
         # Ensure t is (batch_size,)
         if t.dim() > 1:
             t = t.view(-1)
-            print(f"DDPM forward: Reshaped t shape: {t.shape}")
 
         self.feature_vectors = []
 
@@ -257,33 +253,21 @@ class DDPM(AutoEncoder):
             raise ValueError("No feature vectors collected from encoder.")
         feat = self.bottleneck(self.feature_vectors.pop())
         self.feature_vectors = []
-        print(f"Encoder output shape after bottleneck: {feat.shape}")
 
         # 타임스탬프 임베딩
         t_emb = self.timestep_embedding(t)  # Shape: (batch_size, embed_dim)
-        print(f"timestep_embedding output shape: {t_emb.shape}")
         t_emb = self.t_embed_proj(t_emb)  # Shape: (batch_size, width * 16)
-        print(f"t_embed_proj output shape: {t_emb.shape}")
         t_emb = t_emb[:, :, None, None]  # Shape: (batch_size, width * 16, 1, 1)
-        print(f"t_emb reshaped shape: {t_emb.shape}")
         feat = feat + t_emb  # Broadcasting addition
-        print(f"After adding t_emb, feat shape: {feat.shape}")
-
-        # Bottleneck processing is already done
-        # feat = self.bottleneck(feat)  # 이 줄은 주석 처리되어 있음
 
         # Decoder with skip connections if enabled
         for up_pool, dec in zip(self.up_pools, self.decoder):
             feat = up_pool(feat)
-            print(f"After up_pool, feat shape: {feat.shape}")
             if self.skip_connect and len(self.feature_vectors) > 0:
                 feat = torch.cat((feat, self.feature_vectors.pop()), dim=1)
-                print(f"After concatenating skip connection, feat shape: {feat.shape}")
             feat = dec(feat)
-            print(f"After decoder block, feat shape: {feat.shape}")
 
         output = self.sig(self.fc(feat))
-        print(f"Output shape: {output.shape}")
         return output
 
 
@@ -294,31 +278,6 @@ class DDPMTrainer(Trainer):
     Inherits from the abstract Trainer class and implements the train_step and test_step methods.
     Additionally, it includes methods for generating and visualizing samples using the trained model.
     """
-
-    def __init__(
-        self,
-        model,
-        device: torch.device,
-        mode: str,
-        optimizer: torch.optim.Optimizer,
-        scheduler: Optional[Union[torch.optim.lr_scheduler.LRScheduler, Any]],
-        noise_scheduler: NoiseScheduler,
-        *,
-        log_bar: bool = True,
-        scheduler_step_on_batch: bool = False,
-        gradient_clip: float = 0.0,
-    ):
-        super().__init__(
-            model=model,
-            device=device,
-            mode=mode,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            log_bar=log_bar,
-            scheduler_step_on_batch=scheduler_step_on_batch,
-            gradient_clip=gradient_clip,
-        )
-        self.noise_scheduler = noise_scheduler
 
     def train_step(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         """
@@ -341,20 +300,20 @@ class DDPMTrainer(Trainer):
         # Ensure t is (batch_size,)
         if t.dim() > 1:
             t = t.view(-1)
-            print(f"DDPMTrainer train_step: Reshaped t shape: {t.shape}")
 
         # 모델은 x_t과 t를 입력으로 받아 노이즈를 예측
         noise_pred = self.model(x_t, t)
-        print(f"noise_pred shape: {noise_pred.shape}")
 
         # 손실 계산 (예: MSE)
         loss = nn.MSELoss()(noise_pred, noise)
-        print(f"Loss: {loss.item()}")
 
         return {"loss": loss}
 
     def test_step(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         return self.train_step(batch=batch)
+
+    def noise_scheduling(self, noise_scheduler):
+        self.noise_scheduler = noise_scheduler
 
     def generate(self, batch_size: int, channels: int, height: int, width: int) -> torch.Tensor:
         """
@@ -382,13 +341,13 @@ class DDPMTrainer(Trainer):
         posterior_variance = self.noise_scheduler.posterior_variance
 
         # Initialize with standard normal noise
-        x = torch.randn(batch_size, channels, height, width, device=self.device)
+        x = self._to_device(torch.randn(batch_size, channels, height, width))
         print(f"Generated noise x shape: {x.shape}")
 
         self.model.eval()
         with torch.no_grad():
             for t_step in reversed(range(timesteps)):
-                t_tensor = torch.full((batch_size,), t_step, dtype=torch.long, device=self.device)
+                t_tensor = self._to_device(torch.full((batch_size,), t_step, dtype=torch.long))
                 # Predict the noise using the model
                 noise_pred = self.model(x, t_tensor)
                 print(f"At timestep {t_step}, noise_pred shape: {noise_pred.shape}")
@@ -404,7 +363,8 @@ class DDPMTrainer(Trainer):
 
                     # Sample from the posterior
                     noise = torch.randn_like(x)
-                    x = mu_theta + torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1) * noise
+                    var = self._to_device(torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1))
+                    x = mu_theta + var * noise
                 else:
                     # For the final step, no noise is added
                     x = (
@@ -441,7 +401,10 @@ class DDPMTrainer(Trainer):
 if __name__ == "__main__":
     # 설정
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    batch_size = 32
+    epoch = 3
+    target_width = target_height = 64
+    data_path = "./mnist_example"
 
     # NoiseScheduler 인스턴스 생성
     noise_scheduler = NoiseScheduler()
@@ -453,21 +416,21 @@ if __name__ == "__main__":
 
     # 예시 데이터셋 (MNIST 사용)
     transform = transforms.Compose(
-        [transforms.Resize((256, 256)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
+        [transforms.Resize((target_height, target_width)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
     )
 
-    dataset = CustomMNISTDataset(root="./data", train=True, transform=transform, download=True)
+    dataset = CustomMNISTDataset(root=data_path, train=True, transform=transform, download=True)
     print("CustomMNISTDataset initialized.")
 
     # 'aux_key'를 빈 리스트로 설정 (MNIST에는 'aux' 키가 없으므로)
     collator = CollateBase(x_key=["pixel_values", "t", "x_t", "noise"], y_key=[], aux_key=[])
     collator.add_fn(name="forward_diffusion", fn=forward_diffusion)
-    train_loader = DataLoader(dataset, batch_size=128, shuffle=True, collate_fn=collator.wrap())
+    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, collate_fn=collator.wrap())
     print("DataLoader initialized.")
 
     # 모델 정의 (UNet 기반 AutoEncoder)
     model = DDPM(
-        block=UNetBlock, ch_in=1, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=False, timestep_embed_dim=256
+        block=UNetBlock, ch_in=1, ch_out=1, width=8, layers=[1, 1, 1, 1], skip_connect=False, timestep_embed_dim=256
     )
     print("Model defined and moved to device.")
 
@@ -483,21 +446,23 @@ if __name__ == "__main__":
         mode="train",
         optimizer=optimizer,
         scheduler=scheduler,
-        noise_scheduler=noise_scheduler,
         log_bar=True,
         scheduler_step_on_batch=False,
         gradient_clip=0.0,
     )
+    trainer.noise_scheduling(noise_scheduler)
     print("Trainer initialized.")
 
     # 학습 수행
     print("Starting training...")
-    trainer.run(n_epoch=50, loader=train_loader, valid_loader=None)
+    trainer.run(n_epoch=epoch, loader=train_loader, valid_loader=None)
     print("Training completed.")
 
     # 샘플 생성 및 시각화
     print("Generating samples...")
     trainer.toggle("test")
-    generated_samples = trainer.generate(batch_size=16, channels=1, height=28, width=28)
+    generated_samples = trainer.generate(batch_size=16, channels=1, height=target_height, width=target_width)
     trainer.visualize_samples(generated_samples, nrow=4, ncol=4)
     print("Sample generation and visualization completed.")
+
+    os.remove(data_path)
