@@ -1,5 +1,5 @@
 import math
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, Type, Sequence, Callable
 from collections import OrderedDict
 
 import torch
@@ -33,17 +33,31 @@ class TimestepEmbedding(nn.Module):
         super(TimestepEmbedding, self).__init__()
         self.embed_dim = embed_dim
         self.linear = nn.Linear(embed_dim, embed_dim)
+        print(f"TimestepEmbedding initialized with embed_dim={self.embed_dim}")
 
     def forward(self, t):
         """
         Sinusoidal embedding for timesteps.
         """
+        if t.dim() > 1:
+            t = t.view(-1)  # Ensure t is (batch_size,)
+            print(f"TimestepEmbedding forward: Reshaped t shape: {t.shape}")
+
         half_dim = self.embed_dim // 2
-        emb = math.log(10000) / (half_dim - 1)
-        emb = torch.exp(torch.arange(half_dim, dtype=torch.float32, device=t.device) * -emb)
-        emb = t[:, None].float() * emb[None, :]
-        emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=1)
-        return self.linear(emb)
+        emb_scale = math.log(10000) / (half_dim - 1)
+        emb = torch.exp(torch.arange(half_dim, dtype=torch.float32, device=t.device) * -emb_scale)
+        emb = t[:, None].float() * emb[None, :]  # (batch_size, half_dim)
+        emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=1)  # (batch_size, embed_dim)
+
+        # Debugging prints
+        print(f"TimestepEmbedding input t shape: {t.shape}")  # Should be (batch_size,)
+        print(f"Sin/Cos embedding shape: {emb.shape}")  # Should be (batch_size, embed_dim)
+
+        emb = self.linear(emb)  # (batch_size, embed_dim)
+
+        print(f"TimestepEmbedding output emb shape: {emb.shape}")  # Should be (batch_size, embed_dim)
+
+        return emb
 
 
 class NoiseScheduler:
@@ -149,15 +163,6 @@ class ForwardDiffusion:
     ----------
     noise_scheduler : NoiseScheduler
         Instance of NoiseScheduler managing the noise levels.
-    x_key : List[str]
-        The key in the batch dictionary that represents the input data.
-
-    Attributes
-    ----------
-    noise_scheduler : NoiseScheduler
-        Noise scheduler instance.
-    x_key : List[str]
-        Keys representing the input data in the batch.
     """
 
     def __init__(self, noise_scheduler: NoiseScheduler):
@@ -170,7 +175,7 @@ class ForwardDiffusion:
         Parameters
         ----------
         batch : Dict[str, Any]
-            The input batch containing data under keys specified in x_key.
+            The input batch containing data under 'pixel_values'.
 
         Returns
         -------
@@ -182,29 +187,36 @@ class ForwardDiffusion:
                 - 't': Timestep.
                 - 'noise': Added noise.
         """
-
         key = "pixel_values"
-        origin = batch[key]
         if key not in batch:
             raise KeyError(f"Batch must contain '{key}' key.")
 
+        origin = batch[key]
+        batch_size = origin.size(0)
+        print(f"ForwardDiffusion batch_size: {batch_size}")
+
         # Sample random timesteps for each sample in the batch
-        t = torch.randint(0, self.noise_scheduler.timesteps, (1,)).long()
+        t = torch.randint(0, self.noise_scheduler.timesteps, (batch_size,), device=origin.device).long()
+        print(f"Sampled t shape: {t.shape}")
+
         noise = torch.randn_like(origin)
-        batch["t"] = t
-        batch["noise"] = noise
+        print(f"Noise shape: {noise.shape}")
 
         # Calculate x_t
-        sqrt_alpha_bar_t = self.noise_scheduler.sqrt_alpha_bar[t].view(1, 1, 1)
-        sqrt_one_minus_alpha_bar_t = self.noise_scheduler.sqrt_one_minus_alpha_bar[t].view(1, 1, 1)
+        sqrt_alpha_bar_t = self.noise_scheduler.sqrt_alpha_bar[t].view(batch_size, 1, 1, 1)
+        sqrt_one_minus_alpha_bar_t = self.noise_scheduler.sqrt_one_minus_alpha_bar[t].view(batch_size, 1, 1, 1)
         x_t = sqrt_alpha_bar_t * origin + sqrt_one_minus_alpha_bar_t * noise
+        print(f"x_t shape: {x_t.shape}")
+
         batch["x_t"] = x_t
+        batch["x0"] = origin
+        batch["t"] = t
+        batch["noise"] = noise
 
         return batch
 
 
 class DDPM(AutoEncoder):
-
     def __init__(
         self,
         block,
@@ -224,36 +236,53 @@ class DDPM(AutoEncoder):
         self.timestep_embedding = TimestepEmbedding(timestep_embed_dim)
         # 타임스탬프 임베딩을 추가하기 위한 추가 레이어
         self.t_embed_proj = nn.Linear(timestep_embed_dim, width * 16)
+        print(f"DDPM initialized with timestep_embed_dim={timestep_embed_dim}")
 
     def forward(self, x: torch.Tensor, t: torch.Tensor):
         """
         x: 노이즈가 추가된 입력 이미지 (x_t)
         t: 타임스탬프 (timestep)
         """
+        # Ensure t is (batch_size,)
+        if t.dim() > 1:
+            t = t.view(-1)
+            print(f"DDPM forward: Reshaped t shape: {t.shape}")
+
         self.feature_vectors = []
 
         # Forwarding encoder & hook immediate outputs
         _ = self.encoder(x)
+        if not self.feature_vectors:
+            raise ValueError("No feature vectors collected from encoder.")
         feat = self.bottleneck(self.feature_vectors.pop())
-        self.feature_vectors = []
+        print(f"Encoder output shape after bottleneck: {feat.shape}")
 
         # 타임스탬프 임베딩
         t_emb = self.timestep_embedding(t)  # Shape: (batch_size, embed_dim)
-        t_emb = self.t_embed_proj(t_emb)  # Shape: (batch_size, width*16)
-        t_emb = t_emb[:, :, None, None]  # Shape: (batch_size, width*16, 1, 1)
+        print(f"timestep_embedding output shape: {t_emb.shape}")
+        t_emb = self.t_embed_proj(t_emb)  # Shape: (batch_size, width * 16)
+        print(f"t_embed_proj output shape: {t_emb.shape}")
+        t_emb = t_emb[:, :, None, None]  # Shape: (batch_size, width * 16, 1, 1)
+        print(f"t_emb reshaped shape: {t_emb.shape}")
         feat = feat + t_emb  # Broadcasting addition
+        print(f"After adding t_emb, feat shape: {feat.shape}")
 
-        # Bottleneck processing
-        # feat = self.bottleneck(feat)
+        # Bottleneck processing is already done
+        # feat = self.bottleneck(feat)  # 이 줄은 주석 처리되어 있음
 
         # Decoder with skip connections if enabled
         for up_pool, dec in zip(self.up_pools, self.decoder):
             feat = up_pool(feat)
+            print(f"After up_pool, feat shape: {feat.shape}")
             if self.skip_connect and len(self.feature_vectors) > 0:
                 feat = torch.cat((feat, self.feature_vectors.pop()), dim=1)
+                print(f"After concatenating skip connection, feat shape: {feat.shape}")
             feat = dec(feat)
+            print(f"After decoder block, feat shape: {feat.shape}")
 
-        return self.sig(self.fc(feat))
+        output = self.sig(self.fc(feat))
+        print(f"Output shape: {output.shape}")
+        return output
 
 
 class DDPMTrainer(Trainer):
@@ -296,7 +325,7 @@ class DDPMTrainer(Trainer):
         Parameters
         ----------
         batch : Dict[str, torch.Tensor]
-            A batch of data containing 'x_t', 'x0', 't_x', 'noise_x'.
+            A batch of data containing 'x_t', 'x0', 't', 'noise'.
 
         Returns
         -------
@@ -307,11 +336,18 @@ class DDPMTrainer(Trainer):
         t = batch["t"]
         noise = batch["noise"]
 
+        # Ensure t is (batch_size,)
+        if t.dim() > 1:
+            t = t.view(-1)
+            print(f"DDPMTrainer train_step: Reshaped t shape: {t.shape}")
+
         # 모델은 x_t과 t를 입력으로 받아 노이즈를 예측
-        noise_pred = self.model(x_t, t.squeeze())
+        noise_pred = self.model(x_t, t)
+        print(f"noise_pred shape: {noise_pred.shape}")
 
         # 손실 계산 (예: MSE)
         loss = nn.MSELoss()(noise_pred, noise)
+        print(f"Loss: {loss.item()}")
 
         return {"loss": loss}
 
@@ -345,31 +381,33 @@ class DDPMTrainer(Trainer):
 
         # Initialize with standard normal noise
         x = torch.randn(batch_size, channels, height, width, device=self.device)
+        print(f"Generated noise x shape: {x.shape}")
 
         self.model.eval()
         with torch.no_grad():
-            for t in reversed(range(timesteps)):
-                t_tensor = torch.full((batch_size,), t, dtype=torch.long, device=self.device)
+            for t_step in reversed(range(timesteps)):
+                t_tensor = torch.full((batch_size,), t_step, dtype=torch.long, device=self.device)
                 # Predict the noise using the model
                 noise_pred = self.model(x, t_tensor)
+                print(f"At timestep {t_step}, noise_pred shape: {noise_pred.shape}")
 
-                if t > 0:
+                if t_step > 0:
                     # Calculate the mean (mu_theta)
-                    sqrt_recip_alpha = 1 / torch.sqrt(alpha[t])
-                    sqrt_recipm_alpha = torch.sqrt(1 / alpha[t] - 1)
+                    sqrt_recip_alpha = 1 / torch.sqrt(alpha[t_step])
+                    sqrt_recipm_alpha = torch.sqrt(1 / alpha[t_step] - 1)
 
                     mu_theta = sqrt_recip_alpha * (
-                        x - (self.noise_scheduler.beta[t] / torch.sqrt(1 - alpha_bar[t])) * noise_pred
+                        x - (self.noise_scheduler.beta[t_step] / torch.sqrt(1 - alpha_bar[t_step])) * noise_pred
                     )
 
                     # Sample from the posterior
                     noise = torch.randn_like(x)
-                    x = mu_theta + torch.sqrt(posterior_variance[t - 1]).view(-1, 1, 1, 1) * noise
+                    x = mu_theta + torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1) * noise
                 else:
                     # For the final step, no noise is added
-                    x = (x - (self.noise_scheduler.beta[t] / torch.sqrt(1 - alpha_bar[t])) * noise_pred) / torch.sqrt(
-                        alpha[t]
-                    )
+                    x = (
+                        x - (self.noise_scheduler.beta[t_step] / torch.sqrt(1 - alpha_bar[t_step])) * noise_pred
+                    ) / torch.sqrt(alpha[t_step])
 
         return x
 
@@ -401,9 +439,13 @@ class DDPMTrainer(Trainer):
 if __name__ == "__main__":
     # 설정
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
 
     # NoiseScheduler 인스턴스 생성
     noise_scheduler = NoiseScheduler()
+
+    # ForwardDiffusion 인스턴스 생성
+    forward_diffusion = ForwardDiffusion(noise_scheduler=noise_scheduler)
 
     # 예시 데이터셋 (MNIST 사용)
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
@@ -411,16 +453,19 @@ if __name__ == "__main__":
     dataset = CustomMNISTDataset(root="./data", train=True, transform=transform, download=True)
 
     # 'aux_key'를 빈 리스트로 설정 (MNIST에는 'aux' 키가 없으므로)
-    collator = CollateBase(x_key=["pixel_values", "t", "noise", "x_t"], y_key=[], aux_key=[])
-    collator.add_fn(name="forward_diffusion", fn=ForwardDiffusion(noise_scheduler=noise_scheduler))
+    collator = CollateBase(x_key=["pixel_values", "t", "x_t"], y_key=[], aux_key=[])
+    collator.add_fn(name="forward_diffusion", fn=forward_diffusion)
     train_loader = DataLoader(dataset, batch_size=128, shuffle=True, collate_fn=collator.wrap())
+    print("DataLoader initialized.")
 
     # 모델 정의 (UNet 기반 AutoEncoder)
-    model = DDPM(block=UNetBlock, ch_in=1, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True)
+    model = DDPM(block=UNetBlock, ch_in=1, ch_out=1, width=32, layers=[1, 1, 1, 1], skip_connect=True).to(device)
+    print("Model defined and moved to device.")
 
     # 옵티마이저 및 스케줄러 정의
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     scheduler = CosineAnnealingScheduler(optimizer=optimizer, total_iters=50)  # total_iters를 에폭 수에 맞춤
+    print("Optimizer and scheduler initialized.")
 
     # Trainer 인스턴스 생성
     trainer = DDPMTrainer(
@@ -434,11 +479,14 @@ if __name__ == "__main__":
         scheduler_step_on_batch=False,
         gradient_clip=0.0,
     )
+    print("Trainer initialized.")
 
     # 학습 수행
     trainer.run(n_epoch=50, loader=train_loader, valid_loader=None)
+    print("Training completed.")
 
     # 샘플 생성 및 시각화
     trainer.toggle("test")
     generated_samples = trainer.generate(batch_size=16, channels=1, height=28, width=28)
     trainer.visualize_samples(generated_samples, nrow=4, ncol=4)
+    print("Sample generation and visualization completed.")
