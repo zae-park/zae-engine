@@ -1,7 +1,7 @@
 import math
-import os
-from typing import Dict, Any, Optional, Union, Type, Sequence, Callable
-from collections import OrderedDict
+import shutil
+from typing import Dict, Any, Union, Type, Sequence, Callable
+
 
 import torch
 import torch.nn as nn
@@ -11,8 +11,7 @@ import matplotlib.pyplot as plt
 
 from zae_engine.data import CollateBase
 from zae_engine.models import AutoEncoder
-from zae_engine.models.converter import DimConverter
-from zae_engine.schedulers import CosineAnnealingScheduler
+from zae_engine.schedulers import CosineAnnealingScheduler, WarmUpScheduler, SchedulerChain
 from zae_engine.nn_night.blocks import UNetBlock
 from zae_engine.trainer import Trainer
 
@@ -402,7 +401,8 @@ if __name__ == "__main__":
     # 설정
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     batch_size = 32
-    epoch = 3
+    epoch = 5
+    learning_rate = 1e-5
     target_width = target_height = 64
     data_path = "./mnist_example"
 
@@ -435,8 +435,12 @@ if __name__ == "__main__":
     print("Model defined and moved to device.")
 
     # 옵티마이저 및 스케줄러 정의
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    scheduler = CosineAnnealingScheduler(optimizer=optimizer, total_iters=50)  # total_iters를 에폭 수에 맞춤
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
+    warm_up_steps = int(0.1 * len(train_loader) * epoch)
+    scheduler = SchedulerChain(
+        WarmUpScheduler(optimizer=optimizer, total_iters=warm_up_steps),
+        CosineAnnealingScheduler(optimizer=optimizer, total_iters=len(train_loader) * epoch - warm_up_steps),
+    )
     print("Optimizer and scheduler initialized.")
 
     # Trainer 인스턴스 생성
@@ -447,7 +451,7 @@ if __name__ == "__main__":
         optimizer=optimizer,
         scheduler=scheduler,
         log_bar=True,
-        scheduler_step_on_batch=False,
+        scheduler_step_on_batch=True,
         gradient_clip=0.0,
     )
     trainer.noise_scheduling(noise_scheduler)
@@ -464,5 +468,4 @@ if __name__ == "__main__":
     generated_samples = trainer.generate(batch_size=16, channels=1, height=target_height, width=target_width)
     trainer.visualize_samples(generated_samples, nrow=4, ncol=4)
     print("Sample generation and visualization completed.")
-
-    os.remove(data_path)
+    shutil.rmtree(data_path)
