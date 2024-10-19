@@ -1,4 +1,5 @@
 import math
+import os.path
 import shutil
 from typing import Dict, Any, Union, Type, Sequence, Callable
 
@@ -387,16 +388,12 @@ if __name__ == "__main__":
     # 설정
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     batch_size = 32
-    epoch = 5
-    learning_rate = 1e-5
+    epoch = 20
+    learning_rate = 1e-3
     target_width = target_height = 64
     data_path = "./mnist_example"
 
-    # NoiseScheduler 인스턴스 생성
     noise_scheduler = NoiseScheduler()
-    print("NoiseScheduler initialized.")
-
-    # ForwardDiffusion 인스턴스 생성
     forward_diffusion = ForwardDiffusion(noise_scheduler=noise_scheduler)
     print("ForwardDiffusion initialized.")
 
@@ -446,12 +443,13 @@ if __name__ == "__main__":
     # 학습 수행
     print("Starting training...")
     trainer.run(n_epoch=epoch, loader=train_loader, valid_loader=None)
+    trainer.save_model(os.path.join(data_path, "ddpm_model.pth"))
     print("Training completed.")
 
     # 샘플 생성 및 시각화
     print("Generating samples...")
     trainer.toggle("test")
-    generated_samples = trainer.generate(batch_size=16, channels=1, height=target_height, width=target_width)
+    generated_samples = trainer.generate(n_samples=16, channels=1, height=target_height, width=target_width)
     trainer.visualize_samples(generated_samples, nrow=4, ncol=4)
     print("Sample generation and visualization completed.")
     shutil.rmtree(data_path)
