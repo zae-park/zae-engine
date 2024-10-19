@@ -353,7 +353,7 @@ class DDPMTrainer(Trainer):
 
                 # Sample from the posterior
                 noise = torch.randn_like(x)
-                var = self._to_device(torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1))
+                var = torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1)
                 x = mu_theta + var * noise
             else:
                 x = (x - (t_noise / torch.sqrt(1 - alpha_bar[t_step])) * predict) / torch.sqrt(alpha[t_step])
