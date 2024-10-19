@@ -418,6 +418,7 @@ class DDPMTrainer(Trainer):
         intermediate_images: list = None,
         train_losses: list = None,
         valid_losses: list = None,
+        lr_history: list = None,
     ):
         """
         Visualize generated samples and training progress.
@@ -432,6 +433,8 @@ class DDPMTrainer(Trainer):
             Training loss history.
         valid_losses : list, optional
             Validation loss history.
+        lr_history : list, optional
+            Learning rate history.
         """
         fig = plt.figure(figsize=(24, 18))
         gs = fig.add_gridspec(3, 4, hspace=0.3, wspace=0.2)
@@ -465,16 +468,22 @@ class DDPMTrainer(Trainer):
             ax2.set_title("Intermediate Steps of 4 Selected Images (4 Steps Each)")
             ax2.axis("off")
 
-        # 좌하단 및 우하단 (2,0:4) - 1x4 grid 영역: 학습 손실과 검증 손실 시각화
+        # 하단 (2,0:4) - 세로 1칸 가로 4칸 영역: 학습 손실과 검증 손실, 학습률 시각화
         ax3 = fig.add_subplot(gs[2, :])
         if train_losses is not None:
             ax3.plot(train_losses, label="Train Loss", color="blue")
         if valid_losses is not None:
             ax3.plot(valid_losses, label="Valid Loss", color="orange")
-        ax3.set_title("Training and Validation Loss")
+        if lr_history is not None:
+            ax4 = ax3.twinx()  # 두 번째 y축 생성
+            ax4.plot(lr_history, label="Learning Rate", color="green")
+            ax4.set_ylabel("Learning Rate", color="green")
+            ax4.tick_params(axis="y", labelcolor="green")
+            ax4.legend(loc="upper right")
+        ax3.set_title("Training and Validation Loss with Learning Rate")
         ax3.set_xlabel("Epoch")
         ax3.set_ylabel("Loss")
-        ax3.legend()
+        ax3.legend(loc="upper left")
         ax3.grid(True)
 
         plt.tight_layout()
