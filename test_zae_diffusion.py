@@ -155,6 +155,12 @@ class NoiseScheduler:
         betas = torch.clamp(betas, min=1e-4, max=0.999)
         return betas
 
+    def get_sigma(self, t, ddim=False):
+        if ddim:
+            return torch.zeros_like(self.beta[t])  # 결정론적 샘플링을 위해 sigma=0
+        else:
+            return torch.sqrt(self.posterior_variance[t])
+
 
 class ForwardDiffusion:
     """
@@ -308,7 +314,7 @@ class DDPMTrainer(Trainer):
     def noise_scheduling(self, noise_scheduler):
         self.noise_scheduler = noise_scheduler
 
-    def generate(self, n_samples: int, channels: int, height: int, width: int) -> torch.Tensor:
+    def generate(self, n_samples: int, channels: int, height: int, width: int, ddim: bool = False) -> torch.Tensor:
         """
         Generate new samples using the trained diffusion model.
 
@@ -322,6 +328,8 @@ class DDPMTrainer(Trainer):
             Height of the generated images.
         width : int
             Width of the generated images.
+        ddim : bool, optional
+            Whether to use DDIM sampling. If True, uses DDIM; otherwise, uses DDPM.
 
         Returns
         -------
@@ -344,19 +352,38 @@ class DDPMTrainer(Trainer):
             self.run_batch(batch)
             predict = self.log_test["output"][0]
 
-            # Preparing next sample
-            t_noise = self.noise_scheduler.beta[t_step]
-            if t_step:
-                sqrt_alpha = 1 / torch.sqrt(alpha[t_step])
-                sqrt_m_alpha = torch.sqrt(1 / alpha[t_step] - 1)
-                mu_theta = sqrt_alpha * (x - (t_noise / torch.sqrt(1 - alpha_bar[t_step])) * predict)
-
-                # Sample from the posterior
-                noise = torch.randn_like(x)
-                var = torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1)
-                x = mu_theta + var * noise
+            if ddim:
+                if t_step > 0:
+                    sqrt_alpha = torch.sqrt(alpha[t_step])
+                    sqrt_alpha_prev = torch.sqrt(alpha[t_step - 1])
+                    # 결정론적 업데이트
+                    x_prev = (x - self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step] * predict) / sqrt_alpha
+                    x_prev = (
+                        sqrt_alpha_prev * x_prev + self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step - 1] * predict
+                    )
+                else:
+                    # 마지막 단계 (t=0) 처리
+                    x_prev = (x - self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step] * predict) / torch.sqrt(
+                        alpha[t_step]
+                    )
+                x = x_prev
             else:
-                x = (x - (t_noise / torch.sqrt(1 - alpha_bar[t_step])) * predict) / torch.sqrt(alpha[t_step])
+                # DDPM 샘플링
+                t_noise = self.noise_scheduler.beta[t_step]
+                if t_step > 0:
+                    sqrt_alpha = 1 / torch.sqrt(alpha[t_step])
+                    mu_theta = sqrt_alpha * (
+                        x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * predict
+                    )
+
+                    # 샘플링
+                    noise = torch.randn_like(x)
+                    var = torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1)
+                    x = mu_theta + var * noise
+                else:
+                    x = (x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * predict) / torch.sqrt(
+                        alpha[t_step]
+                    )
 
         return x
 
@@ -387,10 +414,11 @@ class DDPMTrainer(Trainer):
 
 if __name__ == "__main__":
     # 설정
+    DDIM = False
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     batch_size = 32
-    epoch = 20
-    learning_rate = 1e-3
+    epoch = 100
+    learning_rate = 5e-3
     target_width = target_height = 64
     data_path = "./mnist_example"
 
@@ -444,13 +472,13 @@ if __name__ == "__main__":
     # 학습 수행
     print("Starting training...")
     trainer.run(n_epoch=epoch, loader=train_loader, valid_loader=None)
-    trainer.save_model(os.path.join(data_path, "ddpm_model.pth"))
+    trainer.save_model(os.path.join("ddpm_model.pth"))
     print("Training completed.")
 
     # 샘플 생성 및 시각화
     print("Generating samples...")
     trainer.toggle("test")
-    generated_samples = trainer.generate(n_samples=16, channels=1, height=target_height, width=target_width)
+    generated_samples = trainer.generate(n_samples=16, channels=1, height=target_height, width=target_width, ddim=DDIM)
     trainer.visualize_samples(generated_samples, nrow=4, ncol=4)
     print("Sample generation and visualization completed.")
     shutil.rmtree(data_path)
