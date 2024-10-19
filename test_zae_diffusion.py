@@ -334,17 +334,18 @@ class DDPMTrainer(Trainer):
         posterior_variance = self.noise_scheduler.posterior_variance
 
         # Initialize with standard normal noise
-        x = self._to_device(torch.randn(n_samples, channels, height, width))
+        x = torch.randn(n_samples, channels, height, width)
         print(f"Generated noise x shape: {x.shape}")
 
+        self.toggle("test")
         for t_step in reversed(range(timesteps)):
             t_tensor = torch.full((n_samples,), t_step, dtype=torch.long)
-            batch = {"x": x, "t": t_tensor}
-            predict = self.inference([batch])
-
-            t_noise = self.noise_scheduler.beta[t_step]
+            batch = {"x_t": x, "t": t_tensor}
+            self.run_batch(batch)
+            predict = self.log_test["output"][0]
 
             # Preparing next sample
+            t_noise = self.noise_scheduler.beta[t_step]
             if t_step:
                 sqrt_alpha = 1 / torch.sqrt(alpha[t_step])
                 sqrt_m_alpha = torch.sqrt(1 / alpha[t_step] - 1)
