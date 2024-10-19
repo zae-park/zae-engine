@@ -294,19 +294,12 @@ class DDPMTrainer(Trainer):
         """
         x_t = batch["x_t"]
         t = batch["t"]
-        noise = batch["noise"]
+        noise = batch.get("noise", None)
 
-        # Ensure t is (batch_size,)
-        if t.dim() > 1:
-            t = t.view(-1)
+        output = self.model(x_t, t)  # predicted noise
+        loss = nn.MSELoss()(output, noise) if noise is not None else None
 
-        # 모델은 x_t과 t를 입력으로 받아 노이즈를 예측
-        noise_pred = self.model(x_t, t)
-
-        # 손실 계산 (예: MSE)
-        loss = nn.MSELoss()(noise_pred, noise)
-
-        return {"loss": loss}
+        return {"loss": loss, "output": output}
 
     def test_step(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         return self.train_step(batch=batch)
@@ -314,13 +307,13 @@ class DDPMTrainer(Trainer):
     def noise_scheduling(self, noise_scheduler):
         self.noise_scheduler = noise_scheduler
 
-    def generate(self, batch_size: int, channels: int, height: int, width: int) -> torch.Tensor:
+    def generate(self, n_samples: int, channels: int, height: int, width: int) -> torch.Tensor:
         """
         Generate new samples using the trained diffusion model.
 
         Parameters
         ----------
-        batch_size : int
+        n_samples : int
             Number of samples to generate.
         channels : int
             Number of channels in the generated images.
@@ -332,7 +325,7 @@ class DDPMTrainer(Trainer):
         Returns
         -------
         torch.Tensor
-            Generated samples. Shape: (batch_size, channels, height, width)
+            Generated samples. Shape: (n_samples, channels, height, width)
         """
         timesteps = self.noise_scheduler.timesteps
         alpha = self.noise_scheduler.alpha
@@ -340,35 +333,28 @@ class DDPMTrainer(Trainer):
         posterior_variance = self.noise_scheduler.posterior_variance
 
         # Initialize with standard normal noise
-        x = self._to_device(torch.randn(batch_size, channels, height, width))
+        x = self._to_device(torch.randn(n_samples, channels, height, width))
         print(f"Generated noise x shape: {x.shape}")
 
-        self.model.eval()
-        with torch.no_grad():
-            for t_step in reversed(range(timesteps)):
-                t_tensor = self._to_device(torch.full((batch_size,), t_step, dtype=torch.long))
-                # Predict the noise using the model
-                noise_pred = self.model(x, t_tensor)
-                print(f"At timestep {t_step}, noise_pred shape: {noise_pred.shape}")
+        for t_step in reversed(range(timesteps)):
+            t_tensor = torch.full((n_samples,), t_step, dtype=torch.long)
+            batch = {"x": x, "t": t_tensor}
+            predict = self.inference([batch])
 
-                if t_step > 0:
-                    # Calculate the mean (mu_theta)
-                    sqrt_recip_alpha = 1 / torch.sqrt(alpha[t_step])
-                    sqrt_recipm_alpha = torch.sqrt(1 / alpha[t_step] - 1)
+            t_noise = self.noise_scheduler.beta[t_step]
 
-                    mu_theta = sqrt_recip_alpha * (
-                        x - (self.noise_scheduler.beta[t_step] / torch.sqrt(1 - alpha_bar[t_step])) * noise_pred
-                    )
+            # Preparing next sample
+            if t_step:
+                sqrt_alpha = 1 / torch.sqrt(alpha[t_step])
+                sqrt_m_alpha = torch.sqrt(1 / alpha[t_step] - 1)
+                mu_theta = sqrt_alpha * (x - (t_noise / torch.sqrt(1 - alpha_bar[t_step])) * predict)
 
-                    # Sample from the posterior
-                    noise = torch.randn_like(x)
-                    var = self._to_device(torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1))
-                    x = mu_theta + var * noise
-                else:
-                    # For the final step, no noise is added
-                    x = (
-                        x - (self.noise_scheduler.beta[t_step] / torch.sqrt(1 - alpha_bar[t_step])) * noise_pred
-                    ) / torch.sqrt(alpha[t_step])
+                # Sample from the posterior
+                noise = torch.randn_like(x)
+                var = self._to_device(torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1))
+                x = mu_theta + var * noise
+            else:
+                x = (x - (t_noise / torch.sqrt(1 - alpha_bar[t_step])) * predict) / torch.sqrt(alpha[t_step])
 
         return x
 
