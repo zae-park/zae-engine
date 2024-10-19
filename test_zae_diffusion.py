@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets, transforms
+from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
 
 from zae_engine.data import CollateBase
@@ -387,27 +388,95 @@ class DDPMTrainer(Trainer):
 
         return x
 
-    def visualize_samples(self, samples: torch.Tensor, nrow: int = 4, ncol: int = 4):
+    # def visualize_samples(self, samples: torch.Tensor, nrow: int = 4, ncol: int = 4):
+    #     """
+    #     Visualize generated samples.
+    #
+    #     Parameters
+    #     ----------
+    #     samples : torch.Tensor
+    #         Generated samples. Shape: (batch_size, channels, height, width)
+    #     nrow : int, optional
+    #         Number of rows in the grid, by default 4.
+    #     ncol : int, optional
+    #         Number of columns in the grid, by default 4.
+    #     """
+    #     samples = samples.cpu().detach().numpy()
+    #     fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * 2, nrow * 2))
+    #     for i, ax in enumerate(axes.flatten()):
+    #         if i < samples.shape[0]:
+    #             img = samples[i].transpose(1, 2, 0) if samples.shape[1] > 1 else samples[i].squeeze()
+    #             cmap = None if samples.shape[1] > 1 else "gray"
+    #             ax.imshow(img, cmap=cmap)
+    #         ax.axis("off")
+    #     plt.tight_layout()
+    #     plt.show()
+
+    def visualize_samples(
+        self,
+        final_samples: torch.Tensor,
+        intermediate_images: list = None,
+        train_losses: list = None,
+        valid_losses: list = None,
+    ):
         """
-        Visualize generated samples.
+        Visualize generated samples and training progress.
 
         Parameters
         ----------
-        samples : torch.Tensor
-            Generated samples. Shape: (batch_size, channels, height, width)
-        nrow : int, optional
-            Number of rows in the grid, by default 4.
-        ncol : int, optional
-            Number of columns in the grid, by default 4.
+        final_samples : torch.Tensor
+            Final generated samples. Shape: (n_samples, channels, height, width)
+        intermediate_images : list, optional
+            Intermediate images for selected samples. Shape: (num_selected, num_steps, channels, height, width)
+        train_losses : list, optional
+            Training loss history.
+        valid_losses : list, optional
+            Validation loss history.
         """
-        samples = samples.cpu().detach().numpy()
-        fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * 2, nrow * 2))
-        for i, ax in enumerate(axes.flatten()):
-            if i < samples.shape[0]:
-                img = samples[i].transpose(1, 2, 0) if samples.shape[1] > 1 else samples[i].squeeze()
-                cmap = None if samples.shape[1] > 1 else "gray"
-                ax.imshow(img, cmap=cmap)
-            ax.axis("off")
+        fig = plt.figure(figsize=(24, 18))
+        gs = fig.add_gridspec(3, 4, hspace=0.3, wspace=0.2)
+
+        # 좌상단 (0:2, 0:2) - 2x2 grid 영역: 16개의 생성된 이미지 4x4 그리드
+        ax1 = fig.add_subplot(gs[0:2, 0:2])
+        grid_img = make_grid(final_samples, nrow=4, padding=2, normalize=True)
+        grid_img_np = grid_img.permute(1, 2, 0).cpu().numpy()
+        ax1.imshow(grid_img_np)
+        ax1.set_title("Generated Images (4x4 Grid)")
+        ax1.axis("off")
+
+        # 우상단 (0:2, 2:4) - 2x2 grid 영역: 선택된 4개의 이미지에 대한 중간 단계 4단계 시각화
+        if intermediate_images is not None:
+            # 각 선택된 이미지의 중간 단계를 하나의 이미지로 합침 (4단계가 세로로 배열)
+            intermediate_grids = []
+            for img_steps in intermediate_images:
+                # img_steps는 [step1, step2, step3, step4]
+                steps = [torch.tensor(img).unsqueeze(0) for img in img_steps]  # (1, C, H, W)
+                steps = torch.cat(steps, dim=0)  # (4, C, H, W)
+                steps_grid = make_grid(steps, nrow=1, padding=2, normalize=True)  # (C, H*4 + padding, W + padding)
+                intermediate_grids.append(steps_grid)
+
+            # 4개의 중간 단계 이미지를 2x2 그리드로 배열
+            intermediate_grids = torch.stack(intermediate_grids, dim=0)  # (4, C, H*4 + padding, W + padding)
+            intermediate_grids = make_grid(intermediate_grids, nrow=2, padding=2, normalize=True)
+            intermediate_grids_np = intermediate_grids.permute(1, 2, 0).cpu().numpy()
+
+            ax2 = fig.add_subplot(gs[0:2, 2:4])
+            ax2.imshow(intermediate_grids_np)
+            ax2.set_title("Intermediate Steps of 4 Selected Images (4 Steps Each)")
+            ax2.axis("off")
+
+        # 좌하단 및 우하단 (2,0:4) - 1x4 grid 영역: 학습 손실과 검증 손실 시각화
+        ax3 = fig.add_subplot(gs[2, :])
+        if train_losses is not None:
+            ax3.plot(train_losses, label="Train Loss", color="blue")
+        if valid_losses is not None:
+            ax3.plot(valid_losses, label="Valid Loss", color="orange")
+        ax3.set_title("Training and Validation Loss")
+        ax3.set_xlabel("Epoch")
+        ax3.set_ylabel("Loss")
+        ax3.legend()
+        ax3.grid(True)
+
         plt.tight_layout()
         plt.show()
 
@@ -417,7 +486,7 @@ if __name__ == "__main__":
     DDIM = False
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     batch_size = 32
-    epoch = 100
+    epoch = 2
     learning_rate = 5e-3
     target_width = target_height = 64
     data_path = "./mnist_example"
@@ -474,11 +543,17 @@ if __name__ == "__main__":
     trainer.run(n_epoch=epoch, loader=train_loader, valid_loader=None)
     trainer.save_model(os.path.join("ddpm_model.pth"))
     print("Training completed.")
+    train_loss = trainer.log_train["loss"]
 
     # 샘플 생성 및 시각화
     print("Generating samples...")
     trainer.toggle("test")
     generated_samples = trainer.generate(n_samples=16, channels=1, height=target_height, width=target_width, ddim=DDIM)
-    trainer.visualize_samples(generated_samples, nrow=4, ncol=4)
+    trainer.visualize_samples(
+        final_samples=generated_samples,
+        intermediate_images=generated_samples.reshape(4, 4, *generated_samples.size()[1:]),
+        train_losses=train_loss,
+        valid_losses=None,
+    )
     print("Sample generation and visualization completed.")
     shutil.rmtree(data_path)
