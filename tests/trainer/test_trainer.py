@@ -150,8 +150,8 @@ class TestTrainer(unittest.TestCase):
         self.trainer.log_reset()
         self.assertFalse(self.trainer.log_train)
         self.assertFalse(self.trainer.log_test)
-        self.assertNotEqual(self.trainer.loss_memory_train, [])
-        self.assertNotEqual(self.trainer.loss_memory_test, [])
+        self.assertNotEqual(self.trainer.get_loss_history("train"), [])
+        self.assertNotEqual(self.trainer.get_loss_history("test"), [])
 
     def test_print_log(self):
         c_batch, n_batch = randint(0, 16), randint(0, 16)
