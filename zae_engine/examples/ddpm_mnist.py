@@ -19,6 +19,23 @@ from zae_engine.trainer import Trainer
 
 
 class CustomMNISTDataset(Dataset):
+    """
+    Custom Dataset class for MNIST data.
+
+    This class wraps the torchvision MNIST dataset and returns a dictionary containing the image.
+
+    Parameters
+    ----------
+    root : str
+        Root directory of dataset where MNIST exists or will be saved.
+    train : bool, optional
+        If True, creates dataset from training set, otherwise from test set.
+    transform : callable, optional
+        A function/transform that takes in an image and returns a transformed version.
+    download : bool, optional
+        If True, downloads the dataset from the internet and puts it in root directory.
+    """
+
     def __init__(self, root, train=True, transform=None, download=False):
         self.mnist = datasets.MNIST(root=root, train=train, transform=transform, download=download)
 
@@ -31,15 +48,35 @@ class CustomMNISTDataset(Dataset):
 
 
 class TimestepEmbedding(nn.Module):
+    """
+    Sinusoidal embedding for timesteps.
+
+    This module generates sinusoidal embeddings for each timestep, similar to positional encodings used in Transformers.
+
+    Parameters
+    ----------
+    embed_dim : int
+        Dimension of the embedding vector.
+    """
+
     def __init__(self, embed_dim):
         super(TimestepEmbedding, self).__init__()
         self.embed_dim = embed_dim
         self.linear = nn.Linear(embed_dim, embed_dim)
-        print(f"TimestepEmbedding initialized with embed_dim={self.embed_dim}")
 
-    def forward(self, t):
+    def forward(self, t: Tensor) -> Tensor:
         """
-        Sinusoidal embedding for timesteps.
+        Forward pass for timestep embedding.
+
+        Parameters
+        ----------
+        t : Tensor
+            Timestep tensor of shape (batch_size,) or higher.
+
+        Returns
+        -------
+        Tensor
+            Embedded timestep tensor of shape (batch_size, embed_dim).
         """
         if t.dim() > 1:
             t = t.view(-1)  # Ensure t is (batch_size,)
@@ -51,13 +88,7 @@ class TimestepEmbedding(nn.Module):
         emb = t[:, None].float() * emb[None, :]  # (batch_size, half_dim)
         emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=1)  # (batch_size, embed_dim)
 
-        # Debugging prints
-        # print(f"TimestepEmbedding input t shape: {t.shape}")  # Should be (batch_size,)
-        # print(f"Sin/Cos embedding shape: {emb.shape}")  # Should be (batch_size, embed_dim)
-
         emb = self.linear(emb)  # (batch_size, embed_dim)
-
-        # print(f"TimestepEmbedding output emb shape: {emb.shape}")  # Should be (batch_size, embed_dim)
 
         return emb
 
@@ -66,10 +97,12 @@ class NoiseScheduler:
     """
     Scheduler for managing the noise levels in DDPM.
 
+    This class defines the noise schedule used in the diffusion process, supporting both linear and cosine schedules.
+
     Parameters
     ----------
-    timesteps : int
-        Total number of diffusion steps.
+    timesteps : int, optional
+        Total number of diffusion steps. Default is 1000.
     schedule : str, optional
         Type of noise schedule ('linear', 'cosine'). Default is 'linear'.
     beta_start : float, optional
@@ -91,6 +124,8 @@ class NoiseScheduler:
         Square root of (1 - alpha_bar).
     posterior_variance : torch.Tensor
         Variance used in the posterior distribution.
+    timesteps : int
+        Total number of diffusion steps.
     """
 
     def __init__(self, timesteps=1000, schedule="linear", beta_start=1e-4, beta_end=0.02):
@@ -111,7 +146,7 @@ class NoiseScheduler:
         self.sqrt_one_minus_alpha_bar = torch.sqrt(1 - self.alpha_bar)
         self.posterior_variance = self.beta[1:] * (1 - self.alpha_bar[:-1]) / (1 - self.alpha_bar[1:])
 
-    def linear_beta_schedule(self, timesteps, beta_start, beta_end):
+    def linear_beta_schedule(self, timesteps: int, beta_start: float, beta_end: float) -> torch.Tensor:
         """
         Linear schedule for beta.
 
@@ -131,7 +166,7 @@ class NoiseScheduler:
         """
         return torch.linspace(beta_start, beta_end, timesteps)
 
-    def cosine_beta_schedule(self, timesteps, s=0.008):
+    def cosine_beta_schedule(self, timesteps: int, s: float = 0.008) -> torch.Tensor:
         """
         Cosine schedule for beta as proposed in https://arxiv.org/abs/2102.09672.
 
@@ -156,9 +191,24 @@ class NoiseScheduler:
         betas = torch.clamp(betas, min=1e-4, max=0.999)
         return betas
 
-    def get_sigma(self, t, ddim=False):
+    def get_sigma(self, t: torch.Tensor, ddim: bool = False) -> torch.Tensor:
+        """
+        Get the sigma value for a given timestep.
+
+        Parameters
+        ----------
+        t : torch.Tensor
+            Timestep tensor.
+        ddim : bool, optional
+            Whether to use DDIM sampling. If True, uses sigma=0 for deterministic sampling.
+
+        Returns
+        -------
+        torch.Tensor
+            Sigma value for the given timestep.
+        """
         if ddim:
-            return torch.zeros_like(self.beta[t])  # 결정론적 샘플링을 위해 sigma=0
+            return torch.zeros_like(self.beta[t])  # Deterministic sampling for DDIM
         else:
             return torch.sqrt(self.posterior_variance[t])
 
@@ -166,6 +216,9 @@ class NoiseScheduler:
 class ForwardDiffusion:
     """
     Class for performing the forward diffusion process by adding noise to the input data.
+
+    This class adds noise to the input data at a randomly sampled timestep, producing the noised data `x_t`,
+    along with the original data `x0`, the timestep `t`, and the noise added.
 
     Parameters
     ----------
@@ -221,6 +274,42 @@ class ForwardDiffusion:
 
 
 class DDPM(AutoEncoder):
+    """
+    Denoising Diffusion Probabilistic Model (DDPM) implemented as an AutoEncoder.
+
+    This model integrates timestep embeddings into the bottleneck of the AutoEncoder architecture,
+    allowing the model to condition on the diffusion timestep during training.
+
+    Parameters
+    ----------
+    block : Type[Union[UNetBlock, nn.Module]]
+        The block type to use in the AutoEncoder (e.g., UNetBlock).
+    ch_in : int
+        Number of input channels.
+    ch_out : int
+        Number of output channels.
+    width : int
+        Base width of the network.
+    layers : Sequence[int]
+        Number of layers in each block.
+    groups : int, optional
+        Number of groups for group normalization, by default 1.
+    dilation : int, optional
+        Dilation rate for convolutions, by default 1.
+    norm_layer : Callable[..., nn.Module], optional
+        Normalization layer to use, by default nn.BatchNorm2d.
+    skip_connect : bool, optional
+        Whether to use skip connections, by default False.
+    timestep_embed_dim : int, optional
+        Dimension of the timestep embedding, by default 256.
+
+    Attributes
+    ----------
+    timestep_embedding : TimestepEmbedding
+        Module for generating timestep embeddings.
+    t_embed_proj : nn.Linear
+        Linear layer to project timestep embeddings to match the bottleneck dimensions.
+    """
 
     def __init__(
         self,
@@ -233,20 +322,31 @@ class DDPM(AutoEncoder):
         dilation: int = 1,
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
         skip_connect: bool = False,
-        timestep_embed_dim: int = 256,  # 타임스탬프 임베딩 차원
+        timestep_embed_dim: int = 256,  # Dimension of the timestep embedding
     ):
         super(DDPM, self).__init__(block, ch_in, ch_out, width, layers, groups, dilation, norm_layer, skip_connect)
 
-        # 타임스탬프 임베딩 모듈 추가
+        # Timestep embedding module
         self.timestep_embedding = TimestepEmbedding(timestep_embed_dim)
-        # 타임스탬프 임베딩을 추가하기 위한 추가 레이어
+        # Additional layer to project timestep embeddings to match bottleneck dimensions
         self.t_embed_proj = nn.Linear(timestep_embed_dim, width * 16)
-        # print(f"DDPM initialized with timestep_embed_dim={timestep_embed_dim}")
+        print(f"DDPM initialized with timestep_embed_dim={timestep_embed_dim}")
 
-    def forward(self, x: torch.Tensor, t: torch.Tensor):
+    def forward(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
         """
-        x: 노이즈가 추가된 입력 이미지 (x_t) - Shape: (batch_size, channels, height, width)
-        t: 타임스탬프 (timestep) - Shape: (batch_size,)
+        Forward pass for DDPM.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Noised image (x_t) of shape (batch_size, channels, height, width).
+        t : torch.Tensor
+            Timestep tensor of shape (batch_size,).
+
+        Returns
+        -------
+        torch.Tensor
+            Reconstructed image tensor of shape (batch_size, channels, height, width).
         """
         # Ensure t is (batch_size,)
         if t.dim() > 1:
@@ -254,13 +354,13 @@ class DDPM(AutoEncoder):
 
         self.feature_vectors = []
 
-        # Forwarding encoder & hook immediate outputs
+        # Forward through the encoder and collect feature vectors via hooks
         _ = self.encoder(x)
         if not self.feature_vectors:
             raise ValueError("No feature vectors collected from encoder.")
         feat = self.bottleneck(self.feature_vectors.pop())
 
-        # 타임스탬프 임베딩
+        # Timestep embedding
         t_emb = self.timestep_embedding(t)  # Shape: (batch_size, embed_dim)
         t_emb = self.t_embed_proj(t_emb)  # Shape: (batch_size, width * 16)
         t_emb = t_emb[:, :, None, None]  # Shape: (batch_size, width * 16, 1, 1)
@@ -297,26 +397,47 @@ class DDPMTrainer(Trainer):
         Returns
         -------
         Dict[str, torch.Tensor]
-            A dictionary containing the loss.
+            A dictionary containing the loss and the model's output.
         """
         x_t = batch["x_t"]
         t = batch["t"]
         noise = batch.get("noise", None)
 
-        output = self.model(x_t, t)  # predicted noise
+        output = self.model(x_t, t)  # Predicted noise
         loss = nn.MSELoss()(output, noise) if noise is not None else None
 
         return {"loss": loss, "output": output}
 
     def test_step(self, batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """
+        Perform a testing step for DDPM.
+
+        Parameters
+        ----------
+        batch : Dict[str, torch.Tensor]
+            A batch of data containing 'x_t', 'x0', 't', 'noise'.
+
+        Returns
+        -------
+        Dict[str, torch.Tensor]
+            A dictionary containing the loss and the model's output.
+        """
         return self.train_step(batch=batch)
 
-    def noise_scheduling(self, noise_scheduler):
+    def noise_scheduling(self, noise_scheduler: NoiseScheduler) -> None:
+        """
+        Update the noise scheduler used by the trainer.
+
+        Parameters
+        ----------
+        noise_scheduler : NoiseScheduler
+            New noise scheduler to be used.
+        """
         self.noise_scheduler = noise_scheduler
 
     def generate(
         self, n_samples: int, channels: int, height: int, width: int, intermediate: int = 0, ddim: bool = False
-    ) -> tuple[Tensor | Any, list[Any]]:
+    ) -> Tuple[Tensor, List[Any]]:
         """
         Generate new samples using the trained diffusion model.
 
@@ -330,16 +451,16 @@ class DDPMTrainer(Trainer):
             Height of the generated images.
         width : int
             Width of the generated images.
-        intermediate : int
-            Step of intermediate output
+        intermediate : int, optional
+            Number of intermediate samples to save during generation, by default 0.
         ddim : bool, optional
             Whether to use DDIM sampling. If True, uses DDIM; otherwise, uses DDPM.
 
         Returns
         -------
-        tuple[Tensor | Any, list[Any]]
-            Generated samples. Shape: (n_samples, channels, height, width)
-            Generated intermediate samples. Shape: (n_samples, intermediate, channels, height, width)
+        Tuple[Tensor, List[Any]]
+            Generated samples tensor of shape (n_samples, channels, height, width).
+            List of intermediate samples if specified.
         """
         timesteps = self.noise_scheduler.timesteps
         alpha = self.noise_scheduler.alpha
@@ -348,10 +469,9 @@ class DDPMTrainer(Trainer):
 
         # Initialize with standard normal noise
         x = torch.randn(n_samples, channels, height, width)
-        print(f"Generated noise x shape: {x.shape}")
 
         self.toggle("test")
-        save_step = timesteps // intermediate
+        save_step = timesteps // intermediate if intermediate > 0 else 0
         save_x = []
         for t_step in reversed(range(timesteps)):
             t_tensor = torch.full((n_samples,), t_step, dtype=torch.long)
@@ -360,94 +480,72 @@ class DDPMTrainer(Trainer):
             predict = self.log_test["output"][0]
 
             if ddim:
+                # Deterministic update for DDIM
                 if t_step > 0:
                     sqrt_alpha = torch.sqrt(alpha[t_step])
                     sqrt_alpha_prev = torch.sqrt(alpha[t_step - 1])
-                    # 결정론적 업데이트
-                    x_prev = (x - self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step] * predict) / sqrt_alpha
+
+                    x_prev = (x - self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step] * noise_pred) / sqrt_alpha
                     x_prev = (
-                        sqrt_alpha_prev * x_prev + self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step - 1] * predict
+                        sqrt_alpha_prev * x_prev
+                        + self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step - 1] * noise_pred
                     )
                 else:
-                    # 마지막 단계 (t=0) 처리
-                    x_prev = (x - self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step] * predict) / torch.sqrt(
+                    # Final timestep (t=0) handling
+                    x_prev = (x - self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step] * noise_pred) / torch.sqrt(
                         alpha[t_step]
                     )
                 x = x_prev
             else:
-                # DDPM 샘플링
+                # DDPM sampling
                 t_noise = self.noise_scheduler.beta[t_step]
                 if t_step > 0:
-                    sqrt_alpha = 1 / torch.sqrt(alpha[t_step])
-                    mu_theta = sqrt_alpha * (
-                        x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * predict
+                    sqrt_recip_alpha = 1 / torch.sqrt(alpha[t_step])
+                    mu_theta = sqrt_recip_alpha * (
+                        x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * noise_pred
                     )
 
-                    # 샘플링
+                    # Sample from the posterior
                     noise = torch.randn_like(x)
                     var = torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1)
                     x = mu_theta + var * noise
                 else:
-                    x = (x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * predict) / torch.sqrt(
-                        alpha[t_step]
-                    )
-            if t_step % save_step == save_step - 1:
-                save_x.append(x)
+                    x = (
+                        x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * noise_pred
+                    ) / torch.sqrt(alpha[t_step])
+            if intermediate > 0 and t_step % save_step == save_step - 1:
+                save_x.append(x.clone())
 
         return x, save_x
-
-    # def visualize_samples(self, samples: torch.Tensor, nrow: int = 4, ncol: int = 4):
-    #     """
-    #     Visualize generated samples.
-    #
-    #     Parameters
-    #     ----------
-    #     samples : torch.Tensor
-    #         Generated samples. Shape: (batch_size, channels, height, width)
-    #     nrow : int, optional
-    #         Number of rows in the grid, by default 4.
-    #     ncol : int, optional
-    #         Number of columns in the grid, by default 4.
-    #     """
-    #     samples = samples.cpu().detach().numpy()
-    #     fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * 2, nrow * 2))
-    #     for i, ax in enumerate(axes.flatten()):
-    #         if i < samples.shape[0]:
-    #             img = samples[i].transpose(1, 2, 0) if samples.shape[1] > 1 else samples[i].squeeze()
-    #             cmap = None if samples.shape[1] > 1 else "gray"
-    #             ax.imshow(img, cmap=cmap)
-    #         ax.axis("off")
-    #     plt.tight_layout()
-    #     plt.show()
 
     def visualize_samples(
         self,
         final_samples: torch.Tensor,
-        intermediate_images: list = None,
-        train_losses: list = None,
-        valid_losses: list = None,
-        lr_history: list = None,
-    ):
+        intermediate_images: List[Any] = None,
+        train_losses: List[float] = None,
+        valid_losses: List[float] = None,
+        lr_history: List[float] = None,
+    ) -> None:
         """
         Visualize generated samples and training progress.
 
         Parameters
         ----------
         final_samples : torch.Tensor
-            Final generated samples. Shape: (n_samples, channels, height, width)
-        intermediate_images : list, optional
-            Intermediate images for selected samples. Shape: (num_selected, num_steps, channels, height, width)
-        train_losses : list, optional
-            Training loss history.
-        valid_losses : list, optional
-            Validation loss history.
-        lr_history : list, optional
-            Learning rate history.
+            Final generated samples. Shape: (n_samples, channels, height, width).
+        intermediate_images : List[Any], optional
+            Intermediate images for selected samples. Shape: (num_selected, channels, height, width), by default None.
+        train_losses : List[float], optional
+            Training loss history, by default None.
+        valid_losses : List[float], optional
+            Validation loss history, by default None.
+        lr_history : List[float], optional
+            Learning rate history, by default None.
         """
         fig = plt.figure(figsize=(24, 18))
         gs = fig.add_gridspec(3, 4, hspace=0.3, wspace=0.2)
 
-        # 좌상단 (0:2, 0:2) - 2x2 grid 영역: 16개의 생성된 이미지 4x4 그리드
+        # Upper Left (0:2, 0:2) - 2x2 grid region: 16 generated images with 4x4 grids
         ax1 = fig.add_subplot(gs[0:2, 0:2])
         grid_img = make_grid(final_samples, nrow=4, padding=2, normalize=True)
         grid_img_np = grid_img.permute(1, 2, 0).cpu().numpy()
@@ -455,27 +553,26 @@ class DDPMTrainer(Trainer):
         ax1.set_title("Generated Images (4x4 Grid)")
         ax1.axis("off")
 
-        # 우상단 (0:2, 2:4) - 2x2 grid 영역: 선택된 4개의 이미지에 대한 중간 단계 4단계 시각화
-        if intermediate_images is not None:
-            # 각 선택된 이미지의 중간 단계를 하나의 이미지로 합침 (4단계가 세로로 배열)
+        # Upper Right (0:2, 2:4) - 2x2 grid region: visualization of selected images using intermediate output
+        if intermediate_images is not None and len(intermediate_images) > 0:
+            # merge intermediate outputs to single grid
             intermediate_grids = []
-            for img_steps in intermediate_images:
-                # img_steps는 [step1, step2, step3, step4]
-                steps = torch.stack([torch.tensor(img) for img in img_steps], dim=0)  # (4, C, H, W)
-                steps_grid = make_grid(steps, nrow=1, padding=2, normalize=True)  # (C, H*4 + padding, W + padding)
+            for img in intermediate_images:
+                steps = torch.stack(img, dim=0)  # (steps, C, H, W)
+                steps_grid = make_grid(steps, nrow=1, padding=2, normalize=True)
                 intermediate_grids.append(steps_grid)
 
-            # 4개의 중간 단계 이미지를 2x2 그리드로 배열
-            intermediate_grids = torch.stack(intermediate_grids, dim=0)  # (4, C, H*4 + padding, W + padding)
-            intermediate_grids = make_grid(intermediate_grids, nrow=4, padding=1, normalize=True)
+            # merge multiple grids to single image
+            intermediate_grids = torch.stack(intermediate_grids, dim=0)  # (num_samples, C, H, W)
+            intermediate_grids = make_grid(intermediate_grids, nrow=len(intermediate_grids), padding=1, normalize=True)
             intermediate_grids_np = intermediate_grids.permute(1, 2, 0).cpu().numpy()
 
             ax2 = fig.add_subplot(gs[0:2, 2:4])
             ax2.imshow(intermediate_grids_np)
-            ax2.set_title("Intermediate Steps of 4 Selected Images (4 Steps Each)")
+            ax2.set_title("Intermediate Steps of Selected Images")
             ax2.axis("off")
 
-        # 하단 (2,0:4) - 세로 1칸 가로 4칸 영역: 학습 손실과 검증 손실, 학습률 시각화
+        # Lower (2,0:4) : Line chart of train, valid loss & learning rate history
         ax3 = fig.add_subplot(gs[2, :])
         if train_losses is not None:
             ax3.plot(train_losses, label="Train Loss", color="blue")
@@ -498,7 +595,7 @@ class DDPMTrainer(Trainer):
 
 
 if __name__ == "__main__":
-    # 설정
+    # config
     DDIM = False
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     batch_size = 32
@@ -507,32 +604,35 @@ if __name__ == "__main__":
     target_width = target_height = 64
     data_path = "./mnist_example"
 
+    # NoiseScheduler & ForwardDiffusion
     noise_scheduler = NoiseScheduler()
     forward_diffusion = ForwardDiffusion(noise_scheduler=noise_scheduler)
     print("ForwardDiffusion initialized.")
 
-    # 예시 데이터셋 (MNIST 사용)
     transform = transforms.Compose(
-        [transforms.Resize((target_height, target_width)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
+        [
+            transforms.Resize((target_height, target_width)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5,), (0.5,)),
+        ]
     )
+    print("Transform defined.")
 
     dataset = CustomMNISTDataset(root=data_path, train=True, transform=transform, download=True)
     print("CustomMNISTDataset initialized.")
 
-    # 'aux_key'를 빈 리스트로 설정 (MNIST에는 'aux' 키가 없으므로)
-    collator = CollateBase(x_key=["pixel_values", "t", "x_t", "noise"], y_key=[], aux_key=[])
+    collator = CollateBase(x_key=["pixel_values"], y_key=[], aux_key=[])
     collator.add_fn(name="forward_diffusion", fn=forward_diffusion)
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, collate_fn=collator.wrap())
     print("DataLoader initialized.")
 
-    # 모델 정의 (UNet 기반 AutoEncoder)
     model = DDPM(
         block=UNetBlock, ch_in=1, ch_out=1, width=8, layers=[1, 1, 1, 1], skip_connect=True, timestep_embed_dim=256
     )
-    print("Model defined and moved to device.")
+    print("Model defined.")
 
-    # 옵티마이저 및 스케줄러 정의
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
+    # Optimizer & Scheduler
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     warm_up_steps = int(0.1 * len(train_loader) * epoch)
     scheduler = SchedulerChain(
         WarmUpScheduler(optimizer=optimizer, total_iters=warm_up_steps),
@@ -540,7 +640,7 @@ if __name__ == "__main__":
     )
     print("Optimizer and scheduler initialized.")
 
-    # Trainer 인스턴스 생성
+    # Trainer
     trainer = DDPMTrainer(
         model=model,
         device=device,
@@ -557,7 +657,7 @@ if __name__ == "__main__":
     # 학습 수행
     print("Starting training...")
     trainer.run(n_epoch=epoch, loader=train_loader, valid_loader=None)
-    trainer.save_model(os.path.join("ddpm_model.pth"))
+    trainer.save_model(os.path.join("../../ddpm_model.pth"))
     print("Training completed.")
     train_loss = trainer.log_train.get("loss", None)
     valid_loss = trainer.log_test.get("loss", None)
@@ -566,9 +666,15 @@ if __name__ == "__main__":
     print("Generating samples...")
     trainer.toggle("test")
     generated = trainer.generate(
-        n_samples=16, channels=1, height=target_height, width=target_width, intermediate=4, ddim=DDIM
+        n_samples=16,
+        channels=1,
+        height=target_height,
+        width=target_width,
+        intermediate=4,
+        ddim=DDIM,
     )
     generated_samples, generated_intermediate_samples = generated
+    # handling intermediate outputs
     generated_intermediate_samples = torch.stack([inter[:4] for inter in generated_intermediate_samples])
     trainer.visualize_samples(
         final_samples=generated_samples,
