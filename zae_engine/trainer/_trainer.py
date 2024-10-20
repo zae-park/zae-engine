@@ -70,6 +70,7 @@ class Trainer(ABC):
 
         # Init vars
         self.log_train, self.log_test = defaultdict(list), defaultdict(list)
+        self.loss_memory_train, self.loss_memory_test = [], []
         self.loss_buffer, self.weight_buffer = torch.inf, defaultdict(list)
         self.loader, self.n_data, self.batch_size = None, None, None
         self.valid_loader, self.n_valid_data, self.valid_batch_size = None, None, None
@@ -130,7 +131,9 @@ class Trainer(ABC):
             if "cuda" in device.type:
                 torch.cuda.set_device(device)
 
-    def _to_device(self, *args, **kwargs) -> Union[Tuple[Union[torch.Tensor, torch.nn.Module]], Union[torch.Tensor, torch.nn.Module]]:
+    def _to_device(
+        self, *args, **kwargs
+    ) -> Union[Tuple[Union[torch.Tensor, torch.nn.Module]], Union[torch.Tensor, torch.nn.Module]]:
         """
         Cast given arguments to the appropriate device.
 
@@ -354,10 +357,13 @@ class Trainer(ABC):
             A dictionary containing the results of a training or testing step.
         """
         for k, v in step_dict.items():
+            v_ = self._to_cpu(v)
             if self.mode == "train":
-                self.log_train[k].append(self._to_cpu(v))
+                self.log_train[k].append(v_)
+                self.loss_memory_train.append(v_)
             elif self.mode == "test":
-                self.log_test[k].append(self._to_cpu(v))
+                self.log_test[k].append(v_)
+                self.loss_memory_test.append(v_)
             else:
                 raise ValueError(f"Unexpected mode {self.mode}.")
 
