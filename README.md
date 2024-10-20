@@ -12,15 +12,18 @@
 </div>
 
 <p align="center">
+    <img src="https://img.shields.io/pypi/v/zae-engine.svg" alt="https://pypi.python.org/pypi/zae-engine/">
+    <img src="https://static.pepy.tech/badge/zae-engine" alt="https://pepy.tech/project/zae-engine">
+    <img src="https://static.pepy.tech/badge/zae-engine/month" alt="https://pepy.tech/project/zae-engine">
+    <img src="https://static.pepy.tech/badge/zae-engine/week" alt="https://pepy.tech/project/zae-engine">
+    </br>
+    <img src="https://img.shields.io/pypi/pyversions/zae-engine.svg" alt="https://pypi.python.org/pypi/zae-engine/">
+    <img src="https://codecov.io/gh/zae-park/zae-engine/graph/badge.svg?token=4BENXZJHPF">
+    </br>
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/build_test.yml/badge.svg">
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/document_deploy.yml/badge.svg" alt="https://zae-park.github.io/zae-engine">
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/unittest_badge.yml/badge.svg">
     <img src="https://github.com/zae-park/zae-engine/actions/workflows/wandb_test.yml/badge.svg">
-    </br>
-    <img src="https://codecov.io/gh/zae-park/zae-engine/graph/badge.svg?token=4BENXZJHPF">
-    <img src="https://img.shields.io/pypi/pyversions/zae-engine.svg" alt="https://pypi.python.org/pypi/zae-engine/">
-    <img src="https://img.shields.io/pypi/v/zae-engine.svg" alt="https://pypi.python.org/pypi/zae-engine/">
-    <img src="https://img.shields.io/pypi/dm/zae-engine.svg" alt="https://pypi.python.org/pypi/zae-engine/">
   <br />
 </p>
 
