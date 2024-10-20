@@ -259,7 +259,6 @@ class DDPM(AutoEncoder):
         if not self.feature_vectors:
             raise ValueError("No feature vectors collected from encoder.")
         feat = self.bottleneck(self.feature_vectors.pop())
-        self.feature_vectors = []
 
         # 타임스탬프 임베딩
         t_emb = self.timestep_embedding(t)  # Shape: (batch_size, embed_dim)
@@ -453,14 +452,13 @@ class DDPMTrainer(Trainer):
             intermediate_grids = []
             for img_steps in intermediate_images:
                 # img_steps는 [step1, step2, step3, step4]
-                steps = [torch.tensor(img).unsqueeze(0) for img in img_steps]  # (1, C, H, W)
-                steps = torch.cat(steps, dim=0)  # (4, C, H, W)
+                steps = torch.stack([torch.tensor(img) for img in img_steps], dim=0)  # (4, C, H, W)
                 steps_grid = make_grid(steps, nrow=1, padding=2, normalize=True)  # (C, H*4 + padding, W + padding)
                 intermediate_grids.append(steps_grid)
 
             # 4개의 중간 단계 이미지를 2x2 그리드로 배열
             intermediate_grids = torch.stack(intermediate_grids, dim=0)  # (4, C, H*4 + padding, W + padding)
-            intermediate_grids = make_grid(intermediate_grids, nrow=2, padding=2, normalize=True)
+            intermediate_grids = make_grid(intermediate_grids, nrow=4, padding=1, normalize=True)
             intermediate_grids_np = intermediate_grids.permute(1, 2, 0).cpu().numpy()
 
             ax2 = fig.add_subplot(gs[0:2, 2:4])
@@ -495,7 +493,7 @@ if __name__ == "__main__":
     DDIM = False
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     batch_size = 32
-    epoch = 2
+    epoch = 100
     learning_rate = 5e-3
     target_width = target_height = 64
     data_path = "./mnist_example"
@@ -520,7 +518,7 @@ if __name__ == "__main__":
 
     # 모델 정의 (UNet 기반 AutoEncoder)
     model = DDPM(
-        block=UNetBlock, ch_in=1, ch_out=1, width=8, layers=[1, 1, 1, 1], skip_connect=False, timestep_embed_dim=256
+        block=UNetBlock, ch_in=1, ch_out=1, width=8, layers=[1, 1, 1, 1], skip_connect=True, timestep_embed_dim=256
     )
     print("Model defined and moved to device.")
 
