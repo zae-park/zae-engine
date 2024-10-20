@@ -678,7 +678,7 @@ if __name__ == "__main__":
     trainer.visualize_samples(
         final_samples=generated_samples,
         intermediate_images=generated_intermediate_samples.permute(1, 0, 2, 3, 4),
-        train_losses=train_loss,
+        train_losses=trainer.get_loss_history('train'),
         valid_losses=None,
     )
     print("Sample generation and visualization completed.")
