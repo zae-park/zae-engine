@@ -408,6 +408,27 @@ class Trainer(ABC):
         self.log_train.clear()
         self.log_test.clear()
 
+    def get_all_step_loss(self, mode: str = "train") -> list:
+        """
+        Retrieve the list of all step losses.
+
+        Parameters
+        ----------
+        mode : str, optional
+            The mode to retrieve losses for, either 'train' or 'test'. Default is 'train'.
+
+        Returns
+        -------
+        list
+            A list of loss values for each step.
+        """
+        if mode == "train":
+            return self.loss_memory_train
+        elif mode == "test":
+            return self.loss_memory_test
+        else:
+            raise ValueError(f"Mode must be 'train' or 'test', got '{mode}'.")
+
     def print_log(self, cur_batch: int, num_batch: int) -> Tuple[str, dict]:
         """
         Print the log for the current batch.
