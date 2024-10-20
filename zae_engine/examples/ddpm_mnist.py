@@ -485,14 +485,13 @@ class DDPMTrainer(Trainer):
                     sqrt_alpha = torch.sqrt(alpha[t_step])
                     sqrt_alpha_prev = torch.sqrt(alpha[t_step - 1])
 
-                    x_prev = (x - self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step] * noise_pred) / sqrt_alpha
+                    x_prev = (x - self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step] * predict) / sqrt_alpha
                     x_prev = (
-                        sqrt_alpha_prev * x_prev
-                        + self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step - 1] * noise_pred
+                        sqrt_alpha_prev * x_prev + self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step - 1] * predict
                     )
                 else:
                     # Final timestep (t=0) handling
-                    x_prev = (x - self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step] * noise_pred) / torch.sqrt(
+                    x_prev = (x - self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step] * predict) / torch.sqrt(
                         alpha[t_step]
                     )
                 x = x_prev
@@ -502,7 +501,7 @@ class DDPMTrainer(Trainer):
                 if t_step > 0:
                     sqrt_recip_alpha = 1 / torch.sqrt(alpha[t_step])
                     mu_theta = sqrt_recip_alpha * (
-                        x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * noise_pred
+                        x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * predict
                     )
 
                     # Sample from the posterior
@@ -510,9 +509,9 @@ class DDPMTrainer(Trainer):
                     var = torch.sqrt(posterior_variance[t_step - 1]).view(-1, 1, 1, 1)
                     x = mu_theta + var * noise
                 else:
-                    x = (
-                        x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * noise_pred
-                    ) / torch.sqrt(alpha[t_step])
+                    x = (x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * predict) / torch.sqrt(
+                        alpha[t_step]
+                    )
             if intermediate > 0 and t_step % save_step == save_step - 1:
                 save_x.append(x.clone())
 
