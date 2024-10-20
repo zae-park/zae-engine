@@ -1,11 +1,11 @@
 import math
 import os.path
 import shutil
-from typing import Dict, Any, Union, Type, Sequence, Callable
-
+from typing import Dict, Any, Union, Type, Sequence, Callable, Tuple, List
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 from torchvision import datasets, transforms
 from torchvision.utils import make_grid
@@ -314,7 +314,9 @@ class DDPMTrainer(Trainer):
     def noise_scheduling(self, noise_scheduler):
         self.noise_scheduler = noise_scheduler
 
-    def generate(self, n_samples: int, channels: int, height: int, width: int, ddim: bool = False) -> torch.Tensor:
+    def generate(
+        self, n_samples: int, channels: int, height: int, width: int, intermediate: int = 0, ddim: bool = False
+    ) -> tuple[Tensor | Any, list[Any]]:
         """
         Generate new samples using the trained diffusion model.
 
@@ -328,13 +330,16 @@ class DDPMTrainer(Trainer):
             Height of the generated images.
         width : int
             Width of the generated images.
+        intermediate : int
+            Step of intermediate output
         ddim : bool, optional
             Whether to use DDIM sampling. If True, uses DDIM; otherwise, uses DDPM.
 
         Returns
         -------
-        torch.Tensor
+        tuple[Tensor | Any, list[Any]]
             Generated samples. Shape: (n_samples, channels, height, width)
+            Generated intermediate samples. Shape: (n_samples, intermediate, channels, height, width)
         """
         timesteps = self.noise_scheduler.timesteps
         alpha = self.noise_scheduler.alpha
@@ -346,6 +351,8 @@ class DDPMTrainer(Trainer):
         print(f"Generated noise x shape: {x.shape}")
 
         self.toggle("test")
+        save_step = timesteps // intermediate
+        save_x = []
         for t_step in reversed(range(timesteps)):
             t_tensor = torch.full((n_samples,), t_step, dtype=torch.long)
             batch = {"x_t": x, "t": t_tensor}
@@ -384,8 +391,10 @@ class DDPMTrainer(Trainer):
                     x = (x - (t_noise / self.noise_scheduler.sqrt_one_minus_alpha_bar[t_step]) * predict) / torch.sqrt(
                         alpha[t_step]
                     )
+            if t_step % save_step == save_step - 1:
+                save_x.append(x)
 
-        return x
+        return x, save_x
 
     # def visualize_samples(self, samples: torch.Tensor, nrow: int = 4, ncol: int = 4):
     #     """
@@ -550,15 +559,20 @@ if __name__ == "__main__":
     trainer.run(n_epoch=epoch, loader=train_loader, valid_loader=None)
     trainer.save_model(os.path.join("ddpm_model.pth"))
     print("Training completed.")
-    train_loss = trainer.log_train["loss"]
+    train_loss = trainer.log_train.get("loss", None)
+    valid_loss = trainer.log_test.get("loss", None)
 
     # 샘플 생성 및 시각화
     print("Generating samples...")
     trainer.toggle("test")
-    generated_samples = trainer.generate(n_samples=16, channels=1, height=target_height, width=target_width, ddim=DDIM)
+    generated = trainer.generate(
+        n_samples=16, channels=1, height=target_height, width=target_width, intermediate=4, ddim=DDIM
+    )
+    generated_samples, generated_intermediate_samples = generated
+    generated_intermediate_samples = torch.stack([inter[:4] for inter in generated_intermediate_samples])
     trainer.visualize_samples(
         final_samples=generated_samples,
-        intermediate_images=generated_samples.reshape(4, 4, *generated_samples.size()[1:]),
+        intermediate_images=generated_intermediate_samples.permute(1, 0, 2, 3, 4),
         train_losses=train_loss,
         valid_losses=None,
     )
