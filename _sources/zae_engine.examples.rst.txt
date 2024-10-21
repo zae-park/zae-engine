@@ -12,6 +12,14 @@ zae\_engine.examples.classification1D module
    :undoc-members:
    :show-inheritance:
 
+zae\_engine.examples.ddpm\_mnist module
+---------------------------------------
+
+.. automodule:: zae_engine.examples.ddpm_mnist
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 zae\_engine.examples.segmentation1D module
 ------------------------------------------
 
