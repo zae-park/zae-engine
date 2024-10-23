@@ -7,7 +7,7 @@ import math
 
 # Import necessary modules from your project structure
 from zae_engine.models import AutoEncoder
-from ...nn_night import blocks
+from zae_engine.nn_night import blocks as blk
 
 __all__ = ["U2NET_full", "U2NET_lite"]
 
@@ -412,53 +412,94 @@ class U2NET(nn.Module):
         self.add_module("outconv", nn.Conv2d(int(self.height * self.out_ch), self.out_ch, kernel_size=1))
 
 
-def U2NET_full() -> U2NET:
+def U2NET_full_Modified() -> U2NET:
     """
-    Instantiate the full version of U^2-Net with detailed RSU configurations.
+    Instantiate the full version of Modified U^2-Net with Custom RSU configurations.
 
     Returns
     -------
-    U2NET
-        The full U^2-Net model instance.
+    U2NET_Modified
+        The full Modified U^2-Net model instance.
     """
     full_cfg = {
-        # Configuration for each stage: {stage_name: [RSU name, (height, in_ch, mid_ch, out_ch, dilated), side_output_ch]}
-        "stage1": ["En_1", (7, 3, 32, 64), -1],
-        "stage2": ["En_2", (6, 64, 32, 128), -1],
-        "stage3": ["En_3", (5, 128, 64, 256), -1],
-        "stage4": ["En_4", (4, 256, 128, 512), -1],
+        # Configuration for each stage:
+        # {stage_name: [RSU name, (height, in_ch, mid_ch, out_ch, dilated), side_output_ch]}
+        "stage1": ["En_1", (7, 3, 32, 64, False), -1],
+        "stage2": ["En_2", (6, 64, 32, 128, False), -1],
+        "stage3": ["En_3", (5, 128, 64, 256, False), -1],
+        "stage4": ["En_4", (4, 256, 128, 512, False), -1],
         "stage5": ["En_5", (4, 512, 256, 512, True), -1],
         "stage6": ["En_6", (4, 512, 256, 512, True), 512],
         "stage5d": ["De_5", (4, 1024, 256, 512, True), 512],
-        "stage4d": ["De_4", (4, 1024, 128, 256), 256],
-        "stage3d": ["De_3", (5, 512, 64, 128), 128],
-        "stage2d": ["De_2", (6, 256, 32, 64), 64],
-        "stage1d": ["De_1", (7, 128, 16, 64), 64],
+        "stage4d": ["De_4", (4, 1024, 128, 256, False), 256],
+        "stage3d": ["De_3", (5, 512, 64, 128, False), 128],
+        "stage2d": ["De_2", (6, 256, 32, 64, False), 64],
+        "stage1d": ["De_1", (7, 128, 16, 64, False), 64],
     }
-    return U2NET(cfgs=full_cfg, out_ch=1)
+
+    # Define AutoEncoder configuration for CustomRSU
+    autoencoder_cfg = {
+        "block": blk.UNetBlock,  # Adjust based on your block implementation
+    }
+
+    return U2NET(cfgs=full_cfg, out_ch=1, autoencoder_cfg=autoencoder_cfg)
 
 
-def U2NET_lite() -> U2NET:
+def U2NET_lite_Modified() -> U2NET:
     """
-    Instantiate the lite version of U^2-Net with simplified RSU configurations.
+    Instantiate the lite version of Modified U^2-Net with simplified Custom RSU configurations.
 
     Returns
     -------
-    U2NET
-        The lite U^2-Net model instance.
+    U2NET_Modified
+        The lite Modified U^2-Net model instance.
     """
     lite_cfg = {
-        # Configuration for each stage: {stage_name: [RSU name, (height, in_ch, mid_ch, out_ch, dilated), side_output_ch]}
-        "stage1": ["En_1", (7, 3, 16, 64), -1],
-        "stage2": ["En_2", (6, 64, 16, 64), -1],
-        "stage3": ["En_3", (5, 64, 16, 64), -1],
-        "stage4": ["En_4", (4, 64, 16, 64), -1],
+        # Configuration for each stage:
+        # {stage_name: [RSU name, (height, in_ch, mid_ch, out_ch, dilated), side_output_ch]}
+        "stage1": ["En_1", (7, 3, 16, 64, False), -1],
+        "stage2": ["En_2", (6, 64, 16, 64, False), -1],
+        "stage3": ["En_3", (5, 64, 16, 64, False), -1],
+        "stage4": ["En_4", (4, 64, 16, 64, False), -1],
         "stage5": ["En_5", (4, 64, 16, 64, True), -1],
         "stage6": ["En_6", (4, 64, 16, 64, True), 64],
         "stage5d": ["De_5", (4, 128, 16, 64, True), 64],
-        "stage4d": ["De_4", (4, 128, 16, 64), 64],
-        "stage3d": ["De_3", (5, 128, 16, 64), 64],
-        "stage2d": ["De_2", (6, 128, 16, 64), 64],
-        "stage1d": ["De_1", (7, 128, 16, 64), 64],
+        "stage4d": ["De_4", (4, 128, 16, 64, False), 64],
+        "stage3d": ["De_3", (5, 128, 16, 64, False), 64],
+        "stage2d": ["De_2", (6, 128, 16, 64, False), 64],
+        "stage1d": ["De_1", (7, 128, 16, 64, False), 64],
     }
-    return U2NET(cfgs=lite_cfg, out_ch=1)
+
+    # Define AutoEncoder configuration for CustomRSU
+    autoencoder_cfg = {
+        "block": blk.UNetBlock,  # Adjust based on your block implementation
+    }
+
+    return U2NET(cfgs=lite_cfg, out_ch=1, autoencoder_cfg=autoencoder_cfg)
+
+
+# if __name__ == "__main__":
+#     # 예시 입력
+#     input_tensor = torch.randn(1, 3, 320, 320)  # 배치 크기 1, 채널 3, 320x320 이미지
+#
+#     # 전체 Modified U2-Net 모델 인스턴스 생성
+#     model_full = U2NET_full_Modified()
+#     print(model_full)
+#
+#     # 라이트 Modified U2-Net 모델 인스턴스 생성
+#     model_lite = U2NET_lite_Modified()
+#     print(model_lite)
+#
+#     # 모델을 GPU로 이동 (가능한 경우)
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#     model_full.to(device)
+#     model_lite.to(device)
+#     input_tensor = input_tensor.to(device)
+#
+#     # 모델의 forward 패스 수행
+#     output_full = model_full(input_tensor)
+#     output_lite = model_lite(input_tensor)
+#
+#     # 출력 형태 확인
+#     print([o.shape for o in output_full])  # 사이드 출력 맵의 형태
+#     print([o.shape for o in output_lite])
