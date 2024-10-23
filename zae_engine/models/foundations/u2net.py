@@ -284,22 +284,25 @@ class CustomRSU(nn.Module):
 
 class U2NET(nn.Module):
     """
-    U^2-Net architecture for salient object detection.
+    Modified U^2-Net architecture integrating Custom RSU blocks using AutoEncoder.
 
-    The U^2-Net is a nested U-structure network that captures multi-scale features using RSU blocks.
-    It produces side outputs at different resolutions, which are fused to generate the final saliency map.
+    This version replaces RSU blocks with CustomRSU modules based on AutoEncoder,
+    enabling the use of a flexible AutoEncoder structure within U^2-Net.
 
     Parameters
     ----------
     cfgs : dict
-        Configuration dictionary defining the structure of RSU blocks and side outputs.
+        Configuration dictionary defining the structure of Custom RSU blocks and side outputs.
     out_ch : int
         Number of output channels for the final saliency map.
+    autoencoder_cfg : dict
+        Configuration dictionary for the AutoEncoder used in Custom RSU blocks.
     """
 
-    def __init__(self, cfgs: dict, out_ch: int):
+    def __init__(self, cfgs: dict, out_ch: int, autoencoder_cfg: dict):
         super(U2NET, self).__init__()
         self.out_ch = out_ch
+        self.autoencoder_cfg = autoencoder_cfg
         self._make_layers(cfgs)
 
     def forward(self, x: torch.Tensor) -> list:
@@ -319,7 +322,7 @@ class U2NET(nn.Module):
         sizes = _size_map(x, self.height)
         maps = []  # Storage for side outputs
 
-        def unet(x_inner: torch.Tensor, height_inner: int = 1) -> None:
+        def unet(x_inner: torch.Tensor, height_inner: int = 1) -> torch.Tensor:
             """
             Recursive U-Net-like encoding and decoding within the U^2-Net.
 
@@ -330,7 +333,7 @@ class U2NET(nn.Module):
             height_inner : int, optional
                 Current depth level in the U^2-Net. Default is 1.
             """
-            if height_inner < 6:
+            if height_inner < self.height:
                 x1 = getattr(self, f"stage{height_inner}")(x_inner)
                 x2 = unet(getattr(self, "downsample")(x1), height_inner + 1)
                 x = getattr(self, f"stage{height_inner}d")(torch.cat((x2, x1), dim=1))
@@ -377,18 +380,31 @@ class U2NET(nn.Module):
 
     def _make_layers(self, cfgs: dict) -> None:
         """
-        Create and register the layers of the U^2-Net.
+        Create and register the layers of the Modified U^2-Net.
 
         Parameters
         ----------
         cfgs : dict
-            Configuration dictionary defining the structure of RSU blocks and side outputs.
+            Configuration dictionary defining the structure of Custom RSU blocks and side outputs.
         """
         self.height = int((len(cfgs) + 1) / 2)
         self.add_module("downsample", nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True))
         for k, v in cfgs.items():
-            # Build RSU block
-            self.add_module(k, RSU(v[0], *v[1]))
+            # Build Custom RSU block
+            self.add_module(
+                k,
+                CustomRSU(
+                    autoencoder_cfg=self.autoencoder_cfg,
+                    ch_in=v[1][1],
+                    ch_out=v[1][3],
+                    width=v[1][2],
+                    layers=[1] * v[1][0],  # Adjust based on height
+                    groups=1,  # Adjust if needed
+                    dilation=v[1][4] if len(v[1]) > 4 else 1,
+                    norm_layer=nn.BatchNorm2d,
+                    skip_connect=False,  # Adjust based on configuration
+                ),
+            )
             if v[2] > 0:
                 # Build side output layer
                 self.add_module(f"side{v[0][-1]}", nn.Conv2d(v[2], self.out_ch, kernel_size=3, padding=1))
