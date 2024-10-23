@@ -8,6 +8,7 @@ import math
 # Import necessary modules from your project structure
 from zae_engine.models import AutoEncoder
 from zae_engine.nn_night import blocks as blk
+from zae_engine.nn_night.layers import Residual
 
 __all__ = ["U2NET_full", "U2NET_lite"]
 
@@ -29,30 +30,6 @@ def _upsample_like(x: torch.Tensor, size: tuple) -> torch.Tensor:
         Upsampled tensor.
     """
     return nn.Upsample(size=size, mode="bilinear", align_corners=False)(x)
-
-
-def _size_map(x: torch.Tensor, height: int) -> dict:
-    """
-    Generate a mapping from each depth level to the spatial size for upsampling.
-
-    Parameters
-    ----------
-    x : torch.Tensor
-        Input tensor.
-    height : int
-        Number of levels in the U-structure.
-
-    Returns
-    -------
-    dict
-        A dictionary mapping each level to its corresponding spatial size.
-    """
-    size = list(x.shape[-2:])
-    sizes = {}
-    for h in range(1, height):
-        sizes[h] = size
-        size = [math.ceil(w / 2) for w in size]
-    return sizes
 
 
 class REBNCONV(nn.Module):
@@ -126,53 +103,6 @@ class RSU(nn.Module):
         self.dilated = dilated
         self._make_layers(height, in_ch, mid_ch, out_ch, dilated)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass through the RSU block.
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Input tensor of shape (batch_size, in_ch, height, width).
-
-        Returns
-        -------
-        torch.Tensor
-            Output tensor after passing through the RSU block.
-        """
-        sizes = _size_map(x, self.height)
-        x = self.rebnconvin(x)
-
-        def unet(x_inner: torch.Tensor, height_inner: int = 1) -> torch.Tensor:
-            """
-            Recursive U-Net-like encoding and decoding within the RSU block.
-
-            Parameters
-            ----------
-            x_inner : torch.Tensor
-                Input tensor at the current recursion level.
-            height_inner : int, optional
-                Current depth level in the RSU block. Default is 1.
-
-            Returns
-            -------
-            torch.Tensor
-                Output tensor after passing through the nested U-structure.
-            """
-            if height_inner < self.height:
-                x1 = getattr(self, f"rebnconv{height_inner}")(x_inner)
-                if not self.dilated and height_inner < self.height - 1:
-                    x2 = unet(getattr(self, "downsample")(x1), height_inner + 1)
-                else:
-                    x2 = unet(x1, height_inner + 1)
-
-                x = getattr(self, f"rebnconv{height_inner}d")(torch.cat((x2, x1), dim=1))
-                return _upsample_like(x, sizes[height_inner - 1]) if not self.dilated and height_inner > 1 else x
-            else:
-                return getattr(self, f"rebnconv{height_inner}")(x_inner)
-
-        return x + unet(x)
-
     def _make_layers(self, height: int, in_ch: int, mid_ch: int, out_ch: int, dilated: bool = False) -> None:
         """
         Create and register the layers of the RSU block.
@@ -208,6 +138,57 @@ class RSU(nn.Module):
         # Final encoder layer
         dilate = 2 if not dilated else 2 ** (height - 1)
         self.add_module(f"rebnconv{height}", REBNCONV(mid_ch, mid_ch, dilate=dilate))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass through the RSU block.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor of shape (batch_size, in_ch, height, width).
+
+        Returns
+        -------
+        torch.Tensor
+            Output tensor after passing through the RSU block.
+        """
+        size = list(x.shape[-2:])
+        sizes = {}
+        for h in range(1, self.height):
+            sizes[h] = size
+            size = [math.ceil(w / 2) for w in size]
+        x = self.rebnconvin(x)
+
+        def unet(x_inner: torch.Tensor, height_inner: int = 1) -> torch.Tensor:
+            """
+            Recursive U-Net-like encoding and decoding within the RSU block.
+
+            Parameters
+            ----------
+            x_inner : torch.Tensor
+                Input tensor at the current recursion level.
+            height_inner : int, optional
+                Current depth level in the RSU block. Default is 1.
+
+            Returns
+            -------
+            torch.Tensor
+                Output tensor after passing through the nested U-structure.
+            """
+            if height_inner < self.height:
+                x1 = getattr(self, f"rebnconv{height_inner}")(x_inner)
+                if not self.dilated and height_inner < self.height - 1:
+                    x2 = unet(getattr(self, "downsample")(x1), height_inner + 1)
+                else:
+                    x2 = unet(x1, height_inner + 1)
+
+                x = getattr(self, f"rebnconv{height_inner}d")(torch.cat((x2, x1), dim=1))
+                return _upsample_like(x, sizes[height_inner - 1]) if not self.dilated and height_inner > 1 else x
+            else:
+                return getattr(self, f"rebnconv{height_inner}")(x_inner)
+
+        return x + unet(x)
 
 
 class CustomRSU(nn.Module):
@@ -253,16 +234,18 @@ class CustomRSU(nn.Module):
     ):
         super(CustomRSU, self).__init__()
         # Initialize the AutoEncoder as the core of RSU
-        self.autoencoder = AutoEncoder(
-            block=autoencoder_cfg["block"],
-            ch_in=ch_in,
-            ch_out=ch_out,
-            width=width,
-            layers=layers,
-            groups=groups,
-            dilation=dilation,
-            norm_layer=norm_layer,
-            skip_connect=skip_connect,
+        self.body = Residual(
+            AutoEncoder(
+                block=autoencoder_cfg["block"],
+                ch_in=ch_in,
+                ch_out=ch_out,
+                width=width,
+                layers=layers,
+                groups=groups,
+                dilation=dilation,
+                norm_layer=norm_layer,
+                skip_connect=skip_connect,
+            )
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -279,7 +262,7 @@ class CustomRSU(nn.Module):
         torch.Tensor
             Output tensor after processing through the Custom RSU block.
         """
-        return self.autoencoder(x)
+        return self.body(x)
 
 
 class U2NET(nn.Module):
@@ -319,7 +302,11 @@ class U2NET(nn.Module):
         list of torch.Tensor
             List of saliency maps at different resolutions, including the final fused map.
         """
-        sizes = _size_map(x, self.height)
+        size = list(x.shape[-2:])
+        sizes = {}
+        for h in range(1, self.height):
+            sizes[h] = size
+            size = [math.ceil(w / 2) for w in size]
         maps = []  # Storage for side outputs
 
         def unet(x_inner: torch.Tensor, height_inner: int = 1) -> torch.Tensor:
@@ -478,28 +465,28 @@ def U2NET_lite_Modified() -> U2NET:
     return U2NET(cfgs=lite_cfg, out_ch=1, autoencoder_cfg=autoencoder_cfg)
 
 
-# if __name__ == "__main__":
-#     # 예시 입력
-#     input_tensor = torch.randn(1, 3, 320, 320)  # 배치 크기 1, 채널 3, 320x320 이미지
-#
-#     # 전체 Modified U2-Net 모델 인스턴스 생성
-#     model_full = U2NET_full_Modified()
-#     print(model_full)
-#
-#     # 라이트 Modified U2-Net 모델 인스턴스 생성
-#     model_lite = U2NET_lite_Modified()
-#     print(model_lite)
-#
-#     # 모델을 GPU로 이동 (가능한 경우)
-#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#     model_full.to(device)
-#     model_lite.to(device)
-#     input_tensor = input_tensor.to(device)
-#
-#     # 모델의 forward 패스 수행
-#     output_full = model_full(input_tensor)
-#     output_lite = model_lite(input_tensor)
-#
-#     # 출력 형태 확인
-#     print([o.shape for o in output_full])  # 사이드 출력 맵의 형태
-#     print([o.shape for o in output_lite])
+if __name__ == "__main__":
+    # 예시 입력
+    input_tensor = torch.randn(1, 3, 320, 320)  # 배치 크기 1, 채널 3, 320x320 이미지
+
+    # 전체 Modified U2-Net 모델 인스턴스 생성
+    model_full = U2NET_full_Modified()
+    print(model_full)
+
+    # 라이트 Modified U2-Net 모델 인스턴스 생성
+    model_lite = U2NET_lite_Modified()
+    print(model_lite)
+
+    # 모델을 GPU로 이동 (가능한 경우)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model_full.to(device)
+    model_lite.to(device)
+    input_tensor = input_tensor.to(device)
+
+    # 모델의 forward 패스 수행
+    output_full = model_full(input_tensor)
+    output_lite = model_lite(input_tensor)
+
+    # 출력 형태 확인
+    print([o.shape for o in output_full])  # 사이드 출력 맵의 형태
+    print([o.shape for o in output_lite])
