@@ -1,4 +1,4 @@
-from typing import OrderedDict, Union
+from typing import OrderedDict, Union, Sequence, Callable
 
 import torch
 import torch.nn as nn
@@ -6,7 +6,7 @@ import torch.nn as nn
 import math
 
 # Import necessary modules from your project structure
-from zae_engine.builds import autoencoder
+from zae_engine.models import AutoEncoder
 from ...nn_night import blocks
 
 __all__ = ["U2NET_full", "U2NET_lite"]
@@ -208,6 +208,78 @@ class RSU(nn.Module):
         # Final encoder layer
         dilate = 2 if not dilated else 2 ** (height - 1)
         self.add_module(f"rebnconv{height}", REBNCONV(mid_ch, mid_ch, dilate=dilate))
+
+
+class CustomRSU(nn.Module):
+    """
+    Custom Residual U-block (RSU) implemented using the AutoEncoder architecture.
+
+    This module integrates the AutoEncoder to mimic the RSU block's functionality,
+    capturing multi-scale features with optional skip connections.
+
+    Parameters
+    ----------
+    autoencoder_cfg : dict
+        Configuration dictionary for the AutoEncoder.
+    ch_in : int
+        Number of input channels.
+    ch_out : int
+        Number of output channels.
+    width : int
+        Base width for the encoder and decoder layers.
+    layers : Sequence[int]
+        Number of blocks in each stage of the encoder and decoder.
+    groups : int, optional
+        Number of groups for group normalization in the block. Default is 1.
+    dilation : int, optional
+        Dilation rate for convolutional layers. Default is 1.
+    norm_layer : Callable[..., nn.Module], optional
+        Normalization layer to use. Default is `nn.BatchNorm2d`.
+    skip_connect : bool, optional
+        If True, adds skip connections for U-Net style. Default is False.
+    """
+
+    def __init__(
+        self,
+        autoencoder_cfg: dict,
+        ch_in: int,
+        ch_out: int,
+        width: int,
+        layers: Sequence[int],
+        groups: int = 1,
+        dilation: int = 1,
+        norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
+        skip_connect: bool = False,
+    ):
+        super(CustomRSU, self).__init__()
+        # Initialize the AutoEncoder as the core of RSU
+        self.autoencoder = AutoEncoder(
+            block=autoencoder_cfg["block"],
+            ch_in=ch_in,
+            ch_out=ch_out,
+            width=width,
+            layers=layers,
+            groups=groups,
+            dilation=dilation,
+            norm_layer=norm_layer,
+            skip_connect=skip_connect,
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass through the Custom RSU block.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor of shape (batch_size, ch_in, height, width).
+
+        Returns
+        -------
+        torch.Tensor
+            Output tensor after processing through the Custom RSU block.
+        """
+        return self.autoencoder(x)
 
 
 class U2NET(nn.Module):
