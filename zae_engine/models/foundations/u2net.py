@@ -11,6 +11,7 @@ from zae_engine.nn_night import blocks as blk
 from zae_engine.nn_night.layers import Residual
 
 __all__ = ["U2NET_full", "U2NET_lite"]
+# https://arxiv.org/pdf/2005.09007
 
 
 def _upsample_like(x: torch.Tensor, size: tuple) -> torch.Tensor:
@@ -191,7 +192,7 @@ class RSU(nn.Module):
         return x + unet(x)
 
 
-class CustomRSU(nn.Module):
+class RSUBlock(nn.Module):
     """
     Custom Residual U-block (RSU) implemented using the AutoEncoder architecture.
 
@@ -222,7 +223,6 @@ class CustomRSU(nn.Module):
 
     def __init__(
         self,
-        autoencoder_cfg: dict,
         ch_in: int,
         ch_out: int,
         width: int,
@@ -232,11 +232,11 @@ class CustomRSU(nn.Module):
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
         skip_connect: bool = False,
     ):
-        super(CustomRSU, self).__init__()
+        super(RSUBlock, self).__init__()
         # Initialize the AutoEncoder as the core of RSU
         self.body = Residual(
             AutoEncoder(
-                block=autoencoder_cfg["block"],
+                block=blk.UNetBlock,
                 ch_in=ch_in,
                 ch_out=ch_out,
                 width=width,
@@ -269,7 +269,7 @@ class U2NET(nn.Module):
     """
     Modified U^2-Net architecture integrating Custom RSU blocks using AutoEncoder.
 
-    This version replaces RSU blocks with CustomRSU modules based on AutoEncoder,
+    This version replaces RSU blocks with RSUBlock modules based on AutoEncoder,
     enabling the use of a flexible AutoEncoder structure within U^2-Net.
 
     Parameters
@@ -282,10 +282,9 @@ class U2NET(nn.Module):
         Configuration dictionary for the AutoEncoder used in Custom RSU blocks.
     """
 
-    def __init__(self, cfgs: dict, out_ch: int, autoencoder_cfg: dict):
+    def __init__(self, cfgs: dict, out_ch: int):
         super(U2NET, self).__init__()
         self.out_ch = out_ch
-        self.autoencoder_cfg = autoencoder_cfg
         self._make_layers(cfgs)
 
     def forward(self, x: torch.Tensor) -> list:
@@ -380,8 +379,7 @@ class U2NET(nn.Module):
             # Build Custom RSU block
             self.add_module(
                 k,
-                CustomRSU(
-                    autoencoder_cfg=self.autoencoder_cfg,
+                RSUBlock(
                     ch_in=v[1][1],
                     ch_out=v[1][3],
                     width=v[1][2],
@@ -424,7 +422,7 @@ def U2NET_full_Modified() -> U2NET:
         "stage1d": ["De_1", (7, 128, 16, 64, False), 64],
     }
 
-    # Define AutoEncoder configuration for CustomRSU
+    # Define AutoEncoder configuration for RSUBlock
     autoencoder_cfg = {
         "block": blk.UNetBlock,  # Adjust based on your block implementation
     }
@@ -457,12 +455,7 @@ def U2NET_lite_Modified() -> U2NET:
         "stage1d": ["De_1", (7, 128, 16, 64, False), 64],
     }
 
-    # Define AutoEncoder configuration for CustomRSU
-    autoencoder_cfg = {
-        "block": blk.UNetBlock,  # Adjust based on your block implementation
-    }
-
-    return U2NET(cfgs=lite_cfg, out_ch=1, autoencoder_cfg=autoencoder_cfg)
+    return U2NET(cfgs=lite_cfg, out_ch=1)
 
 
 if __name__ == "__main__":
