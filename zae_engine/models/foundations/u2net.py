@@ -201,8 +201,6 @@ class RSUBlock(nn.Module):
 
     Parameters
     ----------
-    autoencoder_cfg : dict
-        Configuration dictionary for the AutoEncoder.
     ch_in : int
         Number of input channels.
     ch_out : int
@@ -275,14 +273,31 @@ class U2NET(nn.Module):
         Configuration dictionary defining the structure of Custom RSU blocks and side outputs.
     out_ch : int
         Number of output channels for the final saliency map.
-    autoencoder_cfg : dict
-        Configuration dictionary for the AutoEncoder used in Custom RSU blocks.
     """
 
-    def __init__(self, cfgs: dict, out_ch: int):
+    def __init__(self, out_ch: int, **kwargs):
         super(U2NET, self).__init__()
         self.out_ch = out_ch
-        self._make_layers(cfgs)
+        self.height = int((len(kwargs) + 1) / 2)
+        self.add_module("downsample", nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True))
+
+        for k, v in kwargs.items():
+            # Build Custom RSU block
+            self.add_module(
+                k,
+                RSUBlock(
+                    ch_in=v[1][1],
+                    ch_out=v[1][3],
+                    width=v[1][2],
+                    layers=[1] * v[1][0],  # Adjust based on height
+                    dilation=v[1][4] if len(v[1]) > 4 else 1,
+                ),
+            )
+            if v[2] > 0:
+                # Build side output layer
+                self.add_module(f"side{v[0][-1]}", nn.Conv2d(v[2], self.out_ch, kernel_size=3, padding=1))
+        # Build fuse layer
+        self.add_module("outconv", nn.Conv2d(int(self.height * self.out_ch), self.out_ch, kernel_size=1))
 
     def forward(self, x: torch.Tensor) -> list:
         """
@@ -361,38 +376,6 @@ class U2NET(nn.Module):
         maps = fuse()
         return maps
 
-    def _make_layers(self, cfgs: dict) -> None:
-        """
-        Create and register the layers of the Modified U^2-Net.
-
-        Parameters
-        ----------
-        cfgs : dict
-            Configuration dictionary defining the structure of Custom RSU blocks and side outputs.
-        """
-        self.height = int((len(cfgs) + 1) / 2)
-        self.add_module("downsample", nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True))
-        for k, v in cfgs.items():
-            # Build Custom RSU block
-            self.add_module(
-                k,
-                RSUBlock(
-                    ch_in=v[1][1],
-                    ch_out=v[1][3],
-                    width=v[1][2],
-                    layers=[1] * v[1][0],  # Adjust based on height
-                    groups=1,  # Adjust if needed
-                    dilation=v[1][4] if len(v[1]) > 4 else 1,
-                    norm_layer=nn.BatchNorm2d,
-                    skip_connect=False,  # Adjust based on configuration
-                ),
-            )
-            if v[2] > 0:
-                # Build side output layer
-                self.add_module(f"side{v[0][-1]}", nn.Conv2d(v[2], self.out_ch, kernel_size=3, padding=1))
-        # Build fuse layer
-        self.add_module("outconv", nn.Conv2d(int(self.height * self.out_ch), self.out_ch, kernel_size=1))
-
 
 def U2NET_full_Modified() -> U2NET:
     """
@@ -419,12 +402,7 @@ def U2NET_full_Modified() -> U2NET:
         "stage1d": ["De_1", (7, 128, 16, 64, False), 64],
     }
 
-    # Define AutoEncoder configuration for RSUBlock
-    autoencoder_cfg = {
-        "block": blk.UNetBlock,  # Adjust based on your block implementation
-    }
-
-    return U2NET(cfgs=full_cfg, out_ch=1, autoencoder_cfg=autoencoder_cfg)
+    return U2NET(out_ch=1, **full_cfg)
 
 
 def U2NET_lite_Modified() -> U2NET:
@@ -452,7 +430,7 @@ def U2NET_lite_Modified() -> U2NET:
         "stage1d": ["De_1", (7, 128, 16, 64, False), 64],
     }
 
-    return U2NET(cfgs=lite_cfg, out_ch=1)
+    return U2NET(out_ch=1, **lite_cfg)
 
 
 if __name__ == "__main__":
