@@ -217,8 +217,6 @@ class RSUBlock(nn.Module):
         Dilation rate for convolutional layers. Default is 1.
     norm_layer : Callable[..., nn.Module], optional
         Normalization layer to use. Default is `nn.BatchNorm2d`.
-    skip_connect : bool, optional
-        If True, adds skip connections for U-Net style. Default is False.
     """
 
     def __init__(
@@ -230,7 +228,6 @@ class RSUBlock(nn.Module):
         groups: int = 1,
         dilation: int = 1,
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
-        skip_connect: bool = False,
     ):
         super(RSUBlock, self).__init__()
         # Initialize the AutoEncoder as the core of RSU
@@ -244,7 +241,7 @@ class RSUBlock(nn.Module):
                 groups=groups,
                 dilation=dilation,
                 norm_layer=norm_layer,
-                skip_connect=skip_connect,
+                skip_connect=True,
             )
         )
 
