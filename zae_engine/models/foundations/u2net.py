@@ -1,4 +1,4 @@
-from typing import OrderedDict, Union, Sequence, Callable
+from typing import OrderedDict, Tuple, Sequence, Callable
 
 import torch
 import torch.nn as nn
@@ -166,12 +166,77 @@ def U2NET_lite() -> U2NET:
     return U2NET(cfgs=lite_cfg, out_ch=1)
 
 
+class MyU2NET(AutoEncoder):
+    def __init__(
+        self,
+        ch_in: int = 3,
+        ch_out: int = 1,
+        width: int = 16,
+        heights: Sequence[int] = (7, 6, 5, 4, 4, 4),
+        dilation_heights: Sequence[int] = (7, 6, 5, 4, 1, 1),
+        norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
+    ):
+        super(MyU2NET, self).__init__(
+            block=blk.UNetBlock,
+            ch_in=ch_in,
+            ch_out=ch_out,
+            width=width,
+            layers=[1] * len(heights),  # 아래에서 내부 layer들이 교체될 예정
+            norm_layer=norm_layer,
+            skip_connect=True,
+        )
+        self.side_outputs = []  # fusion을 통해 합쳐질 output들의 저장 공간
+        # skip-connection이 True인 AutoEncoder로 기본 U-net이 구현되어 있음
+
+        for i, (h, dh) in enumerate(zip(heights, dilation_heights)):
+            # 현재 height에 맞게 적절한 ch_in, width, ch_out 계산
+            in_depth_unet_cfg = {
+                "block": blk.UNetBlock,
+                "ch_in": width,
+                "width": width,
+                "ch_out": width * 4,
+                "layers": [2] + [1] * (h - 1),
+                "skip_connect": True,
+            }
+            in_depth_encoder_rsu = Residual(AutoEncoder(**in_depth_unet_cfg))
+            in_depth_decoder_rsu = Residual(AutoEncoder(**in_depth_unet_cfg))
+
+            # RSU의 최대 height 계산 : encoder (혹은 decoder의 수) + 1 (bottleneck) = h + 1
+            in_depth_height = h + 1
+
+            # dilation_heights를 참조해서 in_depth_rsu 중 dilation이 필요한 layer 수정
+            for ii in range(dh, h):
+                # 일반 convolution에 dilation 추가
+                in_depth_encoder_rsu.encoder.body[ii].dilation = 2
+                in_depth_decoder_rsu.encoder.body[ii].dilation = 2
+
+                # dilation이 추가되었으므로 downsample을 identity로 교체
+                in_depth_encoder_rsu.encoder.body[ii].downsample = nn.Identity()
+                in_depth_decoder_rsu.encoder.body[ii].downsample = nn.Identity()
+
+            # 후처리된 in_depth_unet를 적절한 위치에 입력
+            self.encoder.body[2] = in_depth_encoder_rsu
+
+        # decoder의 출력들을 side_outputs에 저장하도록 hook 등록
+        for b in self.decoder.body:
+            b.register_forward_hook(self.feature_hook)
+
+        # 기존의 fully-connected layer를 fusion으로 대체
+        self.fc = nn.Conv2d(in_channels=width, out_channels=ch_out, kernel_size=1)
+
+    def decoding_output_hook(self, module, input_tensor, output_tensor):
+        """
+        Hooks the final feature map before bottleneck.
+        """
+        self.side_outputs.append(output_tensor)
+
+
 if __name__ == "__main__":
     # 예시 입력
     input_tensor = torch.randn(1, 3, 320, 320)  # 배치 크기 1, 채널 3, 320x320 이미지
 
     # 전체 U2-Net 모델 인스턴스 생성
-    model_full = U2NET_full()
+    model_full = MyU2NET()
     print(model_full)
 
     # 라이트 U2-Net 모델 인스턴스 생성
