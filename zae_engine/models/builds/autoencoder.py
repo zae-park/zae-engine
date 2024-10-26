@@ -9,16 +9,6 @@ from . import cnn
 from ...nn_night import blocks as blk
 
 
-import torch
-import torch.nn as nn
-from typing import Callable, Sequence, Type, Union, Optional
-from torch import Tensor
-
-# 필요한 블록과 CNNBase를 임포트하세요
-# from . import cnn
-# from ...nn_night import blocks as blk
-
-
 class AutoEncoder(nn.Module):
     """
     A flexible AutoEncoder architecture with optional skip connections for U-Net style implementations.
@@ -60,7 +50,7 @@ class AutoEncoder(nn.Module):
         The final output convolutional layer.
     sig : nn.Sigmoid
         Sigmoid activation function for the output.
-    encoder_hook_handles : list
+    hook_handles : OrderedDict
         List of hook handles for encoder and bottleneck hooks.
     """
 
@@ -94,7 +84,7 @@ class AutoEncoder(nn.Module):
         self.encoder.body[0] = self.encoder.make_body(blocks=[block] * layers[0], ch_in=ch_in, ch_out=width, stride=2)
 
         self.feature_vectors = []
-        self.hook_handles = {}
+        self.hook_handles = OrderedDict()
         # [U-net] Register hook for every blocks in encoder when "skip_connect" is true.
         if skip_connect:
             for i, e in enumerate(self.encoder.body):
@@ -129,6 +119,7 @@ class AutoEncoder(nn.Module):
         """
         self.feature_vectors.append(output_tensor)
 
+    # TODO: add HookManager
     def remove_hooks(self):
         """
         Removes all hooks registered in the encoder and bottleneck.
