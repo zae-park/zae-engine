@@ -190,9 +190,9 @@ class MyU2NET(AutoEncoder):
         self,
         ch_in: int = 3,
         ch_out: int = 1,
-        width: int = 16,
+        width: int = 64,
         heights: Sequence[int] = (7, 6, 5, 4, 4, 4),
-        dilation_heights: Sequence[int] = (7, 6, 5, 4, 1, 1),
+        dilation_heights: Sequence[int] = (7, 6, 5, 4, -1, -1),
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
     ):
         super(MyU2NET, self).__init__(
@@ -207,40 +207,55 @@ class MyU2NET(AutoEncoder):
 
         self.side_outputs = []  # Storage for side outputs
 
-        # Replace internal RSU blocks with customized AutoEncoders
+        # Remove encoder and bottleneck hooks to prevent feature_vectors accumulation
+        self.remove_hooks()
+
+        # Initialize RSU blocks based on heights and dilation_heights
+        ch_ = width
         for i, (h, dh) in enumerate(zip(heights, dilation_heights)):
             # Configure AutoEncoder parameters based on height and dilation
-            in_depth_unet_cfg = {
+            rsu_cfg = {
                 "block": blk.UNetBlock,
-                "ch_in": width,
-                "ch_out": width * 4,
-                "width": width,
+                "width": ch_,
                 "layers": [2] + [1] * (h - 1),
                 "norm_layer": norm_layer,
                 "skip_connect": True,
             }
             # Initialize encoder and decoder RSU blocks with residual connections
-            in_depth_encoder_rsu = Residual(AutoEncoder(**in_depth_unet_cfg))
-            in_depth_decoder_rsu = Residual(AutoEncoder(**in_depth_unet_cfg))
+            rsu_encoder = Residual(AutoEncoder(ch_in=ch_ if i else ch_in * 2, ch_out=ch_, **rsu_cfg))
+            rsu_decoder = Residual(AutoEncoder(ch_in=ch_ * 2, ch_out=ch_, **rsu_cfg))
 
+            # todo: h와 dh 비교로 dilation 범위 설정해야 함
             # Adjust dilation and downsampling based on dilation_heights
             for ii in range(dh, h):
-                in_depth_encoder_rsu.encoder.body[ii].conv_s1.dilation = 2
-                in_depth_decoder_rsu.encoder.body[ii].conv_s1.dilation = 2
+                # Access the appropriate convolutional layer to set dilation
+                # 여기서는 'conv_s1'이라는 레이어 이름을 가정
+                # 실제 레이어 이름에 맞게 수정해야 합니다.
+                rsu_encoder.encoder.body[ii].conv_s1.dilation = 2
+                rsu_decoder.encoder.body[ii].conv_s1.dilation = 2
 
                 # Replace downsample with identity if dilation is applied
-                in_depth_encoder_rsu.encoder.body[ii].downsample = nn.Identity()
-                in_depth_decoder_rsu.encoder.body[ii].downsample = nn.Identity()
+                rsu_encoder.encoder.body[ii].downsample = nn.Identity()
+                rsu_decoder.encoder.body[ii].downsample = nn.Identity()
 
-            # Replace the corresponding encoder block with the customized RSU
-            self.encoder.body[2] = in_depth_encoder_rsu
+            # Replace fc layer with identity
+            rsu_encoder.fc = nn.Identity()
+            rsu_decoder.fc = nn.Identity()
 
-        # Register hooks for decoder to capture side outputs
-        for b in self.decoder.body:
-            b.register_forward_hook(self.decoding_output_hook)
+            # Replace the corresponding encoder and decoder blocks
+            self.encoder.body[i] = rsu_encoder
+            self.decoder.body[i] = rsu_decoder
 
-        # Replace the fully-connected layer with a fusion layer
-        self.fc = nn.Conv2d(in_channels=width, out_channels=ch_out, kernel_size=1)
+            if dh:
+                ch_ *= 2
+
+        # Register hooks only for decoder blocks to capture side outputs
+        for decoder_block in self.decoder:
+            decoder_block.register_forward_hook(self.decoding_output_hook)
+
+            # 퓨전 레이어 교체 (이미 self.fc가 정의되어 있으므로 필요 시 수정)
+            self.fc = nn.Conv2d(in_channels=width, out_channels=ch_out, kernel_size=1)
+            self.sig = nn.Sigmoid()
 
     def decoding_output_hook(self, module, input_tensor, output_tensor):
         """
@@ -262,12 +277,13 @@ class MyU2NET(AutoEncoder):
         torch.Tensor
             The final saliency map. Shape: (batch_size, ch_out, height, width).
         """
-        # Clear previous side outputs
+        # Clear previous side outputs and feature_vectors
         self.side_outputs = []
+        self.feature_vectors = []
 
         # Forward pass through encoder and bottleneck
-        bottleneck = self.encoder(x)
-        bottleneck = self.bottleneck(bottleneck)
+        encoded = self.encoder(x)
+        bottleneck = self.bottleneck(encoded)
 
         # Forward pass through decoder with skip connections
         for up_pool, dec in zip(self.up_pools, self.decoder):
@@ -276,19 +292,19 @@ class MyU2NET(AutoEncoder):
                 bottleneck = torch.cat((bottleneck, self.feature_vectors.pop()), dim=1)
             bottleneck = dec(bottleneck)
 
-        # Apply fusion layer
-        fused = self.fc(bottleneck)
-        fused = self.sig(fused)
+        # Apply fully-connected layer and sigmoid activation
+        output = self.sig(self.fc(bottleneck))
 
-        # Combine side outputs
-        for side in self.side_outputs:
-            side = nn.functional.interpolate(side, size=fused.shape[-2:], mode="bilinear", align_corners=False)
-            fused += side
+        # Fuse side outputs
+        if self.side_outputs:
+            fused = torch.zeros_like(output)
+            for side in self.side_outputs:
+                side = nn.functional.interpolate(side, size=output.shape[-2:], mode="bilinear", align_corners=False)
+                fused += side
+            fused = self.sig(self.fc(fused))
+            output = fused  # Replace output with fused output
 
-        # Apply sigmoid activation
-        fused = self.sig(fused)
-
-        return fused
+        return output
 
 
 if __name__ == "__main__":
