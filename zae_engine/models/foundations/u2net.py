@@ -7,6 +7,7 @@ import math
 
 # Import necessary modules from your project structure
 from zae_engine.models import AutoEncoder
+from zae_engine.models.converter import DimConverter
 from zae_engine.nn_night import blocks as blk
 from zae_engine.nn_night.layers import Residual
 
@@ -204,7 +205,7 @@ class MyU2NET(AutoEncoder):
             norm_layer=norm_layer,
             skip_connect=True,
         )
-
+        self.main_height = len(heights)
         self.side_outputs = []  # Storage for side outputs
 
         # Remove encoder and bottleneck hooks to prevent feature_vectors accumulation
@@ -225,18 +226,26 @@ class MyU2NET(AutoEncoder):
             u_encoder = AutoEncoder(ch_in=ch_ if i else ch_in * 2, ch_out=ch_, **rsu_cfg)
             u_decoder = AutoEncoder(ch_in=ch_ * 2, ch_out=ch_, **rsu_cfg)
 
-            # todo: h와 dh 비교로 dilation 범위 설정해야 함
-            # Adjust dilation and downsampling based on dilation_heights
-            for ii in range(dh, h):
-                # Access the appropriate convolutional layer to set dilation
-                # 여기서는 'conv_s1'이라는 레이어 이름을 가정
-                # 실제 레이어 이름에 맞게 수정해야 합니다.
-                u_encoder.encoder.body[ii].conv_s1.dilation = 2
-                u_decoder.encoder.body[ii].conv_s1.dilation = 2
-
-                # Replace downsample with identity if dilation is applied
-                u_encoder.encoder.body[ii].downsample = nn.Identity()
-                u_decoder.encoder.body[ii].downsample = nn.Identity()
+            # # todo: h와 dh 비교로 dilation 범위 설정해야 함
+            # # Adjust dilation and downsampling based on dilation_heights
+            # for ii in range(dh, h):
+            #     # Access the appropriate convolutional layer to set dilation
+            #     # 여기서는 'conv_s1'이라는 레이어 이름을 가정
+            #     # 실제 레이어 이름에 맞게 수정해야 합니다.
+            #     target_layer = u_encoder.encoder.body[ii][0].conv1
+            #     target_const = DimConverter.const_getter(target_layer)
+            #     target_const["dilation"] = (2,)
+            #     u_encoder.encoder.body[ii][0].conv1 = type(target_layer)(**target_const)
+            #
+            #     target_layer = u_encoder.encoder.body[ii][0].conv2
+            #     target_const = DimConverter.const_getter(target_layer)
+            #     target_const["dilation"] = (2,)
+            #     u_encoder.encoder.body[ii][0].conv2 = type(target_layer)(**target_const)
+            #
+            #
+            #     # Replace downsample with identity if dilation is applied
+            #     u_encoder.encoder.body[ii].downsample = nn.Identity()
+            #     u_decoder.encoder.body[ii].downsample = nn.Identity()
 
             # Replace fc layer with identity
             u_encoder.fc = nn.Identity()
