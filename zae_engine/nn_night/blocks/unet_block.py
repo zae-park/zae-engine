@@ -82,43 +82,45 @@ class UNetBlock(resblock.BasicBlock):
 
 
 class RSU7(nn.Module):
+    expansion = 2
     """
     U²-Net's RSU7 (Recurrent Residual U-block with 7 levels).
     """
 
-    def __init__(self, ch_in, mid_ch, ch_out):
+    def __init__(self, ch_in: int, ch_out: int, width: int = None, *args, **kwargs):
         super(RSU7, self).__init__()
-
+        if width is None:
+            width = ch_out // self.expansion
         self.rebnconvin = conv_block.ConvBlock(ch_in=ch_in, ch_out=ch_out, dilate=1)
 
-        self.rebnconv1 = conv_block.ConvBlock(ch_in=ch_out, ch_out=mid_ch)
+        self.rebnconv1 = conv_block.ConvBlock(ch_in=ch_out, ch_out=width)
         self.pool1 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
 
-        self.rebnconv2 = conv_block.ConvBlock(ch_in=ch_out, ch_out=mid_ch)
+        self.rebnconv2 = conv_block.ConvBlock(ch_in=ch_out, ch_out=width)
         self.pool2 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
 
-        self.rebnconv3 = conv_block.ConvBlock(ch_in=ch_out, ch_out=mid_ch)
+        self.rebnconv3 = conv_block.ConvBlock(ch_in=ch_out, ch_out=width)
         self.pool3 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
 
-        self.rebnconv4 = conv_block.ConvBlock(ch_in=ch_out, ch_out=mid_ch)
+        self.rebnconv4 = conv_block.ConvBlock(ch_in=ch_out, ch_out=width)
         self.pool4 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
 
-        self.rebnconv5 = conv_block.ConvBlock(ch_in=ch_out, ch_out=mid_ch)
+        self.rebnconv5 = conv_block.ConvBlock(ch_in=ch_out, ch_out=width)
         self.pool5 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
 
-        self.rebnconv6 = conv_block.ConvBlock(ch_in=ch_out, ch_out=mid_ch)
+        self.rebnconv6 = conv_block.ConvBlock(ch_in=ch_out, ch_out=width)
         self.pool6 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
 
-        self.rebnconv7 = conv_block.ConvBlock(ch_in=ch_out, ch_out=mid_ch)
+        self.rebnconv7 = conv_block.ConvBlock(ch_in=ch_out, ch_out=width)
 
-        self.rebnconv6d = conv_block.ConvBlock(ch_in=mid_ch * 2, ch_out=mid_ch)
-        self.rebnconv5d = conv_block.ConvBlock(ch_in=mid_ch * 2, ch_out=mid_ch)
-        self.rebnconv4d = conv_block.ConvBlock(ch_in=mid_ch * 2, ch_out=mid_ch)
-        self.rebnconv3d = conv_block.ConvBlock(ch_in=mid_ch * 2, ch_out=mid_ch)
-        self.rebnconv2d = conv_block.ConvBlock(ch_in=mid_ch * 2, ch_out=mid_ch)
-        self.rebnconv1d = conv_block.ConvBlock(ch_in=mid_ch * 2, ch_out=ch_out)
+        self.rebnconv6d = conv_block.ConvBlock(ch_in=width * 2, ch_out=width)
+        self.rebnconv5d = conv_block.ConvBlock(ch_in=width * 2, ch_out=width)
+        self.rebnconv4d = conv_block.ConvBlock(ch_in=width * 2, ch_out=width)
+        self.rebnconv3d = conv_block.ConvBlock(ch_in=width * 2, ch_out=width)
+        self.rebnconv2d = conv_block.ConvBlock(ch_in=width * 2, ch_out=width)
+        self.rebnconv1d = conv_block.ConvBlock(ch_in=width * 2, ch_out=ch_out)
 
-        self.rebnconvout = conv_block.ConvBlock(mid_ch + ch_out, ch_out, dilate=1)
+        self.rebnconvout = conv_block.ConvBlock(width + ch_out, ch_out, dilate=1)
 
     def forward(self, x):
         """
