@@ -88,6 +88,7 @@ class AutoEncoder(nn.Module):
         # [U-net] Register hook for every blocks in encoder when "skip_connect" is true.
         if skip_connect:
             for i, e in enumerate(self.encoder.body):
+                # TODO : check last layer in encoder using named_parameter or named_modules
                 handle = e[0].relu2.register_forward_hook(self.feature_hook)
                 self.hook_handles[f"Enc{i}"] = handle
         handle = self.encoder.body[-1].register_forward_hook(self.feature_output_hook)
