@@ -118,7 +118,7 @@ class RSU7(nn.Module):
         self.rebnconv2d = conv_block.ConvBlock(ch_in=mid_ch * 2, ch_out=mid_ch)
         self.rebnconv1d = conv_block.ConvBlock(ch_in=mid_ch * 2, ch_out=ch_out)
 
-        self.rebnconvout = REBNCONV(mid_ch + ch_out, ch_out, dilate=1)
+        self.rebnconvout = conv_block.ConvBlock(mid_ch + ch_out, ch_out, dilate=1)
 
     def forward(self, x):
         """
