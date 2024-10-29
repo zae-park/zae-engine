@@ -10,7 +10,7 @@ from . import resblock
 
 class UNetBlock(resblock.BasicBlock):
     """
-    Residual block for UNet architecture.
+    Two times of [Conv-normalization-activation] block for UNet architecture.
 
     This module is a modified version of the BasicBlock used in ResNet, adapted for the UNet architecture.
 
