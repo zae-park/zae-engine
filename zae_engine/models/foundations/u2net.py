@@ -7,6 +7,7 @@ import math
 
 # Import necessary modules from your project structure
 from zae_engine.models import AutoEncoder
+from zae_engine.models.converter import DimConverter
 from zae_engine.nn_night import blocks as blk
 from zae_engine.nn_night.layers import Residual
 
@@ -204,7 +205,7 @@ class MyU2NET(AutoEncoder):
             norm_layer=norm_layer,
             skip_connect=True,
         )
-
+        self.main_height = len(heights)
         self.side_outputs = []  # Storage for side outputs
 
         # Remove encoder and bottleneck hooks to prevent feature_vectors accumulation
@@ -222,29 +223,37 @@ class MyU2NET(AutoEncoder):
                 "skip_connect": True,
             }
             # Initialize encoder and decoder RSU blocks with residual connections
-            rsu_encoder = Residual(AutoEncoder(ch_in=ch_ if i else ch_in * 2, ch_out=ch_, **rsu_cfg))
-            rsu_decoder = Residual(AutoEncoder(ch_in=ch_ * 2, ch_out=ch_, **rsu_cfg))
+            u_encoder = AutoEncoder(ch_in=ch_ if i else ch_in * 2, ch_out=ch_, **rsu_cfg)
+            u_decoder = AutoEncoder(ch_in=ch_ * 2, ch_out=ch_, **rsu_cfg)
 
-            # todo: h와 dh 비교로 dilation 범위 설정해야 함
-            # Adjust dilation and downsampling based on dilation_heights
-            for ii in range(dh, h):
-                # Access the appropriate convolutional layer to set dilation
-                # 여기서는 'conv_s1'이라는 레이어 이름을 가정
-                # 실제 레이어 이름에 맞게 수정해야 합니다.
-                rsu_encoder.encoder.body[ii].conv_s1.dilation = 2
-                rsu_decoder.encoder.body[ii].conv_s1.dilation = 2
-
-                # Replace downsample with identity if dilation is applied
-                rsu_encoder.encoder.body[ii].downsample = nn.Identity()
-                rsu_decoder.encoder.body[ii].downsample = nn.Identity()
+            # # todo: h와 dh 비교로 dilation 범위 설정해야 함
+            # # Adjust dilation and downsampling based on dilation_heights
+            # for ii in range(dh, h):
+            #     # Access the appropriate convolutional layer to set dilation
+            #     # 여기서는 'conv_s1'이라는 레이어 이름을 가정
+            #     # 실제 레이어 이름에 맞게 수정해야 합니다.
+            #     target_layer = u_encoder.encoder.body[ii][0].conv1
+            #     target_const = DimConverter.const_getter(target_layer)
+            #     target_const["dilation"] = (2,)
+            #     u_encoder.encoder.body[ii][0].conv1 = type(target_layer)(**target_const)
+            #
+            #     target_layer = u_encoder.encoder.body[ii][0].conv2
+            #     target_const = DimConverter.const_getter(target_layer)
+            #     target_const["dilation"] = (2,)
+            #     u_encoder.encoder.body[ii][0].conv2 = type(target_layer)(**target_const)
+            #
+            #
+            #     # Replace downsample with identity if dilation is applied
+            #     u_encoder.encoder.body[ii].downsample = nn.Identity()
+            #     u_decoder.encoder.body[ii].downsample = nn.Identity()
 
             # Replace fc layer with identity
-            rsu_encoder.fc = nn.Identity()
-            rsu_decoder.fc = nn.Identity()
+            u_encoder.fc = nn.Identity()
+            u_decoder.fc = nn.Identity()
 
             # Replace the corresponding encoder and decoder blocks
-            self.encoder.body[i] = rsu_encoder
-            self.decoder.body[i] = rsu_decoder
+            self.encoder.body[i] = Residual(u_encoder)
+            self.decoder[i] = Residual(u_decoder)
 
             if dh:
                 ch_ *= 2
@@ -312,7 +321,7 @@ if __name__ == "__main__":
     input_tensor = torch.randn(1, 3, 320, 320)  # 배치 크기 1, 채널 3, 320x320 이미지
 
     # 전체 U2-Net 모델 인스턴스 생성
-    model_full = MyU2NET()
+    model_full = MyU2NET(ch_in=3, ch_out=1, width=4, heights=(4, 4, 4, 4, 4, 4), dilation_heights=(2, 2, 2, 2, 2, 2))
     print(model_full)
 
     # 라이트 U2-Net 모델 인스턴스 생성

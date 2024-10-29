@@ -136,7 +136,7 @@ class DimConverter:
                 # bias = module.bias
 
     @staticmethod
-    def const_getter(conv_module: nn.Module, reduce: bool) -> dict:
+    def const_getter(conv_module: nn.Module, reduce: bool = None) -> dict:
         """
         Retrieve and adjust the constants of a given convolutional module.
 
@@ -144,8 +144,9 @@ class DimConverter:
         ----------
         conv_module : nn.Module
             The convolutional module to be adjusted.
-        reduce : bool
+        reduce : bool (default: None)
             Whether to reduce the dimensionality (e.g., 2D to 1D) or expand it (e.g., 1D to 2D).
+            If None(default), the dimensionality is preserved.
 
         Returns
         -------
@@ -157,7 +158,8 @@ class DimConverter:
         for k in conv_module.__constants__:
             v = module_dict[k]
             if isinstance(v, tuple):
-                v = v[:-1] if reduce else v[0:1] * (1 + len(v))
+                if reduce is not None:
+                    v = v[:-1] if reduce else v[0:1] * (1 + len(v))
             const[k] = v
         return const
 
