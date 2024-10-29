@@ -8,6 +8,7 @@ import math
 # Import necessary modules from your project structure
 from zae_engine.models import AutoEncoder
 from zae_engine.models.converter import DimConverter
+from zae_engine.nn_night.blocks import unet_block
 from zae_engine.nn_night import blocks as blk
 from zae_engine.nn_night.layers import Residual
 
@@ -196,6 +197,8 @@ class MyU2NET(AutoEncoder):
         dilation_heights: Sequence[int] = (7, 6, 5, 4, -1, -1),
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
     ):
+        self.ch_in = ch_in
+        self.ch_out = ch_out
         super(MyU2NET, self).__init__(
             block=blk.UNetBlock,
             ch_in=ch_in,
@@ -223,7 +226,7 @@ class MyU2NET(AutoEncoder):
                 "skip_connect": True,
             }
             # Initialize encoder and decoder RSU blocks with residual connections
-            u_encoder = AutoEncoder(ch_in=ch_ if i else ch_in * 2, ch_out=ch_, **rsu_cfg)
+            u_encoder = AutoEncoder(ch_in=ch_ if i else ch_in, ch_out=ch_ * 2, **rsu_cfg)
             u_decoder = AutoEncoder(ch_in=ch_ * 2, ch_out=ch_, **rsu_cfg)
 
             # # todo: h와 dh 비교로 dilation 범위 설정해야 함
@@ -316,28 +319,72 @@ class MyU2NET(AutoEncoder):
         return output
 
 
+class U2Net(AutoEncoder):
+    """
+    U²-Net model built using the AutoEncoder framework with RSU7 blocks.
+    """
+
+    def __init__(self, in_ch=1, out_ch=1, width=4, layers=[2, 2, 2, 2, 2, 2]):
+        """
+        Initializes the U²-Net model using AutoEncoder.
+
+        Parameters
+        ----------
+        in_ch : int, optional
+            Number of input channels, by default 1.
+        out_ch : int, optional
+            Number of output channels, by default 1.
+        width : int, optional
+            Base width for the encoder and decoder layers, by default 32.
+        layers : Sequence[int], optional
+            Number of RSU7 blocks in each stage, by default [2, 2, 2, 2, 2, 2].
+        """
+        super(U2Net, self).__init__(
+            block=unet_block.RSU7,
+            ch_in=in_ch,
+            ch_out=out_ch,
+            width=width,
+            layers=layers,
+            groups=1,
+            dilation=1,
+            norm_layer=nn.BatchNorm2d,
+            skip_connect=True,
+        )
+        print("U2NetAutoEncoder initialized with RSU7 blocks.")
+
+    def forward(self, x):
+        """
+        Forward pass for U2NetAutoEncoder.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor. Shape: (batch_size, channels, height, width).
+
+        Returns
+        -------
+        torch.Tensor
+            Reconstructed output tensor. Shape: (batch_size, channels, height, width).
+        """
+        return super(U2Net, self).forward(x)
+
+
 if __name__ == "__main__":
     # 예시 입력
     input_tensor = torch.randn(1, 3, 320, 320)  # 배치 크기 1, 채널 3, 320x320 이미지
 
     # 전체 U2-Net 모델 인스턴스 생성
-    model_full = MyU2NET(ch_in=3, ch_out=1, width=4, heights=(4, 4, 4, 4, 4, 4), dilation_heights=(2, 2, 2, 2, 2, 2))
+    model_full = U2Net()
     print(model_full)
-
-    # 라이트 U2-Net 모델 인스턴스 생성
-    model_lite = U2NET_lite()
-    print(model_lite)
 
     # 모델을 GPU로 이동 (가능한 경우)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_full.to(device)
-    model_lite.to(device)
     input_tensor = input_tensor.to(device)
 
     # 모델의 forward 패스 수행
     output_full = model_full(input_tensor)
-    output_lite = model_lite(input_tensor)
 
     # 출력 형태 확인
     print([o.shape for o in output_full])  # 사이드 출력 맵의 형태
-    print([o.shape for o in output_lite])
+    print("done")
