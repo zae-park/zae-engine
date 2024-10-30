@@ -1,3 +1,4 @@
+from functools import partial
 from typing import OrderedDict, Tuple, Sequence, Callable
 
 import torch
@@ -16,156 +17,92 @@ __all__ = ["U2NET_full", "U2NET_lite"]
 # https://arxiv.org/pdf/2005.09007
 
 
-class U2NET(nn.Module):
-    """
-    U^2-Net architecture for salient object detection.
+full_cfg = {
+    # Configuration for each stage: {stage_name: [RSU name, (height, in_ch, mid_ch, out_ch, dilated), side_output_ch]}
+    "stage1": ["En_1", (7, 3, 32, 64, False), -1],
+    "stage2": ["En_2", (6, 64, 32, 128, False), -1],
+    "stage3": ["En_3", (5, 128, 64, 256, False), -1],
+    "stage4": ["En_4", (4, 256, 128, 512, False), -1],
+    "stage5": ["En_5", (4, 512, 256, 512, True), -1],
+    "stage6": ["En_6", (4, 512, 256, 512, True), 512],
+    "stage5d": ["De_5", (4, 1024, 256, 512, True), 512],
+    "stage4d": ["De_4", (4, 1024, 128, 256, False), 256],
+    "stage3d": ["De_3", (5, 512, 64, 128, False), 128],
+    "stage2d": ["De_2", (6, 256, 32, 64, False), 64],
+    "stage1d": ["De_1", (7, 128, 16, 64, False), 64],
+}
+lite_cfg = {
+    # Configuration for each stage: {stage_name: [RSU name, (height, in_ch, mid_ch, out_ch, dilated), side_output_ch]}
+    "stage1": ["En_1", (7, 3, 16, 64, False), -1],
+    "stage2": ["En_2", (6, 64, 16, 64, False), -1],
+    "stage3": ["En_3", (5, 64, 16, 64, False), -1],
+    "stage4": ["En_4", (4, 64, 16, 64, False), -1],
+    "stage5": ["En_5", (4, 64, 16, 64, True), -1],
+    "stage6": ["En_6", (4, 64, 16, 64, True), 64],
+    "stage5d": ["De_5", (4, 128, 16, 64, True), 64],
+    "stage4d": ["De_4", (4, 128, 16, 64, False), 64],
+    "stage3d": ["De_3", (5, 128, 16, 64, False), 64],
+    "stage2d": ["De_2", (6, 128, 16, 64, False), 64],
+    "stage1d": ["De_1", (7, 128, 16, 64, False), 64],
+}
 
-    The U^2-Net is a nested U-structure network that captures multi-scale features using RSU blocks.
-    It produces side outputs at different resolutions, which are fused to generate the final saliency map.
+
+class RSUBlock(AutoEncoder):
+    """
+    Recurrent Residual U-block (RSU) using the AutoEncoder architecture.
 
     Parameters
     ----------
-    cfgs : dict
-        Configuration dictionary defining the structure of RSU blocks and side outputs.
+    in_ch : int
+        Number of input channels.
+    mid_ch : int
+        Number of middle channels.
     out_ch : int
-        Number of output channels for the final saliency map.
+        Number of output channels.
+    height : int
+        Number of layers in the RSU block.
+    dilation_height : int
+        Base dilation rate for the blocks.
+
+    Attributes
+    ----------
+    Uses the AutoEncoder's encoder and decoder with RSUBlock-specific configurations.
     """
 
-    def __init__(self, cfgs: dict, out_ch: int):
-        super(U2NET, self).__init__()
-        self.out_ch = out_ch
-        self.raw_resolution = (320, 320)  # Example resolution; adjust as needed
-        self._make_layers(cfgs)
-
-        # Initialize layers for side outputs and fusion
-        self.side_layers = nn.ModuleDict()
-        for k, v in cfgs.items():
-            if v[2] > 0:
-                self.side_layers[f"side{v[0][-1]}"] = nn.Conv2d(v[2], self.out_ch, kernel_size=3, padding=1)
-        self.fuse_layer = nn.Conv2d(int((len(cfgs) + 1) / 2) * self.out_ch, self.out_ch, kernel_size=1)
-        self.sig = nn.Sigmoid()
-
-    def forward(self, x: torch.Tensor) -> list:
+    def __init__(self, in_ch, mid_ch, out_ch, height=7, dilation_height=1):
         """
-        Forward pass through the U^2-Net.
+        Initializes the RSUBlock.
 
         Parameters
         ----------
-        x : torch.Tensor
-            Input tensor of shape (batch_size, channels, height, width).
-
-        Returns
-        -------
-        list of torch.Tensor
-            List of saliency maps at different resolutions, including the final fused map.
+        in_ch : int
+            Number of input channels.
+        mid_ch : int
+            Number of middle channels.
+        out_ch : int
+            Number of output channels.
+        height : int, optional
+            Number of layers in the RSU block. Default is 7.
+        dilation_height : int, optional
+            Base dilation rate for the blocks. Default is 1.
         """
-        maps = []  # Storage for side outputs
-
-        # Forward through the encoder-decoder (AutoEncoder)
-        x = self.encoder(x)
-
-        # Collect side outputs
-        for side_key in self.side_layers.keys():
-            side_map = getattr(self, side_key)(x)
-            side_map = nn.functional.interpolate(
-                side_map, size=self.raw_resolution, mode="bilinear", align_corners=False
-            )
-            maps.append(side_map)
-
-        # Fuse side outputs
-        fused = torch.cat(maps, dim=1)
-        fused = self.fuse_layer(fused)
-        fused = self.sig(fused)
-        maps.insert(0, fused)
-
-        # Apply sigmoid activation to all side outputs
-        maps = [self.sig(map_i) for map_i in maps]
-
-        return maps
-
-    def _make_layers(self, cfgs: dict) -> None:
-        """
-        Create and register the layers of the U^2-Net.
-
-        Parameters
-        ----------
-        cfgs : dict
-            Configuration dictionary defining the structure of RSU blocks and side outputs.
-        """
-        self.height = int((len(cfgs) + 1) / 2)
-        self.encoder = AutoEncoder(
-            block=blk.UNetBlock,  # Adjust based on your block implementation
-            ch_in=3,
-            ch_out=64,
-            width=64,
-            layers=[7, 6, 5, 4, 4, 4],
+        layers = [1] * height  # Each layer has 1 block
+        rsu_block = partial(dilation=dilation_height)
+        super(RSUBlock, self).__init__(
+            block=rsu_block,
+            ch_in=in_ch,
+            ch_out=out_ch,
+            width=mid_ch,
+            layers=layers,
             groups=1,
             dilation=1,
             norm_layer=nn.BatchNorm2d,
             skip_connect=True,
         )
-        # Assuming input resolution is known; set raw_resolution accordingly
-        # self.raw_resolution = (x.shape[-2], x.shape[-1])  # Set dynamically if needed
+        print(f"RSUBlock initialized with height={height} and dilation_height={dilation_height}")
 
-        # Initialize side layers based on cfgs
-        for k, v in cfgs.items():
-            if v[2] > 0:
-                # Side output layers are already handled in self.side_layers
-                pass
-
-        # Fuse layer is already initialized in __init__
-
-
-def U2NET_full() -> U2NET:
-    """
-    Instantiate the full version of U^2-Net with detailed RSU configurations.
-
-    Returns
-    -------
-    U2NET
-        The full U^2-Net model instance.
-    """
-    full_cfg = {
-        # Configuration for each stage: {stage_name: [RSU name, (height, in_ch, mid_ch, out_ch, dilated), side_output_ch]}
-        "stage1": ["En_1", (7, 3, 32, 64, False), -1],
-        "stage2": ["En_2", (6, 64, 32, 128, False), -1],
-        "stage3": ["En_3", (5, 128, 64, 256, False), -1],
-        "stage4": ["En_4", (4, 256, 128, 512, False), -1],
-        "stage5": ["En_5", (4, 512, 256, 512, True), -1],
-        "stage6": ["En_6", (4, 512, 256, 512, True), 512],
-        "stage5d": ["De_5", (4, 1024, 256, 512, True), 512],
-        "stage4d": ["De_4", (4, 1024, 128, 256, False), 256],
-        "stage3d": ["De_3", (5, 512, 64, 128, False), 128],
-        "stage2d": ["De_2", (6, 256, 32, 64, False), 64],
-        "stage1d": ["De_1", (7, 128, 16, 64, False), 64],
-    }
-    return U2NET(cfgs=full_cfg, out_ch=1)
-
-
-def U2NET_lite() -> U2NET:
-    """
-    Instantiate the lite version of U^2-Net with simplified RSU configurations.
-
-    Returns
-    -------
-    U2NET
-        The lite U^2-Net model instance.
-    """
-    lite_cfg = {
-        # Configuration for each stage: {stage_name: [RSU name, (height, in_ch, mid_ch, out_ch, dilated), side_output_ch]}
-        "stage1": ["En_1", (7, 3, 16, 64, False), -1],
-        "stage2": ["En_2", (6, 64, 16, 64, False), -1],
-        "stage3": ["En_3", (5, 64, 16, 64, False), -1],
-        "stage4": ["En_4", (4, 64, 16, 64, False), -1],
-        "stage5": ["En_5", (4, 64, 16, 64, True), -1],
-        "stage6": ["En_6", (4, 64, 16, 64, True), 64],
-        "stage5d": ["De_5", (4, 128, 16, 64, True), 64],
-        "stage4d": ["De_4", (4, 128, 16, 64, False), 64],
-        "stage3d": ["De_3", (5, 128, 16, 64, False), 64],
-        "stage2d": ["De_2", (6, 128, 16, 64, False), 64],
-        "stage1d": ["De_1", (7, 128, 16, 64, False), 64],
-    }
-    return U2NET(cfgs=lite_cfg, out_ch=1)
+    def forward(self, x):
+        return super(RSUBlock, self).forward(x)
 
 
 class MyU2NET(AutoEncoder):
@@ -225,6 +162,7 @@ class MyU2NET(AutoEncoder):
                 "norm_layer": norm_layer,
                 "skip_connect": True,
             }
+            # todo: use RSUBlock instead
             # Initialize encoder and decoder RSU blocks with residual connections
             u_encoder = AutoEncoder(ch_in=ch_ if i else ch_in, ch_out=ch_ * 2, **rsu_cfg)
             u_decoder = AutoEncoder(ch_in=ch_ * 2, ch_out=ch_, **rsu_cfg)
