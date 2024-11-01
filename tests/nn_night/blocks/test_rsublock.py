@@ -49,7 +49,7 @@ class TestRSUBlock(unittest.TestCase):
 
     def test_different_input_sizes(self):
         # 다양한 입력 크기에 대해 unet_block.RSUBlock 테스트
-        input_sizes = [(1, 3, 128, 128), (2, 3, 256, 256), (4, 3, 512, 512)]
+        input_sizes = [(1, 3, 256, 256), (1, 3, 512, 512), (1, 3, 768, 512)]
         for size in input_sizes:
             with self.subTest(size=size):
                 input_tensor = torch.randn(size)
