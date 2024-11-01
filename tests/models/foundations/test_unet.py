@@ -7,7 +7,7 @@ from contextlib import redirect_stdout
 
 from zae_engine.models.builds import autoencoder
 from zae_engine.nn_night import blocks
-from zae_engine.models import unet_brain
+from zae_engine.models.foundations import unet_brain
 from zae_engine.models import unet
 
 
