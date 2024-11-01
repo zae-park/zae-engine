@@ -56,7 +56,7 @@ class ConvBlock(nn.Module):
         torch.Tensor
             Output tensor of shape (batch_size, channel_out, height, width).
         """
-        if self.prenorm:
+        if self.pre_norm:
             return self.act(self.conv(self.norm(x)))
         else:
             return self.act(self.norm(self.conv(x)))
