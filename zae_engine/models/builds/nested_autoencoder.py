@@ -1,10 +1,11 @@
+import math
 from functools import partial
-from typing import OrderedDict, Tuple, Sequence, Callable
+from typing import OrderedDict, Tuple, Sequence, Callable, List
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
-import math
 
 # Import necessary modules from your project structure
 from zae_engine.models import AutoEncoder
@@ -47,63 +48,141 @@ lite_cfg = {
 }
 
 
-class RSUBlock(AutoEncoder):
+class NestedUNet(nn.Module):
     """
-    Recurrent Residual U-block (RSU) using the AutoEncoder architecture.
+    U²-Net 구조 구현.
 
     Parameters
     ----------
-    in_ch : int
-        Number of input channels.
-    mid_ch : int
-        Number of middle channels.
-    out_ch : int
-        Number of output channels.
-    height : int
-        Number of layers in the RSU block.
-    dilation_height : int
-        Base dilation rate for the blocks.
-
-    Attributes
-    ----------
-    Uses the AutoEncoder's encoder and decoder with RSUBlock-specific configurations.
+    in_ch : int, optional
+        입력 채널 수. Default is 3.
+    out_ch : int, optional
+        출력 채널 수. Default is 1.
+    width : int, optional
+        초기 중간 채널 수. Default is 32.
+    heights : List[int]
+        각 인코더 레이어의 RSU 블록 높이 리스트.
+    dilation_heights : List[int]
+        각 인코더 레이어의 RSU 블록 dilation 높이 리스트.
     """
 
-    def __init__(self, in_ch, mid_ch, out_ch, height=7, dilation_height=1):
-        """
-        Initializes the RSUBlock.
+    def __init__(self, in_ch=3, out_ch=1, width=32, heights: List[int] = [7, 6, 5, 4], dilation_heights: List[int] = [2, 2, 2, 2]):
+        super(NestedUNet, self).__init__()
 
-        Parameters
-        ----------
-        in_ch : int
-            Number of input channels.
-        mid_ch : int
-            Number of middle channels.
-        out_ch : int
-            Number of output channels.
-        height : int, optional
-            Number of layers in the RSU block. Default is 7.
-        dilation_height : int, optional
-            Base dilation rate for the blocks. Default is 1.
-        """
-        layers = [1] * height  # Each layer has 1 block
-        rsu_block = partial(dilation=dilation_height)
-        super(RSUBlock, self).__init__(
-            block=rsu_block,
-            ch_in=in_ch,
-            ch_out=out_ch,
-            width=mid_ch,
-            layers=layers,
-            groups=1,
-            dilation=1,
-            norm_layer=nn.BatchNorm2d,
-            skip_connect=True,
+        assert len(heights) == len(dilation_heights), "heights and dilation_heights must have the same length."
+
+        self.num_layers = len(heights)
+
+        # 인코더 설정
+        self.encoder = nn.ModuleList()
+        self.pool_layers = nn.ModuleList()
+        self.encoder_channels = []
+
+        current_in_ch = in_ch
+        current_mid_ch = width
+
+        for i in range(self.num_layers):
+            height = heights[i]
+            dil = dilation_heights[i]
+            out_ch_enc = current_mid_ch * 2  # 채널 두 배로 증가
+
+            self.encoder.append(unet_block.RSUBlock(
+                in_ch=current_in_ch,
+                mid_ch=current_mid_ch,
+                out_ch=out_ch_enc,
+                height=height,
+                dilation_height=dil
+            ))
+            self.pool_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
+
+            # 다음 인코더 레이어를 위해 채널 설정
+            self.encoder_channels.append((current_in_ch, current_mid_ch, out_ch_enc))
+            current_in_ch = out_ch_enc
+            current_mid_ch = out_ch_enc  # 다음 레이어의 mid_ch는 현재 레이어의 out_ch
+
+        # 병목
+        bottleneck_height = heights[-1]  # 병목도 동일한 height 사용
+        bottleneck_dil = dilation_heights[-1]
+        self.bottleneck = unet_block.RSUBlock(
+            in_ch=current_in_ch,
+            mid_ch=current_mid_ch,
+            out_ch=current_mid_ch * 2,  # 병목 레이어의 out_ch는 두 배
+            height=bottleneck_height,
+            dilation_height=bottleneck_dil
         )
-        print(f"RSUBlock initialized with height={height} and dilation_height={dilation_height}")
+
+        # 디코더 설정
+        self.up_layers = nn.ModuleList()
+        self.decoder = nn.ModuleList()
+        self.decoder_channels = []
+
+        for i in range(self.num_layers):
+            height = heights[self.num_layers - i - 1]  # 디코더는 인코더의 역순
+            dil = dilation_heights[self.num_layers - i - 1]
+            in_ch_dec = current_mid_ch * 2  # 업샘플링된 채널
+            mid_ch_dec = current_mid_ch
+            out_ch_dec = mid_ch_dec  # 디코더 블록의 out_ch는 mid_ch와 동일
+
+            self.up_layers.append(nn.ConvTranspose2d(
+                in_channels=in_ch_dec,
+                out_channels=mid_ch_dec,
+                kernel_size=2,
+                stride=2
+            ))
+            self.decoder.append(unet_block.RSUBlock(
+                in_ch=in_ch_dec,  # 스킵 연결 후 concatenated channels
+                mid_ch=mid_ch_dec // 2,  # 스킵 연결 후 중간 채널은 반으로
+                out_ch=out_ch_dec,
+                height=height,
+                dilation_height=dil
+            ))
+            self.decoder_channels.append((in_ch_dec, mid_ch_dec, out_ch_dec))
+
+            current_mid_ch = mid_ch_dec  # 다음 디코더 레이어를 위해 채널 설정
+
+        # 출력 레이어
+        self.out_conv = nn.Conv2d(current_mid_ch, out_ch, kernel_size=1)
+
+        # 사이드 아웃풋 (딥 슈퍼비전을 위한 추가적인 출력)
+        self.side_layers = nn.ModuleList()
+        for i in range(self.num_layers):
+            # 각 디코더 단계마다 사이드 아웃풋을 생성
+            self.side_layers.append(nn.Conv2d(self.decoder_channels[i][2], out_ch, kernel_size=3, padding=1))
 
     def forward(self, x):
-        return super(RSUBlock, self).forward(x)
+        encoder_features = []
 
+        # 인코더 경로
+        for i in range(self.num_layers):
+            x = self.encoder[i](x)
+            encoder_features.append(x)
+            x = self.pool_layers[i](x)
+
+        # 병목
+        x = self.bottleneck(x)
+
+        side_outputs = []
+
+        # 디코더 경로
+        for i in range(self.num_layers):
+            x = self.up_layers[i](x)
+            enc_feat = encoder_features[self.num_layers - i - 1]
+
+            # 크기가 다를 경우 맞추기
+            if x.size() != enc_feat.size():
+                x = F.interpolate(x, size=enc_feat.shape[2:], mode='bilinear', align_corners=True)
+
+            x = torch.cat([x, enc_feat], dim=1)
+            x = self.decoder[i](x)
+
+            # 사이드 아웃풋 생성
+            side_output = self.side_layers[i](x)
+            side_outputs.append(side_output)
+
+        # 최종 출력
+        out = self.out_conv(x)
+
+        return out, *side_outputs
 
 class MyU2NET(AutoEncoder):
     """
