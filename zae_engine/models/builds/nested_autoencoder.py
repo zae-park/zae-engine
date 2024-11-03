@@ -14,7 +14,7 @@ from zae_engine.nn_night.blocks import unet_block
 from zae_engine.nn_night import blocks as blk
 from zae_engine.nn_night.layers import Residual
 
-__all__ = ["U2NET_full", "U2NET_lite"]
+__all__ = ["NestedUNet"]
 # https://arxiv.org/pdf/2005.09007
 
 
@@ -66,7 +66,9 @@ class NestedUNet(nn.Module):
         각 인코더 레이어의 RSU 블록 dilation 높이 리스트.
     """
 
-    def __init__(self, in_ch=3, out_ch=1, width=32, heights: List[int] = [7, 6, 5, 4], dilation_heights: List[int] = [2, 2, 2, 2]):
+    def __init__(
+        self, in_ch=3, out_ch=1, width=32, heights: List[int] = [7, 6, 5, 4], dilation_heights: List[int] = [2, 2, 2, 2]
+    ):
         super(NestedUNet, self).__init__()
 
         assert len(heights) == len(dilation_heights), "heights and dilation_heights must have the same length."
@@ -86,13 +88,11 @@ class NestedUNet(nn.Module):
             dil = dilation_heights[i]
             out_ch_enc = current_mid_ch * 2  # 채널 두 배로 증가
 
-            self.encoder.append(unet_block.RSUBlock(
-                in_ch=current_in_ch,
-                mid_ch=current_mid_ch,
-                out_ch=out_ch_enc,
-                height=height,
-                dilation_height=dil
-            ))
+            self.encoder.append(
+                unet_block.RSUBlock(
+                    in_ch=current_in_ch, mid_ch=current_mid_ch, out_ch=out_ch_enc, height=height, dilation_height=dil
+                )
+            )
             self.pool_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
 
             # 다음 인코더 레이어를 위해 채널 설정
@@ -108,7 +108,7 @@ class NestedUNet(nn.Module):
             mid_ch=current_mid_ch,
             out_ch=current_mid_ch * 2,  # 병목 레이어의 out_ch는 두 배
             height=bottleneck_height,
-            dilation_height=bottleneck_dil
+            dilation_height=bottleneck_dil,
         )
 
         # 디코더 설정
@@ -123,19 +123,18 @@ class NestedUNet(nn.Module):
             mid_ch_dec = current_mid_ch
             out_ch_dec = mid_ch_dec  # 디코더 블록의 out_ch는 mid_ch와 동일
 
-            self.up_layers.append(nn.ConvTranspose2d(
-                in_channels=in_ch_dec,
-                out_channels=mid_ch_dec,
-                kernel_size=2,
-                stride=2
-            ))
-            self.decoder.append(unet_block.RSUBlock(
-                in_ch=in_ch_dec,  # 스킵 연결 후 concatenated channels
-                mid_ch=mid_ch_dec // 2,  # 스킵 연결 후 중간 채널은 반으로
-                out_ch=out_ch_dec,
-                height=height,
-                dilation_height=dil
-            ))
+            self.up_layers.append(
+                nn.ConvTranspose2d(in_channels=in_ch_dec, out_channels=mid_ch_dec, kernel_size=2, stride=2)
+            )
+            self.decoder.append(
+                unet_block.RSUBlock(
+                    in_ch=in_ch_dec,  # 스킵 연결 후 concatenated channels
+                    mid_ch=mid_ch_dec // 2,  # 스킵 연결 후 중간 채널은 반으로
+                    out_ch=out_ch_dec,
+                    height=height,
+                    dilation_height=dil,
+                )
+            )
             self.decoder_channels.append((in_ch_dec, mid_ch_dec, out_ch_dec))
 
             current_mid_ch = mid_ch_dec  # 다음 디코더 레이어를 위해 채널 설정
@@ -170,7 +169,7 @@ class NestedUNet(nn.Module):
 
             # 크기가 다를 경우 맞추기
             if x.size() != enc_feat.size():
-                x = F.interpolate(x, size=enc_feat.shape[2:], mode='bilinear', align_corners=True)
+                x = F.interpolate(x, size=enc_feat.shape[2:], mode="bilinear", align_corners=True)
 
             x = torch.cat([x, enc_feat], dim=1)
             x = self.decoder[i](x)
@@ -183,6 +182,7 @@ class NestedUNet(nn.Module):
         out = self.out_conv(x)
 
         return out, *side_outputs
+
 
 class MyU2NET(AutoEncoder):
     """
