@@ -1,6 +1,6 @@
 import math
 from functools import partial
-from typing import OrderedDict, Tuple, Sequence, Callable, List
+from typing import OrderedDict, Union, Sequence, Callable, List
 
 import torch
 import torch.nn as nn
@@ -8,11 +8,10 @@ import torch.nn.functional as F
 
 
 # Import necessary modules from your project structure
-from zae_engine.models import AutoEncoder
-from zae_engine.models.converter import DimConverter
-from zae_engine.nn_night.blocks import unet_block
-from zae_engine.nn_night import blocks as blk
-from zae_engine.nn_night.layers import Residual
+from .autoencoder import AutoEncoder
+from ...nn_night.blocks.unet_block import RSUBlock
+from ...nn_night import blocks as blk
+from ...nn_night.layers import Residual
 
 __all__ = ["NestedUNet"]
 # https://arxiv.org/pdf/2005.09007
@@ -67,7 +66,13 @@ class NestedUNet(nn.Module):
     """
 
     def __init__(
-        self, in_ch=3, out_ch=1, width=32, heights: List[int] = [7, 6, 5, 4], dilation_heights: List[int] = [2, 2, 2, 2]
+        self,
+        in_ch=3,
+        out_ch=1,
+        width: Union[int | Sequence] = 32,
+        heights: Sequence[int] = (7, 6, 5, 4),
+        dilation_heights: Sequence[int] = (2, 2, 2, 2),
+        middle_width: Union[int | Sequence] = (16, 16, 16, 16),
     ):
         super(NestedUNet, self).__init__()
 
@@ -80,33 +85,35 @@ class NestedUNet(nn.Module):
         self.pool_layers = nn.ModuleList()
         self.encoder_channels = []
 
+        # 입력 width 확인
+        if isinstance(width, int):
+            width_list = [width for _ in range(len(heights))]
+        else:
+            assert len(width) == len(heights)
+            width_list = width
+
         current_in_ch = in_ch
         current_mid_ch = width
 
-        for i in range(self.num_layers):
-            height = heights[i]
-            dil = dilation_heights[i]
-            out_ch_enc = current_mid_ch * 2  # 채널 두 배로 증가
+        for i, (h, dh, w, mw) in enumerate(zip(heights, dilation_heights, width_list, middle_width)):
 
-            self.encoder.append(
-                unet_block.RSUBlock(
-                    in_ch=current_in_ch, mid_ch=current_mid_ch, out_ch=out_ch_enc, height=height, dilation_height=dil
-                )
-            )
+            cur_in_ch = w if i else in_ch
+            cur_out_ch = in_ch if h == dh else 2 * in_ch
+            self.encoder.append(RSUBlock(in_ch=cur_in_ch, mid_ch=mw, out_ch=cur_out_ch, height=h, dilation_height=dh))
             self.pool_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
-
-            # 다음 인코더 레이어를 위해 채널 설정
-            self.encoder_channels.append((current_in_ch, current_mid_ch, out_ch_enc))
-            current_in_ch = out_ch_enc
-            current_mid_ch = out_ch_enc  # 다음 레이어의 mid_ch는 현재 레이어의 out_ch
+            #
+            # # 다음 인코더 레이어를 위해 채널 설정
+            # self.encoder_channels.append((current_in_ch, current_mid_ch, out_ch_enc))
+            # current_in_ch = out_ch_enc
+            # current_mid_ch = out_ch_enc  # 다음 레이어의 mid_ch는 현재 레이어의 out_ch
 
         # 병목
         bottleneck_height = heights[-1]  # 병목도 동일한 height 사용
         bottleneck_dil = dilation_heights[-1]
-        self.bottleneck = unet_block.RSUBlock(
+        self.bottleneck = RSUBlock(
             in_ch=current_in_ch,
             mid_ch=current_mid_ch,
-            out_ch=current_mid_ch * 2,  # 병목 레이어의 out_ch는 두 배
+            out_ch=current_mid_ch,  # 병목 레이어의 out_ch는 두 배가 아님
             height=bottleneck_height,
             dilation_height=bottleneck_dil,
         )
@@ -123,11 +130,13 @@ class NestedUNet(nn.Module):
             mid_ch_dec = current_mid_ch
             out_ch_dec = mid_ch_dec  # 디코더 블록의 out_ch는 mid_ch와 동일
 
-            self.up_layers.append(
-                nn.ConvTranspose2d(in_channels=in_ch_dec, out_channels=mid_ch_dec, kernel_size=2, stride=2)
-            )
+            # self.up_layers.append(
+            #     nn.ConvTranspose2d(in_channels=in_ch_dec, out_channels=mid_ch_dec, kernel_size=2, stride=2)
+            # )
+            self.up_layers.append(nn.Upsample(scale_factor=2))
+
             self.decoder.append(
-                unet_block.RSUBlock(
+                RSUBlock(
                     in_ch=in_ch_dec,  # 스킵 연결 후 concatenated channels
                     mid_ch=mid_ch_dec // 2,  # 스킵 연결 후 중간 채널은 반으로
                     out_ch=out_ch_dec,
@@ -168,7 +177,7 @@ class NestedUNet(nn.Module):
             enc_feat = encoder_features[self.num_layers - i - 1]
 
             # 크기가 다를 경우 맞추기
-            if x.size() != enc_feat.size():
+            if x.shape[2:] != enc_feat.shape[2:]:
                 x = F.interpolate(x, size=enc_feat.shape[2:], mode="bilinear", align_corners=True)
 
             x = torch.cat([x, enc_feat], dim=1)
