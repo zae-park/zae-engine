@@ -1,6 +1,6 @@
 [tool.poetry]
 name = 'zae-engine'
-version = '0.7.1'
+version = '0.7.2'
 description = 'Deep learning engine powered by zae-park.'
 authors = ["zae-park <tom941105@gmail.com>"]
 packages = [
@@ -21,7 +21,6 @@ pandas = "^2.1.2"
 # For data IO
 wfdb = "^4.1.2"
 nibabel = "^5.1.0"
-pillow = "^10.1.0"
 
 # For Log
 tqdm = "^4.65.0"
@@ -30,6 +29,7 @@ rich = "^13.5.2"
 # For cli
 click = "^8.1.7"
 psutil = "^5.9.5"
+pillow = "^11.0.0"
 
 [tool.poetry.group.dev.dependencies]
 matplotlib = "^3.7.2"
