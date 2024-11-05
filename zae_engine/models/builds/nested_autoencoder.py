@@ -100,7 +100,7 @@ class NestedUNet(nn.Module):
             self.encoder.append(RSUBlock(in_ch=cur_in_ch, mid_ch=mw, out_ch=cur_out_ch, height=h, dilation_height=dh))
             self.pool_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
 
-            print(f"\tch_in: {cur_in_ch}\tch_mid: {mw}\tch_out: {cur_out_ch}\th: {h}, \dh: {dh}")
+            print(f"\tEnc_{i}\tch_in: {cur_in_ch}\tch_mid: {mw}\tch_out: {cur_out_ch}\th: {h}\tdh: {dh}")
 
             #
             # # 다음 인코더 레이어를 위해 채널 설정
@@ -119,7 +119,7 @@ class NestedUNet(nn.Module):
             dilation_height=bottleneck_dil,
         )
         print(
-            f"\tch_in: {cur_out_ch}\tch_mid: {mw}\tch_out: {cur_out_ch}\th: {bottleneck_height}, \dh: {bottleneck_dil}"
+            f"\tBottle\tch_in: {cur_out_ch}\tch_mid: {mw}\tch_out: {cur_out_ch}\th: {bottleneck_height}\tdh: {bottleneck_dil}"
         )
 
         # 디코더 설정
@@ -149,7 +149,9 @@ class NestedUNet(nn.Module):
                     dilation_height=dh,
                 )
             )
-            print(f"\tch_in: {cur_in_ch * 2}\tch_mid: {mid_ch_dec // 2}\tch_out: {cur_in_ch}\th: {h}, \dh: {dh}")
+            print(
+                f"\tDec_{i}\tch_in: {cur_in_ch * 2}\tch_mid: {mid_ch_dec // 2}\tch_out: {cur_in_ch}\th: {h}\tdh: {dh}"
+            )
             self.decoder_channels.append((in_ch_dec, mid_ch_dec, out_ch_dec))
 
         # 출력 레이어
