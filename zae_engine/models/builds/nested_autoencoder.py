@@ -78,6 +78,7 @@ class NestedUNet(nn.Module):
 
         assert len(heights) == len(dilation_heights), "heights and dilation_heights must have the same length."
 
+        self.minimum_resolution = max([2 ** (h - 1 + i) for i, h in enumerate(heights)])
         self.num_layers = len(heights)
 
         # 인코더 설정
@@ -121,10 +122,12 @@ class NestedUNet(nn.Module):
         self.decoder_channels = []
 
         for i, (h, dh, w, mw) in enumerate(zip(heights[::-1], dilation_heights[::-1], width_list, middle_width)):
+            cur_in_ch = w * 2 ** (self.num_layers - i)
+            # cur_out_ch = w if h == dh else 2 * w
 
             in_ch_dec = cur_out_ch * 2  # 업샘플링된 채널
             mid_ch_dec = mw
-            out_ch_dec = mid_ch_dec  # 디코더 블록의 out_ch는 mid_ch와 동일
+            out_ch_dec = cur_out_ch  # 디코더 블록의 out_ch는 mid_ch와 동일
 
             # self.up_layers.append(
             #     nn.ConvTranspose2d(in_channels=in_ch_dec, out_channels=mid_ch_dec, kernel_size=2, stride=2)
@@ -133,9 +136,9 @@ class NestedUNet(nn.Module):
 
             self.decoder.append(
                 RSUBlock(
-                    in_ch=in_ch_dec,  # 스킵 연결 후 concatenated channels
+                    in_ch=cur_in_ch * 2,  # 스킵 연결 후 concatenated channels
                     mid_ch=mid_ch_dec // 2,  # 스킵 연결 후 중간 채널은 반으로
-                    out_ch=out_ch_dec,
+                    out_ch=cur_in_ch,
                     height=h,
                     dilation_height=dh,
                 )
@@ -170,9 +173,9 @@ class NestedUNet(nn.Module):
             x = self.up_layers[i](x)
             enc_feat = encoder_features[self.num_layers - i - 1]
 
-            # 크기가 다를 경우 맞추기
-            if x.shape[2:] != enc_feat.shape[2:]:
-                x = F.interpolate(x, size=enc_feat.shape[2:], mode="bilinear", align_corners=True)
+            # # 크기가 다를 경우 맞추기
+            # if x.shape[2:] != enc_feat.shape[2:]:
+            #     x = F.interpolate(x, size=enc_feat.shape[2:], mode="bilinear", align_corners=True)
 
             x = torch.cat([x, enc_feat], dim=1)
             x = self.decoder[i](x)
