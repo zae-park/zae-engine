@@ -87,18 +87,15 @@ class NestedUNet(nn.Module):
 
         # 입력 width 확인
         if isinstance(width, int):
-            width_list = [width for _ in range(len(heights))]
+            width_list = [width * 2**i for i in range(len(heights))]
         else:
             assert len(width) == len(heights)
             width_list = width
 
-        current_in_ch = in_ch
-        current_mid_ch = width
-
         for i, (h, dh, w, mw) in enumerate(zip(heights, dilation_heights, width_list, middle_width)):
 
             cur_in_ch = w if i else in_ch
-            cur_out_ch = in_ch if h == dh else 2 * in_ch
+            cur_out_ch = w if h == dh else 2 * w
             self.encoder.append(RSUBlock(in_ch=cur_in_ch, mid_ch=mw, out_ch=cur_out_ch, height=h, dilation_height=dh))
             self.pool_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
             #
@@ -111,9 +108,9 @@ class NestedUNet(nn.Module):
         bottleneck_height = heights[-1]  # 병목도 동일한 height 사용
         bottleneck_dil = dilation_heights[-1]
         self.bottleneck = RSUBlock(
-            in_ch=current_in_ch,
-            mid_ch=current_mid_ch,
-            out_ch=current_mid_ch,  # 병목 레이어의 out_ch는 두 배가 아님
+            in_ch=cur_out_ch,
+            mid_ch=mw,
+            out_ch=cur_out_ch,  # 병목 레이어의 out_ch는 두 배가 아님
             height=bottleneck_height,
             dilation_height=bottleneck_dil,
         )
@@ -123,11 +120,10 @@ class NestedUNet(nn.Module):
         self.decoder = nn.ModuleList()
         self.decoder_channels = []
 
-        for i in range(self.num_layers):
-            height = heights[self.num_layers - i - 1]  # 디코더는 인코더의 역순
-            dil = dilation_heights[self.num_layers - i - 1]
-            in_ch_dec = current_mid_ch * 2  # 업샘플링된 채널
-            mid_ch_dec = current_mid_ch
+        for i, (h, dh, w, mw) in enumerate(zip(heights[::-1], dilation_heights[::-1], width_list, middle_width)):
+
+            in_ch_dec = cur_out_ch * 2  # 업샘플링된 채널
+            mid_ch_dec = mw
             out_ch_dec = mid_ch_dec  # 디코더 블록의 out_ch는 mid_ch와 동일
 
             # self.up_layers.append(
@@ -140,16 +136,14 @@ class NestedUNet(nn.Module):
                     in_ch=in_ch_dec,  # 스킵 연결 후 concatenated channels
                     mid_ch=mid_ch_dec // 2,  # 스킵 연결 후 중간 채널은 반으로
                     out_ch=out_ch_dec,
-                    height=height,
-                    dilation_height=dil,
+                    height=h,
+                    dilation_height=dh,
                 )
             )
             self.decoder_channels.append((in_ch_dec, mid_ch_dec, out_ch_dec))
 
-            current_mid_ch = mid_ch_dec  # 다음 디코더 레이어를 위해 채널 설정
-
         # 출력 레이어
-        self.out_conv = nn.Conv2d(current_mid_ch, out_ch, kernel_size=1)
+        self.out_conv = nn.Conv2d(out_ch_dec, out_ch, kernel_size=1)
 
         # 사이드 아웃풋 (딥 슈퍼비전을 위한 추가적인 출력)
         self.side_layers = nn.ModuleList()
