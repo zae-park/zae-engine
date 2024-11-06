@@ -109,27 +109,31 @@ class RSUBlock(nn.Module):
 
     """
 
-    def __init__(self, ch_in: int, ch_mid: int, ch_out: int, height: int, dilation_height: int, pool_size: int = 2):
+    def __init__(
+        self, ch_in: int, ch_mid: int, ch_out: int, height: int = 7, dilation_height: int = 7, pool_size: int = 2
+    ):
         super(RSUBlock, self).__init__()
-        assert height > dilation_height, "dilation_height must be less than height."
+        assert height >= dilation_height, "dilation_height must be less or equal than height."
 
+        self.minimum_resolution = 2 ** (height - 2)
         self.pool_size = pool_size
-        self.stem = nn.Conv2d(in_channels=ch_in, out_channels=ch_out, kernel_size=3)
+        self.stem = nn.Conv2d(in_channels=ch_in, out_channels=ch_out, kernel_size=3, padding=1)
 
         # Encoder path
         self.encoder_blocks = nn.ModuleList()
         self.pools = nn.ModuleList()
 
-        for i in range(height):
-            ch_ = ch_mid if i else ch_out
-            if i >= dilation_height - 1:
+        for i in range(1, height):
+            is_first = i == 1
+            ch_ = ch_out if is_first else ch_mid
+            if i >= dilation_height:
                 # Dilation mode: use dilation 2 instead of Pooling layer
                 self.encoder_blocks.append(conv_block.ConvBlock(ch_in=ch_, ch_out=ch_mid, dilate=2))
                 self.pools.append(nn.Identity())
             else:
                 # Vanilla mode: use Pooling layer with kernel & stride 2 instead of dilation in Convolutional layer.
                 self.encoder_blocks.append(conv_block.ConvBlock(ch_in=ch_, ch_out=ch_mid))
-                self.pools.append(self.down_layer(at_first=i == 0))
+                self.pools.append(self.down_layer(at_first=is_first))
 
         # Bottleneck block with dilation 2.
         self.bottleneck = conv_block.ConvBlock(ch_in=ch_mid, ch_out=ch_mid, dilate=2)
@@ -138,7 +142,7 @@ class RSUBlock(nn.Module):
         self.ups = nn.ModuleList()
         self.decoder_blocks = nn.ModuleList()
 
-        for i in range(height):
+        for i in range(1, height):
             is_last = i == height - 1
             ch_ = ch_out if is_last else ch_mid
             if i >= dilation_height:
