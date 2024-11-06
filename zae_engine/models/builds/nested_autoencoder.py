@@ -70,9 +70,9 @@ class NestedUNet(nn.Module):
         in_ch=3,
         out_ch=1,
         width: Union[int | Sequence] = 32,
-        heights: Sequence[int] = (7, 6, 5, 4),
-        dilation_heights: Sequence[int] = (2, 2, 2, 2),
-        middle_width: Union[int | Sequence] = (16, 16, 16, 16),
+        heights: Sequence[int] = (7, 6, 5, 4, 4),
+        dilation_heights: Sequence[int] = (2, 2, 2, 2, 4),
+        middle_width: Union[int | Sequence] = (32, 32, 64, 128, 256),
     ):
         super(NestedUNet, self).__init__()
 
@@ -95,12 +95,12 @@ class NestedUNet(nn.Module):
 
         for i, (h, dh, w, mw) in enumerate(zip(heights, dilation_heights, width_list, middle_width)):
 
-            cur_in_ch = w if i else in_ch
-            cur_out_ch = w if h == dh else 2 * w
-            self.encoder.append(RSUBlock(in_ch=cur_in_ch, mid_ch=mw, out_ch=cur_out_ch, height=h, dilation_height=dh))
+            enc_ch_in = w if i else in_ch
+            enc_ch_out = w if h == dh else 2 * w
+            self.encoder.append(RSUBlock(ch_in=enc_ch_in, ch_mid=mw, ch_out=enc_ch_out, height=h, dilation_height=dh))
             self.pool_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
 
-            print(f"\tEnc_{i}\tch_in: {cur_in_ch}\tch_mid: {mw}\tch_out: {cur_out_ch}\th: {h}\tdh: {dh}")
+            print(f"\tEnc_{i}\tch_in: {enc_ch_in}\tch_mid: {mw}\tch_out: {enc_ch_out}\th: {h}\tdh: {dh}")
 
             #
             # # 다음 인코더 레이어를 위해 채널 설정
@@ -112,14 +112,14 @@ class NestedUNet(nn.Module):
         bottleneck_height = heights[-1]  # 병목도 동일한 height 사용
         bottleneck_dil = dilation_heights[-1]
         self.bottleneck = RSUBlock(
-            in_ch=cur_out_ch,
-            mid_ch=mw,
-            out_ch=cur_out_ch,  # 병목 레이어의 out_ch는 두 배가 아님
+            ch_in=enc_ch_out,
+            ch_mid=mw,
+            ch_out=enc_ch_out,
             height=bottleneck_height,
             dilation_height=bottleneck_dil,
         )
         print(
-            f"\tBottle\tch_in: {cur_out_ch}\tch_mid: {mw}\tch_out: {cur_out_ch}\th: {bottleneck_height}\tdh: {bottleneck_dil}"
+            f"\tBottle\tch_in: {enc_ch_out}\tch_mid: {mw}\tch_out: {enc_ch_out}\th: {bottleneck_height}\tdh: {bottleneck_dil}"
         )
 
         # 디코더 설정
@@ -127,35 +127,19 @@ class NestedUNet(nn.Module):
         self.decoder = nn.ModuleList()
         self.decoder_channels = []
 
-        for i, (h, dh, w, mw) in enumerate(zip(heights[::-1], dilation_heights[::-1], width_list, middle_width)):
-            cur_in_ch = w * 2 ** (self.num_layers - i)
-            # cur_out_ch = w if h == dh else 2 * w
+        for i, (h, dh, w, mw) in enumerate(
+            zip(heights[::-1], dilation_heights[::-1], width_list[::-1], middle_width[::-1])
+        ):
+            dec_ch_out = 2 * w if h == dh else w // 2
 
-            in_ch_dec = cur_out_ch * 2  # 업샘플링된 채널
-            mid_ch_dec = mw
-            out_ch_dec = cur_out_ch  # 디코더 블록의 out_ch는 mid_ch와 동일
-
-            # self.up_layers.append(
-            #     nn.ConvTranspose2d(in_channels=in_ch_dec, out_channels=mid_ch_dec, kernel_size=2, stride=2)
-            # )
             self.up_layers.append(nn.Upsample(scale_factor=2))
 
-            self.decoder.append(
-                RSUBlock(
-                    in_ch=cur_in_ch * 2,  # 스킵 연결 후 concatenated channels
-                    mid_ch=mid_ch_dec // 2,  # 스킵 연결 후 중간 채널은 반으로
-                    out_ch=cur_in_ch,
-                    height=h,
-                    dilation_height=dh,
-                )
-            )
-            print(
-                f"\tDec_{i}\tch_in: {cur_in_ch * 2}\tch_mid: {mid_ch_dec // 2}\tch_out: {cur_in_ch}\th: {h}\tdh: {dh}"
-            )
-            self.decoder_channels.append((in_ch_dec, mid_ch_dec, out_ch_dec))
+            self.decoder.append(RSUBlock(ch_in=2 * w, ch_mid=mw, ch_out=dec_ch_out, height=h, dilation_height=dh))
+            print(f"\tDec_{i}\tch_in: {2 * w}\tch_mid: {mw}\tch_out: {dec_ch_out}\th: {h}\tdh: {dh}")
+            self.decoder_channels.append((2 * w, mw, dec_ch_out))
 
         # 출력 레이어
-        self.out_conv = nn.Conv2d(out_ch_dec, out_ch, kernel_size=1)
+        self.out_conv = nn.Conv2d(dec_ch_out, out_ch, kernel_size=1)
 
         # 사이드 아웃풋 (딥 슈퍼비전을 위한 추가적인 출력)
         self.side_layers = nn.ModuleList()
