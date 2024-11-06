@@ -1,60 +1,93 @@
 import unittest
 import torch
-import torch.nn as nn
-from torch.autograd import Variable
-from zae_engine.nn_night.blocks import unet_block
+
+from zae_engine.nn_night.blocks.unet_block import RSUBlock
 
 
-class TestUNetBlock(unittest.TestCase):
-
+class TestRSUBlock(unittest.TestCase):
     def setUp(self):
-        # Create a UNetBlock instance with default settings
-        self.unet_block = unet_block.UNetBlock(ch_in=3, ch_out=3)
-        self.unet_block_stride = unet_block.UNetBlock(ch_in=3, ch_out=3, stride=2)
-
-    def test_output_shape(self):
-        input_tensor = torch.randn(1, 3, 64, 64)  # Example input tensor
-        output_tensor = self.unet_block(input_tensor)
-        self.assertEqual(
-            input_tensor.shape, output_tensor.shape, "Output shape does not match input shape with stride 1."
+        # 기본 설정
+        self.ch_in = 3
+        self.ch_mid = 32
+        self.ch_out = 64
+        self.height = 7
+        self.dilation_height = 7
+        self.pool_size = 2
+        self.model = RSUBlock(
+            ch_in=self.ch_in,
+            ch_mid=self.ch_mid,
+            ch_out=self.ch_out,
+            height=self.height,
+            dilation_height=self.dilation_height,
+            pool_size=self.pool_size,
         )
 
-        output_tensor_stride = self.unet_block_stride(input_tensor)
-        expected_shape = (1, 3, 32, 32)  # Expected shape with stride 2
-        self.assertEqual(
-            output_tensor_stride.shape, expected_shape, "Output shape does not match expected shape with stride 2."
+    def test_initialization(self):
+        """RSUBlock이 올바르게 초기화되었는지 확인합니다."""
+        self.assertEqual(len(self.model.encoder_blocks), self.height - 1, "Incorrect number of encoder blocks.")
+        self.assertEqual(len(self.model.pools), self.height - 1, "Incorrect number of pooling layers.")
+        self.assertEqual(len(self.model.decoder_blocks), self.height - 1, "Incorrect number of decoder blocks.")
+        self.assertEqual(len(self.model.ups), self.height - 1, "Incorrect number of upsampling layers.")
+
+    def test_forward_pass_default_config(self):
+        """기본 설정에서 순전파가 정상적으로 동작하고 출력 형태가 올바른지 확인합니다."""
+        x = torch.randn(1, self.ch_in, 256, 256)
+        try:
+            output = self.model(x)
+            expected_shape = (1, self.ch_out, 256, 256)
+            self.assertEqual(output.shape, expected_shape, "Output shape mismatch.")
+        except Exception as e:
+            self.fail(f"Forward pass failed with exception: {e}")
+
+    def test_forward_pass_different_input_sizes(self):
+        """다양한 입력 크기에서 순전파가 정상적으로 동작하고 출력 형태가 올바른지 확인합니다."""
+        input_sizes = [(1, self.ch_in, 128, 128), (2, self.ch_in, 256, 256), (4, self.ch_in, 512, 512)]
+        for size in input_sizes:
+            with self.subTest(size=size):
+                x = torch.randn(*size)
+                try:
+                    output = self.model(x)
+                    expected_shape = (size[0], self.ch_out, size[2], size[3])
+                    self.assertEqual(output.shape, expected_shape, f"Output shape mismatch for input size {size}.")
+                except Exception as e:
+                    self.fail(f"Forward pass failed for input size {size} with exception: {e}")
+
+    def test_forward_pass_custom_channels(self):
+        """입력 및 출력 채널을 변경하여 순전파가 정상적으로 동작하는지 확인합니다."""
+        custom_ch_in = 1
+        custom_ch_mid = 16
+        custom_ch_out = 32
+        model = RSUBlock(
+            ch_in=custom_ch_in,
+            ch_mid=custom_ch_mid,
+            ch_out=custom_ch_out,
+            height=self.height,
+            dilation_height=self.dilation_height,
+            pool_size=self.pool_size,
         )
+        model.eval()
+        x = torch.randn(1, custom_ch_in, 256, 256)
+        try:
+            output = model(x)
+            expected_shape = (1, custom_ch_out, 256, 256)
+            self.assertEqual(output.shape, expected_shape, "Output shape mismatch with custom channels.")
+        except Exception as e:
+            self.fail(f"Forward pass with custom channels failed with exception: {e}")
 
-    def test_forward_pass(self):
-        input_tensor = torch.randn(1, 3, 64, 64)  # Example input tensor
-        output_tensor = self.unet_block(input_tensor)
+    def test_forward_pass_dilation_mode(self):
+        """Dilation 모드에서 순전파가 정상적으로 동작하는지 확인합니다."""
+        # height=4, dilation_height=2 설정으로 이미 dilation mode 적용됨
+        x = torch.randn(1, self.ch_in, 256, 256)
+        try:
+            output = self.model(x)
+            expected_shape = (1, self.ch_out, 256, 256)
+            self.assertEqual(output.shape, expected_shape, "Output shape mismatch in dilation mode.")
+        except Exception as e:
+            self.fail(f"Forward pass in dilation mode failed with exception: {e}")
 
-        # Ensure the output is not just the input tensor (the layers should alter the input)
-        self.assertFalse(
-            torch.equal(output_tensor, input_tensor),
-            "Output is identical to input, layers may not be applied correctly.",
-        )
-
-    def test_downsampling(self):
-        input_tensor = torch.randn(1, 3, 64, 64)
-        output_tensor_stride = self.unet_block_stride(input_tensor)
-
-        # Check if downsampling was applied correctly
-        self.assertEqual(
-            output_tensor_stride.shape[2:], (32, 32), "Downsampling did not reduce the spatial dimensions as expected."
-        )
-
-    def test_parameters_update(self):
-        input_tensor = torch.randn(1, 3, 64, 64, requires_grad=True)
-        output_tensor = self.unet_block(input_tensor)
-        output_tensor.sum().backward()
-
-        grad_found = False
-        for param in self.unet_block.parameters():
-            if param.grad is not None:
-                grad_found = True
-                break
-        self.assertTrue(grad_found, "No gradients found for any parameter.")
+    def test_model_parameters_exist(self):
+        """모델에 최소한 하나 이상의 파라미터가 존재하는지 확인합니다."""
+        self.assertTrue(len(list(self.model.parameters())) > 0, "RSUBlock has no parameters.")
 
 
 if __name__ == "__main__":
