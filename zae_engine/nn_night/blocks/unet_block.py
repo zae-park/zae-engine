@@ -84,89 +84,110 @@ class UNetBlock(resblock.BasicBlock):
 
 class RSUBlock(nn.Module):
     """
-    Recurrent Residual U-block (RSU) 구현.
+    Recurrent Residual U-block (RSU) implementation.
 
     Parameters
     ----------
-    in_ch : int
-        입력 채널 수.
-    mid_ch : int
-        중간 채널 수.
-    out_ch : int
-        출력 채널 수.
+    ch_in : int
+        Number of input channels.
+    ch_mid : int
+        Number of middle channels.
+    ch_out : int
+        Number of output channels.
     height : int
-        RSU 블록의 레이어 수 (예: RSU4는 height=4, RSU7는 height=7).
+        Number of layers in the RSU block (e.g., RSU4 has height=4, RSU7 has height=7).
     dilation_height : int
-        블록 내 컨볼루션의 dilation 값.
+        Dilation rate for convolutions within the block.
+    pool_size : int, optional
+        Pooling kernel size. Default is 2.
+
+    References
+    ----------
+    .. [1] Qin, X., Zhang, Z., Huang, C., Dehghan, M., Zaiane, O. R., & Jagersand, M. (2020).
+            U2-Net: Going deeper with nested U-structure for salient object detection. Pattern recognition, 106, 107404.
+            (https://arxiv.org/pdf/2005.09007)
+
     """
 
-    def __init__(self, in_ch: int, mid_ch: int, out_ch: int, height: int, dilation_height: int):
+    def __init__(self, ch_in: int, ch_mid: int, ch_out: int, height: int, dilation_height: int, pool_size: int = 2):
         super(RSUBlock, self).__init__()
+        assert height > dilation_height, "dilation_height must be less than height."
 
-        self.height = height
-        self.dilation_height = dilation_height
+        self.pool_size = pool_size
+        self.stem = nn.Conv2d(in_channels=ch_in, out_channels=ch_out, kernel_size=3)
 
-        # 인코더 경로
+        # Encoder path
         self.encoder_blocks = nn.ModuleList()
-        self.pool_layers = nn.ModuleList()
+        self.pools = nn.ModuleList()
 
-        current_in_ch = in_ch
         for i in range(height):
-            dilation = dilation_height * (i + 1)
-            self.encoder_blocks.append(conv_block.ConvBlock(ch_in=current_in_ch, ch_out=mid_ch, dilate=dilation))
-            self.pool_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
-            current_in_ch = mid_ch
+            ch_ = ch_mid if i else ch_out
+            if i >= dilation_height - 1:
+                # Dilation mode: use dilation 2 instead of Pooling layer
+                self.encoder_blocks.append(conv_block.ConvBlock(ch_in=ch_, ch_out=ch_mid, dilate=2))
+                self.pools.append(nn.Identity())
+            else:
+                # Vanilla mode: use Pooling layer with kernel & stride 2 instead of dilation in Convolutional layer.
+                self.encoder_blocks.append(conv_block.ConvBlock(ch_in=ch_, ch_out=ch_mid))
+                self.pools.append(self.down_layer(at_first=i == 0))
 
-        # 병목 (bottleneck) 블록
-        self.bottleneck = conv_block.ConvBlock(ch_in=mid_ch, ch_out=mid_ch, dilate=dilation_height * (height + 1))
+        # Bottleneck block with dilation 2.
+        self.bottleneck = conv_block.ConvBlock(ch_in=ch_mid, ch_out=ch_mid, dilate=2)
 
-        # 디코더 경로
-        self.up_layers = nn.ModuleList()
+        # Decoder path
+        self.ups = nn.ModuleList()
         self.decoder_blocks = nn.ModuleList()
 
         for i in range(height):
-            dilation = dilation_height * (height - i)
-            self.up_layers.append(nn.ConvTranspose2d(in_channels=mid_ch, out_channels=mid_ch, kernel_size=2, stride=2))
-            # 인코더의 스킵 연결을 위해 채널을 두 배로
-            self.decoder_blocks.append(conv_block.ConvBlock(ch_in=mid_ch * 2, ch_out=mid_ch, dilate=dilation))
+            is_last = i == height - 1
+            ch_ = ch_out if is_last else ch_mid
+            if i >= dilation_height:
+                # Dilation mode: use dilation 2 instead of Up-sampling layer
+                self.ups.append(nn.Identity())
+                self.decoder_blocks.append(conv_block.ConvBlock(ch_in=ch_mid * 2, ch_out=ch_, dilate=2))
+            else:
+                # Vanilla mode: use Up-sampling layer with kernel & stride 2 instead of dilation in Convolutional layer.
+                self.ups.append(self.up_layer(at_last=is_last))
+                self.decoder_blocks.append(conv_block.ConvBlock(ch_in=ch_mid * 2, ch_out=ch_))
 
-        # 출력 레이어
-        self.out_conv = conv_block.ConvBlock(ch_in=mid_ch, ch_out=out_ch, dilate=dilation_height)
+    def down_layer(self, at_first: bool = False):
+        """Returns a downsampling layer or identity based on the position."""
+        return nn.Identity() if at_first else nn.MaxPool2d(kernel_size=self.pool_size, stride=self.pool_size)
+
+    def up_layer(self, at_last: bool = False):
+        """Returns an upsampling layer or identity based on the position."""
+        return nn.Identity() if at_last else nn.Upsample(scale_factor=self.pool_size)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        RSUBlock의 순전파.
+        Forward pass through the RSUBlock.
 
         Parameters
         ----------
         x : torch.Tensor
-            입력 텐서. Shape: (batch_size, channels, height, width).
+            Input tensor of shape (batch_size, channels, height, width).
 
         Returns
         -------
         torch.Tensor
-            출력 텐서. Shape: (batch_size, out_ch, height, width).
+            Output tensor of shape (batch_size, out_ch, height, width).
         """
-        encoder_features = []
 
-        # 인코더 경로
-        for i in range(self.height):
-            x = self.encoder_blocks[i](x)
-            encoder_features.append(x)
-            x = self.pool_layers[i](x)
+        feat = self.stem(x)
+        features = [feat]
 
-        # 병목 (bottleneck) 처리
-        x = self.bottleneck(x)
+        # Encoder path
+        for enc, down in zip(self.encoder_blocks, self.pools):
+            feat = enc(feat)
+            features.append(feat)
+            feat = down(feat)
 
-        # 디코더 경로
-        for i in range(self.height):
-            x = self.up_layers[i](x)
-            # 인코더의 스킵 연결 특징 맵과 결합
-            enc_feat = encoder_features[self.height - i - 1]
-            x = torch.cat([x, enc_feat], dim=1)
-            x = self.decoder_blocks[i](x)
+        # Bottleneck processing
+        feat = self.bottleneck(feat)
 
-        # 출력 레이어
-        x = self.out_conv(x)
+        # Decoder path
+        for dec, up in zip(self.decoder_blocks, self.ups):
+            feat = torch.cat([up(feat), features.pop()], dim=1)
+            feat = dec(feat)
 
-        return x
+        return feat + features.pop()
