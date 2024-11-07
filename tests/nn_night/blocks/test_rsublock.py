@@ -6,8 +6,8 @@ from zae_engine.nn_night.blocks import unet_block
 
 class TestRSUBlock(unittest.TestCase):
     def setUp(self):
-        # unet_block.RSUBlock 초기화: ch_in=3, mid_ch=32, ch_out=3, height=7, dilation_height=2
-        self.rsu_block = unet_block.RSUBlock(ch_in=3, mid_ch=32, ch_out=3, height=7, dilation_height=2)
+        # unet_block.RSUBlock 초기화: ch_in=3, ch_mid=32, ch_out=3, height=7, dilation_height=2
+        self.rsu_block = unet_block.RSUBlock(ch_in=3, ch_mid=32, ch_out=3, height=7, dilation_height=2)
 
     def test_output_shape(self):
         # 입력 텐서 생성
@@ -19,7 +19,7 @@ class TestRSUBlock(unittest.TestCase):
 
     def test_dilation_height(self):
         # unet_block.RSUBlock을 다른 dilation_height로 초기화
-        rsu_block_dilate = unet_block.RSUBlock(ch_in=3, mid_ch=32, ch_out=3, height=7, dilation_height=3)
+        rsu_block_dilate = unet_block.RSUBlock(ch_in=3, ch_mid=32, ch_out=3, height=7, dilation_height=3)
         input_tensor = torch.randn(1, 3, 256, 256)
         output = rsu_block_dilate(input_tensor)
         # 출력 텐서의 형태 확인
@@ -31,7 +31,7 @@ class TestRSUBlock(unittest.TestCase):
 
     def test_height_variation(self):
         # unet_block.RSUBlock을 다른 height로 초기화 (예: RSU4)
-        rsu4 = unet_block.RSUBlock(ch_in=3, mid_ch=32, ch_out=3, height=4, dilation_height=2)
+        rsu4 = unet_block.RSUBlock(ch_in=3, ch_mid=32, ch_out=3, height=4, dilation_height=2)
         input_tensor = torch.randn(1, 3, 256, 256)
         output = rsu4(input_tensor)
         # 출력 텐서의 형태 확인
@@ -40,8 +40,8 @@ class TestRSUBlock(unittest.TestCase):
         )
 
     def test_channel_change(self):
-        # unet_block.RSUBlock을 다른 채널로 초기화 (ch_in=3, mid_ch=64, ch_out=6)
-        rsu_block_channel = unet_block.RSUBlock(ch_in=3, mid_ch=64, ch_out=6, height=7, dilation_height=2)
+        # unet_block.RSUBlock을 다른 채널로 초기화 (ch_in=3, ch_mid=64, ch_out=6)
+        rsu_block_channel = unet_block.RSUBlock(ch_in=3, ch_mid=64, ch_out=6, height=7, dilation_height=2)
         input_tensor = torch.randn(1, 3, 256, 256)
         output = rsu_block_channel(input_tensor)
         # 출력 채널 확인
