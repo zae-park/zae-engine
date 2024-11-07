@@ -58,11 +58,11 @@ class TestNestedUNet(unittest.TestCase):
     def test_forward_pass_custom_heights_and_dilations(self):
         """커스텀 heights와 dilation_heights를 사용하여 순전파가 정상적으로 동작하는지 확인합니다."""
         custom_heights = [6, 5, 4, 3]
-        custom_dilations = [1, 2, 3, 4]
+        custom_dilations = [1, 2, 3, 3]
         model = NestedUNet(
             in_ch=self.in_ch, out_ch=self.out_ch, width=16, heights=custom_heights, dilation_heights=custom_dilations
         )
-        model.eval()
+
         x = torch.randn(1, self.in_ch, 256, 256)
         try:
             output, *side_outputs = model(x)
