@@ -127,16 +127,17 @@ class NestedUNet(nn.Module):
         self.decoder = nn.ModuleList()
         self.decoder_channels = []
 
+        dec_ch_ = enc_ch_out * 2
         for i, (h, dh, w, mw) in enumerate(
             zip(heights[::-1], dilation_heights[::-1], width_list[::-1], middle_width[::-1])
         ):
-            dec_ch_out = 2 * w if h == dh else w // 2
-
+            dec_ch_out = w if h == dh else w // 2
             self.up_layers.append(nn.Upsample(scale_factor=2))
 
-            self.decoder.append(RSUBlock(ch_in=2 * w, ch_mid=mw, ch_out=dec_ch_out, height=h, dilation_height=dh))
-            print(f"\tDec_{i}\tch_in: {2 * w}\tch_mid: {mw}\tch_out: {dec_ch_out}\th: {h}\tdh: {dh}")
-            self.decoder_channels.append((2 * w, mw, dec_ch_out))
+            self.decoder.append(RSUBlock(ch_in=dec_ch_, ch_mid=mw, ch_out=dec_ch_out, height=h, dilation_height=dh))
+            print(f"\tDec_{i}\tch_in: {dec_ch_}\tch_mid: {mw}\tch_out: {dec_ch_out}\th: {h}\tdh: {dh}")
+            self.decoder_channels.append((dec_ch_, mw, dec_ch_out))
+            dec_ch_ = 2 * dec_ch_out
 
         # 출력 레이어
         self.out_conv = nn.Conv2d(dec_ch_out, out_ch, kernel_size=1)
