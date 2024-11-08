@@ -109,7 +109,7 @@ class TestNestedUNet(unittest.TestCase):
                 tgt_resolution = resolution // 2 ** (len(heights) - 1 - i)
                 self.assertEqual(
                     side.shape,
-                    (1, self.out_ch, tgt_resolution, tgt_resolution),
+                    (1, out_ch, tgt_resolution, tgt_resolution),
                     f"Side output {i+1} shape mismatch with different channels.",
                 )
         except Exception as e:
