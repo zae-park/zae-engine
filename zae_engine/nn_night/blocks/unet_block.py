@@ -115,6 +115,7 @@ class RSUBlock(nn.Module):
         super(RSUBlock, self).__init__()
         assert height >= dilation_height, "dilation_height must be less or equal than height."
 
+        self.height, self.dilation_height = height, dilation_height
         self.minimum_resolution = 2 ** (height - 2)
         self.pool_size = pool_size
         self.stem = nn.Conv2d(in_channels=ch_in, out_channels=ch_out, kernel_size=3, padding=1)
@@ -142,8 +143,8 @@ class RSUBlock(nn.Module):
         self.ups = nn.ModuleList()
         self.decoder_blocks = nn.ModuleList()
 
-        for i in range(1, height):
-            is_last = i == height - 1
+        for i in reversed(range(1, height)):
+            is_last = i == 1
             ch_ = ch_out if is_last else ch_mid
             if i >= dilation_height:
                 # Dilation mode: use dilation 2 instead of Up-sampling layer
@@ -176,7 +177,6 @@ class RSUBlock(nn.Module):
         torch.Tensor
             Output tensor of shape (batch_size, out_ch, height, width).
         """
-
         feat = self.stem(x)
         features = [feat]
 
