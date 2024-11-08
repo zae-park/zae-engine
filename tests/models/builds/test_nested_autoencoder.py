@@ -59,8 +59,13 @@ class TestNestedUNet(unittest.TestCase):
         """커스텀 heights와 dilation_heights를 사용하여 순전파가 정상적으로 동작하는지 확인합니다."""
         custom_heights = [4, 3, 3, 3]
         custom_dilations = [1, 2, 3, 3]
+        custom_width = 16
         model = NestedUNet(
-            in_ch=self.in_ch, out_ch=self.out_ch, width=16, heights=custom_heights, dilation_heights=custom_dilations
+            in_ch=self.in_ch,
+            out_ch=self.out_ch,
+            width=custom_width,
+            heights=custom_heights,
+            dilation_heights=custom_dilations,
         )
 
         x = torch.randn(1, self.in_ch, 256, 256)
@@ -74,7 +79,7 @@ class TestNestedUNet(unittest.TestCase):
             for i, side in enumerate(side_outputs):
                 self.assertEqual(
                     side.shape,
-                    (1, self.out_ch, 256, 256),
+                    (1, self.out_ch, custom_width * 2 ** (i + 1), custom_width * 2 ** (i + 1)),
                     f"Side output {i+1} shape mismatch with custom heights and dilations.",
                 )
         except Exception as e:
