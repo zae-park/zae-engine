@@ -96,11 +96,11 @@ class NestedUNet(nn.Module):
         for i, (h, dh, w, mw) in enumerate(zip(heights, dilation_heights, width_list, middle_width)):
 
             enc_ch_in = w if i else in_ch
-            enc_ch_out = w if h == dh else 2 * w
+            enc_ch_out = 2 * w  # w if h == dh else 2 * w
             self.encoder.append(RSUBlock(ch_in=enc_ch_in, ch_mid=mw, ch_out=enc_ch_out, height=h, dilation_height=dh))
             self.pool_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
 
-            print(f"\tEnc_{i}\tch_in: {enc_ch_in}\tch_mid: {mw}\tch_out: {enc_ch_out}\th: {h}\tdh: {dh}")
+            # print(f"\tEnc_{i}\tch_in: {enc_ch_in}\tch_mid: {mw}\tch_out: {enc_ch_out}\th: {h}\tdh: {dh}")
 
             #
             # # 다음 인코더 레이어를 위해 채널 설정
@@ -118,9 +118,9 @@ class NestedUNet(nn.Module):
             height=bottleneck_height,
             dilation_height=bottleneck_dil,
         )
-        print(
-            f"\tBottle\tch_in: {enc_ch_out}\tch_mid: {mw}\tch_out: {enc_ch_out}\th: {bottleneck_height}\tdh: {bottleneck_dil}"
-        )
+        # print(
+        #     f"\tBottle\tch_in: {enc_ch_out}\tch_mid: {mw}\tch_out: {enc_ch_out}\th: {bottleneck_height}\tdh: {bottleneck_dil}"
+        # )
 
         # 디코더 설정
         self.up_layers = nn.ModuleList()
@@ -131,11 +131,11 @@ class NestedUNet(nn.Module):
         for i, (h, dh, w, mw) in enumerate(
             zip(heights[::-1], dilation_heights[::-1], width_list[::-1], middle_width[::-1])
         ):
-            dec_ch_out = w if h == dh else w // 2
+            dec_ch_out = w  # w if h == dh else w // 2
             self.up_layers.append(nn.Upsample(scale_factor=2))
 
             self.decoder.append(RSUBlock(ch_in=dec_ch_, ch_mid=mw, ch_out=dec_ch_out, height=h, dilation_height=dh))
-            print(f"\tDec_{i}\tch_in: {dec_ch_}\tch_mid: {mw}\tch_out: {dec_ch_out}\th: {h}\tdh: {dh}")
+            # print(f"\tDec_{i}\tch_in: {dec_ch_}\tch_mid: {mw}\tch_out: {dec_ch_out}\th: {h}\tdh: {dh}")
             self.decoder_channels.append((dec_ch_, mw, dec_ch_out))
             dec_ch_ = 2 * dec_ch_out
 
