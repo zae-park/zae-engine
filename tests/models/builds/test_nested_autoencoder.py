@@ -29,7 +29,8 @@ class TestNestedUNet(unittest.TestCase):
             output, *side_outputs = self.model(x)
             self.assertEqual(output.shape, (1, self.out_ch, 256, 256), "Final output shape mismatch.")
             for i, side in enumerate(side_outputs):
-                self.assertEqual(side.shape, (1, self.out_ch, 256, 256), f"Side output {i+1} shape mismatch.")
+                tgt_size = 256 / 2 ** (self.model.num_layers - i - 1)
+                self.assertEqual(side.shape, (1, self.out_ch, tgt_size, tgt_size), f"Side output {i+1} shape mismatch.")
         except Exception as e:
             self.fail(f"Forward pass failed with exception: {e}")
 
@@ -47,9 +48,12 @@ class TestNestedUNet(unittest.TestCase):
                         f"Final output shape mismatch for input size {size}.",
                     )
                     for i, side in enumerate(side_outputs):
+                        tgt_size1 = size[2] / 2 ** (self.model.num_layers - i - 1)
+                        tgt_size2 = size[3] / 2 ** (self.model.num_layers - i - 1)
+
                         self.assertEqual(
                             side.shape,
-                            (size[0], self.out_ch, size[2], size[3]),
+                            (size[0], self.out_ch, tgt_size1, tgt_size2),
                             f"Side output {i+1} shape mismatch for input size {size}.",
                         )
                 except Exception as e:
@@ -59,16 +63,16 @@ class TestNestedUNet(unittest.TestCase):
         """커스텀 heights와 dilation_heights를 사용하여 순전파가 정상적으로 동작하는지 확인합니다."""
         custom_heights = [4, 3, 3, 3]
         custom_dilations = [1, 2, 3, 3]
-        custom_width = 16
         model = NestedUNet(
             in_ch=self.in_ch,
             out_ch=self.out_ch,
-            width=custom_width,
+            width=16,
             heights=custom_heights,
             dilation_heights=custom_dilations,
         )
 
-        x = torch.randn(1, self.in_ch, 256, 256)
+        resolution = 256
+        x = torch.randn(1, self.in_ch, resolution, resolution)
         try:
             output, *side_outputs = model(x)
             self.assertEqual(
@@ -77,9 +81,10 @@ class TestNestedUNet(unittest.TestCase):
                 "Final output shape mismatch with custom heights and dilations.",
             )
             for i, side in enumerate(side_outputs):
+                tgt_resolution = resolution // 2 ** (len(custom_heights) - 1 - i)
                 self.assertEqual(
                     side.shape,
-                    (1, self.out_ch, custom_width * 2 ** (i + 1), custom_width * 2 ** (i + 1)),
+                    (1, self.out_ch, tgt_resolution, tgt_resolution),
                     f"Side output {i+1} shape mismatch with custom heights and dilations.",
                 )
         except Exception as e:
@@ -89,17 +94,23 @@ class TestNestedUNet(unittest.TestCase):
         """입력 및 출력 채널을 변경하여 모델이 올바르게 동작하는지 확인합니다."""
         in_ch = 1
         out_ch = 2
-        model = NestedUNet(in_ch=in_ch, out_ch=out_ch, width=16, heights=[6, 5, 4, 3], dilation_heights=[1, 2, 3, 4])
+        heights = [6, 5, 4, 3]
+        dilation_heights = [1, 2, 3, 3]
+        model = NestedUNet(in_ch=in_ch, out_ch=out_ch, width=8, heights=heights, dilation_heights=dilation_heights)
         model.eval()
-        x = torch.randn(1, in_ch, 256, 256)
+        resolution = 256
+        x = torch.randn(1, in_ch, resolution, resolution)
         try:
             output, *side_outputs = model(x)
             self.assertEqual(
                 output.shape, (1, out_ch, 256, 256), "Final output shape mismatch with different channels."
             )
             for i, side in enumerate(side_outputs):
+                tgt_resolution = resolution // 2 ** (len(heights) - 1 - i)
                 self.assertEqual(
-                    side.shape, (1, out_ch, 256, 256), f"Side output {i+1} shape mismatch with different channels."
+                    side.shape,
+                    (1, self.out_ch, tgt_resolution, tgt_resolution),
+                    f"Side output {i+1} shape mismatch with different channels.",
                 )
         except Exception as e:
             self.fail(f"Forward pass with different channels failed with exception: {e}")
@@ -135,8 +146,11 @@ class TestNestedUNet(unittest.TestCase):
                     output, *side_outputs = model(x)
                 self.assertEqual(output.shape, (1, self.out_ch, 256, 256), "Final output shape mismatch on GPU.")
                 for i, side in enumerate(side_outputs):
+                    tgt_resolution = 256 // 2 ** (self.model.num_layers - i - 1)
                     self.assertEqual(
-                        side.shape, (1, self.out_ch, 256, 256), f"Side output {i+1} shape mismatch on GPU."
+                        side.shape,
+                        (1, self.out_ch, tgt_resolution, tgt_resolution),
+                        f"Side output {i+1} shape mismatch on GPU.",
                     )
             except Exception as e:
                 self.fail(f"Forward pass on GPU failed with exception: {e}")
