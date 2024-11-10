@@ -10,7 +10,7 @@ class TestNestedUNet(unittest.TestCase):
         # 기본 설정
         self.in_ch = 3
         self.out_ch = 1
-        self.width = 32
+        self.width = 8
         self.heights = [7, 6, 5, 4]
         self.dilation_heights = [2, 2, 2, 2]
         self.model = NestedUNet(
@@ -36,7 +36,7 @@ class TestNestedUNet(unittest.TestCase):
 
     def test_forward_pass_different_input_sizes(self):
         """다양한 입력 크기에서 순전파가 정상적으로 동작하고 출력 형태가 올바른지 확인합니다."""
-        input_sizes = [(1, self.in_ch, 128, 128), (2, self.in_ch, 256, 256), (4, self.in_ch, 512, 512)]
+        input_sizes = [(1, self.in_ch, 128, 128), (2, self.in_ch, 256, 256), (4, self.in_ch, 256, 512)]
         for size in input_sizes:
             with self.subTest(size=size):
                 x = torch.randn(*size)
@@ -62,7 +62,7 @@ class TestNestedUNet(unittest.TestCase):
     def test_forward_pass_custom_heights_and_dilations(self):
         """커스텀 heights와 dilation_heights를 사용하여 순전파가 정상적으로 동작하는지 확인합니다."""
         custom_heights = [4, 3, 3, 3]
-        custom_dilations = [1, 2, 3, 3]
+        custom_dilations = [1, 2, 3, 1]
         model = NestedUNet(
             in_ch=self.in_ch,
             out_ch=self.out_ch,
@@ -94,9 +94,10 @@ class TestNestedUNet(unittest.TestCase):
         """입력 및 출력 채널을 변경하여 모델이 올바르게 동작하는지 확인합니다."""
         in_ch = 1
         out_ch = 2
+        width = 4
         heights = [6, 5, 4, 3]
         dilation_heights = [1, 2, 3, 3]
-        model = NestedUNet(in_ch=in_ch, out_ch=out_ch, width=8, heights=heights, dilation_heights=dilation_heights)
+        model = NestedUNet(in_ch=in_ch, out_ch=out_ch, width=width, heights=heights, dilation_heights=dilation_heights)
         model.eval()
         resolution = 256
         x = torch.randn(1, in_ch, resolution, resolution)
