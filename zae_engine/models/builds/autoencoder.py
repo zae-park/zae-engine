@@ -50,15 +50,8 @@ class AutoEncoder(nn.Module):
         The final output convolutional layer.
     sig : nn.Sigmoid
         Sigmoid activation function for the output.
-
-    Methods
-    -------
-    feature_hook(module, input_tensor, output_tensor)
-        Hooks intermediate feature maps for skip connections.
-    feature_output_hook(module, input_tensor, output_tensor)
-        Hooks the final feature map before bottleneck.
-    forward(x)
-        Defines the forward pass of the autoencoder.
+    hook_handles : OrderedDict
+        List of hook handles for encoder and bottleneck hooks.
     """
 
     def __init__(
@@ -70,8 +63,6 @@ class AutoEncoder(nn.Module):
         layers: Sequence[int],
         groups: int = 1,
         dilation: int = 1,
-        # zero_init_residual: bool = False,
-        # replace_stride_with_dilation: Optional[list[bool]] = None,
         norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d,
         skip_connect: bool = False,
     ):
@@ -87,18 +78,21 @@ class AutoEncoder(nn.Module):
             dilation=dilation,
             norm_layer=norm_layer,
         )
-        
+
         self.skip_connect = skip_connect
         self.encoder.stem = nn.Identity()
         self.encoder.body[0] = self.encoder.make_body(blocks=[block] * layers[0], ch_in=ch_in, ch_out=width, stride=2)
 
         self.feature_vectors = []
+        self.hook_handles = OrderedDict()
         # [U-net] Register hook for every blocks in encoder when "skip_connect" is true.
         if skip_connect:
-            for b in self.encoder.body:
-                b[0].relu2.register_forward_hook(self.feature_hook)
-        # registrate hook to end of last body instead of pooling layer
-        self.encoder.body[-1].register_forward_hook(self.feature_output_hook)
+            for i, e in enumerate(self.encoder.body):
+                # TODO : check last layer in encoder using named_parameter or named_modules
+                handle = e[0].relu2.register_forward_hook(self.feature_hook)
+                self.hook_handles[f"Enc{i}"] = handle
+        handle = self.encoder.body[-1].register_forward_hook(self.feature_output_hook)
+        self.hook_handles[f"BottleNeck"] = handle
 
         self.bottleneck = block(width * 8, width * 16)
 
@@ -125,6 +119,21 @@ class AutoEncoder(nn.Module):
         Hooks the final feature map before bottleneck.
         """
         self.feature_vectors.append(output_tensor)
+
+    # TODO: add HookManager
+    def remove_hooks(self):
+        """
+        Removes all hooks registered in the encoder and bottleneck.
+        """
+        for handle in self.hook_handles.values():
+            handle.remove()
+        self.hook_handles = {}
+
+    def get_hooks(self):
+        """
+        Returns the list of encoder and bottleneck hook handles.
+        """
+        return self.hook_handles
 
     def forward(self, x):
         """
@@ -309,20 +318,26 @@ class VAE(AutoEncoder):
             if c is None:
                 raise ValueError("Condition tensor 'c' must be provided when 'condition_dim' is set.")
             if c.size(1) != self.condition_dim:
-                raise ValueError(f"Condition tensor 'c' has incorrect dimension {c.size(1)}, expected {self.condition_dim}.")
+                raise ValueError(
+                    f"Condition tensor 'c' has incorrect dimension {c.size(1)}, expected {self.condition_dim}."
+                )
 
         # Forward encoder
         _ = self.encoder(x)
-        feat = self.feature_vectors.pop()   # Shape: (batch_size, channels, height, width)
+        feat = self.feature_vectors.pop()  # Shape: (batch_size, channels, height, width)
         feat_flat = feat.view(feat.size(0), -1)  # Shape: (batch_size, encoder_output_features)
 
         if self.condition_dim is not None:
             if c is None:
                 raise ValueError("Condition tensor 'c' must be provided when condition_dim is set.")
             if c.size(1) != self.condition_dim:
-                raise ValueError(f"Condition tensor 'c' has incorrect dimension. Expected {self.condition_dim}, got {c.size(1)}.")
+                raise ValueError(
+                    f"Condition tensor 'c' has incorrect dimension. Expected {self.condition_dim}, got {c.size(1)}."
+                )
             # Concatenate condition with encoder features
-            encoder_input = torch.cat([feat_flat, c], dim=1)  # Shape: (batch_size, encoder_output_features + condition_dim)
+            encoder_input = torch.cat(
+                [feat_flat, c], dim=1
+            )  # Shape: (batch_size, encoder_output_features + condition_dim)
         else:
             encoder_input = feat_flat  # Shape: (batch_size, encoder_output_features)
 
