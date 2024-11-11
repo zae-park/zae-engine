@@ -4,6 +4,14 @@ zae\_engine.nn\_night.blocks package
 Submodules
 ----------
 
+zae\_engine.nn\_night.blocks.conv\_block module
+-----------------------------------------------
+
+.. automodule:: zae_engine.nn_night.blocks.conv_block
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 zae\_engine.nn\_night.blocks.resblock module
 --------------------------------------------
 

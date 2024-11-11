@@ -20,6 +20,14 @@ zae\_engine.models.builds.cnn module
    :undoc-members:
    :show-inheritance:
 
+zae\_engine.models.builds.nested\_autoencoder module
+----------------------------------------------------
+
+.. automodule:: zae_engine.models.builds.nested_autoencoder
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 zae\_engine.models.builds.transformer module
 --------------------------------------------
 
