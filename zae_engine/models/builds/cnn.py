@@ -1,4 +1,4 @@
-from typing import Callable, List, Type, Union, Tuple
+from typing import Callable, List, Type, Union, Tuple, Sequence
 
 import torch
 import torch.nn as nn
@@ -14,7 +14,7 @@ class CNNBase(nn.Module):
         ch_in: int,
         ch_out: int,
         width: int,
-        layers: Union[Tuple[int], List[int]],
+        layers: Sequence[int],
         groups: int = 1,
         dilation: int = 1,
         # zero_init_residual: bool = False,
@@ -72,12 +72,12 @@ class CNNBase(nn.Module):
     def get_output_shape(self, input_size: Tuple[int, int, int, int]) -> Tuple[int, int, int, int]:
         """
         Calculate the encoder's output shape based on a dummy input.
-        
+
         Parameters
         ----------
         input_size : Tuple[int, int, int, int]
             The size of the input tensor (batch_size, channels, height, width).
-        
+
         Returns
         -------
         Tuple[int, int, int, int]
