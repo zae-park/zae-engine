@@ -88,3 +88,29 @@ html_favicon = "./_static/zaevicon.ico"
 #     "data_pipeline.resource",
 #     "data_pipeline.sample",
 #     ]
+
+# conf.py
+
+# Google Analytics 설정
+google_analytics = os.getenv("GA_MEASUREMENT_ID")
+
+
+# HTML 템플릿에 GA 스크립트 삽입
+def setup(app):
+    app.add_html_theme("sphinx_rtd_theme", "sphinx_rtd_theme")
+    app.add_css_file("custom.css")  # 필요한 경우 추가 CSS 파일
+    app.add_js_file(
+        None,
+        body=f"""
+        <!-- Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={google_analytics}"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){{dataLayer.push(arguments);}}
+          gtag('js', new Date());
+
+          gtag('config', '{google_analytics}');
+        </script>
+        <!-- End Google Analytics -->
+    """,
+    )
