@@ -44,6 +44,8 @@ jobs:
           pip install sphinx sphinx-rtd-theme
 
       - name: Build documentation
+        env:
+          GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
         run: |
           poetry run sphinx-apidoc -o docs/source/ ./zae_engine
           cd docs
