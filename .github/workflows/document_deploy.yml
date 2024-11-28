@@ -50,6 +50,7 @@ jobs:
         run: |
           poetry run sphinx-apidoc -o docs/source/ ./zae_engine
           cd docs
+          make clean
           poetry run make html
 
       - name: Deploy to GitHub Pages
