@@ -44,7 +44,7 @@ html_context = {"ga_measurement_id": google_analytics}
 
 def setup(app):
     app.add_html_theme("sphinx_rtd_theme", "sphinx_rtd_theme")
-    app.add_css_file("custom.css")  # 필요한 경우 추가 CSS 파일
+    # app.add_css_file("custom.css")  # 필요한 경우 추가 CSS 파일
 
     # if google_analytics:
     #     # 외부 GA 스크립트 추가 (async 설정)
