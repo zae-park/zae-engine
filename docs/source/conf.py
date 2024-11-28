@@ -39,7 +39,8 @@ html_favicon = "./_static/zaevicon.ico"
 
 # Google Analytics 설정
 google_analytics = os.getenv("GA_MEASUREMENT_ID")
-html_context = {"ga_measurement_id": google_analytics}
+print(google_analytics)
+# html_context = {"ga_measurement_id": google_analytics}
 
 
 def setup(app):
