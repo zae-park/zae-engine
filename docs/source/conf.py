@@ -39,26 +39,29 @@ html_favicon = "./_static/zaevicon.ico"
 
 # Google Analytics 설정
 google_analytics = os.getenv("GA_MEASUREMENT_ID")
+html_context = {"ga_measurement_id": google_analytics}
 
 
 def setup(app):
     app.add_html_theme("sphinx_rtd_theme", "sphinx_rtd_theme")
     app.add_css_file("custom.css")  # 필요한 경우 추가 CSS 파일
 
-    if google_analytics:
-        # 외부 GA 스크립트 추가
-        app.add_js_file(f"https://www.googletagmanager.com/gtag/js?id={google_analytics}", async_=True)
-        # 인라인 GA 설정 스크립트 추가 (script 태그 제외)
-        app.add_js_file(
-            None,
-            body=f"""
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){{dataLayer.push(arguments);}}
-            gtag('js', new Date());
-            
-            gtag('config', '{google_analytics}');
-            """,
-        )
-        app.logger.info(f"Google Analytics ID: {google_analytics}")  # 디버그용 로그
-    else:
-        app.logger.warning("Google Analytics ID not found.")
+    # if google_analytics:
+    #     # 외부 GA 스크립트 추가 (async 설정)
+    #     app.add_js_file(
+    #         f"https://www.googletagmanager.com/gtag/js?id={google_analytics}",
+    #         async_=True,  # 'async'는 'async_'로 지정해야 합니다.
+    #     )
+    #     # 인라인 GA 설정 스크립트 추가 (script 태그 제외)
+    #     app.add_js_file(
+    #         None,
+    #         body=f"""
+    #             window.dataLayer = window.dataLayer || [];
+    #             function gtag(){{dataLayer.push(arguments);}}
+    #             gtag('js', new Date());
+    #
+    #             gtag('config', '{google_analytics}');
+    #             """,
+    #     )
+    # else:
+    #     pass
