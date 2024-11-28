@@ -59,6 +59,6 @@ def setup(app):
             gtag('config', '{google_analytics}');
             """,
         )
-        app.info(f"Google Analytics ID: {google_analytics}")  # 디버그용 로그
+        app.logger.info(f"Google Analytics ID: {google_analytics}")  # 디버그용 로그
     else:
-        app.warning("Google Analytics ID not found.")
+        app.logger.warning("Google Analytics ID not found.")
