@@ -6,19 +6,50 @@ on:
       - dev
     types: [opened, synchronize, reopened]
 
-
 permissions:
   contents: read
   pull-requests: write
 
 
-
 jobs:
-  test:
+  check-trigger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Check PR Title and Body
+        id: check_trigger
+        env:
+          PR_TITLE: "${{ github.event.pull_request.title }}"
+          PR_BODY: "${{ github.event.pull_request.body }}"
+        run: |
+          echo "Checking PR Title and Body..."
+          echo "PR Title: $PR_TITLE"
+          echo "PR Body: $PR_BODY"
+          
+          if echo "$PR_TITLE $PR_BODY" | grep -i 'GPT'; then
+            echo "trigger_found=true" >> $GITHUB_ENV
+          else
+            echo "trigger_found=false" >> $GITHUB_ENV
+          fi
+
+  review:
     runs-on: ubuntu-latest
     steps:
-      - uses: anc95/ChatGPT-CodeReview@main
+      - name: asd
+        if: env.trigger_found == 'true'
+        uses: anc95/ChatGPT-CodeReview@main
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LANGUAGE: Korean
+#        run: |
+#          echo "✅ 'command' found in PR title or body. Executing job..."
+
+      - name: Skip Job if 'command' Not Found
+        if: env.trigger_found != 'true'
+        run: |
+          echo "⚠️ trigger not found in PR title or body. Skipping job."
+          exit 0
