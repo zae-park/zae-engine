@@ -32,17 +32,17 @@ jobs:
           COMMENT_BODY: "${{ github.event.comment.body }}"
           EVENT_NAME: "${{ github.event_name }}"
         run: |
-          echo "Checking PR or Comment for trigger '@GPT'..."
+          echo "Checking PR or Comment for trigger '!GPT'..."
           TRIGGER_FOUND=false
 
           if [ "$EVENT_NAME" == "pull_request" ]; then
-            if echo "$PR_BODY" | grep -iq "@GPT"; then
+            if echo "$PR_BODY" | grep -iFq "!GPT"; then
               TRIGGER_FOUND=true
             fi
           elif [ "$EVENT_NAME" == "issue_comment" ]; then
-            # Check comment from Pull-Request
+            # Pull Request의 댓글인지 확인
             if [ -n "${{ github.event.issue.pull_request }}" ]; then
-              if echo "$COMMENT_BODY" | grep -iq "@GPT"; then
+              if echo "$COMMENT_BODY" | grep -iFq "!GPT"; then
                 TRIGGER_FOUND=true
               fi
             fi
