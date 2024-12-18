@@ -2,10 +2,9 @@ name: Code Review with GPT
 
 on:
   pull_request:
+    types: [ opened, synchronize, reopened ]
     branches:
       - dev
-    types: [opened, synchronize, reopened, edited]
-
   issue_comment:
     types: [created]
 
