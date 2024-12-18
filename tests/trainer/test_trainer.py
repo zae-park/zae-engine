@@ -104,6 +104,8 @@ class TestTrainer(unittest.TestCase):
             self.trainer.run(n_epoch=test_epoch, loader=self.loader)
 
     def test_single_epoch_run(self):
+        # TODO
+        # FAILED tests/trainer/test_trainer.py::TestTrainer::test_single_epoch_run - AssertionError: 0 != 1
         self.trainer.run(n_epoch=1, loader=self.loader)
         # test logging
         log_a, log_b = self.trainer.log_train, self.trainer.log_test
@@ -147,6 +149,8 @@ class TestTrainer(unittest.TestCase):
         self.assertGreater(post_buffer, pre_buffer)
 
     def test_log_reset(self):
+        # TODO
+        # FAILED tests/trainer/test_trainer.py::TestTrainer::test_log_reset - AssertionError: [] == []
         self.trainer.log_reset()
         self.assertFalse(self.trainer.log_train)
         self.assertFalse(self.trainer.log_test)
