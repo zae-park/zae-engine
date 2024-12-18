@@ -1,0 +1,29 @@
+zae\_engine.data.collate package
+================================
+
+Submodules
+----------
+
+zae\_engine.data.collate.core module
+------------------------------------
+
+.. automodule:: zae_engine.data.collate.core
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.data.collate.modules module
+---------------------------------------
+
+.. automodule:: zae_engine.data.collate.modules
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: zae_engine.data.collate
+   :members:
+   :undoc-members:
+   :show-inheritance:
