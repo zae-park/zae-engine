@@ -17,6 +17,9 @@ jobs:
   check-trigger:
     runs-on: ubuntu-latest
 
+    outputs:
+      trigger_found: ${{ steps.set_trigger.outputs.trigger_found }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -43,12 +46,17 @@ jobs:
           fi
 
           echo "Trigger found: $TRIGGER_FOUND"
-          echo "trigger_found=$TRIGGER_FOUND" >> $GITHUB_ENV
+          echo "::set-output name=trigger_found::$TRIGGER_FOUND"
+
+      - name: Set Trigger Output
+        id: set_trigger
+        run: |
+          echo "::set-output name=trigger_found::$TRIGGER_FOUND"
 
   review:
     needs: check-trigger
     runs-on: ubuntu-latest
-    if: env.trigger_found == 'true'
+    if: needs.check-trigger.outputs.trigger_found == 'true'
     steps:
       - name: Run GPT Code Review
         uses: anc95/ChatGPT-CodeReview@main
