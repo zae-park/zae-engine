@@ -1,0 +1,60 @@
+name: Code Review with GPT
+
+on:
+  pull_request:
+    branches:
+      - dev
+    types: [opened, synchronize, reopened, edited]
+
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: read
+
+jobs:
+  check-trigger:
+    runs-on: ubuntu-latest
+    if: >
+#      (github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'GPT')) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.body, '@GPT')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@GPT'))
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Determine Trigger Source
+        env:
+          PR_TITLE: "${{ github.event.pull_request.title }}"
+          PR_BODY: "${{ github.event.pull_request.body }}"
+          COMMENT_BODY: "${{ github.event.comment.body }}"
+        run: |
+          echo "Determining the trigger source..."
+          if [ "${{ github.event_name }}" == "issue_comment" ]; then
+            echo "PR Comment: $COMMENT_BODY"
+          else
+            echo "PR Title: $PR_TITLE"
+            echo "PR Body: $PR_BODY"
+          fi
+
+  review:
+    needs: check-trigger
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run GPT Code Review
+        uses: anc95/ChatGPT-CodeReview@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGUAGE: Korean
+
+      - name: Skip Job if Condition Not Met
+        if: >
+          github.event_name != 'pull_request' &&
+          github.event_name != 'issue_comment'
+        run: |
+          echo "⚠️ No valid trigger found. Skipping the job."
+          exit 0
