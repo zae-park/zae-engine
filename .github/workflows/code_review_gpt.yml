@@ -40,8 +40,11 @@ jobs:
               TRIGGER_FOUND=true
             fi
           elif [ "$EVENT_NAME" == "issue_comment" ]; then
-            if echo "$COMMENT_BODY" | grep -iq "@GPT"; then
-              TRIGGER_FOUND=true
+            # Check comment from Pull-Request
+            if [ -n "${{ github.event.issue.pull_request }}" ]; then
+              if echo "$COMMENT_BODY" | grep -iq "@GPT"; then
+                TRIGGER_FOUND=true
+              fi
             fi
           fi
 
