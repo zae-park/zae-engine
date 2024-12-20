@@ -13,6 +13,7 @@
 
 <p align="center">
     <img src="https://img.shields.io/pypi/v/zae-engine.svg" alt="https://pypi.python.org/pypi/zae-engine/">
+    <a href="https://hits.sh/github.com/zae-park/zae-engine/"><img alt="Hits" src="https://hits.sh/github.com/zae-park/zae-engine.svg?view=today-total&extraCount=8&color=11cc18"/></a>
     <img src="https://static.pepy.tech/badge/zae-engine" alt="https://pepy.tech/project/zae-engine">
     <img src="https://static.pepy.tech/badge/zae-engine/month" alt="https://pepy.tech/project/zae-engine">
     <img src="https://static.pepy.tech/badge/zae-engine/week" alt="https://pepy.tech/project/zae-engine">
