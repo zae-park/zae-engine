@@ -1,7 +1,3 @@
-아래와 같이 Trainer 서브패키지의 README에 MultiGPUAddon에 대한 내용을 추가하여, advanced 섹션으로 포함시켰습니다. MultiGPUAddon 사용 방법에 대한 예제와 설명을 포함하여 전체적으로 사용자가 쉽게 접근할 수 있도록 작성했습니다.
-
----
-
 # Trainer Sub-package Overview
 
 The Trainer sub-package of the **zae-engine** library provides essential features for managing model training and extending functionality through a variety of add-ons. The `Trainer` class is the core component that oversees the entire training process, offering abstract methods for implementing custom training and testing steps. With the add-on system, users can easily enhance and customize their training workflows.
@@ -19,6 +15,15 @@ The Trainer sub-package of the **zae-engine** library provides essential feature
 - **scheduler**: Learning rate scheduler (`torch.optim.lr_scheduler._LRScheduler`).
 - **log_bar**: Whether to display a progress bar during training.
 - **gradient_clip**: Value for gradient clipping (default: 0.0).
+- **log_train & log_test**: Dictionaries to store logging information for training and validation, available during the epoch lifecycle.
+
+#### Key Features
+- **Device Management**: Allocates models and data to appropriate devices, supporting both single and multi-GPU training.
+- **Batch Processing**: Handles each batch during training or testing mode, including backpropagation in training mode.
+- **Logging Management**: Collects loss and other metrics for each epoch or batch and allows for saving or displaying logs.
+- **Gradient Clipping**: Prevents gradient explosion by optionally clipping gradients during training.
+- **Scheduler Integration**: Applies learning rate schedulers at the epoch or batch level to dynamically control the training process.
+- **State Saving and Loading**: Saves model weights and loads them for resuming training or performing inference.
 
 #### Main Methods
 - **train_step(batch)**: Defines the operations for each training step.
@@ -27,22 +32,34 @@ The Trainer sub-package of the **zae-engine** library provides essential feature
 - **run_epoch(loader)**: Runs training or testing for a single epoch.
 - **run_batch(batch)**: Runs training or testing for a single batch.
 - **add_on(*add_on_cls)**: Adds functionality to the `Trainer` class via add-ons.
+- **metric_on_epoch_end()**: Allows users to define custom metrics at the end of each epoch, utilizing `log_train` and `log_test`.
 
 ### ProgressChecker
 
 `ProgressChecker` is a helper class for tracking training or testing progress. It manages epoch and step counts, allowing users to easily monitor the status of their training process.
 
+---
+
 ## Add-on Features
+
 The Trainer sub-package supports various add-ons via the `AddOnBase` class, which allows for extending functionality such as distributed training, state management, and web logging.
 
 ### Main Add-ons
 
-- **StateManagerAddon**: Provides functionality to save and load checkpoints during model training, including the model state, optimizer state, and scheduler state.
-- **WandBLoggerAddon / NeptuneLoggerAddon**: Enables real-time monitoring of the training process using Weights & Biases or Neptune.
-- **MultiGPUAddon**: Adds multi-GPU support for distributed training using DDP (Distributed Data Parallel), allowing models to be trained across multiple GPUs in parallel.
+#### StateManagerAddon
+Provides functionality to save and load checkpoints during model training, including the model state, optimizer state, and scheduler state. Supports `.ckpt` and `.safetensor` formats for secure and flexible checkpoint management.
+
+#### MultiGPUAddon
+Adds multi-GPU support for distributed training using DDP (Distributed Data Parallel), allowing models to be trained across multiple GPUs in parallel. Includes seamless integration with PyTorch's distributed training utilities.
+
+#### WandBLoggerAddon / NeptuneLoggerAddon
+Enables real-time monitoring of the training process using external services like Weights & Biases (WandB) or Neptune. Logs training metrics automatically and allows users to track progress remotely.
+
+---
 
 ## Usage Example
-The Trainer sub-package makes it easy to manage and extend model training in various scenarios. Users can inherit from the `Trainer` class, implement their custom `train_step` and `test_step` methods, and add necessary add-ons to set up their training environment.
+
+### Basic Usage
 
 ```python
 from zae_engine.trainer import Trainer
@@ -63,15 +80,12 @@ trainer = MyTrainer(
 
 trainer.run(n_epoch=10, loader=train_loader, valid_loader=valid_loader)
 ```
-This example shows how to extend the `Trainer` class with state management and web logging capabilities, allowing users to effectively monitor the model training process and manage checkpoints.
 
-## Advanced: MultiGPUAddon
+### Advanced: MultiGPUAddon
 
 The `MultiGPUAddon` provides a powerful way to train models in parallel across multiple GPUs, significantly speeding up the training process for large-scale models. This add-on leverages PyTorch's Distributed Data Parallel (DDP) to ensure that models and data are properly synchronized across all GPUs.
 
-### Example: Using MultiGPUAddon for Training
-
-Below is an example of how to use the `MultiGPUAddon` to train a model across multiple GPUs:
+#### Example: Using MultiGPUAddon for Training
 
 ```python
 import os
@@ -138,15 +152,16 @@ if __name__ == "__main__":
     main()
 ```
 
-### Explanation
-- **DummyDataset**: Generates random data in the range [0, 1] and corresponding labels.
-- **DummyModel**: A simple single-layer neural network for binary classification.
-- **MultiGPUTrainer**: A custom trainer class that inherits from `Trainer` and uses `MultiGPUAddon` to train across multiple GPUs.
-- **Training Process**: The `Trainer.run` method is used to train the model for the specified number of epochs. After training, the model is saved to a file (`dummy_model_mgpu.pth`).
+---
 
-### Important Notes
-- **CUDA-compatible GPUs**: At least two CUDA-compatible GPUs are required to use `MultiGPUAddon`.
-- **Distributed Data Parallel**: This example utilizes PyTorch's `DistributedDataParallel` to parallelize data processing and model training across all GPUs.
-- **init_method**: Specifies how to initialize communication across processes. In this example, we use `localhost` to set up the communication.
+### FAQ and Common Issues
 
-`MultiGPUAddon` is an advanced add-on that requires familiarity with distributed training and GPU management. It provides the tools necessary for efficiently training large models in parallel, significantly reducing the time required to train models on large datasets.
+- **Q: What if I encounter 'Address already in use' errors with `init_method`?**
+  **A**: Ensure that the specified port in `init_method` (e.g., `12355`) is not already in use. Try changing the port number or use `os.environ["MASTER_PORT"]` to set it dynamically.
+
+- **Q: My training slows down instead of speeding up with multiple GPUs. Why?**
+  **A**: Check if your batch size is sufficiently large. DDP performs best when the workload is evenly distributed across GPUs. Also, ensure that your data loading is optimized.
+
+- **Q: How do I log additional custom metrics?**
+  **A**: Override the `metric_on_epoch_end()` method in your Trainer subclass and return a dictionary of custom metrics.
+
