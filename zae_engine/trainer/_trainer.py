@@ -76,6 +76,7 @@ class Trainer(ABC):
 
         # Init vars
         self.log_train, self.log_test = defaultdict(list), defaultdict(list)
+        self.train_metrics, self.test_metrics = {}, {}
         self.loss_history_train, self.loss_history_test = [], []
         self.loss_buffer, self.weight_buffer = torch.inf, defaultdict(list)
         self.loader, self.n_data, self.batch_size = None, None, None
@@ -227,21 +228,26 @@ class Trainer(ABC):
             else:
                 print(f"Epoch {e}")
 
-            self._data_count(initial=True)  # Initialize data counts at the start of the epoch
+            # Initialize data counts at the start of the epoch
+            self._data_count(initial=True)
             # Execute training epoch & validation epoch (if provided)
             self.run_epoch(loader, **kwargs)
+
+            # Run validation epoch if provided
             if valid_loader:
-                self.toggle()
+                self.toggle("test")
                 self.run_epoch(valid_loader, **kwargs)
-                self.toggle()
+                self.toggle("train")
 
-            # Calculate and log custom metrics at the end of the epoch
-            extra_metrics = self.metric_on_epoch_end()
-            if self.log_bar and isinstance(extra_metrics, dict) and extra_metrics:
-                metric_str = ", ".join([f"{k}: {v:.2f}" for k, v in extra_metrics.items()])
-                progress.set_description(f"Epoch {e} | {metric_str}")
+            # Log metrics at the end of the epoch
+            if self.log_bar:
+                epoch_summary = [
+                    ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()]),
+                    ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()]),
+                ]
+                progress.set_description(f"Epoch {e} | {' | '.join(epoch_summary)}")
 
-            # Update loss and scheduler if in training mode
+            # Update training state (loss, scheduler, epoch)
             if self.mode == "train":
                 cur_loss = np.mean(self.log_test["loss"] if valid_loader else self.log_train["loss"]).item()
                 self.check_better(cur_epoch=e, cur_loss=cur_loss)
@@ -268,6 +274,10 @@ class Trainer(ABC):
                 progress.set_description(desc)
             else:
                 print(desc, **printer)
+
+        # Update metrics at the end of the epoch
+        target_metrics = self.train_metrics if self.mode == "train" else self.test_metrics
+        target_metrics.update(self.metric_on_epoch_end())
 
     def run_batch(self, batch: Union[tuple, dict], **kwargs) -> None:
         """
@@ -364,7 +374,7 @@ class Trainer(ABC):
 
         raise NotImplementedError("test_step must be implemented by subclasses")
 
-    def metric_on_epoch_end(self) -> Optional[Dict[str, float]]:
+    def metric_on_epoch_end(self) -> Dict[str, float]:
         """
         A method that can be overridden by users to calculate custom metrics at the end of an epoch.
 
@@ -396,7 +406,7 @@ class Trainer(ABC):
         >>>         accuracy = (outputs.argmax(dim=1) == labels).float().mean().item()
         >>>         return {"val_accuracy": accuracy}
         """
-        return None
+        return {}
 
     def logging(self, step_dict: Dict[str, torch.Tensor]) -> None:
         """
@@ -458,6 +468,8 @@ class Trainer(ABC):
         """
         self.log_train.clear()
         self.log_test.clear()
+        self.train_metrics.clear()
+        self.test_metrics.clear()
 
     def get_loss_history(self, mode: str = "train") -> list:
         """
