@@ -38,6 +38,14 @@ class Trainer(ABC):
         Whether to update the scheduler on each batch, by default False.
     gradient_clip : float, optional
         Gradient clipping value. If 0, no gradient clipping is applied, by default 0.0.
+
+    Notes
+    -----
+    - The `metric_on_epoch_end` method is provided for calculating and logging custom metrics
+      at the end of each epoch. It should be overridden by subclasses if custom metrics are needed.
+    - The method `metric_on_epoch_end` is expected to return a dictionary where keys are metric
+      names and values are the corresponding computed values. These metrics will be displayed in
+      the progress bar if `log_bar` is enabled.
     """
 
     def __init__(
@@ -360,10 +368,33 @@ class Trainer(ABC):
         """
         A method that can be overridden by users to calculate custom metrics at the end of an epoch.
 
+        This method is designed to be flexible and user-extendable. By default, it does nothing
+        and returns None. Subclasses can override this method to compute any custom metrics
+        based on the results of the epoch.
+
         Returns
         -------
         Optional[Dict[str, float]]:
-            A dictionary containing computed metric values as key-value pairs. Returns None by default.
+            A dictionary containing computed metric values as key-value pairs. The keys represent
+            metric names, and the values are their corresponding values. Returns None by default.
+
+        Notes
+        -----
+        - This method is called automatically at the end of each epoch if `log_bar` is enabled.
+        - The results returned by this method are appended to the progress bar description during
+          training/testing.
+
+        Examples
+        --------
+        To compute a validation accuracy metric:
+
+        >>> class CustomTrainer(Trainer):
+        >>>     def metric_on_epoch_end(self) -> Optional[Dict[str, float]]:
+        >>>         # Assume 'output' and 'label' keys exist in log_test
+        >>>         outputs = torch.cat(self.log_test["output"], dim=0)  # Combine outputs from all batches
+        >>>         labels = torch.cat(self.log_test["label"], dim=0)    # Combine labels from all batches
+        >>>         accuracy = (outputs.argmax(dim=1) == labels).float().mean().item()
+        >>>         return {"val_accuracy": accuracy}
         """
         return None
 
