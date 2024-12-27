@@ -2,10 +2,9 @@ from typing import OrderedDict, Union
 
 import torch
 import torch.nn as nn
-from transformers import AutoModel, AutoTokenizer, BertModel, BertTokenizer
+from transformers import AutoModel, AutoTokenizer
 
 from ..builds import BertBase, EncoderBase
-from ...nn_night.layers import Additional
 
 # implementation: # https://github.com/huggingface/transformers/blob/main/src/transformers/models/bert/modeling_bert.py
 checkpoint_map = {
