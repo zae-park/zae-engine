@@ -210,19 +210,30 @@ class Trainer(ABC):
         self._check_batch_size()
         self._scheduler_step_check(n_epoch)
         pre_epoch = self.progress_checker.get_epoch()
-        progress = tqdm.tqdm(range(n_epoch), position=0, leave=True) if self.log_bar else range(n_epoch)
+        continue_epoch = range(pre_epoch, pre_epoch + n_epoch)
+        progress = tqdm.tqdm(continue_epoch, position=0, leave=True) if self.log_bar else continue_epoch
+
         for e in progress:
-            e += pre_epoch
             if self.log_bar:
-                progress.set_description("Epoch %d" % e)
+                progress.set_description(f"Epoch {e}")
             else:
-                print("Epoch %d" % e)
-            self._data_count(initial=True)
+                print(f"Epoch {e}")
+
+            self._data_count(initial=True)  # Initialize data counts at the start of the epoch
+            # Execute training epoch & validation epoch (if provided)
             self.run_epoch(loader, **kwargs)
             if valid_loader:
                 self.toggle()
                 self.run_epoch(valid_loader, **kwargs)
                 self.toggle()
+
+            # Calculate and log custom metrics at the end of the epoch
+            extra_metrics = self.metric_on_epoch_end()
+            if self.log_bar and isinstance(extra_metrics, dict) and extra_metrics:
+                metric_str = ", ".join([f"{k}: {v:.2f}" for k, v in extra_metrics.items()])
+                progress.set_description(f"Epoch {e} | {metric_str}")
+
+            # Update loss and scheduler if in training mode
             if self.mode == "train":
                 cur_loss = np.mean(self.log_test["loss"] if valid_loader else self.log_train["loss"]).item()
                 self.check_better(cur_epoch=e, cur_loss=cur_loss)
@@ -344,6 +355,17 @@ class Trainer(ABC):
         """
 
         raise NotImplementedError("test_step must be implemented by subclasses")
+
+    def metric_on_epoch_end(self) -> Optional[Dict[str, float]]:
+        """
+        A method that can be overridden by users to calculate custom metrics at the end of an epoch.
+
+        Returns
+        -------
+        Optional[Dict[str, float]]:
+            A dictionary containing computed metric values as key-value pairs. Returns None by default.
+        """
+        return None
 
     def logging(self, step_dict: Dict[str, torch.Tensor]) -> None:
         """
