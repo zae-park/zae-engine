@@ -8,9 +8,7 @@ import numpy as np
 import torch
 from torch import optim
 from torch.utils import data as td
-from torch.nn.parallel import DistributedDataParallel as DDP
 
-# from .addons import AddOnBase
 from ..schedulers import core
 
 T = TypeVar("T", bound="Trainer")
