@@ -103,7 +103,17 @@ class TestTrainer(unittest.TestCase):
             self.trainer.run(n_epoch=test_epoch, loader=self.loader)
 
     def test_single_epoch_run(self):
-        self.trainer.run(n_epoch=1, loader=self.loader)
+        self.trainer.metric_on_epoch_end = lambda: {"asd": 1}
+        self.trainer.run_epoch(loader=self.loader)
+        # test metrics
+        print(f"Train metrics: {self.trainer.train_metrics}")
+        print(f"Valid metrics: {self.trainer.test_metrics}")
+        self.assertTrue(self.trainer.train_metrics)  # Check train metrics exist
+        self.assertFalse(self.trainer.test_metrics)  # Valid metrics should be empty in this case
+
+        self.trainer.run_epoch(loader=self.loader)
+        self.trainer.mode = "test"
+        self.trainer.run_epoch(loader=self.loader)
         # test metrics
         print(f"Train metrics: {self.trainer.train_metrics}")
         print(f"Valid metrics: {self.trainer.test_metrics}")
