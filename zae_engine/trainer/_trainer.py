@@ -268,7 +268,7 @@ class Trainer(ABC):
         progress = tqdm.tqdm(loader, position=1, leave=False) if self.log_bar else loader
         for i, batch in enumerate(progress):
             self.run_batch(batch, **kwargs)
-            self._data_count()
+            self._data_count(True if self.batch_size is None else False)
             desc, printer = self.print_log(cur_batch=i + 1, num_batch=len(loader))
             if self.log_bar:
                 progress.set_description(desc)
@@ -462,14 +462,15 @@ class Trainer(ABC):
         self.loss_buffer = cur_loss
         return True
 
-    def log_reset(self) -> None:
+    def log_reset(self, epoch_end: bool = False) -> None:
         """
         Clear the log.
         """
         self.log_train.clear()
         self.log_test.clear()
-        self.train_metrics.clear()
-        self.test_metrics.clear()
+        if epoch_end:
+            self.train_metrics.clear()
+            self.test_metrics.clear()
 
     def get_loss_history(self, mode: str = "train") -> list:
         """
