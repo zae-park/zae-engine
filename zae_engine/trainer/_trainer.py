@@ -38,6 +38,14 @@ class Trainer(ABC):
         Whether to update the scheduler on each batch, by default False.
     gradient_clip : float, optional
         Gradient clipping value. If 0, no gradient clipping is applied, by default 0.0.
+
+    Notes
+    -----
+    - The `metric_on_epoch_end` method is provided for calculating and logging custom metrics
+      at the end of each epoch. It should be overridden by subclasses if custom metrics are needed.
+    - The method `metric_on_epoch_end` is expected to return a dictionary where keys are metric
+      names and values are the corresponding computed values. These metrics will be displayed in
+      the progress bar if `log_bar` is enabled.
     """
 
     def __init__(
@@ -68,6 +76,7 @@ class Trainer(ABC):
 
         # Init vars
         self.log_train, self.log_test = defaultdict(list), defaultdict(list)
+        self.train_metrics, self.test_metrics = {}, {}
         self.loss_history_train, self.loss_history_test = [], []
         self.loss_buffer, self.weight_buffer = torch.inf, defaultdict(list)
         self.loader, self.n_data, self.batch_size = None, None, None
@@ -210,19 +219,35 @@ class Trainer(ABC):
         self._check_batch_size()
         self._scheduler_step_check(n_epoch)
         pre_epoch = self.progress_checker.get_epoch()
-        progress = tqdm.tqdm(range(n_epoch), position=0, leave=True) if self.log_bar else range(n_epoch)
+        continue_epoch = range(pre_epoch, pre_epoch + n_epoch)
+        progress = tqdm.tqdm(continue_epoch, position=0, leave=True) if self.log_bar else continue_epoch
+
         for e in progress:
-            e += pre_epoch
             if self.log_bar:
-                progress.set_description("Epoch %d" % e)
+                progress.set_description(f"Epoch {e}")
             else:
-                print("Epoch %d" % e)
+                print(f"Epoch {e}")
+
+            # Initialize data counts at the start of the epoch
             self._data_count(initial=True)
+            # Execute training epoch & validation epoch (if provided)
             self.run_epoch(loader, **kwargs)
+
+            # Run validation epoch if provided
             if valid_loader:
-                self.toggle()
+                self.toggle("test")
                 self.run_epoch(valid_loader, **kwargs)
-                self.toggle()
+                self.toggle("train")
+
+            # Log metrics at the end of the epoch
+            if self.log_bar:
+                epoch_summary = [
+                    ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()]),
+                    ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()]),
+                ]
+                progress.set_description(f"Epoch {e} | {' | '.join(epoch_summary)}")
+
+            # Update training state (loss, scheduler, epoch)
             if self.mode == "train":
                 cur_loss = np.mean(self.log_test["loss"] if valid_loader else self.log_train["loss"]).item()
                 self.check_better(cur_epoch=e, cur_loss=cur_loss)
@@ -243,12 +268,16 @@ class Trainer(ABC):
         progress = tqdm.tqdm(loader, position=1, leave=False) if self.log_bar else loader
         for i, batch in enumerate(progress):
             self.run_batch(batch, **kwargs)
-            self._data_count()
+            self._data_count(True if self.batch_size is None else False)
             desc, printer = self.print_log(cur_batch=i + 1, num_batch=len(loader))
             if self.log_bar:
                 progress.set_description(desc)
             else:
                 print(desc, **printer)
+
+        # Update metrics at the end of the epoch
+        target_metrics = self.train_metrics if self.mode == "train" else self.test_metrics
+        target_metrics.update(self.metric_on_epoch_end())
 
     def run_batch(self, batch: Union[tuple, dict], **kwargs) -> None:
         """
@@ -345,6 +374,40 @@ class Trainer(ABC):
 
         raise NotImplementedError("test_step must be implemented by subclasses")
 
+    def metric_on_epoch_end(self) -> Dict[str, float]:
+        """
+        A method that can be overridden by users to calculate custom metrics at the end of an epoch.
+
+        This method is designed to be flexible and user-extendable. By default, it does nothing
+        and returns None. Subclasses can override this method to compute any custom metrics
+        based on the results of the epoch.
+
+        Returns
+        -------
+        Optional[Dict[str, float]]:
+            A dictionary containing computed metric values as key-value pairs. The keys represent
+            metric names, and the values are their corresponding values. Returns None by default.
+
+        Notes
+        -----
+        - This method is called automatically at the end of each epoch if `log_bar` is enabled.
+        - The results returned by this method are appended to the progress bar description during
+          training/testing.
+
+        Examples
+        --------
+        To compute a validation accuracy metric:
+
+        >>> class CustomTrainer(Trainer):
+        >>>     def metric_on_epoch_end(self) -> Optional[Dict[str, float]]:
+        >>>         # Assume 'output' and 'label' keys exist in log_test
+        >>>         outputs = torch.cat(self.log_test["output"], dim=0)  # Combine outputs from all batches
+        >>>         labels = torch.cat(self.log_test["label"], dim=0)    # Combine labels from all batches
+        >>>         accuracy = (outputs.argmax(dim=1) == labels).float().mean().item()
+        >>>         return {"val_accuracy": accuracy}
+        """
+        return {}
+
     def logging(self, step_dict: Dict[str, torch.Tensor]) -> None:
         """
         Log the results of a step.
@@ -399,12 +462,15 @@ class Trainer(ABC):
         self.loss_buffer = cur_loss
         return True
 
-    def log_reset(self) -> None:
+    def log_reset(self, epoch_end: bool = False) -> None:
         """
         Clear the log.
         """
         self.log_train.clear()
         self.log_test.clear()
+        if epoch_end:
+            self.train_metrics.clear()
+            self.test_metrics.clear()
 
     def get_loss_history(self, mode: str = "train") -> list:
         """
