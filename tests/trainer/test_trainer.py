@@ -31,7 +31,7 @@ class ExTrainer(Trainer):
         super(ExTrainer, self).__init__(model, device, mode, scheduler=scheduler, optimizer=optimizer, *args, **kwargs)
 
     def train_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
-        return {"loss": torch.ones(1, requires_grad=True)}
+        return {"loss": torch.ones(1, requires_grad=True), "output": torch.zeros(1, requires_grad=True)}
 
     def test_step(self, batch: Union[tuple, dict]) -> Dict[str, torch.Tensor]:
         return self.train_step(batch)
@@ -185,10 +185,26 @@ class TestTrainer(unittest.TestCase):
         self.assertNotEqual(self.trainer._to_cpu(mid_result).sum(), self.trainer._to_cpu(post_result).sum())
 
     def test_inference(self):
-        self.trainer.inference(loader=self.loader)
+        # Perform training to populate metrics (log_train/log_test initialization irrelevant)
+        self.trainer.run(n_epoch=1, loader=self.loader)
+        pre_train_metrics = self.trainer.train_metrics.copy()
+        pre_test_metrics = self.trainer.test_metrics.copy()
+        original_mode = self.trainer.mode
+
+        # Run inference
+        inference_results = self.trainer.inference(loader=self.loader)
+
+        # Verify inference results do not modify training metrics
+        self.assertEqual(self.trainer.train_metrics, pre_train_metrics)
+        self.assertEqual(self.trainer.test_metrics, pre_test_metrics)
+
+        # Verify inference results are consistent
+        self.assertGreater(len(inference_results), 0)  # Ensure inference produced results
         batch_cnt = math.ceil(self.n_data / self.loader.batch_size)
-        self.assertEqual(batch_cnt, len(self.trainer.log_test["loss"]))
-        self.assertEqual(0, len(self.trainer.log_train["loss"]))
+        self.assertEqual(len(self.trainer.log_test.get("output", [])), batch_cnt)
+
+        # Verify mode is restored after inference
+        self.assertEqual(self.trainer.mode, original_mode)
 
 
 if __name__ == "__main__":
