@@ -1,0 +1,73 @@
+name: Code Review with GPT
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    branches:
+      - dev
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: read
+
+jobs:
+  check-trigger:
+    runs-on: ubuntu-latest
+
+    outputs:
+      trigger_found: ${{ steps.set_trigger.outputs.trigger_found }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Check Trigger from PR or Comment
+        id: check_trigger
+        env:
+          PR_TITLE: "${{ github.event.pull_request.title }}"
+          PR_BODY: "${{ github.event.pull_request.body }}"
+          COMMENT_BODY: "${{ github.event.comment.body }}"
+          EVENT_NAME: "${{ github.event_name }}"
+        run: |
+          echo "Checking PR or Comment for trigger '!GPT'..."
+          TRIGGER_FOUND=false
+
+          if [ "$EVENT_NAME" == "pull_request" ]; then
+            if echo "$PR_BODY" | grep -iFq "!GPT"; then
+              TRIGGER_FOUND=true
+            fi
+          elif [ "$EVENT_NAME" == "issue_comment" ]; then
+            # Pull Request의 댓글인지 확인
+            if [ -n "${{ github.event.issue.pull_request }}" ]; then
+              if echo "$COMMENT_BODY" | grep -iFq "!GPT"; then
+                TRIGGER_FOUND=true
+              fi
+            fi
+          fi
+
+          echo "Trigger found: $TRIGGER_FOUND"
+          echo "::set-output name=trigger_found::$TRIGGER_FOUND"
+
+      - name: Set Trigger Output
+        id: set_trigger
+        run: |
+          echo "::set-output name=trigger_found::$TRIGGER_FOUND"
+
+  review:
+    needs: check-trigger
+    runs-on: ubuntu-latest
+    if: needs.check-trigger.outputs.trigger_found == 'true'
+    steps:
+      - name: Run GPT Code Review
+        uses: anc95/ChatGPT-CodeReview@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGUAGE: Korean
+
+      - name: Skip Job if Trigger Not Found
+        run: |
+          echo "⚠️ Trigger not found. Skipping the job."
