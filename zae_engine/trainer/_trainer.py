@@ -558,9 +558,9 @@ class Trainer(ABC):
         except IndexError as e:
             print(f"There is no weight in buffer of trainer.", e)
 
-    def inference(self, loader) -> list:
+    def inference(self, loader: td.DataLoader) -> list:
         """
-        Run inference on the given data loader.
+        Run inference on the given data loader without modifying existing logs or metrics.
 
         Parameters
         ----------
@@ -572,9 +572,14 @@ class Trainer(ABC):
         list
             The inference results.
         """
-        self.toggle("test")
-        self.run(n_epoch=1, loader=loader)
-        return self.log_test["output"]
+        mode_buffer = self.mode
+        self.toggle("test")  # Switch to test mode
+
+        self.run_epoch(loader)
+        results = self.log_test.get("output", [])
+        self.toggle(mode_buffer)
+
+        return results
 
 
 class ProgressChecker:
