@@ -1,0 +1,18 @@
+zae\_engine.trainer package
+===========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   zae_engine.trainer.addons
+
+Module contents
+---------------
+
+.. automodule:: zae_engine.trainer
+   :members:
+   :undoc-members:
+   :show-inheritance:

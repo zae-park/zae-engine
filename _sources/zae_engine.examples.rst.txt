@@ -1,0 +1,37 @@
+zae\_engine.examples package
+============================
+
+Submodules
+----------
+
+zae\_engine.examples.classification1D module
+--------------------------------------------
+
+.. automodule:: zae_engine.examples.classification1D
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.examples.ddpm\_mnist module
+---------------------------------------
+
+.. automodule:: zae_engine.examples.ddpm_mnist
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.examples.segmentation1D module
+------------------------------------------
+
+.. automodule:: zae_engine.examples.segmentation1D
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: zae_engine.examples
+   :members:
+   :undoc-members:
+   :show-inheritance:
