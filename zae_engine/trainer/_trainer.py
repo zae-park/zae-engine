@@ -85,21 +85,60 @@ class Trainer(ABC):
     @classmethod
     def add_on(cls, *add_on_cls: "Type[AddOnBase]") -> Type[T]:
         """
-        Install one or more add-ons to the Trainer class.
+        Attach one or more add-ons to the Trainer class.
+
+        This method allows you to extend the functionality of the Trainer class by
+        dynamically combining it with additional add-ons. Add-ons must inherit from
+        the `AddOnBase` class and implement the `apply` method.
 
         Parameters
         ----------
         add_on_cls : Type[AddOnBase]
-            One or more add-on classes to install.
+            One or more add-on classes to be applied to the Trainer class.
 
         Returns
         -------
         Type[Trainer]
-            The modified Trainer class with the add-ons applied.
+            A new Trainer class with the specified add-ons applied.
+
+        Notes
+        -----
+        - Add-ons modify the Trainer class by injecting additional methods or
+          behaviors, such as support for multi-GPU training, state management,
+          or logging to external services.
+        - Add-ons are applied in the order provided, allowing for compositional
+          layering of functionality.
 
         Examples
         --------
-        >>> trainer = Trainer.add_on(MultiGPUAddon, SomeOtherAddon)(model, [device1, device2], mode='train', scheduler=scheduler, optimizer=optimizer)
+        Basic usage of `add_on`:
+
+        >>> from zae_engine.trainer import Trainer
+        >>> from zae_engine.trainer.addons import MultiGPUAddon, StateManagerAddon
+
+        >>> MyTrainer = Trainer.add_on(MultiGPUAddon, StateManagerAddon)
+        >>> trainer = MyTrainer(
+        >>>     model=my_model,
+        >>>     device='cuda',
+        >>>     optimizer=my_optimizer,
+        >>>     scheduler=my_scheduler,
+        >>>     save_path='./checkpoints'
+        >>> )
+        >>> trainer.run(n_epoch=10, loader=train_loader, valid_loader=valid_loader)
+
+        Adding WandBLoggerAddon for real-time logging:
+
+        >>> from zae_engine.trainer.addons import WandBLoggerAddon
+
+        >>> MyTrainerWithLogging = Trainer.add_on(WandBLoggerAddon)
+        >>> trainer_with_logging = MyTrainerWithLogging(
+        >>>     model=my_model,
+        >>>     device='cuda',
+        >>>     optimizer=my_optimizer,
+        >>>     scheduler=my_scheduler,
+        >>>     web_logger={"wandb": {"project": "my_project"}}
+        >>> )
+        >>> trainer_with_logging.run(n_epoch=10, loader=train_loader)
         """
         base_cls = cls
         for add_on in add_on_cls:
