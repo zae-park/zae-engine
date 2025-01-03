@@ -10,6 +10,47 @@ from .core import AddOnBase, T
 
 
 class WandBLoggerAddon(AddOnBase):
+    """
+    Add-on for real-time logging with Weights & Biases (WandB).
+
+    This add-on integrates WandB into the training process, allowing users to log
+    metrics and monitor training progress in real-time.
+
+    Parameters
+    ----------
+    web_logger : dict, optional
+        Configuration dictionary for initializing WandB. Must include a key 'wandb'
+        with WandB initialization parameters.
+
+    Methods
+    -------
+    logging(step_dict: Dict[str, torch.Tensor])
+        Log metrics to WandB during each step.
+    init_wandb(params: dict)
+        Initialize WandB with the given parameters.
+
+    Notes
+    -----
+    This add-on requires WandB to be installed and a valid API key to be available.
+
+    Examples
+    --------
+    Using WandBLoggerAddon for real-time logging:
+
+    >>> from zae_engine.trainer import Trainer
+    >>> from zae_engine.trainer.addons import WandBLoggerAddon
+
+    >>> MyTrainer = Trainer.add_on(WandBLoggerAddon)
+    >>> trainer = MyTrainer(
+    >>>     model=my_model,
+    >>>     device='cuda',
+    >>>     optimizer=my_optimizer,
+    >>>     scheduler=my_scheduler,
+    >>>     web_logger={"wandb": {"project": "my_project"}}
+    >>> )
+    >>> trainer.run(n_epoch=10, loader=train_loader)
+    """
+
     @classmethod
     def apply(cls, base_cls: T) -> T:
         class WandBLogger(base_cls):
