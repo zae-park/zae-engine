@@ -76,6 +76,66 @@ class WandBLoggerAddon(AddOnBase):
 
 
 class NeptuneLoggerAddon(AddOnBase):
+    """
+    Add-on for real-time logging with Neptune.
+
+    This add-on integrates Neptune into the training process, enabling real-time logging
+    of metrics and other training details. It also provides functionality to monitor and
+    track experiments remotely.
+
+    Parameters
+    ----------
+    web_logger : dict, optional
+        Configuration dictionary for initializing Neptune. Must include a key 'neptune'
+        with Neptune initialization parameters, such as 'project_name' and 'api_tkn'.
+
+    Methods
+    -------
+    logging(step_dict: Dict[str, torch.Tensor])
+        Log metrics to Neptune during each step.
+    init_neptune(params: dict)
+        Initialize a Neptune run with the given parameters.
+
+    Notes
+    -----
+    This add-on requires Neptune to be installed and a valid API token to be available.
+    Ensure your Neptune project is properly set up to track experiments.
+
+    Examples
+    --------
+    Using NeptuneLoggerAddon for real-time logging:
+
+    >>> from zae_engine.trainer import Trainer
+    >>> from zae_engine.trainer.addons import NeptuneLoggerAddon
+
+    >>> MyTrainer = Trainer.add_on(NeptuneLoggerAddon)
+    >>> trainer = MyTrainer(
+    >>>     model=my_model,
+    >>>     device='cuda',
+    >>>     optimizer=my_optimizer,
+    >>>     scheduler=my_scheduler,
+    >>>     web_logger={"neptune": {"project_name": "my_workspace/my_project", "api_tkn": "your_api_token"}}
+    >>> )
+    >>> trainer.run(n_epoch=10, loader=train_loader)
+
+    Adding multiple loggers, including Neptune:
+
+    >>> from zae_engine.trainer.addons import WandBLoggerAddon
+
+    >>> MyTrainerWithLoggers = Trainer.add_on(WandBLoggerAddon, NeptuneLoggerAddon)
+    >>> trainer_with_loggers = MyTrainerWithLoggers(
+    >>>     model=my_model,
+    >>>     device='cuda',
+    >>>     optimizer=my_optimizer,
+    >>>     scheduler=my_scheduler,
+    >>>     web_logger={
+    >>>         "wandb": {"project": "my_wandb_project"},
+    >>>         "neptune": {"project_name": "my_workspace/my_neptune_project", "api_tkn": "your_api_token"}
+    >>>     }
+    >>> )
+    >>> trainer_with_loggers.run(n_epoch=10, loader=train_loader)
+    """
+
     @classmethod
     def apply(cls, base_cls: T) -> T:
         class NeptuneLogger(base_cls):
