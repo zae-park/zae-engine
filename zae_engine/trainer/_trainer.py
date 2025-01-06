@@ -266,14 +266,17 @@ class Trainer(ABC):
             The data loader for the training/testing data.
         """
         self.log_reset()
-        for i, batch in enumerate(loader):
+        batch_progress = tqdm.tqdm(enumerate(loader), total=len(loader), position=1, leave=False, dynamic_ncols=True)
+
+        for i, batch in batch_progress:
             self.run_batch(batch, **kwargs)
             self._data_count(True if self.batch_size is None else False)
             desc = self.print_log(cur_batch=i + 1, num_batch=len(loader))
             if self.log_bar:
-                self.progress.set_postfix_str(desc)
+                batch_progress.set_description(desc)
             else:
                 print(desc)
+        batch_progress.close()
 
         # Update metrics at the end of the epoch
         target_metrics = self.train_metrics if self.mode == "train" else self.test_metrics
