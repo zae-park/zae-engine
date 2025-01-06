@@ -496,7 +496,7 @@ class Trainer(ABC):
         else:
             raise ValueError(f"Mode must be 'train' or 'test', got '{mode}'.")
 
-    def print_log(self, cur_batch: int, num_batch: int) -> str:
+    def print_log(self, cur_batch: int, num_batch: int) -> dict:
         """
         Print the log for the current batch.
 
@@ -509,25 +509,25 @@ class Trainer(ABC):
 
         Returns
         -------
-        Tuple[str, dict]
-            A tuple containing the log string and additional printing options.
+        dict
+            A dictionary containing the log printing options.
         """
         log = self.log_train if self.mode == "train" else self.log_test
         LR = self.optimizer.param_groups[0]["lr"] if self.optimizer else 0
         is_end = cur_batch == num_batch
 
         # Base log string
-        log_str = f"Batch: {cur_batch}/{num_batch}"
-        for k, v in log.items():  # Skip non-numerical entries
+        log_dict = {"Batch": f"{cur_batch}/{num_batch}", "LR": f"{LR:.3e}"}
+        for k, v in log.items():
             if "output" in k:
                 continue
-            log_str += f"\t{k}: {np.mean(v):.6f}"
-        log_str += f"\tLR: {LR:.3e}"
+            log_dict[k] = f"{np.mean(v):.6f}"
 
-        # Add styling for the last batch
+        # Highlight last batch (optional, not visible in nested progress bar)
         if is_end:
-            log_str = f"\033[92m{log_str}\033[0m"  # Green text for the last batch
-        return log_str
+            log_dict["status"] = "Final Batch"
+
+        return log_dict
 
     def save_model(self, filename: str) -> None:
         """
