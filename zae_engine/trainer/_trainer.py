@@ -273,7 +273,7 @@ class Trainer(ABC):
             self._data_count(True if self.batch_size is None else False)
             desc = self.print_log(cur_batch=i + 1, num_batch=len(loader))
             if self.log_bar:
-                batch_progress.set_description(desc)
+                batch_progress.set_postfix_str(desc)
             else:
                 print(desc)
         batch_progress.close()
