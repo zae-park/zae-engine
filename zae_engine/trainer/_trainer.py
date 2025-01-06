@@ -72,6 +72,7 @@ class Trainer(ABC):
         self.scheduler_step_on_batch = scheduler_step_on_batch
         self.gradient_clip = gradient_clip
 
+        self.progress = None
         self.progress_checker = ProgressChecker()
 
         # Init vars
@@ -85,60 +86,21 @@ class Trainer(ABC):
     @classmethod
     def add_on(cls, *add_on_cls: "Type[AddOnBase]") -> Type[T]:
         """
-        Attach one or more add-ons to the Trainer class.
-
-        This method allows you to extend the functionality of the Trainer class by
-        dynamically combining it with additional add-ons. Add-ons must inherit from
-        the `AddOnBase` class and implement the `apply` method.
+        Install one or more add-ons to the Trainer class.
 
         Parameters
         ----------
         add_on_cls : Type[AddOnBase]
-            One or more add-on classes to be applied to the Trainer class.
+            One or more add-on classes to install.
 
         Returns
         -------
         Type[Trainer]
-            A new Trainer class with the specified add-ons applied.
-
-        Notes
-        -----
-        - Add-ons modify the Trainer class by injecting additional methods or
-          behaviors, such as support for multi-GPU training, state management,
-          or logging to external services.
-        - Add-ons are applied in the order provided, allowing for compositional
-          layering of functionality.
+            The modified Trainer class with the add-ons applied.
 
         Examples
         --------
-        Basic usage of `add_on`:
-
-        >>> from zae_engine.trainer import Trainer
-        >>> from zae_engine.trainer.addons import MultiGPUAddon, StateManagerAddon
-
-        >>> MyTrainer = Trainer.add_on(MultiGPUAddon, StateManagerAddon)
-        >>> trainer = MyTrainer(
-        >>>     model=my_model,
-        >>>     device='cuda',
-        >>>     optimizer=my_optimizer,
-        >>>     scheduler=my_scheduler,
-        >>>     save_path='./checkpoints'
-        >>> )
-        >>> trainer.run(n_epoch=10, loader=train_loader, valid_loader=valid_loader)
-
-        Adding WandBLoggerAddon for real-time logging:
-
-        >>> from zae_engine.trainer.addons import WandBLoggerAddon
-
-        >>> MyTrainerWithLogging = Trainer.add_on(WandBLoggerAddon)
-        >>> trainer_with_logging = MyTrainerWithLogging(
-        >>>     model=my_model,
-        >>>     device='cuda',
-        >>>     optimizer=my_optimizer,
-        >>>     scheduler=my_scheduler,
-        >>>     web_logger={"wandb": {"project": "my_project"}}
-        >>> )
-        >>> trainer_with_logging.run(n_epoch=10, loader=train_loader)
+        >>> trainer = Trainer.add_on(MultiGPUAddon, SomeOtherAddon)(model, [device1, device2], mode='train', scheduler=scheduler, optimizer=optimizer)
         """
         base_cls = cls
         for add_on in add_on_cls:
@@ -259,11 +221,11 @@ class Trainer(ABC):
         self._scheduler_step_check(n_epoch)
         pre_epoch = self.progress_checker.get_epoch()
         continue_epoch = range(pre_epoch, pre_epoch + n_epoch)
-        progress = tqdm.tqdm(continue_epoch, position=0, leave=True) if self.log_bar else continue_epoch
+        self.progress = tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True) if self.log_bar else continue_epoch
 
-        for e in progress:
+        for e in self.progress:
             if self.log_bar:
-                progress.set_description(f"Epoch {e}")
+                self.progress.set_description(f"Epoch {e}")
             else:
                 print(f"Epoch {e}")
 
@@ -284,7 +246,7 @@ class Trainer(ABC):
                     ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()]),
                     ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()]),
                 ]
-                progress.set_description(f"Epoch {e} | {' | '.join(epoch_summary)}")
+                self.progress.set_description(f"Epoch {e} | {' | '.join(epoch_summary)}")
 
             # Update training state (loss, scheduler, epoch)
             if self.mode == "train":
@@ -304,15 +266,14 @@ class Trainer(ABC):
             The data loader for the training/testing data.
         """
         self.log_reset()
-        progress = tqdm.tqdm(loader, position=1, leave=False) if self.log_bar else loader
-        for i, batch in enumerate(progress):
+        for i, batch in enumerate(loader):
             self.run_batch(batch, **kwargs)
             self._data_count(True if self.batch_size is None else False)
-            desc, printer = self.print_log(cur_batch=i + 1, num_batch=len(loader))
+            desc = self.print_log(cur_batch=i + 1, num_batch=len(loader))
             if self.log_bar:
-                progress.set_description(desc)
+                self.progress.set_postfix_str(desc)
             else:
-                print(desc, **printer)
+                print(desc)
 
         # Update metrics at the end of the epoch
         target_metrics = self.train_metrics if self.mode == "train" else self.test_metrics
@@ -532,7 +493,7 @@ class Trainer(ABC):
         else:
             raise ValueError(f"Mode must be 'train' or 'test', got '{mode}'.")
 
-    def print_log(self, cur_batch: int, num_batch: int) -> Tuple[str, dict]:
+    def print_log(self, cur_batch: int, num_batch: int) -> str:
         """
         Print the log for the current batch.
 
@@ -551,16 +512,19 @@ class Trainer(ABC):
         log = self.log_train if self.mode == "train" else self.log_test
         LR = self.optimizer.param_groups[0]["lr"] if self.optimizer else 0
         is_end = cur_batch == num_batch
-        disp = None if is_end else sys.stderr
-        end = "\n" if is_end else ""
 
-        log_str = f"\r\t\tBatch: {cur_batch}/{num_batch}"
-        for k, v in log.items():
+        # Base log string
+        log_str = f"Batch: {cur_batch}/{num_batch}"
+        for k, v in log.items():  # Skip non-numerical entries
             if "output" in k:
                 continue
             log_str += f"\t{k}: {np.mean(v):.6f}"
         log_str += f"\tLR: {LR:.3e}"
-        return log_str, {"end": end, "file": disp}
+
+        # Add styling for the last batch
+        if is_end:
+            log_str = f"\033[92m{log_str}\033[0m"  # Green text for the last batch
+        return log_str
 
     def save_model(self, filename: str) -> None:
         """
