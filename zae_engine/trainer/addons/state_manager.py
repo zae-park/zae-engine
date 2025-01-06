@@ -8,6 +8,56 @@ from .core import AddOnBase, T
 
 
 class StateManagerAddon(AddOnBase):
+    """
+    Add-on to manage model, optimizer, and scheduler state.
+
+    This add-on provides functionality for saving and loading the state of the model,
+    optimizer, and scheduler during training. It supports `.ckpt` and `.safetensor`
+    formats for storing model weights.
+
+    Parameters
+    ----------
+    save_path : str
+        Path to the directory where the model, optimizer, and scheduler states will be saved.
+    save_format : str, optional
+        Format to save the model state, either 'ckpt' or 'safetensor'. Default is 'ckpt'.
+
+    Methods
+    -------
+    save_state()
+        Save the state of the model, optimizer, and scheduler.
+    load_state()
+        Load the state of the model, optimizer, and scheduler.
+    save_model(filename: str)
+        Save the model's state dictionary to a file.
+    save_optimizer()
+        Save the optimizer's state dictionary.
+    save_scheduler()
+        Save the scheduler's state dictionary.
+
+    Notes
+    -----
+    This add-on automatically saves the model state whenever a better state is
+    detected during training based on loss.
+
+    Examples
+    --------
+    Adding StateManagerAddon to a Trainer:
+
+    >>> from zae_engine.trainer import Trainer
+    >>> from zae_engine.trainer.addons import StateManagerAddon
+
+    >>> MyTrainer = Trainer.add_on(StateManagerAddon)
+    >>> trainer = MyTrainer(
+    >>>     model=my_model,
+    >>>     device='cuda',
+    >>>     optimizer=my_optimizer,
+    >>>     scheduler=my_scheduler,
+    >>>     save_path='./checkpoints'
+    >>> )
+    >>> trainer.run(n_epoch=10, loader=train_loader)
+    """
+
     def __init__(self, save_path: str, save_format: str = "ckpt"):
         self.save_path = save_path
         self.save_format = save_format

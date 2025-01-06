@@ -10,6 +10,47 @@ from .core import AddOnBase, T
 
 
 class WandBLoggerAddon(AddOnBase):
+    """
+    Add-on for real-time logging with Weights & Biases (WandB).
+
+    This add-on integrates WandB into the training process, allowing users to log
+    metrics and monitor training progress in real-time.
+
+    Parameters
+    ----------
+    web_logger : dict, optional
+        Configuration dictionary for initializing WandB. Must include a key 'wandb'
+        with WandB initialization parameters.
+
+    Methods
+    -------
+    logging(step_dict: Dict[str, torch.Tensor])
+        Log metrics to WandB during each step.
+    init_wandb(params: dict)
+        Initialize WandB with the given parameters.
+
+    Notes
+    -----
+    This add-on requires WandB to be installed and a valid API key to be available.
+
+    Examples
+    --------
+    Using WandBLoggerAddon for real-time logging:
+
+    >>> from zae_engine.trainer import Trainer
+    >>> from zae_engine.trainer.addons import WandBLoggerAddon
+
+    >>> MyTrainer = Trainer.add_on(WandBLoggerAddon)
+    >>> trainer = MyTrainer(
+    >>>     model=my_model,
+    >>>     device='cuda',
+    >>>     optimizer=my_optimizer,
+    >>>     scheduler=my_scheduler,
+    >>>     web_logger={"wandb": {"project": "my_project"}}
+    >>> )
+    >>> trainer.run(n_epoch=10, loader=train_loader)
+    """
+
     @classmethod
     def apply(cls, base_cls: T) -> T:
         class WandBLogger(base_cls):
@@ -35,6 +76,66 @@ class WandBLoggerAddon(AddOnBase):
 
 
 class NeptuneLoggerAddon(AddOnBase):
+    """
+    Add-on for real-time logging with Neptune.
+
+    This add-on integrates Neptune into the training process, enabling real-time logging
+    of metrics and other training details. It also provides functionality to monitor and
+    track experiments remotely.
+
+    Parameters
+    ----------
+    web_logger : dict, optional
+        Configuration dictionary for initializing Neptune. Must include a key 'neptune'
+        with Neptune initialization parameters, such as 'project_name' and 'api_tkn'.
+
+    Methods
+    -------
+    logging(step_dict: Dict[str, torch.Tensor])
+        Log metrics to Neptune during each step.
+    init_neptune(params: dict)
+        Initialize a Neptune run with the given parameters.
+
+    Notes
+    -----
+    This add-on requires Neptune to be installed and a valid API token to be available.
+    Ensure your Neptune project is properly set up to track experiments.
+
+    Examples
+    --------
+    Using NeptuneLoggerAddon for real-time logging:
+
+    >>> from zae_engine.trainer import Trainer
+    >>> from zae_engine.trainer.addons import NeptuneLoggerAddon
+
+    >>> MyTrainer = Trainer.add_on(NeptuneLoggerAddon)
+    >>> trainer = MyTrainer(
+    >>>     model=my_model,
+    >>>     device='cuda',
+    >>>     optimizer=my_optimizer,
+    >>>     scheduler=my_scheduler,
+    >>>     web_logger={"neptune": {"project_name": "my_workspace/my_project", "api_tkn": "your_api_token"}}
+    >>> )
+    >>> trainer.run(n_epoch=10, loader=train_loader)
+
+    Adding multiple loggers, including Neptune:
+
+    >>> from zae_engine.trainer.addons import WandBLoggerAddon
+
+    >>> MyTrainerWithLoggers = Trainer.add_on(WandBLoggerAddon, NeptuneLoggerAddon)
+    >>> trainer_with_loggers = MyTrainerWithLoggers(
+    >>>     model=my_model,
+    >>>     device='cuda',
+    >>>     optimizer=my_optimizer,
+    >>>     scheduler=my_scheduler,
+    >>>     web_logger={
+    >>>         "wandb": {"project": "my_wandb_project"},
+    >>>         "neptune": {"project_name": "my_workspace/my_neptune_project", "api_tkn": "your_api_token"}
+    >>>     }
+    >>> )
+    >>> trainer_with_loggers.run(n_epoch=10, loader=train_loader)
+    """
+
     @classmethod
     def apply(cls, base_cls: T) -> T:
         class NeptuneLogger(base_cls):
@@ -67,58 +168,3 @@ class NeptuneLoggerAddon(AddOnBase):
                     obj.is_live = partial(lambda self: self._state.value != "stopped", obj)
 
         return NeptuneLogger
-
-
-# class NeptuneLogger:
-#     def __init__(self, project_name: str, api_tkn: str = "", **kwargs):
-#         """
-#         Initial neptune tokens using given token.
-#
-#         :param project_name: Logging path to let neptune track each experiment.
-#         :param api_tkn: Authorization token
-#         :param kwargs: Auxiliary arguments to track models.
-#         :return:
-#         """
-#         self.api_root = f"zae-park/{project_name}"
-#         self.api_tkn = api_tkn
-#         self.kwargs = kwargs
-#
-#         self.run, self.model = None, None
-#         self.init()
-#
-#     def default(self):
-#         self.run, self.model = None, None
-#
-#     def init(self):
-#         # name = self.kwargs['name'] if 'name' in self.kwargs.keys() else 'Prediction model'
-#         # key = self.kwargs['key'] if 'key' in self.kwargs.keys() else 'MOD'
-#
-#         if self.api_tkn:
-#             try:
-#                 self.run = nep.init_run(project=self.api_root, api_token=self.api_tkn)
-#                 # self.model = nep.init_model(name=name, key=key, project=self.api_root, api_token=self.api_tkn)
-#             except InvalidTkn as e:
-#                 print(f'{"-" * 100}')
-#                 print(
-#                     "Receive invalid api token. Fail to generate Neptune instance, "
-#                     "please check again @ https://app.neptune.ai/o/zae-park/-/projects"
-#                 )
-#                 print(f'{"-" * 100}')
-#                 raise e
-#             else:
-#                 self.add_state_checker(self.run)
-#
-#     @staticmethod
-#     def add_state_checker(*objects):
-#         for obj in objects:
-#             obj.is_live = partial(lambda self: self._state.value != "stopped", obj)
-#
-#     def log(self, key, value):
-#         if self.run.is_live():
-#             self.run[key].log(value)
-#
-#     def eliminate(self):
-#         if isinstance(self.run, nep.metadata_containers.MetadataContainer):
-#             self.run.stop()
-#         if isinstance(self.model, nep.metadata_containers.MetadataContainer):
-#             self.model.stop()
