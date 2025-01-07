@@ -266,16 +266,28 @@ class Trainer(ABC):
             The data loader for the training/testing data.
         """
         self.log_reset()
-        batch_progress = tqdm.tqdm(enumerate(loader), total=len(loader), position=1, leave=False, dynamic_ncols=True)
+        batch_progress = tqdm.tqdm(total=len(loader), position=1, leave=False, dynamic_ncols=True)
 
-        for i, batch in batch_progress:
-            self.run_batch(batch, **kwargs)
-            self._data_count(True if self.batch_size is None else False)
+        data_iter = iter(loader)
+        next_batch = next(data_iter, None)
+
+        for i, batch in range(len(loader)):
+            current_batch = next_batch
+            next_batch = next(data_iter, None)
+
+            if current_batch is not None:
+                self.run_batch(current_batch, **kwargs)
+                self._data_count(True if self.batch_size is None else False)
+
+            # Ensure GPU operations are complete before updating progress
+            torch.cuda.synchronize()
             desc = self.print_log(cur_batch=i + 1, num_batch=len(loader))
+            batch_progress.update(1)
             if self.log_bar:
                 batch_progress.set_postfix_str(desc)
             else:
                 print(desc)
+
         batch_progress.close()
 
         # Update metrics at the end of the epoch
@@ -310,6 +322,7 @@ class Trainer(ABC):
         else:
             raise ValueError(f"Unexpected mode {self.mode}.")
 
+        torch.cuda.synchronize()  # Ensure GPU operations are complete
         self.logging(step_dict)
         self.progress_checker.update_step()
 
@@ -509,25 +522,25 @@ class Trainer(ABC):
 
         Returns
         -------
-        dict
-            A dictionary containing the log printing options.
+        str
+            A log string.
         """
         log = self.log_train if self.mode == "train" else self.log_test
         LR = self.optimizer.param_groups[0]["lr"] if self.optimizer else 0
         is_end = cur_batch == num_batch
 
         # Base log string
-        log_dict = {"Batch": f"{cur_batch}/{num_batch}", "LR": f"{LR:.3e}"}
-        for k, v in log.items():
+        log_str = f"Batch: {cur_batch}/{num_batch}"
+        for k, v in log.items():  # Skip non-numerical entries
             if "output" in k:
                 continue
-            log_dict[k] = f"{np.mean(v):.6f}"
+            log_str += f"\t{k}: {np.mean(v):.6f}"
+        log_str += f"\tLR: {LR:.3e}"
 
-        # Highlight last batch (optional, not visible in nested progress bar)
+        # Add styling for the last batch
         if is_end:
-            log_dict["status"] = "Final Batch"
-
-        return log_dict
+            log_str = f"\033[92m{log_str}\033[0m"  # Green text for the last batch
+        return log_str
 
     def save_model(self, filename: str) -> None:
         """
