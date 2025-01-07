@@ -535,7 +535,7 @@ class Trainer(ABC):
             if "output" not in k:  # Include only numerical entries
                 log_dict[k] = f"{np.mean(v):.6f}"
 
-        return log_str
+        return log_dict
 
     def save_model(self, filename: str) -> None:
         """
