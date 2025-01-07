@@ -218,14 +218,17 @@ class Trainer(ABC):
         self.loader, self.valid_loader = loader, valid_loader
         self._check_batch_size()
         self._scheduler_step_check(n_epoch)
-        pre_epoch = self.progress_checker.get_epoch()
+        pre_epoch = self.progress_checker.get_epoch() - 1
         continue_epoch = range(pre_epoch, pre_epoch + n_epoch)
         progress = tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True) if self.log_bar else continue_epoch
 
         for e in progress:
             if self.log_bar:
                 # self.progress.set_description(f"Epoch {e}")
-                progress.write(f"Epoch {e}/{n_epoch}")
+                tqdm.write(f"Epoch {e + 1}/{n_epoch} Starting")
+
+                progress.set_description(f"Epoch {e + 1}/{n_epoch}")
+                progress.set_postfix({"Status": "Running"})
             else:
                 print(f"Epoch {e}")
 
@@ -242,12 +245,12 @@ class Trainer(ABC):
 
             # Log metrics at the end of the epoch
             if self.log_bar:
-                epoch_summary = [
-                    ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()]),
-                    ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()]),
-                ]
-                epoch_summary = f"Epoch {e}/{n_epoch} | {' | '.join(epoch_summary)}"
-                # self.progress.set_description(f"Epoch {e} | {' | '.join(epoch_summary)}")
+                # Collect epoch summary for train and test
+                train_summary = ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()])
+                test_summary = ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()])
+                epoch_summary = f"Epoch {e + 1}/{n_epoch} | {train_summary} | {test_summary}"
+
+                # Epoch 종료 시 progress bar 갱신 및 요약 로그 남기기
                 progress.set_description(epoch_summary)
                 progress.set_postfix({"Epoch": f"{e + 1}/{n_epoch}"})
 
