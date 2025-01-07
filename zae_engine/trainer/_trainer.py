@@ -223,8 +223,8 @@ class Trainer(ABC):
         progress = tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True) if self.log_bar else continue_epoch
 
         for e in progress:
-            printer = progress.set_description if self.log_bar else print
-            printer(f"Epoch {e + 1}/{n_epoch}")
+            # printer = progress.set_description if self.log_bar else print
+            # printer(f"Epoch {e + 1}/{n_epoch}")
 
             self._data_count(initial=True)  # Initial data counts
             self.run_epoch(loader, **kwargs)  # Execute training epoch & validation epoch (if provided)
