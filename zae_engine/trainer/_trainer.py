@@ -268,12 +268,13 @@ class Trainer(ABC):
         self.log_reset()
         batch_progress = tqdm.tqdm(total=len(loader), position=1, leave=False, dynamic_ncols=True, file=sys.stderr)
 
-        data_iter = iter(loader)
-        next_batch = next(data_iter, None)
+        # data_iter = iter(loader)
+        # next_batch = next(data_iter, None)
 
-        for i in range(len(loader)):
-            current_batch = next_batch
-            next_batch = next(data_iter, None)
+        for i, batch in enumerate(loader):
+            current_batch = batch
+            # current_batch = next_batch
+            # next_batch = next(data_iter, None)
 
             if current_batch is not None:
                 self.run_batch(current_batch, **kwargs)
