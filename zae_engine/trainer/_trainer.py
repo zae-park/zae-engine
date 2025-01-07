@@ -219,12 +219,8 @@ class Trainer(ABC):
         self._check_batch_size()
         self._scheduler_step_check(n_epoch)
         pre_epoch = self.progress_checker.get_epoch() - 1
-        continue_epoch = range(pre_epoch, pre_epoch + n_epoch)
-        progress = (
-            tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True, file=sys.stderr)
-            if self.log_bar
-            else continue_epoch
-        )
+        n_epoch = range(pre_epoch, pre_epoch + n_epoch)
+        progress = tqdm.tqdm(n_epoch, position=0, dynamic_ncols=True, file=sys.stderr, disable=not self.log_bar)
 
         for e in progress:
             printer = progress.set_description if self.log_bar else print
@@ -240,18 +236,10 @@ class Trainer(ABC):
                 self.toggle("train")
 
             # Log metrics at the end of the epoch
-            if self.log_bar:
-                train_summary = ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()])
-                test_summary = ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()])
-                epoch_summary = f"Epoch {e + 1}/{n_epoch} | {train_summary} | {test_summary}"
-
-                # Epoch 종료 시 progress bar 갱신 및 요약 로그 남기기
-                progress.set_description(epoch_summary)
-                # progress.set_postfix({"Epoch": f"{e + 1}/{n_epoch}"})
-                # progress.update(1)
-                # progress.set_postfix({"Status": "Completed"})
-                progress.write(epoch_summary, file=sys.stderr)
-                # progress.close()
+            train_summary = ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()])
+            test_summary = ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()])
+            epoch_summary = f"Epoch {e + 1}/{n_epoch} | {train_summary} | {test_summary}"
+            progress.write(epoch_summary, file=sys.stderr)
 
             # Update training state (loss, scheduler, epoch)
             if self.mode == "train":
@@ -273,13 +261,8 @@ class Trainer(ABC):
         self.log_reset()
         batch_progress = tqdm.tqdm(total=len(loader), position=1, leave=False, dynamic_ncols=True, file=sys.stderr)
 
-        # data_iter = iter(loader)
-        # next_batch = next(data_iter, None)
-
         for i, batch in enumerate(loader):
             current_batch = batch
-            # current_batch = next_batch
-            # next_batch = next(data_iter, None)
 
             if current_batch is not None:
                 self.run_batch(current_batch, **kwargs)
