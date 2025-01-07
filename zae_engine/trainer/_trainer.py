@@ -221,7 +221,9 @@ class Trainer(ABC):
         pre_epoch = self.progress_checker.get_epoch() - 1
         continue_epoch = range(pre_epoch, pre_epoch + n_epoch)
         progress = (
-            tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True, leave=False) if self.log_bar else continue_epoch
+            tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True, leave=True, file=sys.stderr)
+            if self.log_bar
+            else continue_epoch
         )
 
         for e in progress:
@@ -247,7 +249,8 @@ class Trainer(ABC):
                 # progress.set_description(epoch_summary)
                 # progress.set_postfix({"Epoch": f"{e + 1}/{n_epoch}"})
                 progress.update(1)
-                progress.write(f"Epoch : {e + 1}/{n_epoch}")
+                progress.set_postfix({"Status": "Completed"})
+                progress.write(epoch_summary, file=sys.stderr)
                 progress.close()
 
             # Update training state (loss, scheduler, epoch)
