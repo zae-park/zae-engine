@@ -225,7 +225,7 @@ class Trainer(ABC):
         for e in progress:
             if self.log_bar:
                 # self.progress.set_description(f"Epoch {e}")
-                tqdm.write(f"Epoch {e + 1}/{n_epoch} Starting")
+                progress.write(f"Epoch {e + 1}/{n_epoch} Starting")
 
                 progress.set_description(f"Epoch {e + 1}/{n_epoch}")
                 progress.set_postfix({"Status": "Running"})
@@ -262,7 +262,7 @@ class Trainer(ABC):
                     self.scheduler.step(**kwargs)
                 self.progress_checker.update_epoch()
 
-            progress.write(progress.format_dict["desc"])  # 요약 로그를 다음 줄에 고정
+            progress.write(progress.desc)  # 요약 로그를 다음 줄에 고정
 
     def run_epoch(self, loader: td.DataLoader, **kwargs) -> None:
         """
