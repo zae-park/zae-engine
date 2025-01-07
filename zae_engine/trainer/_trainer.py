@@ -224,7 +224,7 @@ class Trainer(ABC):
 
         for e in progress:
             printer = progress.set_description if self.log_bar else print
-            printer(f"Epoch {e + 1}/{len(total_epoch)}")
+            printer(f"Epoch {e + 1}/{total_epoch}")
 
             self._data_count(initial=True)  # Initial data counts
             self.run_epoch(loader, **kwargs)  # Execute training epoch & validation epoch (if provided)
