@@ -246,8 +246,9 @@ class Trainer(ABC):
                     ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()]),
                     ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()]),
                 ]
+                epoch_summary = f"Epoch {e}/{n_epoch} | {' | '.join(epoch_summary)}"
                 # self.progress.set_description(f"Epoch {e} | {' | '.join(epoch_summary)}")
-                progress.set_description(epoch_summary)  # 한 줄에 기존 정보 갱신
+                progress.set_description(epoch_summary)
                 progress.set_postfix({"Epoch": f"{e + 1}/{n_epoch}"})
 
             # Update training state (loss, scheduler, epoch)
