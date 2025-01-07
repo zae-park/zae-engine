@@ -220,7 +220,9 @@ class Trainer(ABC):
         self._scheduler_step_check(n_epoch)
         pre_epoch = self.progress_checker.get_epoch() - 1
         continue_epoch = range(pre_epoch, pre_epoch + n_epoch)
-        progress = tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True) if self.log_bar else continue_epoch
+        progress = (
+            tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True, leave=False) if self.log_bar else continue_epoch
+        )
 
         for e in progress:
             # printer = progress.set_description if self.log_bar else print
@@ -242,8 +244,11 @@ class Trainer(ABC):
                 epoch_summary = f"Epoch {e + 1}/{n_epoch} | {train_summary} | {test_summary}"
 
                 # Epoch 종료 시 progress bar 갱신 및 요약 로그 남기기
-                progress.set_description(epoch_summary)
-                progress.set_postfix({"Epoch": f"{e + 1}/{n_epoch}"})
+                # progress.set_description(epoch_summary)
+                # progress.set_postfix({"Epoch": f"{e + 1}/{n_epoch}"})
+                progress.update(1)
+                progress.write(f"Epoch : {e + 1}/{n_epoch}")
+                progress.close()
 
             # Update training state (loss, scheduler, epoch)
             if self.mode == "train":
