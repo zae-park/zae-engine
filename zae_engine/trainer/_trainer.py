@@ -262,6 +262,8 @@ class Trainer(ABC):
                     self.scheduler.step(**kwargs)
                 self.progress_checker.update_epoch()
 
+            tqdm.write(progress.format_dict["desc"])  # 요약 로그를 다음 줄에 고정
+
     def run_epoch(self, loader: td.DataLoader, **kwargs) -> None:
         """
         Run the training/testing process for one epoch.
