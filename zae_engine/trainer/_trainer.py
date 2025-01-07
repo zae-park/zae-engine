@@ -223,19 +223,11 @@ class Trainer(ABC):
         progress = tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True) if self.log_bar else continue_epoch
 
         for e in progress:
-            if self.log_bar:
-                # self.progress.set_description(f"Epoch {e}")
-                progress.write(f"Epoch {e + 1}/{n_epoch} Starting")
+            printer = progress.set_description if self.log_bar else print
+            printer(f"Epoch {e + 1}/{n_epoch}")
 
-                progress.set_description(f"Epoch {e + 1}/{n_epoch}")
-                progress.set_postfix({"Status": "Running"})
-            else:
-                print(f"Epoch {e}")
-
-            # Initialize data counts at the start of the epoch
-            self._data_count(initial=True)
-            # Execute training epoch & validation epoch (if provided)
-            self.run_epoch(loader, **kwargs)
+            self._data_count(initial=True)  # Initial data counts
+            self.run_epoch(loader, **kwargs)  # Execute training epoch & validation epoch (if provided)
 
             # Run validation epoch if provided
             if valid_loader:
@@ -245,7 +237,6 @@ class Trainer(ABC):
 
             # Log metrics at the end of the epoch
             if self.log_bar:
-                # Collect epoch summary for train and test
                 train_summary = ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()])
                 test_summary = ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()])
                 epoch_summary = f"Epoch {e + 1}/{n_epoch} | {train_summary} | {test_summary}"
@@ -261,8 +252,6 @@ class Trainer(ABC):
                 if not self.scheduler_step_on_batch:
                     self.scheduler.step(**kwargs)
                 self.progress_checker.update_epoch()
-
-            progress.write(progress.desc)  # 요약 로그를 다음 줄에 고정
 
     def run_epoch(self, loader: td.DataLoader, **kwargs) -> None:
         """
