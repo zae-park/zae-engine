@@ -271,7 +271,7 @@ class Trainer(ABC):
         data_iter = iter(loader)
         next_batch = next(data_iter, None)
 
-        for i, batch in range(len(loader)):
+        for i in range(len(loader)):
             current_batch = next_batch
             next_batch = next(data_iter, None)
 
