@@ -284,8 +284,7 @@ class Trainer(ABC):
             desc = self.print_log(cur_batch=i + 1, num_batch=len(loader))
             batch_progress.update(1)
             if self.log_bar:
-                batch_progress.set_postfix({"Batch": f"{i + 1}/{len(loader)}"})
-                # batch_progress.set_postfix_str(desc)
+                batch_progress.set_postfix(desc)
             else:
                 print(desc)
 
@@ -512,7 +511,7 @@ class Trainer(ABC):
 
     def print_log(self, cur_batch: int, num_batch: int) -> dict:
         """
-        Print the log for the current batch.
+        Generate the log dictionary for the current batch.
 
         Parameters
         ----------
@@ -523,24 +522,18 @@ class Trainer(ABC):
 
         Returns
         -------
-        str
-            A log string.
+        dict
+            A dictionary containing log information for the current batch.
         """
         log = self.log_train if self.mode == "train" else self.log_test
         LR = self.optimizer.param_groups[0]["lr"] if self.optimizer else 0
-        is_end = cur_batch == num_batch
 
-        # Base log string
-        log_str = f"Batch: {cur_batch}/{num_batch}"
-        for k, v in log.items():  # Skip non-numerical entries
-            if "output" in k:
-                continue
-            log_str += f"\t{k}: {np.mean(v):.6f}"
-        log_str += f"\tLR: {LR:.3e}"
+        # Base log dictionary
+        log_dict = {"Batch": f"{cur_batch}/{num_batch}", "LR": f"{LR:.3e}"}
+        for k, v in log.items():
+            if "output" not in k:  # Include only numerical entries
+                log_dict[k] = f"{np.mean(v):.6f}"
 
-        # Add styling for the last batch
-        if is_end:
-            log_str = f"\033[92m{log_str}\033[0m"  # Green text for the last batch
         return log_str
 
     def save_model(self, filename: str) -> None:
