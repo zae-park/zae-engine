@@ -266,7 +266,7 @@ class Trainer(ABC):
             The data loader for the training/testing data.
         """
         self.log_reset()
-        batch_progress = tqdm.tqdm(total=len(loader), position=1, leave=False, dynamic_ncols=True)
+        batch_progress = tqdm.tqdm(total=len(loader), position=1, leave=False, dynamic_ncols=True, file=sys.stderr)
 
         data_iter = iter(loader)
         next_batch = next(data_iter, None)
@@ -284,7 +284,8 @@ class Trainer(ABC):
             desc = self.print_log(cur_batch=i + 1, num_batch=len(loader))
             batch_progress.update(1)
             if self.log_bar:
-                batch_progress.set_postfix_str(desc)
+                batch_progress.set_postfix({"Batch": f"{i + 1}/{len(loader)}"})
+                # batch_progress.set_postfix_str(desc)
             else:
                 print(desc)
 
