@@ -72,7 +72,6 @@ class Trainer(ABC):
         self.scheduler_step_on_batch = scheduler_step_on_batch
         self.gradient_clip = gradient_clip
 
-        self.progress = None
         self.progress_checker = ProgressChecker()
 
         # Init vars
@@ -223,7 +222,7 @@ class Trainer(ABC):
         continue_epoch = range(pre_epoch, pre_epoch + n_epoch)
         progress = tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True) if self.log_bar else continue_epoch
 
-        for e in self.progress:
+        for e in progress:
             if self.log_bar:
                 # self.progress.set_description(f"Epoch {e}")
                 progress.write(f"Epoch {e}/{n_epoch}")
