@@ -220,7 +220,9 @@ class Trainer(ABC):
         self._scheduler_step_check(n_epoch)
         pre_epoch = self.progress_checker.get_epoch() - 1
         progress = range(pre_epoch, total_epoch := (pre_epoch + n_epoch))
-        progress = tqdm.tqdm(progress, position=0, dynamic_ncols=True, file=sys.stderr, disable=not self.log_bar)
+        progress = tqdm.tqdm(
+            progress, position=0, dynamic_ncols=True, file=sys.stderr, leave=False, disable=not self.log_bar
+        )
 
         for e in progress:
             printer = progress.set_description if self.log_bar else print
