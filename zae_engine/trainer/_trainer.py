@@ -221,14 +221,14 @@ class Trainer(ABC):
         pre_epoch = self.progress_checker.get_epoch() - 1
         continue_epoch = range(pre_epoch, pre_epoch + n_epoch)
         progress = (
-            tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True, leave=True, file=sys.stderr)
+            tqdm.tqdm(continue_epoch, position=0, dynamic_ncols=True, file=sys.stderr)
             if self.log_bar
             else continue_epoch
         )
 
         for e in progress:
-            # printer = progress.set_description if self.log_bar else print
-            # printer(f"Epoch {e + 1}/{n_epoch}")
+            printer = progress.set_description if self.log_bar else print
+            printer(f"Epoch {e + 1}/{n_epoch}")
 
             self._data_count(initial=True)  # Initial data counts
             self.run_epoch(loader, **kwargs)  # Execute training epoch & validation epoch (if provided)
@@ -246,12 +246,12 @@ class Trainer(ABC):
                 epoch_summary = f"Epoch {e + 1}/{n_epoch} | {train_summary} | {test_summary}"
 
                 # Epoch 종료 시 progress bar 갱신 및 요약 로그 남기기
-                # progress.set_description(epoch_summary)
+                progress.set_description(epoch_summary)
                 # progress.set_postfix({"Epoch": f"{e + 1}/{n_epoch}"})
-                progress.update(1)
-                progress.set_postfix({"Status": "Completed"})
+                # progress.update(1)
+                # progress.set_postfix({"Status": "Completed"})
                 progress.write(epoch_summary, file=sys.stderr)
-                progress.close()
+                # progress.close()
 
             # Update training state (loss, scheduler, epoch)
             if self.mode == "train":
