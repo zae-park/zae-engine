@@ -219,12 +219,12 @@ class Trainer(ABC):
         self._check_batch_size()
         self._scheduler_step_check(n_epoch)
         pre_epoch = self.progress_checker.get_epoch() - 1
-        n_epoch = range(pre_epoch, pre_epoch + n_epoch)
-        progress = tqdm.tqdm(n_epoch, position=0, dynamic_ncols=True, file=sys.stderr, disable=not self.log_bar)
+        progress = range(pre_epoch, total_epoch := (pre_epoch + n_epoch))
+        progress = tqdm.tqdm(progress, position=0, dynamic_ncols=True, file=sys.stderr, disable=not self.log_bar)
 
         for e in progress:
             printer = progress.set_description if self.log_bar else print
-            printer(f"Epoch {e + 1}/{n_epoch}")
+            printer(f"Epoch {e + 1}/{len(total_epoch)}")
 
             self._data_count(initial=True)  # Initial data counts
             self.run_epoch(loader, **kwargs)  # Execute training epoch & validation epoch (if provided)
@@ -238,7 +238,7 @@ class Trainer(ABC):
             # Log metrics at the end of the epoch
             train_summary = ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()])
             test_summary = ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()])
-            epoch_summary = f"Epoch {e + 1}/{n_epoch} | {train_summary} | {test_summary}"
+            epoch_summary = f"Epoch {e + 1}/{total_epoch} | {train_summary} | {test_summary}"
             progress.write(epoch_summary, file=sys.stderr)
 
             # Update training state (loss, scheduler, epoch)
