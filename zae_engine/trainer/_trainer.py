@@ -269,7 +269,7 @@ class Trainer(ABC):
                 self._data_count(True if self.batch_size is None else False)
 
             # Ensure GPU operations are complete before updating progress
-            torch.cuda.synchronize()
+            # torch.cuda.synchronize()
             desc = self.print_log(cur_batch=i + 1, num_batch=len(loader))
             batch_progress.update(1)
             if self.log_bar:
@@ -311,7 +311,7 @@ class Trainer(ABC):
         else:
             raise ValueError(f"Unexpected mode {self.mode}.")
 
-        torch.cuda.synchronize()  # Ensure GPU operations are complete
+        # torch.cuda.synchronize()  # Ensure GPU operations are complete
         self.logging(step_dict)
         self.progress_checker.update_step()
 
