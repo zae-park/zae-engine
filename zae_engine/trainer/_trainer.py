@@ -85,60 +85,21 @@ class Trainer(ABC):
     @classmethod
     def add_on(cls, *add_on_cls: "Type[AddOnBase]") -> Type[T]:
         """
-        Attach one or more add-ons to the Trainer class.
-
-        This method allows you to extend the functionality of the Trainer class by
-        dynamically combining it with additional add-ons. Add-ons must inherit from
-        the `AddOnBase` class and implement the `apply` method.
+        Install one or more add-ons to the Trainer class.
 
         Parameters
         ----------
         add_on_cls : Type[AddOnBase]
-            One or more add-on classes to be applied to the Trainer class.
+            One or more add-on classes to install.
 
         Returns
         -------
         Type[Trainer]
-            A new Trainer class with the specified add-ons applied.
-
-        Notes
-        -----
-        - Add-ons modify the Trainer class by injecting additional methods or
-          behaviors, such as support for multi-GPU training, state management,
-          or logging to external services.
-        - Add-ons are applied in the order provided, allowing for compositional
-          layering of functionality.
+            The modified Trainer class with the add-ons applied.
 
         Examples
         --------
-        Basic usage of `add_on`:
-
-        >>> from zae_engine.trainer import Trainer
-        >>> from zae_engine.trainer.addons import MultiGPUAddon, StateManagerAddon
-
-        >>> MyTrainer = Trainer.add_on(MultiGPUAddon, StateManagerAddon)
-        >>> trainer = MyTrainer(
-        >>>     model=my_model,
-        >>>     device='cuda',
-        >>>     optimizer=my_optimizer,
-        >>>     scheduler=my_scheduler,
-        >>>     save_path='./checkpoints'
-        >>> )
-        >>> trainer.run(n_epoch=10, loader=train_loader, valid_loader=valid_loader)
-
-        Adding WandBLoggerAddon for real-time logging:
-
-        >>> from zae_engine.trainer.addons import WandBLoggerAddon
-
-        >>> MyTrainerWithLogging = Trainer.add_on(WandBLoggerAddon)
-        >>> trainer_with_logging = MyTrainerWithLogging(
-        >>>     model=my_model,
-        >>>     device='cuda',
-        >>>     optimizer=my_optimizer,
-        >>>     scheduler=my_scheduler,
-        >>>     web_logger={"wandb": {"project": "my_project"}}
-        >>> )
-        >>> trainer_with_logging.run(n_epoch=10, loader=train_loader)
+        >>> trainer = Trainer.add_on(MultiGPUAddon, SomeOtherAddon)(model, [device1, device2], mode='train', scheduler=scheduler, optimizer=optimizer)
         """
         base_cls = cls
         for add_on in add_on_cls:
@@ -257,20 +218,18 @@ class Trainer(ABC):
         self.loader, self.valid_loader = loader, valid_loader
         self._check_batch_size()
         self._scheduler_step_check(n_epoch)
-        pre_epoch = self.progress_checker.get_epoch()
-        continue_epoch = range(pre_epoch, pre_epoch + n_epoch)
-        progress = tqdm.tqdm(continue_epoch, position=0, leave=True) if self.log_bar else continue_epoch
+        pre_epoch = self.progress_checker.get_epoch() - 1
+        progress = range(pre_epoch, total_epoch := (pre_epoch + n_epoch))
+        progress = tqdm.tqdm(
+            progress, position=0, dynamic_ncols=True, file=sys.stderr, leave=False, disable=not self.log_bar
+        )
 
         for e in progress:
-            if self.log_bar:
-                progress.set_description(f"Epoch {e}")
-            else:
-                print(f"Epoch {e}")
+            printer = progress.set_description if self.log_bar else print
+            printer(f"Epoch {e + 1}/{total_epoch}")
 
-            # Initialize data counts at the start of the epoch
-            self._data_count(initial=True)
-            # Execute training epoch & validation epoch (if provided)
-            self.run_epoch(loader, **kwargs)
+            self._data_count(initial=True)  # Initial data counts
+            self.run_epoch(loader, **kwargs)  # Execute training epoch & validation epoch (if provided)
 
             # Run validation epoch if provided
             if valid_loader:
@@ -279,12 +238,10 @@ class Trainer(ABC):
                 self.toggle("train")
 
             # Log metrics at the end of the epoch
-            if self.log_bar:
-                epoch_summary = [
-                    ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()]),
-                    ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()]),
-                ]
-                progress.set_description(f"Epoch {e} | {' | '.join(epoch_summary)}")
+            train_summary = ", ".join([f"train_{k}: {v:.4f}" for k, v in self.train_metrics.items()])
+            test_summary = ", ".join([f"test_{k}: {v:.4f}" for k, v in self.test_metrics.items()])
+            epoch_summary = f"Epoch {e + 1}/{total_epoch} | {train_summary} | {test_summary}"
+            progress.write(epoch_summary, file=sys.stderr)
 
             # Update training state (loss, scheduler, epoch)
             if self.mode == "train":
@@ -304,15 +261,25 @@ class Trainer(ABC):
             The data loader for the training/testing data.
         """
         self.log_reset()
-        progress = tqdm.tqdm(loader, position=1, leave=False) if self.log_bar else loader
-        for i, batch in enumerate(progress):
-            self.run_batch(batch, **kwargs)
-            self._data_count(True if self.batch_size is None else False)
-            desc, printer = self.print_log(cur_batch=i + 1, num_batch=len(loader))
+        batch_progress = tqdm.tqdm(total=len(loader), position=1, leave=False, dynamic_ncols=True, file=sys.stderr)
+
+        for i, batch in enumerate(loader):
+            current_batch = batch
+
+            if current_batch is not None:
+                self.run_batch(current_batch, **kwargs)
+                self._data_count(True if self.batch_size is None else False)
+
+            # Ensure GPU operations are complete before updating progress
+            # torch.cuda.synchronize()
+            desc = self.print_log(cur_batch=i + 1, num_batch=len(loader))
+            batch_progress.update(1)
             if self.log_bar:
-                progress.set_description(desc)
+                batch_progress.set_postfix(desc)
             else:
-                print(desc, **printer)
+                print(desc)
+
+        batch_progress.close()
 
         # Update metrics at the end of the epoch
         target_metrics = self.train_metrics if self.mode == "train" else self.test_metrics
@@ -346,6 +313,7 @@ class Trainer(ABC):
         else:
             raise ValueError(f"Unexpected mode {self.mode}.")
 
+        # torch.cuda.synchronize()  # Ensure GPU operations are complete
         self.logging(step_dict)
         self.progress_checker.update_step()
 
@@ -532,9 +500,9 @@ class Trainer(ABC):
         else:
             raise ValueError(f"Mode must be 'train' or 'test', got '{mode}'.")
 
-    def print_log(self, cur_batch: int, num_batch: int) -> Tuple[str, dict]:
+    def print_log(self, cur_batch: int, num_batch: int) -> dict:
         """
-        Print the log for the current batch.
+        Generate the log dictionary for the current batch.
 
         Parameters
         ----------
@@ -545,22 +513,19 @@ class Trainer(ABC):
 
         Returns
         -------
-        Tuple[str, dict]
-            A tuple containing the log string and additional printing options.
+        dict
+            A dictionary containing log information for the current batch.
         """
         log = self.log_train if self.mode == "train" else self.log_test
         LR = self.optimizer.param_groups[0]["lr"] if self.optimizer else 0
-        is_end = cur_batch == num_batch
-        disp = None if is_end else sys.stderr
-        end = "\n" if is_end else ""
 
-        log_str = f"\r\t\tBatch: {cur_batch}/{num_batch}"
+        # Base log dictionary
+        log_dict = {"Batch": f"{cur_batch}/{num_batch}", "LR": f"{LR:.3e}"}
         for k, v in log.items():
-            if "output" in k:
-                continue
-            log_str += f"\t{k}: {np.mean(v):.6f}"
-        log_str += f"\tLR: {LR:.3e}"
-        return log_str, {"end": end, "file": disp}
+            if "output" not in k:  # Include only numerical entries
+                log_dict[k] = f"{np.mean(v):.6f}"
+
+        return log_dict
 
     def save_model(self, filename: str) -> None:
         """
