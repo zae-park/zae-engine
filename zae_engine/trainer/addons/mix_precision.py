@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Union
 
 import torch
 from torch.cuda.amp import autocast, GradScaler
