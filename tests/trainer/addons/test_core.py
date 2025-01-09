@@ -1,5 +1,8 @@
 import unittest
 from typing import Type
+
+import torch
+
 from zae_engine.trainer import Trainer
 from zae_engine.trainer.addons.core import AddOnBase
 
@@ -30,7 +33,7 @@ class TestCore(unittest.TestCase):
         TrainerWithAddon = DummyTrainer.add_on(DummyAddon)
         trainer = TrainerWithAddon(
             model=None,
-            device="cpu",
+            device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
             mode="train",
             optimizer=None,
             scheduler=None,
@@ -58,7 +61,7 @@ class TestCore(unittest.TestCase):
         TrainerWithMultipleAddons = DummyTrainer.add_on(DummyAddon, AnotherDummyAddon)
         trainer = TrainerWithMultipleAddons(
             model=None,
-            device="cpu",
+            device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
             mode="train",
             optimizer=None,
             scheduler=None,
