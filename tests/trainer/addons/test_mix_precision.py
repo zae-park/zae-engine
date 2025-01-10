@@ -65,10 +65,12 @@ class TestPrecisionMixerAddon(unittest.TestCase):
 
     def test_fp32_precision(self):
         """Test FP32 precision with a GPU or CPU."""
+        if not torch.cuda.is_available():
+            self.skipTest("FP32 precision test skipped because no GPU is available.")
         trainer_cls = CustomTrainer.add_on(PrecisionMixerAddon)
         trainer = trainer_cls(
             model=self.model,
-            device=self.device,
+            device=torch.device("cuda:0"),
             mode="train",
             optimizer=self.optimizer,
             scheduler=self.scheduler,
