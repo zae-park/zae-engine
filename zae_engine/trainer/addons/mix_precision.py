@@ -70,6 +70,12 @@ class PrecisionMixerAddon(AddOnBase):
         class PrecisionTrainer(base_cls):
             def __init__(self, *args, precision: Union[str, list] = "auto", **kwargs):
                 super().__init__(*args, **kwargs)
+
+                # Check if all devices are CPU
+                if all("cpu" in str(device) for device in self.device):
+                    raise ValueError("PrecisionMixerAddon requires at least one GPU device to function.")
+
+                # Determine precision settings
                 self.precision = self._determine_precision(precision)
                 self.scaler = GradScaler() if "fp16" in self.precision else None
 
@@ -120,7 +126,6 @@ class PrecisionMixerAddon(AddOnBase):
                 ['bf16', 'fp16']
                 """
                 if precision == "auto":
-                    # Select optimize precision.
                     if torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 8:
                         return ["bf16", "fp16"]  # Take BF16 first @ over `Ampere`
                     elif torch.cuda.is_available():
