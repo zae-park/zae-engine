@@ -46,7 +46,25 @@ class TestPrecisionMixerAddon(unittest.TestCase):
         dataset = TensorDataset(data, labels)
         self.loader = DataLoader(dataset, batch_size=10, shuffle=True)
 
+    def test_cpu_device_error(self):
+        """Test that using a CPU-only device raises an error."""
+        if torch.cuda.is_available():
+            self.skipTest("Skipping CPU-only test on a CUDA-enabled machine.")
+
+        with self.assertRaises(ValueError) as context:
+            trainer_cls = CustomTrainer.add_on(PrecisionMixerAddon)
+            trainer = trainer_cls(
+                model=self.model,
+                device=torch.device("cpu"),
+                mode="train",
+                optimizer=self.optimizer,
+                scheduler=self.scheduler,
+                precision="auto",
+            )
+        self.assertIn("requires at least one GPU device", str(context.exception))
+
     def test_fp32_precision(self):
+        """Test FP32 precision with a GPU or CPU."""
         trainer_cls = CustomTrainer.add_on(PrecisionMixerAddon)
         trainer = trainer_cls(
             model=self.model,
@@ -60,12 +78,13 @@ class TestPrecisionMixerAddon(unittest.TestCase):
         self.assertEqual(trainer.precision, ["fp32"])
 
     def test_fp16_precision(self):
+        """Test FP16 precision on a GPU-enabled device."""
         if not torch.cuda.is_available():
             self.skipTest("FP16 requires a CUDA-enabled device.")
         trainer_cls = CustomTrainer.add_on(PrecisionMixerAddon)
         trainer = trainer_cls(
             model=self.model,
-            device=self.device,
+            device=torch.device("cuda:0"),
             mode="train",
             optimizer=self.optimizer,
             scheduler=self.scheduler,
@@ -75,27 +94,29 @@ class TestPrecisionMixerAddon(unittest.TestCase):
         self.assertEqual(trainer.precision, ["fp16"])
 
     def test_auto_precision(self):
+        """Test auto precision selection."""
+        if not torch.cuda.is_available():
+            self.skipTest("CUDA is required for auto precision testing.")
         trainer_cls = CustomTrainer.add_on(PrecisionMixerAddon)
         trainer = trainer_cls(
             model=self.model,
-            device=self.device,
+            device=torch.device("cuda:0"),
             mode="train",
             optimizer=self.optimizer,
             scheduler=self.scheduler,
             precision="auto",
         )
-        expected_precision = (
-            ["bf16", "fp16"] if torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 8 else ["fp16"]
-        )
+        expected_precision = ["bf16", "fp16"] if torch.cuda.get_device_capability(0)[0] >= 8 else ["fp16"]
         self.assertEqual(trainer.precision, expected_precision)
 
     def test_grad_scaling_with_fp16(self):
+        """Test that GradScaler is properly initialized for FP16."""
         if not torch.cuda.is_available():
             self.skipTest("FP16 requires a CUDA-enabled device.")
         trainer_cls = CustomTrainer.add_on(PrecisionMixerAddon)
         trainer = trainer_cls(
             model=self.model,
-            device=self.device,
+            device=torch.device("cuda:0"),
             mode="train",
             optimizer=self.optimizer,
             scheduler=self.scheduler,
@@ -105,10 +126,13 @@ class TestPrecisionMixerAddon(unittest.TestCase):
         self.assertIsNotNone(trainer.scaler, "GradScaler not initialized for FP16 precision.")
 
     def test_run_batch(self):
+        """Test batch processing with auto precision."""
+        if not torch.cuda.is_available():
+            self.skipTest("CUDA is required for mixed precision training.")
         trainer_cls = CustomTrainer.add_on(PrecisionMixerAddon)
         trainer = trainer_cls(
             model=self.model,
-            device=self.device,
+            device=torch.device("cuda:0"),
             mode="train",
             optimizer=self.optimizer,
             scheduler=self.scheduler,
