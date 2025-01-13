@@ -13,6 +13,47 @@ from .._trainer import T
 
 
 class MultiGPUAddon(AddOnBase):
+    """
+    Add-on for distributed multi-GPU training.
+
+    This add-on enables distributed training across multiple GPUs using PyTorch's
+    Distributed Data Parallel (DDP). It handles process initialization, data distribution,
+    and model synchronization for efficient multi-GPU training.
+
+    Parameters
+    ----------
+    init_method : str, optional
+        Initialization method for the distributed process group, typically a URL in the format
+        `tcp://hostname:port`. Default is 'tcp://localhost:12355'.
+
+    Methods
+    -------
+    run(n_epoch, loader, valid_loader=None, **aux_run_kwargs)
+        Run the distributed training or testing process across multiple GPUs.
+    train_process(rank, device_list, init_method, n_epoch, loader, valid_loader, aux_run_kwargs)
+        Train the model on a specific GPU in the distributed setup.
+
+    Notes
+    -----
+    This add-on requires multiple GPUs to be available and properly configured.
+
+    Examples
+    --------
+    Using MultiGPUAddon for distributed training:
+
+    >>> from zae_engine.trainer import Trainer
+    >>> from zae_engine.trainer.addons import MultiGPUAddon
+
+    >>> MyTrainer = Trainer.add_on(MultiGPUAddon)
+    >>> trainer = MyTrainer(
+    >>>     model=my_model,
+    >>>     device=[torch.device('cuda:0'), torch.device('cuda:1')],
+    >>>     optimizer=my_optimizer,
+    >>>     scheduler=my_scheduler
+    >>> )
+    >>> trainer.run(n_epoch=10, loader=train_loader)
+    """
+
     @classmethod
     def apply(cls, base_cls: Type[T]) -> Type[T]:
         class MultiGPUTrainer(base_cls):
