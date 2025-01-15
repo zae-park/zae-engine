@@ -1,48 +1,75 @@
-.. zae-engine documentation master file, created by
-   sphinx-quickstart on Fri Apr 12 11:16:15 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Welcome to ZAE-Engine's Documentation!
+=======================================
 
-zae-engine documentation!
-======================================
-zae-engine은 딥러닝 프로젝트의 quick start를 돕기 위한 파이썬 라이브러리입니다.
-이 문서는 pre-release 버전이며, 버전관리가 되고 있지 않습니다.
+ZAE-Engine is a modular AI framework designed to streamline and accelerate AI workflows.
+Currently, it supports PyTorch and provides tools for model training, evaluation, and deployment.
 
-아래의 명령어를 통해 설치 확인 및 각 기능을 지원 예정입니다.
+.. image:: https://img.shields.io/pypi/v/zae-engine.svg
+    :alt: PyPI version
+    :align: center
+
+Contents
+========
 
 .. toctree::
    :maxdepth: 2
-   :caption: Command:
+   :caption: Documentation Contents
 
-.. code-block:: console
+   installation
+   usage
+   modules/core
+   modules/addons
+   api_reference
 
-   zae hello   >> 안녕하세요
-   zae example >> 예제 파일 생성
-   zae tree    >> 패키지 구조 출력
+Getting Started
+===============
+
+If you're new to ZAE-Engine, we recommend starting with the **Installation** and **Usage** sections.
+
+Key Features
+------------
+
+- Simplifies repetitive coding tasks with modular utilities.
+- Supports PyTorch for flexible AI workflows.
+- Provides easy integration of add-ons for state management, distributed training, and logging.
+
+Command Line Interface
+----------------------
+
+After installing ZAE-Engine, you can use the `zae` command to simplify various tasks:
+
+- **`zae hello`**: Verifies that the installation was successful.
+- **`zae example`**: Generates an example script (`zae_example.py`) for quick reference.
+- **`zae tree`**: Displays the available classes and functions in the package.
+
+Quick Start
+-----------
+
+Here's a quick example of using the `Trainer` class for model training:
+
+.. code-block:: python
+
+   from zae_engine.trainer import Trainer
+   from torch.optim import Adam
+   from torch.nn import Linear
+
+   model = Linear(10, 2)  # Example model
+   trainer = Trainer(
+       model=model,
+       optimizer=Adam(model.parameters(), lr=0.001),
+       device='cuda'
+   )
+   trainer.run(n_epoch=10, loader=train_loader, valid_loader=valid_loader)
+
+For more detailed examples, check out the **Usage** section.
+
+API Documentation
+=================
+
+Refer to the API reference for detailed information on ZAE-Engine's modules and classes.
 
 .. toctree::
-   :maxdepth: 4
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: API Reference
 
-   modules
-
-..   zae_engine
-
-..   inference/zae_engine.inference.rst
-
-..   data/zae_engine.data.rst
-   loss/zae_engine.loss.rst
-   metrics/zae_engine.metrics.rst
-   models/zae_engine.models.rst
-   nn_night/zae_engine.nn_night.rst
-   operation/zae_engine.operation.rst
-   schedulers/zae_engine.schedulers.rst
-   trainer/zae_engine.trainer.rst
-   utils/zae_engine.utils.rst
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   api_reference
