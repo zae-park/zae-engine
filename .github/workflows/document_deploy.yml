@@ -40,20 +40,41 @@ jobs:
         run: |
           poetry install --no-root
 
-      - name: Install Sphinx on Ubuntu
+      - name: Install Sphinx and dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-sphinx
-          pip install sphinx sphinx-rtd-theme
+          pip install sphinx sphinx-rtd-theme sphinx-intl
 
-      - name: Build documentation
+      - name: Generate API documentation
+        run: |
+          poetry run sphinx-apidoc -o docs/source/ ./zae_engine
+
+      - name: Extract translations
+        run: |
+          cd docs
+          poetry run sphinx-build -b gettext source locale
+
+      - name: Update translations
+        run: |
+          cd docs
+          poetry run sphinx-intl update -p locale -l ko
+
+      - name: Build English documentation
         env:
           GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
         run: |
-          poetry run sphinx-apidoc -o docs/source/ ./zae_engine
           cd docs
           make clean
-          poetry run make html
+          poetry run make -e SPHINXOPTS="-D language=en" html
+
+      - name: Build Korean documentation
+        env:
+          GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
+        run: |
+          cd docs
+          make clean
+          poetry run make -e SPHINXOPTS="-D language=ko" html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
