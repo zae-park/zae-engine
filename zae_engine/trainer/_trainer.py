@@ -632,6 +632,24 @@ class ProgressChecker:
         """
         return self.__epoch
 
+    def set_epoch(self, epoch: int):
+        """
+        Set the current epoch count to a specific value.
+
+        Parameters
+        ----------
+        epoch : int
+            The epoch number to set. Must be a positive integer.
+
+        Raises
+        ------
+        ValueError
+            If epoch is not a positive integer.
+        """
+        if epoch < 1:
+            raise ValueError("Epoch must be a positive integer.")
+        self.__epoch = epoch
+
     def init_state(self):
         """Initialize the state by resetting step and epoch counts to 1."""
         self.__step = 1
