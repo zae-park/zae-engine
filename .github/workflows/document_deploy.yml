@@ -6,7 +6,7 @@ on:
       - main
       - dev
       - chore
-      - documentation
+      - doc
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
