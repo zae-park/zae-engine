@@ -66,7 +66,8 @@ jobs:
         run: |
           cd docs
           poetry run make -e SPHINXOPTS="-D language=en" html
-          mv build/html build/html/en
+          mkdir -p build/lang/en
+          mv build/html/* build/lang/en/
 
       - name: Build Korean documentation
         env:
@@ -74,12 +75,13 @@ jobs:
         run: |
           cd docs
           poetry run make -e SPHINXOPTS="-D language=ko" html
-          mv build/html build/html/ko
+          mkdir -p build/lang/ko
+          mv build/html/* build/lang/ko/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.PAT_GITHUB }}
           publish_branch: docs
-          publish_dir: docs/build/html
+          publish_dir: docs/build/lang
           force_orphan: true  # docs 브랜치를 강제로 덮어쓰기
