@@ -87,8 +87,8 @@ jobs:
       - name: Create auto redirect index.html
         run: |
           mkdir -p build/lang
-          echo '<!DOCTYPE html><html><head><title>Redirecting...</title><script>const userLang = navigator.language || navigator.userLanguage;if (userLang.startsWith("ko")) {window.location.href = "./ko/";} else {window.location.href = "./en/";}</script><noscript><p>Your browser does not support JavaScript. Please select your language:</p><ul><li><a href="./en/">English</a></li><li><a href="./ko/">한국어</a></li></ul></noscript></head><body><p>Redirecting based on your browser language...</p></body></html>' > docs/final_build/index.html
-          echo "Redirect file created in docs/final_build/index.html"
+          echo '<!DOCTYPE html><html><head><title>Redirecting...</title><script>const userLang = navigator.language || navigator.userLanguage;if (userLang.startsWith("ko")) {window.location.href = "./ko/";} else {window.location.href = "./en/";}</script><noscript><p>Your browser does not support JavaScript. Please select your language:</p><ul><li><a href="./en/">English</a></li><li><a href="./ko/">한국어</a></li></ul></noscript></head><body><p>Redirecting based on your browser language...</p></body></html>' > docs/build/lang/index.html
+          echo "Redirect file created in docs/build/lang/index.html"
           ls build/lang
 
       - name: Deploy to GitHub Pages
