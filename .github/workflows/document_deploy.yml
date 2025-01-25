@@ -67,8 +67,10 @@ jobs:
           cd docs
           poetry run make clean
           poetry run make -e SPHINXOPTS="-D language=en" html
-          mkdir -p ../final_build/en
-          cp -r build/html/* ../final_build/en/
+          mkdir -p build/lang/en
+          mv build/html/* build/lang/en/
+          echo "English build directory:"
+          ls -R build/lang/en
 
       - name: Build Korean documentation
         env:
@@ -77,18 +79,22 @@ jobs:
           cd docs
           poetry run make clean
           poetry run make -e SPHINXOPTS="-D language=ko" html
-          mkdir -p ../final_build/ko
-          cp -r build/html/* ../final_build/ko/
+          mkdir -p build/lang/ko
+          cp -r build/html/* build/lang/ko/
+          echo "Korean build directory:"
+          ls -R build/lang/ko
 
       - name: Create auto redirect index.html
         run: |
-          mkdir -p docs/final_build
+          mkdir -p build/lang
           echo '<!DOCTYPE html><html><head><title>Redirecting...</title><script>const userLang = navigator.language || navigator.userLanguage;if (userLang.startsWith("ko")) {window.location.href = "./ko/";} else {window.location.href = "./en/";}</script><noscript><p>Your browser does not support JavaScript. Please select your language:</p><ul><li><a href="./en/">English</a></li><li><a href="./ko/">한국어</a></li></ul></noscript></head><body><p>Redirecting based on your browser language...</p></body></html>' > docs/final_build/index.html
+          echo "Redirect file created in docs/final_build/index.html"
+          ls build/lang
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.PAT_GITHUB }}
           publish_branch: docs
-          publish_dir: docs/final_build
+          publish_dir: docs/build/lang
           force_orphan: true
