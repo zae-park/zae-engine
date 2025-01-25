@@ -65,16 +65,16 @@ jobs:
           GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
         run: |
           cd docs
-          make clean
           poetry run make -e SPHINXOPTS="-D language=en" html
+          mv build/html build/html/en
 
       - name: Build Korean documentation
         env:
           GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
         run: |
           cd docs
-          make clean
           poetry run make -e SPHINXOPTS="-D language=ko" html
+          mv build/html build/html/ko
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
