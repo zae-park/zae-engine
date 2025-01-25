@@ -44,7 +44,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-sphinx
-          pip install sphinx sphinx-rtd-theme sphinx-intl
+          pip install sphinx sphinx-rtd-theme
 
       - name: Generate API documentation
         run: |
@@ -60,41 +60,28 @@ jobs:
           cd docs
           poetry run sphinx-intl update -p locale -l ko
 
-      - name: Build English documentation
+      - name: Build multi-language documentation
         env:
           GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
         run: |
           cd docs
-          mkdir -p build/lang/en
           poetry run make clean
-          poetry run make -e SPHINXOPTS="-D language=en" html
-          cp -r build/html/* build/lang/en/
-          echo "English build directory:"
-          ls -R build/lang/en
-
-      - name: Build Korean documentation
-        env:
-          GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
-        run: |
-          cd docs
-          mkdir -p build/lang/ko
-          poetry run make clean
-          poetry run make -e SPHINXOPTS="-D language=ko" html
-          cp -r build/html/* build/lang/ko/
-          echo "Korean build directory:"
-          ls -R build/lang/ko
+          poetry run make multi
+          echo "English build directory contents:"
+          ls -R build/html/en
+          echo "Korean build directory contents:"
+          ls -R build/html/ko
 
       - name: Create auto redirect index.html
         run: |
-          mkdir -p docs/build/lang
-          echo '<!DOCTYPE html><html><head><title>Redirecting...</title><script>const userLang = navigator.language || navigator.userLanguage;if (userLang.startsWith("ko")) {window.location.href = "./ko/";} else {window.location.href = "./en/";}</script><noscript><p>Your browser does not support JavaScript. Please select your language:</p><ul><li><a href="./en/">English</a></li><li><a href="./ko/">한국어</a></li></ul></noscript></head><body><p>Redirecting based on your browser language...</p></body></html>' > docs/build/lang/index.html
-          echo "Redirect file created in docs/build/lang/index.html"
-          ls docs/build/lang
+          echo '<!DOCTYPE html><html><head><title>Redirecting...</title><script>const userLang = navigator.language || navigator.userLanguage;if (userLang.startsWith("ko")) {window.location.href = "./ko/";} else {window.location.href = "./en/";}</script><noscript><p>Your browser does not support JavaScript. Please select your language:</p><ul><li><a href="./en/">English</a></li><li><a href="./ko/">한국어</a></li></ul></noscript></head><body><p>Redirecting based on your browser language...</p></body></html>' > docs/build/html/index.html
+          echo "Redirect file created in docs/build/html/index.html"
+          ls docs/build/html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.PAT_GITHUB }}
           publish_branch: docs
-          publish_dir: docs/build/lang
+          publish_dir: docs/build/html
           force_orphan: true
