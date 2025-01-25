@@ -21,12 +21,12 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.doctest",  # 주석 내 예시 코드 실행
     "sphinx.ext.mathjax",  # 수식 표현 지원
-    "sphinx.ext.gettext",  # 다국어 지원
     # "sphinxcontrib.gtagjs"  # google 태그 관리자 분석 추가
 ]
 
 templates_path = ["_templates"]
 locale_dirs = ["locale/"]  # 번역 파일이 저장될 디렉터리
+gettext_compact = False  # 번역 파일 분리 생성
 exclude_patterns = []
 
 source_suffix = ".rst"
