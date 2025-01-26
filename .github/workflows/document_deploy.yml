@@ -53,9 +53,9 @@ jobs:
       - name: Extract translations
         run: |
           cd docs
-          poetry run sphinx-build -b gettext -d locale source locale
+          poetry run sphinx-build -b gettext -d source/locale source source/locale
           echo "gettext output:"
-          ls -R locale
+          ls -R source/locale
 
       - name: Update translations
         run: |
