@@ -8,6 +8,9 @@ Currently, it supports PyTorch and provides tools for model training, evaluation
     :alt: PyPI version
     :align: center
 
+.. note::
+   This documentation is for the **pre-release** version of ZAE-Engine and is subject to change.
+
 Contents
 ========
 
@@ -20,6 +23,14 @@ Contents
    modules/core
    modules/addons
    api_reference
+
+Quick Links
+===========
+
+- :doc:`installation`
+- :doc:`usage`
+- :doc:`modules/core`
+- :doc:`api_reference`
 
 Getting Started
 ===============
@@ -63,13 +74,28 @@ Here's a quick example of using the `Trainer` class for model training:
 
 For more detailed examples, check out the **Usage** section.
 
-API Documentation
-=================
+Modules
+=======
 
-Refer to the API reference for detailed information on ZAE-Engine's modules and classes.
+Explore the core functionalities of ZAE-Engine through its modules:
 
 .. toctree::
-   :maxdepth: 1
-   :caption: API Reference
+   :maxdepth: 4
+   :caption: Modules:
 
-   api_reference
+   data/zae_engine.data.rst
+   loss/zae_engine.loss.rst
+   metrics/zae_engine.metrics.rst
+   models/zae_engine.models.rst
+   nn_night/zae_engine.nn_night.rst
+   operation/zae_engine.operation.rst
+   schedulers/zae_engine.schedulers.rst
+   trainer/zae_engine.trainer.rst
+   utils/zae_engine.utils.rst
+
+Indices and Tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
