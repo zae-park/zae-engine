@@ -53,14 +53,14 @@ jobs:
       - name: Extract translations
         run: |
           cd docs
-          poetry run sphinx-build -b gettext source locale
+          poetry run sphinx-build -b gettext -d locale source locale
           echo "gettext output:"
           ls -R locale
 
       - name: Update translations
         run: |
           cd docs
-          poetry run sphinx-intl update -p locale -l ko
+          poetry run sphinx-intl update -p source/locale -l ko
           echo "Updated .po files:"
           ls -R locale/ko/LC_MESSAGES
 
