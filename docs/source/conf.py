@@ -25,7 +25,7 @@ extensions = [
 ]
 
 templates_path = ["_templates"]
-locale_dirs = ["source/locale/"]  # 번역 파일이 저장될 디렉터리
+locale_dirs = ["locale/"]  # 번역 파일이 저장될 디렉터리
 gettext_compact = False  # 번역 파일 분리 생성
 exclude_patterns = []
 
