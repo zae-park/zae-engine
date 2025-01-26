@@ -62,7 +62,7 @@ jobs:
           cd docs
           poetry run sphinx-intl update -p source/locale -l ko
           echo "Updated .po files:"
-          ls -R locale/ko/LC_MESSAGES
+          ls -R source/locale/ko/LC_MESSAGES
 
       - name: Build multi-language documentation
         env:
