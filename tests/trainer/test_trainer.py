@@ -40,7 +40,7 @@ class TestTrainer(unittest.TestCase):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model = resnet18()
         self.optimizer = optim.Adam(self.model.parameters())
-        self.scheduler = WarmUpScheduler(self.optimizer, total_iters=randint(0, 256))
+        self.scheduler = WarmUpScheduler(self.optimizer, total_iters=randint(1, 256))
         dataset = ExDataset(n_data=randint(0, 256))
         self.loader = DataLoader(dataset, batch_size=randint(1, 256))
         self.trainer = ExTrainer(self.model, device, "train", scheduler=self.scheduler, optimizer=self.optimizer)

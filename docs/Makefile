@@ -18,3 +18,10 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+# Multi-language build rule
+.PHONY: multi
+multi:
+	@$(SPHINXBUILD) -D language=en -b html "$(SOURCEDIR)" "$(BUILDDIR)/html/en"
+	@$(SPHINXBUILD) -D language=ko -b html "$(SOURCEDIR)" "$(BUILDDIR)/html/ko"
+	@echo "Multi-language build complete. Results in $(BUILDDIR)/html"
