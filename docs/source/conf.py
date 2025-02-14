@@ -14,13 +14,19 @@ author = "zae-park"
 
 # -- General configuration ---------------------------------------------------
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.githubpages",
+    "sphinx.ext.autodoc",  # 자동 문서 생성
+    "sphinx.ext.coverage",  # 문서화 커버리지
+    "sphinx.ext.napoleon",  # google-style, numpydoc-style 지원
+    "sphinx.ext.githubpages",  # 깃헙 페이지 연동
     "sphinx.ext.viewcode",
+    "sphinx.ext.doctest",  # 주석 내 예시 코드 실행
+    "sphinx.ext.mathjax",  # 수식 표현 지원
+    # "sphinxcontrib.gtagjs"  # google 태그 관리자 분석 추가
 ]
 
 templates_path = ["_templates"]
+locale_dirs = ["locale/"]  # 번역 파일이 저장될 디렉터리
+gettext_compact = False  # 번역 파일 분리 생성
 exclude_patterns = []
 
 source_suffix = ".rst"
@@ -45,24 +51,3 @@ html_context = {"ga_measurement_id": google_analytics}
 
 def setup(app):
     app.add_html_theme("sphinx_rtd_theme", "sphinx_rtd_theme")
-    # app.add_css_file("custom.css")  # 필요한 경우 추가 CSS 파일
-
-    # if google_analytics:
-    #     # 외부 GA 스크립트 추가 (async 설정)
-    #     app.add_js_file(
-    #         f"https://www.googletagmanager.com/gtag/js?id={google_analytics}",
-    #         async_=True,  # 'async'는 'async_'로 지정해야 합니다.
-    #     )
-    #     # 인라인 GA 설정 스크립트 추가 (script 태그 제외)
-    #     app.add_js_file(
-    #         None,
-    #         body=f"""
-    #             window.dataLayer = window.dataLayer || [];
-    #             function gtag(){{dataLayer.push(arguments);}}
-    #             gtag('js', new Date());
-    #
-    #             gtag('config', '{google_analytics}');
-    #             """,
-    #     )
-    # else:
-    #     pass
