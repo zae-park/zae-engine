@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.trainer.addons.web_logger &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">zae_engine.trainer.addons.web_logger</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.trainer.addons.web_logger</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">wandb</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">neptune</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">neptune</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddOnBase</span><span class="p">,</span> <span class="n">T</span>
+
+
+<div class="viewcode-block" id="WandBLoggerAddon">
+<a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.web_logger.WandBLoggerAddon">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">WandBLoggerAddon</span><span class="p">(</span><span class="n">AddOnBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add-on for real-time logging with Weights &amp; Biases (WandB).</span>
+
+<span class="sd">    This add-on integrates WandB into the training process, allowing users to log</span>
+<span class="sd">    metrics and monitor training progress in real-time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    web_logger : dict, optional</span>
+<span class="sd">        Configuration dictionary for initializing WandB. Must include a key &#39;wandb&#39;</span>
+<span class="sd">        with WandB initialization parameters.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    logging(step_dict: Dict[str, torch.Tensor])</span>
+<span class="sd">        Log metrics to WandB during each step.</span>
+<span class="sd">    init_wandb(params: dict)</span>
+<span class="sd">        Initialize WandB with the given parameters.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This add-on requires WandB to be installed and a valid API key to be available.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Using WandBLoggerAddon for real-time logging:</span>
+
+<span class="sd">    &gt;&gt;&gt; from zae_engine.trainer import Trainer</span>
+<span class="sd">    &gt;&gt;&gt; from zae_engine.trainer.addons import WandBLoggerAddon</span>
+
+<span class="sd">    &gt;&gt;&gt; MyTrainer = Trainer.add_on(WandBLoggerAddon)</span>
+<span class="sd">    &gt;&gt;&gt; trainer = MyTrainer(</span>
+<span class="sd">    &gt;&gt;&gt;     model=my_model,</span>
+<span class="sd">    &gt;&gt;&gt;     device=&#39;cuda&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;     optimizer=my_optimizer,</span>
+<span class="sd">    &gt;&gt;&gt;     scheduler=my_scheduler,</span>
+<span class="sd">    &gt;&gt;&gt;     web_logger={&quot;wandb&quot;: {&quot;project&quot;: &quot;my_project&quot;}}</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+<span class="sd">    &gt;&gt;&gt; trainer.run(n_epoch=10, loader=train_loader)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WandBLoggerAddon.apply">
+<a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.web_logger.WandBLoggerAddon.apply">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">base_cls</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">WandBLogger</span><span class="p">(</span><span class="n">base_cls</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">web_logger</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;web_logger&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">web_logger</span> <span class="ow">and</span> <span class="s2">&quot;wandb&quot;</span> <span class="ow">in</span> <span class="n">web_logger</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">web_logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_wandb</span><span class="p">(</span><span class="n">web_logger</span><span class="p">[</span><span class="s2">&quot;wandb&quot;</span><span class="p">])</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">init_wandb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">wandb</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">logging</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">logging</span><span class="p">(</span><span class="n">step_dict</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;web_logger&quot;</span><span class="p">):</span>
+                    <span class="n">wandb</span><span class="o">.</span><span class="n">log</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">step_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;web_logger&quot;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">web_logger</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">WandBLogger</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NeptuneLoggerAddon">
+<a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.web_logger.NeptuneLoggerAddon">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NeptuneLoggerAddon</span><span class="p">(</span><span class="n">AddOnBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add-on for real-time logging with Neptune.</span>
+
+<span class="sd">    This add-on integrates Neptune into the training process, enabling real-time logging</span>
+<span class="sd">    of metrics and other training details. It also provides functionality to monitor and</span>
+<span class="sd">    track experiments remotely.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    web_logger : dict, optional</span>
+<span class="sd">        Configuration dictionary for initializing Neptune. Must include a key &#39;neptune&#39;</span>
+<span class="sd">        with Neptune initialization parameters, such as &#39;project_name&#39; and &#39;api_tkn&#39;.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    logging(step_dict: Dict[str, torch.Tensor])</span>
+<span class="sd">        Log metrics to Neptune during each step.</span>
+<span class="sd">    init_neptune(params: dict)</span>
+<span class="sd">        Initialize a Neptune run with the given parameters.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This add-on requires Neptune to be installed and a valid API token to be available.</span>
+<span class="sd">    Ensure your Neptune project is properly set up to track experiments.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Using NeptuneLoggerAddon for real-time logging:</span>
+
+<span class="sd">    &gt;&gt;&gt; from zae_engine.trainer import Trainer</span>
+<span class="sd">    &gt;&gt;&gt; from zae_engine.trainer.addons import NeptuneLoggerAddon</span>
+
+<span class="sd">    &gt;&gt;&gt; MyTrainer = Trainer.add_on(NeptuneLoggerAddon)</span>
+<span class="sd">    &gt;&gt;&gt; trainer = MyTrainer(</span>
+<span class="sd">    &gt;&gt;&gt;     model=my_model,</span>
+<span class="sd">    &gt;&gt;&gt;     device=&#39;cuda&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;     optimizer=my_optimizer,</span>
+<span class="sd">    &gt;&gt;&gt;     scheduler=my_scheduler,</span>
+<span class="sd">    &gt;&gt;&gt;     web_logger={&quot;neptune&quot;: {&quot;project_name&quot;: &quot;my_workspace/my_project&quot;, &quot;api_tkn&quot;: &quot;your_api_token&quot;}}</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+<span class="sd">    &gt;&gt;&gt; trainer.run(n_epoch=10, loader=train_loader)</span>
+
+<span class="sd">    Adding multiple loggers, including Neptune:</span>
+
+<span class="sd">    &gt;&gt;&gt; from zae_engine.trainer.addons import WandBLoggerAddon</span>
+
+<span class="sd">    &gt;&gt;&gt; MyTrainerWithLoggers = Trainer.add_on(WandBLoggerAddon, NeptuneLoggerAddon)</span>
+<span class="sd">    &gt;&gt;&gt; trainer_with_loggers = MyTrainerWithLoggers(</span>
+<span class="sd">    &gt;&gt;&gt;     model=my_model,</span>
+<span class="sd">    &gt;&gt;&gt;     device=&#39;cuda&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;     optimizer=my_optimizer,</span>
+<span class="sd">    &gt;&gt;&gt;     scheduler=my_scheduler,</span>
+<span class="sd">    &gt;&gt;&gt;     web_logger={</span>
+<span class="sd">    &gt;&gt;&gt;         &quot;wandb&quot;: {&quot;project&quot;: &quot;my_wandb_project&quot;},</span>
+<span class="sd">    &gt;&gt;&gt;         &quot;neptune&quot;: {&quot;project_name&quot;: &quot;my_workspace/my_neptune_project&quot;, &quot;api_tkn&quot;: &quot;your_api_token&quot;}</span>
+<span class="sd">    &gt;&gt;&gt;     }</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+<span class="sd">    &gt;&gt;&gt; trainer_with_loggers.run(n_epoch=10, loader=train_loader)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NeptuneLoggerAddon.apply">
+<a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.web_logger.NeptuneLoggerAddon.apply">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">base_cls</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">NeptuneLogger</span><span class="p">(</span><span class="n">base_cls</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">web_logger</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;web_logger&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">web_logger</span> <span class="ow">and</span> <span class="s2">&quot;neptune&quot;</span> <span class="ow">in</span> <span class="n">web_logger</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">web_logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_neptune</span><span class="p">(</span><span class="n">web_logger</span><span class="p">[</span><span class="s2">&quot;neptune&quot;</span><span class="p">])</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">init_neptune</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">project_name</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;project_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">api_tkn</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;api_tkn&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">run</span> <span class="o">=</span> <span class="n">neptune</span><span class="o">.</span><span class="n">init_run</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project_name</span><span class="p">,</span> <span class="n">api_token</span><span class="o">=</span><span class="n">api_tkn</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_state_checker</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">run</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">logging</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">logging</span><span class="p">(</span><span class="n">step_dict</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;web_logger&quot;</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">step_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">web_logger</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;web_logger&quot;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">web_logger</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+            <span class="nd">@staticmethod</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">add_state_checker</span><span class="p">(</span><span class="o">*</span><span class="n">objects</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">:</span>
+                    <span class="n">obj</span><span class="o">.</span><span class="n">is_live</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="s2">&quot;stopped&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">NeptuneLogger</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

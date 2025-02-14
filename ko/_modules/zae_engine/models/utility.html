@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.models.utility &mdash; zae-engine  문서</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/documentation_options.js?v=8e72191d"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../_static/translations.js?v=e33e7ba0"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="../../../genindex.html" />
+    <link rel="search" title="검색" href="../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">모듈 코드</a></li>
+      <li class="breadcrumb-item active">zae_engine.models.utility</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>zae_engine.models.utility의 소스 코드</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+
+
+<div class="viewcode-block" id="initializer">
+<a class="viewcode-back" href="../../../zae_engine.models.html#zae_engine.models.utility.initializer">[문서]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">initializer</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize the parameters in model.</span>
+<span class="sd">    For Linear layer, weights are initialized following normal distribution.</span>
+<span class="sd">    For BatchNorm layer, weights are initialized following uniform distribution.</span>
+<span class="sd">    For LayerNorm layer, weights are not initialized.</span>
+<span class="sd">    For others, weights are initialized following kaiming method based on normal distribution.</span>
+<span class="sd">    (https://arxiv.org/abs/1502.01852v1)</span>
+
+<span class="sd">    :param m:</span>
+<span class="sd">        The member of model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;weight&quot;</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">:</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">:</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">ones_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+            <span class="c1"># nn.init.kaiming_normal_(m.weight, nonlinearity=&quot;relu&quot;)</span>
+
+
+<span class="c1"># def load_weights(model_type: str) -&gt; OrderedDict:</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Get model weights from cloud bucket</span>
+<span class="c1">#</span>
+<span class="c1">#     - model_type = choice one of model type in [CUSTOM_MODEL_NAME]</span>
+<span class="c1">#</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#     def find_file(filename, path=&quot;.&quot;):</span>
+<span class="c1">#         bag = os.listdir(path)</span>
+<span class="c1">#         if filename in bag:</span>
+<span class="c1">#             return os.path.join(path, filename)</span>
+<span class="c1">#         else:</span>
+<span class="c1">#             for b in bag:</span>
+<span class="c1">#                 if os.path.isdir(os.path.join(path, b)):</span>
+<span class="c1">#                     result = find_file(filename, os.path.join(path, b))</span>
+<span class="c1">#                     if result:</span>
+<span class="c1">#                         return result</span>
+<span class="c1">#</span>
+<span class="c1">#     pull_path = find_file(filename=&quot;.env&quot;, path=os.path.dirname(__file__))</span>
+<span class="c1">#     if not pull_path:</span>
+<span class="c1">#         raise Exception(&quot;Must be .env file at the same location with utility.py&quot;)</span>
+<span class="c1">#</span>
+<span class="c1">#     if model_type.upper() not in [&quot;CUSTOM&quot;, &quot;MODEL&quot;, &quot;NAME&quot;, &quot;AS&quot;, &quot;BEAT&quot;]:</span>
+<span class="c1">#         raise Exception(f&#39;There is no type {model_type} choose one of [&quot;CUSTOM&quot;, &quot;MODEL&quot;, &quot;NAME&quot;, &quot;AS&quot;, &quot;BEAT&quot;]&#39;)</span>
+<span class="c1">#</span>
+<span class="c1">#     # env_values = dotenv_values(pull_path)</span>
+<span class="c1">#</span>
+<span class="c1">#     # endpoint = env_values[&#39;END_POINT&#39;]</span>
+<span class="c1">#     # bucket_name = env_values[&#39;BUCKET_NAME&#39;]</span>
+<span class="c1">#     # model_path = env_values[model_type.upper()]</span>
+<span class="c1">#     # model_name = model_path.split(&#39;/&#39;)[-1]</span>
+<span class="c1">#     #</span>
+<span class="c1">#     # download(endpoint=endpoint, bucket_name=bucket_name, model_path=model_path)</span>
+<span class="c1">#     #</span>
+<span class="c1">#     # state_dict = torch.load(model_name, map_location=&#39;cpu&#39;)</span>
+<span class="c1">#     # os.remove(model_name)</span>
+<span class="c1">#     #</span>
+<span class="c1">#     # return state_dict</span>
+<span class="c1">#     return {}</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># def minio_download(</span>
+<span class="c1">#     endpoint: str,</span>
+<span class="c1">#     bucket_name: str,</span>
+<span class="c1">#     model_path: str,</span>
+<span class="c1">#     access_key: str = &quot;a-key&quot;,</span>
+<span class="c1">#     secret_key: str = &quot;s-key&quot;,</span>
+<span class="c1"># ):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Download the weight from the given URL.</span>
+<span class="c1">#     There is no return, but write a file to the device.</span>
+<span class="c1">#     :param endpoint: str</span>
+<span class="c1">#     :param bucket_name: str</span>
+<span class="c1">#     :param model_path: int, optional</span>
+<span class="c1">#     :param access_key:str</span>
+<span class="c1">#     :param secret_key :str</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     client = Minio(endpoint=endpoint, access_key=access_key, secret_key=secret_key, secure=False)</span>
+<span class="c1">#</span>
+<span class="c1">#     model_name = model_path.split(&quot;/&quot;)[-1]</span>
+<span class="c1">#</span>
+<span class="c1">#     client.fget_object(bucket_name=bucket_name, object_name=model_path, file_path=model_name)</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># class WeightLoader:</span>
+<span class="c1">#     state_dict = {</span>
+<span class="c1">#         &quot;segmentation&quot;: None,</span>
+<span class="c1">#         &quot;peak&quot;: None,</span>
+<span class="c1">#         &quot;classification&quot;: None,</span>
+<span class="c1">#     }</span>
+<span class="c1">#</span>
+<span class="c1">#     def __init__(self, model_type: str):</span>
+<span class="c1">#         w_dict = load_weights(model_type)</span>
+<span class="c1">#         self.set_w(model_type, w_dict)</span>
+<span class="c1">#</span>
+<span class="c1">#     @staticmethod</span>
+<span class="c1">#     def set_w(model_type: str, w_dict: dict):</span>
+<span class="c1">#         WeightLoader.state_dict[model_type] = w_dict</span>
+<span class="c1">#</span>
+<span class="c1">#     @classmethod</span>
+<span class="c1">#     def get(cls, model_type: str):</span>
+<span class="c1">#         if cls.state_dict[model_type] is None:</span>
+<span class="c1">#             cls(model_type)</span>
+<span class="c1">#         return cls.state_dict[model_type]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

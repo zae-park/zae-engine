@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.metrics.signals &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">zae_engine.metrics.signals</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.metrics.signals</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">np2torch</span><span class="p">,</span> <span class="n">torch2np</span>
+
+
+<span class="n">EPS</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+
+
+<div class="viewcode-block" id="rms">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.rms">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">rms</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the root mean square (RMS) of a signal.</span>
+
+<span class="sd">    This function calculates the RMS value of the input signal, which is a measure of the magnitude of the signal.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal : Union[np.ndarray, torch.Tensor]</span>
+<span class="sd">        The input signal, either as a numpy array or a torch tensor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The RMS value of the signal.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; signal = np.array([1, 2, 3, 4, 5])</span>
+<span class="sd">    &gt;&gt;&gt; rms(signal)</span>
+<span class="sd">    3.3166247903554</span>
+<span class="sd">    &gt;&gt;&gt; signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; rms(signal)</span>
+<span class="sd">    3.3166247901916504</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">signal</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="mse">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.mse">[docs]</a>
+<span class="nd">@np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mse</span><span class="p">(</span><span class="n">signal1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">signal2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the mean squared error (MSE) between two signals.</span>
+
+<span class="sd">    This function calculates the MSE between two input signals, which is a measure of the average squared difference between the signals.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal1 : Union[np.ndarray, torch.Tensor]</span>
+<span class="sd">        The first input signal, either as a numpy array or a torch tensor.</span>
+<span class="sd">    signal2 : Union[np.ndarray, torch.Tensor]</span>
+<span class="sd">        The second input signal, either as a numpy array or a torch tensor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The MSE value of the signal.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; signal1 = np.array([1, 2, 3, 4, 5])</span>
+<span class="sd">    &gt;&gt;&gt; signal2 = np.array([1, 2, 3, 4, 6])</span>
+<span class="sd">    &gt;&gt;&gt; mse(signal1, signal2)</span>
+<span class="sd">    0.20000000298023224</span>
+<span class="sd">    &gt;&gt;&gt; signal1 = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; signal2 = torch.tensor([1, 2, 3, 4, 6], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; mse(signal1, signal2)</span>
+<span class="sd">    0.20000000298023224</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">signal1</span> <span class="o">-</span> <span class="n">signal2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="signal_to_noise">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.signal_to_noise">[docs]</a>
+<span class="nd">@np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">signal_to_noise</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">noise</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the signal-to-noise ratio (SNR).</span>
+
+<span class="sd">    This function calculates the SNR, which is a measure of the ratio of the power of a signal to the power of background noise.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The input signal, either as a torch tensor or a numpy array.</span>
+<span class="sd">    noise : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The noise signal, either as a torch tensor or a numpy array.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The SNR value in decibels (dB).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; signal = np.array([1, 2, 3, 4, 5])</span>
+<span class="sd">    &gt;&gt;&gt; noise = np.array([0.1, 0.2, 0.3, 0.4, 0.5])</span>
+<span class="sd">    &gt;&gt;&gt; signal_to_noise(signal, noise)</span>
+<span class="sd">    20.0</span>
+<span class="sd">    &gt;&gt;&gt; signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; noise = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; signal_to_noise(signal, noise)</span>
+<span class="sd">    20.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">signal_eff</span><span class="p">,</span> <span class="n">noise_eff</span> <span class="o">=</span> <span class="n">rms</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">signal</span><span class="p">),</span> <span class="n">rms</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">noise</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">signal_eff</span> <span class="o">/</span> <span class="p">(</span><span class="n">noise_eff</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">db</span></div>
+
+
+
+<div class="viewcode-block" id="peak_signal_to_noise">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.peak_signal_to_noise">[docs]</a>
+<span class="nd">@np2torch</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">peak_signal_to_noise</span><span class="p">(</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">noise</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">peak</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the peak signal-to-noise ratio (PSNR).</span>
+
+<span class="sd">    This function calculates the PSNR, which is a measure of the ratio of the peak signal power to the power of background noise.</span>
+<span class="sd">    If peak is not given, the maximum value in the signal is used as the peak value.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The input signal, either as a torch tensor or a numpy array.</span>
+<span class="sd">    noise : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The noise signal, either as a torch tensor or a numpy array.</span>
+<span class="sd">    peak : Union[bool, int, float], optional</span>
+<span class="sd">        The peak value to be used in the calculation. If not provided, the maximum value in the signal is used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The PSNR value in decibels (dB).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; signal = np.array([1, 2, 3, 4, 5])</span>
+<span class="sd">    &gt;&gt;&gt; noise = np.array([0.1, 0.2, 0.3, 0.4, 0.5])</span>
+<span class="sd">    &gt;&gt;&gt; peak_signal_to_noise(signal, noise)</span>
+<span class="sd">    24.0824</span>
+<span class="sd">    &gt;&gt;&gt; signal = torch.tensor([1, 2, 3, 4, 5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; noise = torch.tensor([0.1, 0.2, 0.3, 0.4, 0.5], dtype=torch.float)</span>
+<span class="sd">    &gt;&gt;&gt; peak_signal_to_noise(signal, noise)</span>
+<span class="sd">    24.0824</span>
+<span class="sd">    &gt;&gt;&gt; peak_signal_to_noise(signal, noise, peak=5)</span>
+<span class="sd">    24.0824</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">peak</span><span class="p">:</span>
+        <span class="n">peak</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="n">mse_value</span> <span class="o">=</span> <span class="n">mse</span><span class="p">(</span><span class="n">signal1</span><span class="o">=</span><span class="n">signal</span><span class="p">,</span> <span class="n">signal2</span><span class="o">=</span><span class="n">noise</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">peak</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mse_value</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">db</span></div>
+
+
+
+<div class="viewcode-block" id="qilv">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.signals.qilv">[docs]</a>
+<span class="nd">@torch2np</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">qilv</span><span class="p">(</span>
+    <span class="n">signal1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">signal2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+    <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the Quality Index based on Local Variance (QILV) for two signals.</span>
+
+<span class="sd">    This function computes a global compatibility metric between two signals based on their local variance distribution.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal1 : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The first input signal.</span>
+<span class="sd">    signal2 : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The second input signal.</span>
+<span class="sd">    window : Union[torch.Tensor, np.ndarray]</span>
+<span class="sd">        The window used to define the local region for variance calculation.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The QILV value, bounded between [0, 1].</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Santiago Aja-Fernández et al. &quot;Image quality assessment based on local variance&quot;, EMBC 2006.</span>
+<span class="sd">           https://ieeexplore.ieee.org/document/4481769</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; signal1 = np.array([1, 2, 3, 4, 5])</span>
+<span class="sd">    &gt;&gt;&gt; signal2 = np.array([1, 2, 3, 4, 6])</span>
+<span class="sd">    &gt;&gt;&gt; window = np.ones(3)</span>
+<span class="sd">    &gt;&gt;&gt; qilv(signal1, signal2, window)</span>
+<span class="sd">    0.9948761003700519</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Normalize the window</span>
+    <span class="n">window_</span> <span class="o">=</span> <span class="n">window</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+
+    <span class="c1"># Local statistics</span>
+    <span class="n">l_means1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">signal1</span><span class="p">,</span> <span class="n">window_</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+    <span class="n">l_means2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">signal2</span><span class="p">,</span> <span class="n">window_</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+    <span class="n">l_vars1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">signal1</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">l_means1</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">l_vars2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">signal2</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">window_</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">l_means2</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="c1"># Global statistics</span>
+    <span class="n">mean_l_vars1</span><span class="p">,</span> <span class="n">mean_l_vars2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">l_vars1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">l_vars2</span><span class="p">)</span>
+    <span class="n">std_l_vars1</span><span class="p">,</span> <span class="n">std_l_vars2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">l_vars1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">l_vars2</span><span class="p">)</span>
+    <span class="n">covar_l_vars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">l_vars1</span> <span class="o">-</span> <span class="n">mean_l_vars1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">l_vars2</span> <span class="o">-</span> <span class="n">mean_l_vars2</span><span class="p">))</span>
+
+    <span class="c1"># Calculate indices</span>
+    <span class="n">index1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">mean_l_vars1</span> <span class="o">*</span> <span class="n">mean_l_vars2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">mean_l_vars1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">mean_l_vars2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">index2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">std_l_vars1</span> <span class="o">*</span> <span class="n">std_l_vars2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">std_l_vars1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">std_l_vars2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">index3</span> <span class="o">=</span> <span class="n">covar_l_vars</span> <span class="o">/</span> <span class="p">(</span><span class="n">std_l_vars1</span> <span class="o">*</span> <span class="n">std_l_vars2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="n">qilv_value</span> <span class="o">=</span> <span class="n">index1</span> <span class="o">*</span> <span class="n">index2</span> <span class="o">*</span> <span class="n">index3</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">qilv_value</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># def iec_60601(true: dict, predict: dict, data_length: int, criteria: str) -&gt; Tuple[float, float]:</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Calculate sensitivity (se) &amp; positive predictive value (pp) of criteria with given true &amp; predict annotation.</span>
+<span class="c1">#</span>
+<span class="c1">#     pp = Intersection / algorithm_Interval</span>
+<span class="c1">#     se = Intersection / true_interval</span>
+<span class="c1">#</span>
+<span class="c1">#     from IEC 60601-2-47[https://webstore.iec.ch/publication/2666]</span>
+<span class="c1">#</span>
+<span class="c1">#     :param true: dict</span>
+<span class="c1">#     :param predict: dict</span>
+<span class="c1">#     :param data_length: int</span>
+<span class="c1">#     :param criteria: str</span>
+<span class="c1">#     :return: Tuple[float, float]</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#     assert (</span>
+<span class="c1">#         (t1 := type(true)) == (t2 := type(predict)) == dict</span>
+<span class="c1">#     ), f&quot;Expect type of given arguments are Dictionary, but receive {t1} and {t2}&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#     def get_set(anno) -&gt; set:</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         Calculate sample set in annotation with criteria.</span>
+<span class="c1">#         :param anno: Dictionary</span>
+<span class="c1">#         :return: set</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         ON, sample_set = False, set()</span>
+<span class="c1">#</span>
+<span class="c1">#         assert len(samples := anno[&quot;sample&quot;]) == len(aux := anno[&quot;rhythm&quot;]), f&quot;Lengths of keys must be same.&quot;</span>
+<span class="c1">#         assert samples == sorted(samples), f&#39;Key &quot;sample&quot; must be sorted.&#39;</span>
+<span class="c1">#</span>
+<span class="c1">#         for i, a in zip(samples, aux):</span>
+<span class="c1">#             if criteria in a:</span>
+<span class="c1">#                 if not ON:</span>
+<span class="c1">#                     ON = i</span>
+<span class="c1">#             else:</span>
+<span class="c1">#                 if ON:</span>
+<span class="c1">#                     sample_set = sample_set.union(list(range(ON, i)))</span>
+<span class="c1">#                     ON = False</span>
+<span class="c1">#         if ON:</span>
+<span class="c1">#             sample_set = sample_set.union(list(range(ON, data_length)))</span>
+<span class="c1">#         return sample_set</span>
+<span class="c1">#</span>
+<span class="c1">#     try:</span>
+<span class="c1">#         true_set, pred_set = get_set(true), get_set(predict)</span>
+<span class="c1">#     except KeyError:</span>
+<span class="c1">#         raise KeyError(&#39;Given arguments must have following keys, [&quot;sample&quot;, &quot;rhythm&quot;].&#39;)</span>
+<span class="c1">#     except AssertionError as e:</span>
+<span class="c1">#         raise e</span>
+<span class="c1">#     else:</span>
+<span class="c1">#         inter = true_set.intersection(pred_set)</span>
+<span class="c1">#         pp, se = len(inter) / (len(pred_set) + EPS_N), len(inter) / (len(true_set) + EPS_N)</span>
+<span class="c1">#         return pp, se</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># def cpsc2021(true: list, predict: list, margin: int = 3) -&gt; float:</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Calculate modified CPSC score with given true onoff list &amp; predict onoff list.</span>
+<span class="c1">#     Find predict on point and off point in true onoff list with margin.</span>
+<span class="c1">#</span>
+<span class="c1">#     score = correct_onoff_predict / max(len(pred_onoff_set), len(true_onoff_set))</span>
+<span class="c1">#     from cpsc2021[http://2021.icbeb.org/CPSC2021]</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#     :param true: list</span>
+<span class="c1">#     :param predict: list</span>
+<span class="c1">#     :param margin: int</span>
+<span class="c1">#     :return: float</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#     assert len(true) % 2 == len(predict) % 2 == 0, f&quot;Expect the length of each input argument to be even.&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#     on, off = [], []</span>
+<span class="c1">#     for i, t in enumerate(true):</span>
+<span class="c1">#         set_to = off if i % 2 else on</span>
+<span class="c1">#         set_to += list(range(t - margin, t + margin))</span>
+<span class="c1">#     on, off = set(on), set(off)</span>
+<span class="c1">#</span>
+<span class="c1">#     score = 0</span>
+<span class="c1">#     for i, p in enumerate(predict):</span>
+<span class="c1">#         find_set = off if i % 2 else on</span>
+<span class="c1">#         if p in find_set:</span>
+<span class="c1">#             score += 1</span>
+<span class="c1">#     score /= 2</span>
+<span class="c1">#     n_episode = max(len(true) // 2, len(predict) // 2)</span>
+<span class="c1">#     return score / n_episode</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

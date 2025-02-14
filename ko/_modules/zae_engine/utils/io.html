@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.utils.io &mdash; zae-engine  문서</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/documentation_options.js?v=8e72191d"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../_static/translations.js?v=e33e7ba0"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="../../../genindex.html" />
+    <link rel="search" title="검색" href="../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">모듈 코드</a></li>
+      <li class="breadcrumb-item active">zae_engine.utils.io</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>zae_engine.utils.io의 소스 코드</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">nibabel.arrayproxy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">wfdb</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">nibabel</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nibabel.testing</span><span class="w"> </span><span class="kn">import</span> <span class="n">data_path</span>
+
+<span class="n">IMAGE_FORMAT</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;til&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="image_from_url">
+<a class="viewcode-back" href="../../../zae_engine.utils.html#zae_engine.utils.io.image_from_url">[문서]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">image_from_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">save_dst</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Download an image from a URL and optionally save it to a specified path.</span>
+
+<span class="sd">    This function downloads an image from the provided URL. If a save destination is provided, the image is saved</span>
+<span class="sd">    to the specified path. If no save destination is provided, the image is temporarily saved, opened, and returned</span>
+<span class="sd">    as a PIL Image object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url : str</span>
+<span class="sd">        The URL of the image to be downloaded.</span>
+<span class="sd">    save_dst : str, optional</span>
+<span class="sd">        The file path where the image should be saved. If not provided, the image is temporarily saved and returned as a PIL Image object.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None or Image.Image</span>
+<span class="sd">        If `save_dst` is provided, the function returns None after saving the image.</span>
+<span class="sd">        If `save_dst` is not provided, the function returns the image as a PIL Image object.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    AssertionError</span>
+<span class="sd">        If the file extension of `save_dst` is not one of the supported formats: &#39;png&#39;, &#39;jpg&#39;, &#39;jpeg&#39;, &#39;tif&#39;.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The supported image formats are defined in the `IMAGE_FORMAT` list.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Download and save an image:</span>
+<span class="sd">    &gt;&gt;&gt; image_from_url(&#39;https://example.com/image.png&#39;, &#39;downloaded_image.png&#39;)</span>
+
+<span class="sd">    Download an image and return it as a PIL Image object:</span>
+<span class="sd">    &gt;&gt;&gt; img = image_from_url(&#39;https://example.com/image.png&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; img.show()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">save_dst</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Saving mode</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="o">:=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">save_dst</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">IMAGE_FORMAT</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid extension. Expect one of </span><span class="si">{</span><span class="n">IMAGE_FORMAT</span><span class="si">}</span><span class="s1">, but receive &quot;</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+        <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">save_dst</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Return Image without saving.</span>
+        <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+            <span class="n">img_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">img_data</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="example_ecg">
+<a class="viewcode-back" href="../../../zae_engine.utils.html#zae_engine.utils.io.example_ecg">[문서]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">example_ecg</span><span class="p">(</span><span class="n">beat_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a 10-second ECG recording and annotation from LUDB dataset [1], which has a sampling frequency of 250Hz.</span>
+
+<span class="sd">    The &#39;*.zae&#39; file in package contains QRS complex information from raw data[1] and beat locations via algorithm.</span>
+<span class="sd">    If the argument &#39;beat_idx&#39; is None (default), the function returns the 10-second recording and label sequence.</span>
+<span class="sd">    If &#39;beat_idx&#39; is specified, the function returns the segment of the recording, the location, and the symbol of beat.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    beat_idx : int, optional</span>
+<span class="sd">        The index of the beat in the data.</span>
+<span class="sd">        The value cannot be greater than the maximum index of beats in the data (12).</span>
+<span class="sd">        If this parameter is not specified, the function returns the 10-second data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    signal : np.ndarray</span>
+<span class="sd">        The 10-second ECG recording.</span>
+<span class="sd">        If &#39;beat_idx&#39; is specified, this is the segment of the recording around the specified beat.</span>
+<span class="sd">    label : np.ndarray or int</span>
+<span class="sd">        If &#39;beat_idx&#39; is None, this is the label sequence for the 10-second data.</span>
+<span class="sd">        If &#39;beat_idx&#39; is specified, this is the type of the specified beat.</span>
+<span class="sd">    loc : None or int</span>
+<span class="sd">        The location of the specified beat if &#39;beat_idx&#39; is specified.</span>
+<span class="sd">        Otherwise, this is None.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1]  Kalyakulina, A., Yusipov, I., Moskalenko, V., et al.</span>
+<span class="sd">            Lobachevsky University Electrocardiography Database (version 1.0.0). PhysioNet. (2020).</span>
+<span class="sd">            https://doi.org/10.13026/qweb-sr17.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lookup</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+
+    <span class="n">ex_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;__sample/sample_data&quot;</span><span class="p">)</span>
+    <span class="n">recording</span> <span class="o">=</span> <span class="n">wfdb</span><span class="o">.</span><span class="n">rdsamp</span><span class="p">(</span><span class="n">ex_path</span><span class="p">,</span> <span class="n">return_res</span><span class="o">=</span><span class="mi">32</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>  <span class="c1"># nd-array, [2500, ]</span>
+    <span class="n">anno</span> <span class="o">=</span> <span class="n">wfdb</span><span class="o">.</span><span class="n">rdann</span><span class="p">(</span><span class="n">ex_path</span><span class="p">,</span> <span class="s2">&quot;zae&quot;</span><span class="p">)</span>
+    <span class="n">samp</span><span class="p">,</span> <span class="n">sym</span> <span class="o">=</span> <span class="n">anno</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">anno</span><span class="o">.</span><span class="n">symbol</span>
+    <span class="k">if</span> <span class="n">sym</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+        <span class="n">samp</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">sym</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">)</span>
+    <span class="c1"># if sym[-1] != &quot;*&quot;:</span>
+    <span class="c1">#     samp.append(2499)</span>
+    <span class="c1">#     sym.append(&quot;*&quot;)</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">samp</span><span class="p">),</span> <span class="s2">&quot;The length of samples and symbols is not matched. The annotation file is insane.&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Invalid symbol. Please check out the first &amp; last symbol of annotation.&quot;</span>
+
+    <span class="n">n_qrs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span>  <span class="c1"># The number of QRS complexes.</span>
+    <span class="k">if</span> <span class="n">beat_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">recording</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i_qrs</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sym</span><span class="p">))[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]:</span>
+            <span class="n">label</span><span class="p">[</span><span class="n">samp</span><span class="p">[</span><span class="n">i_qrs</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">samp</span><span class="p">[</span><span class="n">i_qrs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">lookup</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="k">if</span> <span class="p">(</span><span class="n">s</span> <span class="o">:=</span> <span class="n">sym</span><span class="p">[</span><span class="n">i_qrs</span><span class="p">])</span> <span class="ow">in</span> <span class="n">lookup</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="mi">3</span>
+        <span class="k">return</span> <span class="n">recording</span><span class="p">,</span> <span class="n">label</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">beat_idx</span> <span class="o">&lt;</span> <span class="n">n_qrs</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;The maximum value os beat_idx is </span><span class="si">{</span><span class="n">n_qrs</span><span class="si">}</span><span class="s2">. But </span><span class="si">{</span><span class="n">beat_idx</span><span class="si">}</span><span class="s2"> was provided.&quot;</span>
+        <span class="n">qrs_chunk</span> <span class="o">=</span> <span class="n">recording</span><span class="p">[</span><span class="n">samp</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">beat_idx</span><span class="p">]</span> <span class="p">:</span> <span class="n">samp</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">beat_idx</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]]</span>
+        <span class="n">sym</span> <span class="o">=</span> <span class="n">sym</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">beat_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">qrs_loc</span> <span class="o">=</span> <span class="n">samp</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">beat_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">samp</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">beat_idx</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">qrs_chunk</span><span class="p">,</span> <span class="n">qrs_loc</span><span class="p">,</span> <span class="n">sym</span></div>
+
+
+
+<div class="viewcode-block" id="example_mri">
+<a class="viewcode-back" href="../../../zae_engine.utils.html#zae_engine.utils.io.example_mri">[문서]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">example_mri</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">arrayproxy</span><span class="o">.</span><span class="n">ArrayProxy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a 4D MRI scan .</span>
+
+<span class="sd">    This function loads an MRI scan stored in a NIfTI file (&#39;.nii.gz&#39;) and returns the image data as an ArrayProxy object.</span>
+<span class="sd">    The MRI scan is expected to be a 4-dimensional array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    nibabel.arrayproxy.ArrayProxy</span>
+<span class="sd">        The 4-dimensional MRI scan data as an ArrayProxy object. The dimensions represent:</span>
+<span class="sd">        - Frequency encoding</span>
+<span class="sd">        - Phase encoding</span>
+<span class="sd">        - Slice</span>
+<span class="sd">        - Complex component (real and imaginary)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function assumes that the file &#39;example4d.nii.gz&#39; exists in the &#39;data_path&#39; directory provided by nibabel&#39;s testing module.</span>
+<span class="sd">    The NIfTI file format is commonly used for storing MRI data, and this function uses the nibabel library to read it.</span>
+<span class="sd">    If the &#39;get_fdata&#39; method is available in the loaded object, the function returns the image data directly from</span>
+<span class="sd">    the data object.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; mri_data = example_mri()</span>
+<span class="sd">    &gt;&gt;&gt; print(mri_data.shape)</span>
+<span class="sd">    (128, 96, 24, 2)  # Example output, actual dimensions may vary</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    The NIfTI file format: https://nifti.nimh.nih.gov/nifti-1</span>
+<span class="sd">    The nibabel library documentation: https://nipy.org/nibabel/</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">example_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s2">&quot;example4d.nii.gz&quot;</span><span class="p">)</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">nib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">example_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;get_fdata&quot;</span> <span class="ow">in</span> <span class="n">proxy</span><span class="o">.</span><span class="fm">__dir__</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">proxy</span><span class="o">.</span><span class="n">dataobj</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

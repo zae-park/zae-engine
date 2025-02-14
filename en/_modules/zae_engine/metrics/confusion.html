@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.metrics.confusion &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">zae_engine.metrics.confusion</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.metrics.confusion</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">np2torch</span><span class="p">,</span> <span class="n">shape_check</span>
+
+
+<div class="viewcode-block" id="confusion_matrix">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.confusion.confusion_matrix">[docs]</a>
+<span class="nd">@np2torch</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="nd">@shape_check</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">confusion_matrix</span><span class="p">(</span>
+    <span class="n">y_hat</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">y_true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the confusion matrix for classification predictions.</span>
+
+<span class="sd">    This function calculates the confusion matrix, comparing the predicted labels (y_hat) with the true labels (y_true).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y_hat : Union[np.ndarray, torch.Tensor]</span>
+<span class="sd">        The predicted labels, either as a numpy array or a torch tensor.</span>
+<span class="sd">    y_true : Union[np.ndarray, torch.Tensor]</span>
+<span class="sd">        The true labels, either as a numpy array or a torch tensor.</span>
+<span class="sd">    num_classes : int</span>
+<span class="sd">        The number of classes in the classification task.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.Tensor</span>
+<span class="sd">        The confusion matrix as a 2-D tensor of shape (num_classes, num_classes).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; y_true = np.array([0, 1, 2, 2, 1])</span>
+<span class="sd">    &gt;&gt;&gt; y_hat = np.array([0, 2, 2, 2, 0])</span>
+<span class="sd">    &gt;&gt;&gt; confusion_matrix(y_hat, y_true, 3)</span>
+<span class="sd">    tensor([[1., 0., 0.],</span>
+<span class="sd">            [1., 0., 0.],</span>
+<span class="sd">            [0., 1., 2.]])</span>
+<span class="sd">    &gt;&gt;&gt; y_true = torch.tensor([0, 1, 2, 2, 1])</span>
+<span class="sd">    &gt;&gt;&gt; y_hat = torch.tensor([0, 2, 2, 2, 0])</span>
+<span class="sd">    &gt;&gt;&gt; confusion_matrix(y_hat, y_true, 3)</span>
+<span class="sd">    tensor([[1., 0., 0.],</span>
+<span class="sd">            [1., 0., 0.],</span>
+<span class="sd">            [0., 1., 2.]])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">canvas</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">true</span><span class="p">,</span> <span class="n">hat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_hat</span><span class="p">):</span>
+        <span class="n">canvas</span><span class="p">[</span><span class="n">true</span><span class="p">,</span> <span class="n">hat</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">canvas</span></div>
+
+
+
+<div class="viewcode-block" id="print_confusion_matrix">
+<a class="viewcode-back" href="../../../zae_engine.metrics.html#zae_engine.metrics.confusion.print_confusion_matrix">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">print_confusion_matrix</span><span class="p">(</span>
+    <span class="n">conf_mat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">cell_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">class_name</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print the confusion matrix in a formatted table.</span>
+
+<span class="sd">    This function prints the given confusion matrix using the rich library for better visualization. The cell width and class names are customizable.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    conf_mat : Union[np.ndarray, torch.Tensor]</span>
+<span class="sd">        The confusion matrix, either as a numpy array or a torch tensor.</span>
+<span class="sd">    cell_width : Optional[int], default=4</span>
+<span class="sd">        The width of each cell in the printed table.</span>
+<span class="sd">    class_name : Union[List[str], Tuple[str]], optional</span>
+<span class="sd">        The names of the classes. If provided, must match the number of classes in the confusion matrix.</span>
+<span class="sd">    frame : Optional[bool], default=True</span>
+<span class="sd">        Whether to include a frame around the table.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; conf_mat = np.array([[5, 2], [1, 3]])</span>
+<span class="sd">    &gt;&gt;&gt; print_confusion_matrix(conf_mat, class_name=[&#39;Class 0&#39;, &#39;Class 1&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; conf_mat = torch.tensor([[5, 2], [1, 3]])</span>
+<span class="sd">    &gt;&gt;&gt; print_confusion_matrix(conf_mat, class_name=[&#39;Class 0&#39;, &#39;Class 1&#39;])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">box_frame</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">SIMPLE</span> <span class="k">if</span> <span class="n">frame</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
+        <span class="n">show_header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">header_style</span><span class="o">=</span><span class="s2">&quot;bold magenta&quot;</span><span class="p">,</span>
+        <span class="n">box</span><span class="o">=</span><span class="n">box_frame</span><span class="p">,</span>
+        <span class="n">leading</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">show_edge</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">show_lines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">min_width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> confusion_matrix&quot;</span>
+
+    <span class="k">if</span> <span class="n">class_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span> <span class="o">==</span> <span class="n">conf_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Unmatched classes number class_name </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">class_name</span><span class="p">)</span><span class="si">}</span><span class="s2"> =/= number of class </span><span class="si">{</span><span class="n">conf_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">class_name</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">class_name</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">class_name</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">min_width</span><span class="o">=</span><span class="n">cell_width</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="n">cell_width</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">min_width</span><span class="o">=</span><span class="n">cell_width</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="n">cell_width</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">conf_mat</span><span class="p">):</span>
+            <span class="n">row_with_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">class_name</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="n">row</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+            <span class="n">row_with_index</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[bold cyan]</span><span class="si">{</span><span class="n">row_with_index</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">[bold cyan]&quot;</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="o">*</span><span class="n">row_with_index</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">conf_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">min_width</span><span class="o">=</span><span class="n">cell_width</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="n">cell_width</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="s2">&quot;P&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">col</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">justify</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">min_width</span><span class="o">=</span><span class="n">cell_width</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="n">cell_width</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">conf_mat</span><span class="p">):</span>
+            <span class="n">row_with_index</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;T</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="n">row</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+            <span class="n">row_with_index</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[bold cyan]</span><span class="si">{</span><span class="n">row_with_index</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">[bold cyan]&quot;</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="o">*</span><span class="n">row_with_index</span><span class="p">)</span>
+
+    <span class="n">table</span><span class="o">.</span><span class="n">caption</span> <span class="o">=</span> <span class="s2">&quot;row : [green]Actual[/green] column : [purple]Prediction[/purple]&quot;</span>
+
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

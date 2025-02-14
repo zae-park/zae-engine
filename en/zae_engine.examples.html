@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.examples package &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">zae_engine.examples package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-zae_engine.examples.classification1D">zae_engine.examples.classification1D module</a><ul>
+<li><a class="reference internal" href="#zae_engine.examples.classification1D.InferenceDataset"><code class="docutils literal notranslate"><span class="pre">InferenceDataset</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.classification1D.InferenceTrainer"><code class="docutils literal notranslate"><span class="pre">InferenceTrainer</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.examples.classification1D.InferenceTrainer.test_step"><code class="docutils literal notranslate"><span class="pre">InferenceTrainer.test_step()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.classification1D.InferenceTrainer.train_step"><code class="docutils literal notranslate"><span class="pre">InferenceTrainer.train_step()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.examples.classification1D.core"><code class="docutils literal notranslate"><span class="pre">core()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.examples.ddpm_mnist">zae_engine.examples.ddpm_mnist module</a><ul>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.CustomMNISTDataset"><code class="docutils literal notranslate"><span class="pre">CustomMNISTDataset</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.DDPM"><code class="docutils literal notranslate"><span class="pre">DDPM</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.DDPM.timestep_embedding"><code class="docutils literal notranslate"><span class="pre">DDPM.timestep_embedding</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.DDPM.t_embed_proj"><code class="docutils literal notranslate"><span class="pre">DDPM.t_embed_proj</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.DDPM.forward"><code class="docutils literal notranslate"><span class="pre">DDPM.forward()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer"><code class="docutils literal notranslate"><span class="pre">DDPMTrainer</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer.generate"><code class="docutils literal notranslate"><span class="pre">DDPMTrainer.generate()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer.noise_scheduling"><code class="docutils literal notranslate"><span class="pre">DDPMTrainer.noise_scheduling()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer.test_step"><code class="docutils literal notranslate"><span class="pre">DDPMTrainer.test_step()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer.train_step"><code class="docutils literal notranslate"><span class="pre">DDPMTrainer.train_step()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer.visualize_samples"><code class="docutils literal notranslate"><span class="pre">DDPMTrainer.visualize_samples()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.ForwardDiffusion"><code class="docutils literal notranslate"><span class="pre">ForwardDiffusion</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.beta"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler.beta</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.alpha"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler.alpha</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.alpha_bar"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler.alpha_bar</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.sqrt_alpha_bar"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler.sqrt_alpha_bar</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.sqrt_one_minus_alpha_bar"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler.sqrt_one_minus_alpha_bar</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.posterior_variance"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler.posterior_variance</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.timesteps"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler.timesteps</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.cosine_beta_schedule"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler.cosine_beta_schedule()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.get_sigma"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler.get_sigma()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.linear_beta_schedule"><code class="docutils literal notranslate"><span class="pre">NoiseScheduler.linear_beta_schedule()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.TimestepEmbedding"><code class="docutils literal notranslate"><span class="pre">TimestepEmbedding</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.TimestepEmbedding.forward"><code class="docutils literal notranslate"><span class="pre">TimestepEmbedding.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.examples.segmentation1D">zae_engine.examples.segmentation1D module</a><ul>
+<li><a class="reference internal" href="#zae_engine.examples.segmentation1D.InferenceDataset"><code class="docutils literal notranslate"><span class="pre">InferenceDataset</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.segmentation1D.InferenceTrainer"><code class="docutils literal notranslate"><span class="pre">InferenceTrainer</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.examples.segmentation1D.InferenceTrainer.test_step"><code class="docutils literal notranslate"><span class="pre">InferenceTrainer.test_step()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.examples.segmentation1D.InferenceTrainer.train_step"><code class="docutils literal notranslate"><span class="pre">InferenceTrainer.train_step()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.examples.segmentation1D.core"><code class="docutils literal notranslate"><span class="pre">core()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.examples">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">zae_engine.examples package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/zae_engine.examples.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zae-engine-examples-package">
+<h1>zae_engine.examples package<a class="headerlink" href="#zae-engine-examples-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-zae_engine.examples.classification1D">
+<span id="zae-engine-examples-classification1d-module"></span><h2>zae_engine.examples.classification1D module<a class="headerlink" href="#module-zae_engine.examples.classification1D" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.classification1D.InferenceDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.classification1D.</span></span><span class="sig-name descname"><span class="pre">InferenceDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/classification1D.html#InferenceDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.classification1D.InferenceDataset" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.classification1D.InferenceTrainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.classification1D.</span></span><span class="sig-name descname"><span class="pre">InferenceTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/classification1D.html#InferenceTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.classification1D.InferenceTrainer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Trainer</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.classification1D.InferenceTrainer.test_step">
+<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/classification1D.html#InferenceTrainer.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.classification1D.InferenceTrainer.test_step" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a testing step.</p>
+<p>This method must be implemented by subclasses.
+This unused dummy function exists to provide I/O format information.</p>
+<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
+The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
+Note that this function works only in ‘test’ mode, and the <cite>backward()</cite> method is not necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the results of the testing step, including the loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;fn&#39;</span><span class="p">]</span>  <span class="c1"># or x, y, fn = batch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">criteria</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;mean_output&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outputs</span><span class="p">)}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.classification1D.InferenceTrainer.train_step">
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/examples/classification1D.html#InferenceTrainer.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.classification1D.InferenceTrainer.train_step" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a training step.</p>
+<p>This method must be implemented by subclasses.
+This unused dummy function exists to provide I/O format information.</p>
+<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
+The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
+Note that this function works only in ‘train’ mode, hence the <cite>backward()</cite> method in <cite>nn.Module</cite> is necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the results of the training step, including the loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;fn&#39;</span><span class="p">]</span>  <span class="c1"># or x, y, fn = batch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">criteria</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;mean_output&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outputs</span><span class="p">)}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.examples.classification1D.core">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.examples.classification1D.</span></span><span class="sig-name descname"><span class="pre">core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/classification1D.html#core"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.classification1D.core" title="Link to this definition">¶</a></dt>
+<dd><p>Perform inference on a given input array using a predefined CNN model and data pipeline.</p>
+<p>This function processes the input data through a series of preprocessing steps,
+feeds it into a Convolutional Neural Network (CNN) model, and returns the
+predicted class indices for each input segment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>np.ndarray</em>) – Input array to be processed. The array should be less than 3-D (i.e., 1-D or 2-D).
+For 2-D inputs, the shape should be <cite>(num_samples, 2048)</cite>, where <cite>2048</cite> is the
+expected segment length.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A NumPy array containing the predicted class indices for each input sample.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If the input array has 3 or more dimensions.</p></li>
+<li><p><strong>Exception</strong> – If any error occurs during the inference process.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">20480</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2048</span><span class="p">)</span>  <span class="c1"># 10 samples of length 2048 each</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">predictions</span> <span class="o">=</span> <span class="n">core</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
+<span class="go">[0 1 0 2 1 0 1 0 1 2]</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<p>This function performs the following steps:
+1. Validates the input array dimensions.
+2. Sets up the computation device (CPU or GPU).
+3. Initializes the data pipeline, including dataset and data loader with preprocessing modules.
+4. Sets up the CNN model, optimizer, and learning rate scheduler.
+5. Executes the inference process using the model and returns the predicted class indices.</p>
+<p>The model used is a CNN-based architecture (<cite>CNNBase</cite> with <cite>BasicBlock</cite>), converted from 2D to 1D.
+The input data is preprocessed using filtering, scaling, and one-hot encoding before being fed into the model.
+Inference is performed in batches to handle large input arrays efficiently.</p>
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.examples.ddpm_mnist">
+<span id="zae-engine-examples-ddpm-mnist-module"></span><h2>zae_engine.examples.ddpm_mnist module<a class="headerlink" href="#module-zae_engine.examples.ddpm_mnist" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.CustomMNISTDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.ddpm_mnist.</span></span><span class="sig-name descname"><span class="pre">CustomMNISTDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#CustomMNISTDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.CustomMNISTDataset" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>Custom Dataset class for MNIST data.</p>
+<p>This class wraps the torchvision MNIST dataset and returns a dictionary containing the image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<em>str</em>) – Root directory of dataset where MNIST exists or will be saved.</p></li>
+<li><p><strong>train</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, creates dataset from training set, otherwise from test set.</p></li>
+<li><p><strong>transform</strong> (<em>callable</em><em>, </em><em>optional</em>) – A function/transform that takes in an image and returns a transformed version.</p></li>
+<li><p><strong>download</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, downloads the dataset from the internet and puts it in root directory.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.DDPM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.ddpm_mnist.</span></span><span class="sig-name descname"><span class="pre">DDPM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">block:</span> <span class="pre">~typing.Type[~zae_engine.nn_night.blocks.unet_block.UNetBlock</span> <span class="pre">|</span> <span class="pre">~torch.nn.modules.module.Module],</span> <span class="pre">ch_in:</span> <span class="pre">int,</span> <span class="pre">ch_out:</span> <span class="pre">int,</span> <span class="pre">width:</span> <span class="pre">int,</span> <span class="pre">layers:</span> <span class="pre">~typing.Sequence[int],</span> <span class="pre">groups:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">dilation:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">norm_layer:</span> <span class="pre">~typing.Callable[[...],</span> <span class="pre">~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.batchnorm.BatchNorm2d'&gt;,</span> <span class="pre">skip_connect:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">timestep_embed_dim:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">256</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#DDPM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.DDPM" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.AutoEncoder" title="zae_engine.models.builds.autoencoder.AutoEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">AutoEncoder</span></code></a></p>
+<p>Denoising Diffusion Probabilistic Model (DDPM) implemented as an AutoEncoder.</p>
+<p>This model integrates timestep embeddings into the bottleneck of the AutoEncoder architecture,
+allowing the model to condition on the diffusion timestep during training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> (<em>Type</em><em>[</em><em>Union</em><em>[</em><a class="reference internal" href="zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.unet_block.UNetBlock" title="zae_engine.nn_night.blocks.unet_block.UNetBlock"><em>UNetBlock</em></a><em>, </em><em>nn.Module</em><em>]</em><em>]</em>) – The block type to use in the AutoEncoder (e.g., UNetBlock).</p></li>
+<li><p><strong>ch_in</strong> (<em>int</em>) – Number of input channels.</p></li>
+<li><p><strong>ch_out</strong> (<em>int</em>) – Number of output channels.</p></li>
+<li><p><strong>width</strong> (<em>int</em>) – Base width of the network.</p></li>
+<li><p><strong>layers</strong> (<em>Sequence</em><em>[</em><em>int</em><em>]</em>) – Number of layers in each block.</p></li>
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of groups for group normalization, by default 1.</p></li>
+<li><p><strong>dilation</strong> (<em>int</em><em>, </em><em>optional</em>) – Dilation rate for convolutions, by default 1.</p></li>
+<li><p><strong>norm_layer</strong> (<em>Callable</em><em>[</em><em>...</em><em>, </em><em>nn.Module</em><em>]</em><em>, </em><em>optional</em>) – Normalization layer to use, by default nn.BatchNorm2d.</p></li>
+<li><p><strong>skip_connect</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use skip connections, by default False.</p></li>
+<li><p><strong>timestep_embed_dim</strong> (<em>int</em><em>, </em><em>optional</em>) – Dimension of the timestep embedding, by default 256.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.DDPM.timestep_embedding">
+<span class="sig-name descname"><span class="pre">timestep_embedding</span></span><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.DDPM.timestep_embedding" title="Link to this definition">¶</a></dt>
+<dd><p>Module for generating timestep embeddings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.TimestepEmbedding" title="zae_engine.examples.ddpm_mnist.TimestepEmbedding">TimestepEmbedding</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.DDPM.t_embed_proj">
+<span class="sig-name descname"><span class="pre">t_embed_proj</span></span><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.DDPM.t_embed_proj" title="Link to this definition">¶</a></dt>
+<dd><p>Linear layer to project timestep embeddings to match the bottleneck dimensions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.DDPM.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#DDPM.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.DDPM.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for DDPM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Noised image (x_t) of shape (batch_size, channels, height, width).</p></li>
+<li><p><strong>t</strong> (<em>torch.Tensor</em>) – Timestep tensor of shape (batch_size,).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reconstructed image tensor of shape (batch_size, channels, height, width).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.DDPMTrainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.ddpm_mnist.</span></span><span class="sig-name descname"><span class="pre">DDPMTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">device</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">device</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LRScheduler</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">T</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_bar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler_step_on_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient_clip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#DDPMTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Trainer</span></code></p>
+<p>Trainer class specialized for DDPM training and sampling.</p>
+<p>Inherits from the abstract Trainer class and implements the train_step and test_step methods.
+Additionally, it includes methods for generating and visualizing samples using the trained model.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.DDPMTrainer.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#DDPMTrainer.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer.generate" title="Link to this definition">¶</a></dt>
+<dd><p>Generate new samples using the trained diffusion model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_samples</strong> (<em>int</em>) – Number of samples to generate.</p></li>
+<li><p><strong>channels</strong> (<em>int</em>) – Number of channels in the generated images.</p></li>
+<li><p><strong>height</strong> (<em>int</em>) – Height of the generated images.</p></li>
+<li><p><strong>width</strong> (<em>int</em>) – Width of the generated images.</p></li>
+<li><p><strong>intermediate</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of intermediate samples to save during generation, by default 0.</p></li>
+<li><p><strong>ddim</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use DDIM sampling. If True, uses DDIM; otherwise, uses DDPM.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Generated samples tensor of shape (n_samples, channels, height, width).
+List of intermediate samples if specified.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[Tensor, List[Any]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.DDPMTrainer.noise_scheduling">
+<span class="sig-name descname"><span class="pre">noise_scheduling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler" title="zae_engine.examples.ddpm_mnist.NoiseScheduler"><span class="pre">NoiseScheduler</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#DDPMTrainer.noise_scheduling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer.noise_scheduling" title="Link to this definition">¶</a></dt>
+<dd><p>Update the noise scheduler used by the trainer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>noise_scheduler</strong> (<a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler" title="zae_engine.examples.ddpm_mnist.NoiseScheduler"><em>NoiseScheduler</em></a>) – New noise scheduler to be used.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.DDPMTrainer.test_step">
+<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#DDPMTrainer.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer.test_step" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a testing step for DDPM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>torch.Tensor</em><em>]</em>) – A batch of data containing ‘x_t’, ‘x0’, ‘t’, ‘noise’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the loss and the model’s output.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.DDPMTrainer.train_step">
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#DDPMTrainer.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer.train_step" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a training step for DDPM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>torch.Tensor</em><em>]</em>) – A batch of data containing ‘x_t’, ‘x0’, ‘t’, ‘noise’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the loss and the model’s output.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.DDPMTrainer.visualize_samples">
+<span class="sig-name descname"><span class="pre">visualize_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">final_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_losses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_losses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#DDPMTrainer.visualize_samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.DDPMTrainer.visualize_samples" title="Link to this definition">¶</a></dt>
+<dd><p>Visualize generated samples and training progress.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>final_samples</strong> (<em>torch.Tensor</em>) – Final generated samples. Shape: (n_samples, channels, height, width).</p></li>
+<li><p><strong>intermediate_images</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – Intermediate images for selected samples. Shape: (num_selected, channels, height, width), by default None.</p></li>
+<li><p><strong>train_losses</strong> (<em>List</em><em>[</em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Training loss history, by default None.</p></li>
+<li><p><strong>valid_losses</strong> (<em>List</em><em>[</em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Validation loss history, by default None.</p></li>
+<li><p><strong>lr_history</strong> (<em>List</em><em>[</em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Learning rate history, by default None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.ForwardDiffusion">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.ddpm_mnist.</span></span><span class="sig-name descname"><span class="pre">ForwardDiffusion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise_scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler" title="zae_engine.examples.ddpm_mnist.NoiseScheduler"><span class="pre">NoiseScheduler</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#ForwardDiffusion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.ForwardDiffusion" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for performing the forward diffusion process by adding noise to the input data.</p>
+<p>This class adds noise to the input data at a randomly sampled timestep, producing the noised data <cite>x_t</cite>,
+along with the original data <cite>x0</cite>, the timestep <cite>t</cite>, and the noise added.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>noise_scheduler</strong> (<a class="reference internal" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler" title="zae_engine.examples.ddpm_mnist.NoiseScheduler"><em>NoiseScheduler</em></a>) – Instance of NoiseScheduler managing the noise levels.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.ddpm_mnist.</span></span><span class="sig-name descname"><span class="pre">NoiseScheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timesteps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schedule</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.02</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#NoiseScheduler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Scheduler for managing the noise levels in DDPM.</p>
+<p>This class defines the noise schedule used in the diffusion process, supporting both linear and cosine schedules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timesteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Total number of diffusion steps. Default is 1000.</p></li>
+<li><p><strong>schedule</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of noise schedule (‘linear’, ‘cosine’). Default is ‘linear’.</p></li>
+<li><p><strong>beta_start</strong> (<em>float</em><em>, </em><em>optional</em>) – Starting value of beta. Default is 1e-4.</p></li>
+<li><p><strong>beta_end</strong> (<em>float</em><em>, </em><em>optional</em>) – Ending value of beta. Default is 0.02.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler.beta">
+<span class="sig-name descname"><span class="pre">beta</span></span><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.beta" title="Link to this definition">¶</a></dt>
+<dd><p>Noise levels for each timestep.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler.alpha">
+<span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.alpha" title="Link to this definition">¶</a></dt>
+<dd><p>1 - beta for each timestep.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler.alpha_bar">
+<span class="sig-name descname"><span class="pre">alpha_bar</span></span><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.alpha_bar" title="Link to this definition">¶</a></dt>
+<dd><p>Cumulative product of alpha up to each timestep.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler.sqrt_alpha_bar">
+<span class="sig-name descname"><span class="pre">sqrt_alpha_bar</span></span><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.sqrt_alpha_bar" title="Link to this definition">¶</a></dt>
+<dd><p>Square root of alpha_bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler.sqrt_one_minus_alpha_bar">
+<span class="sig-name descname"><span class="pre">sqrt_one_minus_alpha_bar</span></span><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.sqrt_one_minus_alpha_bar" title="Link to this definition">¶</a></dt>
+<dd><p>Square root of (1 - alpha_bar).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler.posterior_variance">
+<span class="sig-name descname"><span class="pre">posterior_variance</span></span><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.posterior_variance" title="Link to this definition">¶</a></dt>
+<dd><p>Variance used in the posterior distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler.timesteps">
+<span class="sig-name descname"><span class="pre">timesteps</span></span><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.timesteps" title="Link to this definition">¶</a></dt>
+<dd><p>Total number of diffusion steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler.cosine_beta_schedule">
+<span class="sig-name descname"><span class="pre">cosine_beta_schedule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timesteps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.008</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#NoiseScheduler.cosine_beta_schedule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.cosine_beta_schedule" title="Link to this definition">¶</a></dt>
+<dd><p>Cosine schedule for beta as proposed in <a class="reference external" href="https://arxiv.org/abs/2102.09672">https://arxiv.org/abs/2102.09672</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timesteps</strong> (<em>int</em>) – Total number of diffusion steps.</p></li>
+<li><p><strong>s</strong> (<em>float</em><em>, </em><em>optional</em>) – Small offset to prevent beta from being exactly 0. Default is 0.008.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Beta schedule.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler.get_sigma">
+<span class="sig-name descname"><span class="pre">get_sigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#NoiseScheduler.get_sigma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.get_sigma" title="Link to this definition">¶</a></dt>
+<dd><p>Get the sigma value for a given timestep.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>torch.Tensor</em>) – Timestep tensor.</p></li>
+<li><p><strong>ddim</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use DDIM sampling. If True, uses sigma=0 for deterministic sampling.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sigma value for the given timestep.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.NoiseScheduler.linear_beta_schedule">
+<span class="sig-name descname"><span class="pre">linear_beta_schedule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timesteps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#NoiseScheduler.linear_beta_schedule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.NoiseScheduler.linear_beta_schedule" title="Link to this definition">¶</a></dt>
+<dd><p>Linear schedule for beta.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timesteps</strong> (<em>int</em>) – Total number of diffusion steps.</p></li>
+<li><p><strong>beta_start</strong> (<em>float</em>) – Starting value of beta.</p></li>
+<li><p><strong>beta_end</strong> (<em>float</em>) – Ending value of beta.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Beta schedule.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.TimestepEmbedding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.ddpm_mnist.</span></span><span class="sig-name descname"><span class="pre">TimestepEmbedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#TimestepEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.TimestepEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Sinusoidal embedding for timesteps.</p>
+<p>This module generates sinusoidal embeddings for each timestep, similar to positional encodings used in Transformers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>embed_dim</strong> (<em>int</em>) – Dimension of the embedding vector.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.ddpm_mnist.TimestepEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/ddpm_mnist.html#TimestepEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.ddpm_mnist.TimestepEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for timestep embedding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t</strong> (<em>Tensor</em>) – Timestep tensor of shape (batch_size,) or higher.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Embedded timestep tensor of shape (batch_size, embed_dim).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.examples.segmentation1D">
+<span id="zae-engine-examples-segmentation1d-module"></span><h2>zae_engine.examples.segmentation1D module<a class="headerlink" href="#module-zae_engine.examples.segmentation1D" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.segmentation1D.InferenceDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.segmentation1D.</span></span><span class="sig-name descname"><span class="pre">InferenceDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/segmentation1D.html#InferenceDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.segmentation1D.InferenceDataset" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.examples.segmentation1D.InferenceTrainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.examples.segmentation1D.</span></span><span class="sig-name descname"><span class="pre">InferenceTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/segmentation1D.html#InferenceTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.segmentation1D.InferenceTrainer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Trainer</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.segmentation1D.InferenceTrainer.test_step">
+<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/segmentation1D.html#InferenceTrainer.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.segmentation1D.InferenceTrainer.test_step" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a testing step.</p>
+<p>This method must be implemented by subclasses.
+This unused dummy function exists to provide I/O format information.</p>
+<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
+The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
+Note that this function works only in ‘test’ mode, and the <cite>backward()</cite> method is not necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the results of the testing step, including the loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;fn&#39;</span><span class="p">]</span>  <span class="c1"># or x, y, fn = batch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">criteria</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;mean_output&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outputs</span><span class="p">)}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.examples.segmentation1D.InferenceTrainer.train_step">
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/examples/segmentation1D.html#InferenceTrainer.train_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.segmentation1D.InferenceTrainer.train_step" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a training step.</p>
+<p>This method must be implemented by subclasses.
+This unused dummy function exists to provide I/O format information.</p>
+<p>The batch is a part of the dataset in the dataloader fetched via the <cite>__getitem__</cite> method.
+The dictionary consists of {‘str’: torch.tensor(value)}, and must include ‘loss’.
+Note that this function works only in ‘train’ mode, hence the <cite>backward()</cite> method in <cite>nn.Module</cite> is necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>Union</em><em>[</em><em>tuple</em><em>, </em><em>dict</em><em>]</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing the results of the training step, including the loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, torch.Tensor]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;fn&#39;</span><span class="p">]</span>  <span class="c1"># or x, y, fn = batch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">criteria</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;mean_output&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outputs</span><span class="p">)}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.examples.segmentation1D.core">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.examples.segmentation1D.</span></span><span class="sig-name descname"><span class="pre">core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/zae_engine/examples/segmentation1D.html#core"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.examples.segmentation1D.core" title="Link to this definition">¶</a></dt>
+<dd><p>Core function to perform inference on a given 1-D input array using a predefined model and data pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>torch.Tensor</em><em>]</em>) – The input 1-D array to be processed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The result of the inference process as a numpy array with the predicted class indices.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If the input array is not 1-D.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2048000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">core</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<p>This function performs the following steps:
+1. Checks if the input array is 1-D.
+2. Sets up the device for computation (CPU or GPU).
+3. Initializes the data pipeline, including dataset and data loader with necessary preprocessing steps.
+4. Sets up the model, optimizer, and learning rate scheduler.
+5. Runs the inference process using the model and returns the predicted class indices.</p>
+<p>The model used is an autoencoder with a UNetBlock structure, converted from 2D to 1D. The data is split into
+smaller segments using the Spliter class before being fed into the model. The inference is performed in batches
+to handle large input arrays efficiently.</p>
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.examples">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.examples" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

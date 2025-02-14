@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.models.builds.autoencoder &mdash; zae-engine  문서</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=8e72191d"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../../_static/translations.js?v=e33e7ba0"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="../../../../genindex.html" />
+    <link rel="search" title="검색" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">모듈 코드</a></li>
+          <li class="breadcrumb-item"><a href="../builds.html">zae_engine.models.builds</a></li>
+      <li class="breadcrumb-item active">zae_engine.models.builds.autoencoder</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>zae_engine.models.builds.autoencoder의 소스 코드</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tensor</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">cnn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">...nn_night</span><span class="w"> </span><span class="kn">import</span> <span class="n">blocks</span> <span class="k">as</span> <span class="n">blk</span>
+
+
+<div class="viewcode-block" id="AutoEncoder">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.AutoEncoder">[문서]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AutoEncoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A flexible AutoEncoder architecture with optional skip connections for U-Net style implementations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    block : Type[Union[blk.UNetBlock, nn.Module]]</span>
+<span class="sd">        The basic building block for the encoder and decoder (e.g., ResNet block or UNetBlock).</span>
+<span class="sd">    ch_in : int</span>
+<span class="sd">        Number of input channels.</span>
+<span class="sd">    ch_out : int</span>
+<span class="sd">        Number of output channels.</span>
+<span class="sd">    width : int</span>
+<span class="sd">        Base width for the encoder and decoder layers.</span>
+<span class="sd">    layers : Sequence[int]</span>
+<span class="sd">        Number of blocks in each stage of the encoder and decoder.</span>
+<span class="sd">    groups : int, optional</span>
+<span class="sd">        Number of groups for group normalization in the block. Default is 1.</span>
+<span class="sd">    dilation : int, optional</span>
+<span class="sd">        Dilation rate for convolutional layers. Default is 1.</span>
+<span class="sd">    norm_layer : Callable[..., nn.Module], optional</span>
+<span class="sd">        Normalization layer to use. Default is `nn.BatchNorm2d`.</span>
+<span class="sd">    skip_connect : bool, optional</span>
+<span class="sd">        If True, adds skip connections for U-Net style. Default is False.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    encoder : nn.Module</span>
+<span class="sd">        The encoder module that encodes the input image.</span>
+<span class="sd">    bottleneck : nn.Module</span>
+<span class="sd">        The bottleneck layer between the encoder and decoder.</span>
+<span class="sd">    decoder : nn.ModuleList</span>
+<span class="sd">        The decoder module that reconstructs the input image.</span>
+<span class="sd">    feature_vectors : list</span>
+<span class="sd">        Stores intermediate feature maps for skip connections when `skip_connect` is True.</span>
+<span class="sd">    up_pools : nn.ModuleList</span>
+<span class="sd">        List of transposed convolution layers for upsampling in the decoder.</span>
+<span class="sd">    fc : nn.Conv2d</span>
+<span class="sd">        The final output convolutional layer.</span>
+<span class="sd">    sig : nn.Sigmoid</span>
+<span class="sd">        Sigmoid activation function for the output.</span>
+<span class="sd">    hook_handles : OrderedDict</span>
+<span class="sd">        List of hook handles for encoder and bottleneck hooks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">block</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">blk</span><span class="o">.</span><span class="n">UNetBlock</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]],</span>
+        <span class="n">ch_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">ch_out</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">layers</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">,</span>
+        <span class="n">skip_connect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AutoEncoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">(</span>
+            <span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span>
+            <span class="n">ch_in</span><span class="o">=</span><span class="n">ch_in</span><span class="p">,</span>
+            <span class="n">ch_out</span><span class="o">=</span><span class="n">ch_out</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span>
+            <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span>
+            <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span>
+            <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">skip_connect</span> <span class="o">=</span> <span class="n">skip_connect</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">stem</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">make_body</span><span class="p">(</span><span class="n">blocks</span><span class="o">=</span><span class="p">[</span><span class="n">block</span><span class="p">]</span> <span class="o">*</span> <span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ch_in</span><span class="o">=</span><span class="n">ch_in</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hook_handles</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="c1"># [U-net] Register hook for every blocks in encoder when &quot;skip_connect&quot; is true.</span>
+        <span class="k">if</span> <span class="n">skip_connect</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">body</span><span class="p">):</span>
+                <span class="c1"># TODO : check last layer in encoder using named_parameter or named_modules</span>
+                <span class="n">handle</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">relu2</span><span class="o">.</span><span class="n">register_forward_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_hook</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hook_handles</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Enc</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">handle</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">register_forward_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_output_hook</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hook_handles</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;BottleNeck&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">handle</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span> <span class="o">=</span> <span class="n">block</span><span class="p">(</span><span class="n">width</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">width</span> <span class="o">*</span> <span class="mi">16</span><span class="p">)</span>
+
+        <span class="n">up_pools</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">decoder</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+            <span class="n">c_i</span><span class="p">,</span> <span class="n">c_o</span> <span class="o">=</span> <span class="n">width</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">width</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="n">i</span>
+            <span class="n">up_pools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">c_i</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">c_o</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+            <span class="n">decoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">make_body</span><span class="p">([</span><span class="n">block</span><span class="p">]</span> <span class="o">*</span> <span class="n">l</span><span class="p">,</span> <span class="n">ch_in</span><span class="o">=</span><span class="n">c_i</span> <span class="k">if</span> <span class="n">skip_connect</span> <span class="k">else</span> <span class="n">c_i</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="n">c_o</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">up_pools</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">up_pools</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">decoder</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">ch_out</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sig</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">()</span>
+
+<div class="viewcode-block" id="AutoEncoder.feature_hook">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.AutoEncoder.feature_hook">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">feature_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">input_tensor</span><span class="p">,</span> <span class="n">output_tensor</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Hooks intermediate feature maps for skip connections.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input_tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="AutoEncoder.feature_output_hook">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.AutoEncoder.feature_output_hook">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">feature_output_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">input_tensor</span><span class="p">,</span> <span class="n">output_tensor</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Hooks the final feature map before bottleneck.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output_tensor</span><span class="p">)</span></div>
+
+
+    <span class="c1"># TODO: add HookManager</span>
+<div class="viewcode-block" id="AutoEncoder.remove_hooks">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.AutoEncoder.remove_hooks">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_hooks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes all hooks registered in the encoder and bottleneck.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">handle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hook_handles</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">handle</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hook_handles</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="AutoEncoder.get_hooks">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.AutoEncoder.get_hooks">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_hooks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the list of encoder and bottleneck hook handles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hook_handles</span></div>
+
+
+<div class="viewcode-block" id="AutoEncoder.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.AutoEncoder.forward">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines the forward pass of the autoencoder.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            The input tensor. Shape: (batch_size, channels, height, width).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            The reconstructed output tensor. Shape: (batch_size, channels, height, width).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Ensure feature_vectors is cleared at the start of each forward pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Forwarding encoder &amp; hook immediate outputs</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Bottleneck processing</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
+
+        <span class="c1"># Decoder with skip connections if enabled</span>
+        <span class="k">for</span> <span class="n">up_pool</span><span class="p">,</span> <span class="n">dec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_pools</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">):</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">up_pool</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_connect</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">feat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">feat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="o">.</span><span class="n">pop</span><span class="p">()),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">dec</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="p">(</span><span class="n">feat</span><span class="p">))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="VAE">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.VAE">[문서]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VAE</span><span class="p">(</span><span class="n">AutoEncoder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Variational AutoEncoder (VAE) architecture extending AutoEncoder with optional Conditional functionality.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    block : Type[Union[blk.UNetBlock, nn.Module]]</span>
+<span class="sd">        The basic building block for the encoder and decoder (e.g., ResNet block or UNetBlock).</span>
+<span class="sd">    ch_in : int</span>
+<span class="sd">        Number of input channels.</span>
+<span class="sd">    ch_out : int</span>
+<span class="sd">        Number of output channels.</span>
+<span class="sd">    width : int</span>
+<span class="sd">        Base width for the encoder and decoder layers.</span>
+<span class="sd">    layers : Sequence[int]</span>
+<span class="sd">        Number of blocks in each stage of the encoder and decoder.</span>
+<span class="sd">    encoder_output_shape : Sequence[int]</span>
+<span class="sd">        The shape of the encoder&#39;s output (excluding batch size), e.g., [channels, height, width].</span>
+<span class="sd">    condition_dim : int, optional</span>
+<span class="sd">        Dimension of the condition vector (e.g., number of classes for one-hot encoding). Default is None.</span>
+<span class="sd">    groups : int, optional</span>
+<span class="sd">        Number of groups for group normalization in the block. Default is 1.</span>
+<span class="sd">    dilation : int, optional</span>
+<span class="sd">        Dilation rate for convolutional layers. Default is 1.</span>
+<span class="sd">    norm_layer : Callable[..., nn.Module], optional</span>
+<span class="sd">        Normalization layer to use. Default is `nn.BatchNorm2d`.</span>
+<span class="sd">    skip_connect : bool, optional</span>
+<span class="sd">        If True, adds skip connections for U-Net style. Default is False.</span>
+<span class="sd">    latent_dim : int, optional</span>
+<span class="sd">        Dimension of the latent space. Default is 128.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    encoder : nn.Module</span>
+<span class="sd">        The encoder module that encodes the input image.</span>
+<span class="sd">    bottleneck : nn.Module</span>
+<span class="sd">        The bottleneck layer between the encoder and decoder.</span>
+<span class="sd">    decoder : nn.ModuleList</span>
+<span class="sd">        The decoder module that reconstructs the input image.</span>
+<span class="sd">    feature_vectors : list</span>
+<span class="sd">        Stores intermediate feature maps for skip connections when `skip_connect` is True.</span>
+<span class="sd">    up_pools : nn.ModuleList</span>
+<span class="sd">        List of transposed convolution layers for upsampling in the decoder.</span>
+<span class="sd">    fc : nn.Conv2d</span>
+<span class="sd">        The final output convolutional layer.</span>
+<span class="sd">    sig : nn.Sigmoid</span>
+<span class="sd">        Sigmoid activation function for the output.</span>
+<span class="sd">    fc_mu : nn.Linear</span>
+<span class="sd">        Fully connected layer to generate mean of latent distribution.</span>
+<span class="sd">    fc_logvar : nn.Linear</span>
+<span class="sd">        Fully connected layer to generate log variance of latent distribution.</span>
+<span class="sd">    fc_z : nn.Linear</span>
+<span class="sd">        Fully connected layer to map sampled latent variable back to encoder channels.</span>
+<span class="sd">    encoder_output_shape : List[int]</span>
+<span class="sd">        The shape of the encoder&#39;s output (excluding batch size), e.g., [channels, height, width].</span>
+<span class="sd">    encoder_output_features : int</span>
+<span class="sd">        Total number of features after flattening the encoder&#39;s output.</span>
+<span class="sd">    condition_dim : int or None</span>
+<span class="sd">        Dimension of the condition vector. If None, operates as standard VAE.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">block</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">blk</span><span class="o">.</span><span class="n">UNetBlock</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]],</span>
+        <span class="n">ch_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">ch_out</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">layers</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">encoder_output_shape</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">condition_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">dilation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">,</span>
+        <span class="n">skip_connect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">latent_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span>
+            <span class="n">ch_in</span><span class="o">=</span><span class="n">ch_in</span><span class="p">,</span>
+            <span class="n">ch_out</span><span class="o">=</span><span class="n">ch_out</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span>
+            <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span>
+            <span class="n">dilation</span><span class="o">=</span><span class="n">dilation</span><span class="p">,</span>
+            <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span>
+            <span class="n">skip_connect</span><span class="o">=</span><span class="n">skip_connect</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span> <span class="o">=</span> <span class="n">latent_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_shape</span> <span class="o">=</span> <span class="n">encoder_output_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span> <span class="o">=</span> <span class="n">condition_dim</span>
+
+        <span class="c1"># Calculate the total number of features from encoder_output_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_shape</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span> <span class="o">*=</span> <span class="n">dim</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># If condition_dim is provided, adjust fc_mu and fc_logvar to accept condition</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fc_mu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fc_logvar</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fc_z</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">latent_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Standard VAE without condition</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fc_mu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fc_logvar</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fc_z</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">latent_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_features</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VAE.reparameterize">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.VAE.reparameterize">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reparameterize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">logvar</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reparameterization trick to sample from N(mu, var) from N(0,1).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mu : torch.Tensor</span>
+<span class="sd">            Mean of the latent distribution.</span>
+<span class="sd">        logvar : torch.Tensor</span>
+<span class="sd">            Log variance of the latent distribution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            Sampled latent variable z.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">logvar</span><span class="p">)</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">std</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">std</span></div>
+
+
+<div class="viewcode-block" id="VAE.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.VAE.forward">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines the forward pass of the VAE or CVAE.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            The input tensor. Shape: (batch_size, channels, height, width).</span>
+<span class="sd">        c : torch.Tensor or None, optional</span>
+<span class="sd">            The condition tensor. Shape: (batch_size, condition_dim). If None, operates as standard VAE.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tuple[Tensor, Tensor, Tensor]</span>
+<span class="sd">            The reconstructed output tensor, along with mu and logvar.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Ensure feature_vectors is cleared at the start of each forward pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Condition tensor &#39;c&#39; must be provided when &#39;condition_dim&#39; is set.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Condition tensor &#39;c&#39; has incorrect dimension </span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">, expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Forward encoder</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>  <span class="c1"># Shape: (batch_size, channels, height, width)</span>
+        <span class="n">feat_flat</span> <span class="o">=</span> <span class="n">feat</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">feat</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Shape: (batch_size, encoder_output_features)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Condition tensor &#39;c&#39; must be provided when condition_dim is set.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Condition tensor &#39;c&#39; has incorrect dimension. Expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="c1"># Concatenate condition with encoder features</span>
+            <span class="n">encoder_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">feat_flat</span><span class="p">,</span> <span class="n">c</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>  <span class="c1"># Shape: (batch_size, encoder_output_features + condition_dim)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">encoder_input</span> <span class="o">=</span> <span class="n">feat_flat</span>  <span class="c1"># Shape: (batch_size, encoder_output_features)</span>
+
+        <span class="c1"># Generate mu and logvar using Linear layers</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_mu</span><span class="p">(</span><span class="n">encoder_input</span><span class="p">)</span>
+        <span class="n">logvar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_logvar</span><span class="p">(</span><span class="n">encoder_input</span><span class="p">)</span>
+
+        <span class="c1"># Reparameterize to obtain latent variable z</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reparameterize</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span><span class="p">)</span>  <span class="c1"># Shape: (batch_size, latent_dim)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">condition_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Concatenate condition with z</span>
+            <span class="n">z_cond</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">z</span><span class="p">,</span> <span class="n">c</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Shape: (batch_size, latent_dim + condition_dim)</span>
+            <span class="c1"># Map z_cond back to feature space using Linear layer</span>
+            <span class="n">z_mapped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_z</span><span class="p">(</span><span class="n">z_cond</span><span class="p">)</span>  <span class="c1"># Shape: (batch_size, encoder_output_features)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Map z back to feature space using Linear layer</span>
+            <span class="n">z_mapped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_z</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># Shape: (batch_size, encoder_output_features)</span>
+
+        <span class="c1"># Reshape z_mapped to match encoder_output_shape</span>
+        <span class="n">z_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">z_mapped</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_output_shape</span>
+        <span class="n">z_reshaped</span> <span class="o">=</span> <span class="n">z_mapped</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">*</span><span class="n">z_shape</span><span class="p">)</span>  <span class="c1"># Shape: (batch_size, channels, height, width)</span>
+
+        <span class="c1"># Bottleneck processing</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span><span class="p">(</span><span class="n">z_reshaped</span><span class="p">)</span>  <span class="c1"># Shape: adjusted by bottleneck</span>
+
+        <span class="c1"># Decoder with skip connections if enabled</span>
+        <span class="k">for</span> <span class="n">up_pool</span><span class="p">,</span> <span class="n">dec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_pools</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">):</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">up_pool</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_connect</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">feat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">feat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_vectors</span><span class="o">.</span><span class="n">pop</span><span class="p">()),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">dec</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+
+        <span class="c1"># Final output</span>
+        <span class="n">reconstructed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="p">(</span><span class="n">feat</span><span class="p">))</span>  <span class="c1"># Shape: (batch_size, ch_out, height, width)</span>
+        <span class="k">return</span> <span class="n">reconstructed</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

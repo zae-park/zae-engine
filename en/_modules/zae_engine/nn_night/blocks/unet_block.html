@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.nn_night.blocks.unet_block &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">zae_engine.nn_night.blocks.unet_block</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.nn_night.blocks.unet_block</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tensor</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">resblock</span><span class="p">,</span> <span class="n">conv_block</span>
+
+
+<div class="viewcode-block" id="UNetBlock">
+<a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.unet_block.UNetBlock">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UNetBlock</span><span class="p">(</span><span class="n">resblock</span><span class="o">.</span><span class="n">BasicBlock</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Two times of [Conv-normalization-activation] block for UNet architecture.</span>
+
+<span class="sd">    This module is a modified version of the BasicBlock used in ResNet, adapted for the UNet architecture.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ch_in : int</span>
+<span class="sd">        The number of input channels.</span>
+<span class="sd">    ch_out : int</span>
+<span class="sd">        The number of output channels.</span>
+<span class="sd">    stride : int, optional</span>
+<span class="sd">        The stride of the convolution. Default is 1.</span>
+<span class="sd">    groups : int, optional</span>
+<span class="sd">        The number of groups for the convolution. Default is 1.</span>
+<span class="sd">    norm_layer : Callable[..., nn.Module], optional</span>
+<span class="sd">        The normalization layer to use. Default is `nn.BatchNorm2d`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    expansion : int</span>
+<span class="sd">        The expansion factor of the block, set to 1.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016). Deep Residual Learning for Image Recognition.</span>
+<span class="sd">           In Proceedings of the IEEE conference on computer vision and pattern recognition (CVPR) (pp. 770-778).</span>
+<span class="sd">           https://arxiv.org/abs/1512.03385</span>
+<span class="sd">    .. [2] Ronneberger, O., Fischer, P., &amp; Brox, T. (2015). U-Net: Convolutional Networks for Biomedical Image Segmentation.</span>
+<span class="sd">           In International Conference on Medical image computing and computer-assisted intervention (pp. 234-241).</span>
+<span class="sd">           https://arxiv.org/abs/1505.04597</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">expansion</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ch_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">ch_out</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">groups</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">norm_layer</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="n">ch_in</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="n">ch_out</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downsample</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">stride</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UNetBlock.forward">
+<a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.unet_block.UNetBlock.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for the UNetBlock.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : Tensor</span>
+<span class="sd">            Input tensor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tensor</span>
+<span class="sd">            Output tensor after applying the block operations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm1</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu1</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm2</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu2</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RSUBlock">
+<a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.unet_block.RSUBlock">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RSUBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Recurrent Residual U-block (RSU) implementation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ch_in : int</span>
+<span class="sd">        Number of input channels.</span>
+<span class="sd">    ch_mid : int</span>
+<span class="sd">        Number of middle channels.</span>
+<span class="sd">    ch_out : int</span>
+<span class="sd">        Number of output channels.</span>
+<span class="sd">    height : int</span>
+<span class="sd">        Number of layers in the RSU block (e.g., RSU4 has height=4, RSU7 has height=7).</span>
+<span class="sd">    dilation_height : int</span>
+<span class="sd">        Dilation rate for convolutions within the block.</span>
+<span class="sd">    pool_size : int, optional</span>
+<span class="sd">        Pooling kernel size. Default is 2.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Qin, X., Zhang, Z., Huang, C., Dehghan, M., Zaiane, O. R., &amp; Jagersand, M. (2020).</span>
+<span class="sd">            U2-Net: Going deeper with nested U-structure for salient object detection. Pattern recognition, 106, 107404.</span>
+<span class="sd">            (https://arxiv.org/pdf/2005.09007)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ch_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ch_mid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ch_out</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="n">dilation_height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="n">pool_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RSUBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">height</span> <span class="o">&gt;=</span> <span class="n">dilation_height</span><span class="p">,</span> <span class="s2">&quot;dilation_height must be less or equal than height.&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation_height</span> <span class="o">=</span> <span class="n">height</span><span class="p">,</span> <span class="n">dilation_height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_resolution</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="n">height</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool_size</span> <span class="o">=</span> <span class="n">pool_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stem</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">ch_in</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">ch_out</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Encoder path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder_blocks</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pools</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+            <span class="n">is_first</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="n">ch_</span> <span class="o">=</span> <span class="n">ch_out</span> <span class="k">if</span> <span class="n">is_first</span> <span class="k">else</span> <span class="n">ch_mid</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">dilation_height</span><span class="p">:</span>
+                <span class="c1"># Dilation mode: use dilation 2 instead of Pooling layer</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">encoder_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conv_block</span><span class="o">.</span><span class="n">ConvBlock</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="n">ch_</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="n">ch_mid</span><span class="p">,</span> <span class="n">dilate</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Vanilla mode: use Pooling layer with kernel &amp; stride 2 instead of dilation in Convolutional layer.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">encoder_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conv_block</span><span class="o">.</span><span class="n">ConvBlock</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="n">ch_</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="n">ch_mid</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pools</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">down_layer</span><span class="p">(</span><span class="n">at_first</span><span class="o">=</span><span class="n">is_first</span><span class="p">))</span>
+
+        <span class="c1"># Bottleneck block with dilation 2.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span> <span class="o">=</span> <span class="n">conv_block</span><span class="o">.</span><span class="n">ConvBlock</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="n">ch_mid</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="n">ch_mid</span><span class="p">,</span> <span class="n">dilate</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Decoder path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ups</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_blocks</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">height</span><span class="p">)):</span>
+            <span class="n">is_last</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="n">ch_</span> <span class="o">=</span> <span class="n">ch_out</span> <span class="k">if</span> <span class="n">is_last</span> <span class="k">else</span> <span class="n">ch_mid</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">dilation_height</span><span class="p">:</span>
+                <span class="c1"># Dilation mode: use dilation 2 instead of Up-sampling layer</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">decoder_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conv_block</span><span class="o">.</span><span class="n">ConvBlock</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="n">ch_mid</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="n">ch_</span><span class="p">,</span> <span class="n">dilate</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Vanilla mode: use Up-sampling layer with kernel &amp; stride 2 instead of dilation in Convolutional layer.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">up_layer</span><span class="p">(</span><span class="n">at_last</span><span class="o">=</span><span class="n">is_last</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">decoder_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conv_block</span><span class="o">.</span><span class="n">ConvBlock</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="n">ch_mid</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="n">ch_</span><span class="p">))</span>
+
+<div class="viewcode-block" id="RSUBlock.down_layer">
+<a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.unet_block.RSUBlock.down_layer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">down_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at_first</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a downsampling layer or identity based on the position.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span> <span class="k">if</span> <span class="n">at_first</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pool_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pool_size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RSUBlock.up_layer">
+<a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.unet_block.RSUBlock.up_layer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">up_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">at_last</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns an upsampling layer or identity based on the position.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span> <span class="k">if</span> <span class="n">at_last</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pool_size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RSUBlock.forward">
+<a class="viewcode-back" href="../../../../zae_engine.nn_night.blocks.html#zae_engine.nn_night.blocks.unet_block.RSUBlock.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass through the RSUBlock.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input tensor of shape (batch_size, channels, height, width).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            Output tensor of shape (batch_size, out_ch, height, width).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">feat</span><span class="p">]</span>
+
+        <span class="c1"># Encoder path</span>
+        <span class="k">for</span> <span class="n">enc</span><span class="p">,</span> <span class="n">down</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder_blocks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pools</span><span class="p">):</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">enc</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+            <span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">down</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+
+        <span class="c1"># Bottleneck processing</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+
+        <span class="c1"># Decoder path</span>
+        <span class="k">for</span> <span class="n">dec</span><span class="p">,</span> <span class="n">up</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoder_blocks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ups</span><span class="p">):</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">up</span><span class="p">(</span><span class="n">feat</span><span class="p">),</span> <span class="n">features</span><span class="o">.</span><span class="n">pop</span><span class="p">()],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="n">dec</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">feat</span> <span class="o">+</span> <span class="n">features</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

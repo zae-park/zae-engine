@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.models.foundations.resnet &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">zae_engine.models.foundations.resnet</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.models.foundations.resnet</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_module</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..builds</span><span class="w"> </span><span class="kn">import</span> <span class="n">cnn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">dim_converter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">...nn_night</span><span class="w"> </span><span class="kn">import</span> <span class="n">blocks</span>
+
+<span class="n">res_map</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">18</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;block&quot;</span><span class="p">:</span> <span class="n">blocks</span><span class="o">.</span><span class="n">BasicBlock</span><span class="p">,</span> <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]},</span>
+    <span class="mi">34</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;block&quot;</span><span class="p">:</span> <span class="n">blocks</span><span class="o">.</span><span class="n">BasicBlock</span><span class="p">,</span> <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">]},</span>
+    <span class="mi">50</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;block&quot;</span><span class="p">:</span> <span class="n">blocks</span><span class="o">.</span><span class="n">Bottleneck</span><span class="p">,</span> <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">]},</span>
+    <span class="mi">101</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;block&quot;</span><span class="p">:</span> <span class="n">blocks</span><span class="o">.</span><span class="n">Bottleneck</span><span class="p">,</span> <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">3</span><span class="p">]},</span>
+    <span class="mi">152</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;block&quot;</span><span class="p">:</span> <span class="n">blocks</span><span class="o">.</span><span class="n">Bottleneck</span><span class="p">,</span> <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">3</span><span class="p">]},</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="resnet_deco">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.resnet_deco">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resnet_deco</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator to wrap ResNet model creation functions with predefined configurations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The number of layers for the ResNet model.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    function</span>
+<span class="sd">        Wrapped function with ResNet configurations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrap</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">res_map</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">out</span>
+
+        <span class="k">return</span> <span class="n">wrap</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">__weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">:</span> <span class="p">[</span><span class="n">OrderedDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">dst_weight</span><span class="p">:</span> <span class="p">[</span><span class="n">OrderedDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Map source weights to destination model weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    src_weight : OrderedDict or dict</span>
+<span class="sd">        Source model weights.</span>
+<span class="sd">    dst_weight : OrderedDict or dict</span>
+<span class="sd">        Destination model weights.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    OrderedDict or dict</span>
+<span class="sd">        Updated destination model weights.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">src_weight</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+        <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;layer&quot;</span><span class="p">):</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;layer1&quot;</span><span class="p">,</span> <span class="s2">&quot;body.0&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;layer2&quot;</span><span class="p">,</span> <span class="s2">&quot;body.1&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;layer3&quot;</span><span class="p">,</span> <span class="s2">&quot;body.2&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;layer4&quot;</span><span class="p">,</span> <span class="s2">&quot;body.3&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.bn&quot;</span><span class="p">,</span> <span class="s2">&quot;.norm&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;fc&quot;</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="s2">&quot;stem.&quot;</span> <span class="o">+</span> <span class="n">k</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;conv1&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;bn1&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">)</span>
+
+        <span class="n">dst_weight</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">return</span> <span class="n">dst_weight</span>
+
+
+<div class="viewcode-block" id="resnet18">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.resnet18">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a ResNet-18 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, loads pre-trained weights from a specified checkpoint. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the ResNet-18 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">res_map</span><span class="p">[</span><span class="mi">18</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="n">src_weight</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;torchvision.models&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ResNet18_Weights</span><span class="o">.</span><span class="n">IMAGENET1K_V1</span><span class="o">.</span><span class="n">get_state_dict</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dst_weight</span> <span class="o">=</span> <span class="n">__weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">dst_weight</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="resnet34">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.resnet34">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a ResNet-34 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, loads pre-trained weights from a specified checkpoint. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the ResNet-34 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">res_map</span><span class="p">[</span><span class="mi">34</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="n">src_weight</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;torchvision.models&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ResNet34_Weights</span><span class="o">.</span><span class="n">IMAGENET1K_V1</span><span class="o">.</span><span class="n">get_state_dict</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dst_weight</span> <span class="o">=</span> <span class="n">__weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">dst_weight</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="resnet50">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.resnet50">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a ResNet-50 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, loads pre-trained weights from a specified checkpoint. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the ResNet-50 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">res_map</span><span class="p">[</span><span class="mi">50</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="n">src_weight</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;torchvision.models&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ResNet50_Weights</span><span class="o">.</span><span class="n">IMAGENET1K_V1</span><span class="o">.</span><span class="n">get_state_dict</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dst_weight</span> <span class="o">=</span> <span class="n">__weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">dst_weight</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="resnet101">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.resnet101">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resnet101</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a ResNet-101 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, loads pre-trained weights from a specified checkpoint. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the ResNet-50 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">res_map</span><span class="p">[</span><span class="mi">101</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="n">src_weight</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;torchvision.models&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ResNet101_Weights</span><span class="o">.</span><span class="n">IMAGENET1K_V1</span><span class="o">.</span><span class="n">get_state_dict</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dst_weight</span> <span class="o">=</span> <span class="n">__weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">dst_weight</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="resnet152">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.resnet152">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a ResNet-152 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, loads pre-trained weights from a specified checkpoint. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the ResNet-50 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).</span>
+<span class="sd">    Deep residual learning for image recognition.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">res_map</span><span class="p">[</span><span class="mi">152</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="n">src_weight</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;torchvision.models&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ResNet152_Weights</span><span class="o">.</span><span class="n">IMAGENET1K_V1</span><span class="o">.</span><span class="n">get_state_dict</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dst_weight</span> <span class="o">=</span> <span class="n">__weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">dst_weight</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="se_injection">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.se_injection">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">se_injection</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inject SE modules into the given ResNet model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : cnn.CNNBase</span>
+<span class="sd">        The ResNet model to inject SE modules into.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        The ResNet model with SE modules injected.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">body</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">blk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blk</span><span class="p">,</span> <span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">BasicBlock</span><span class="p">,</span> <span class="n">blocks</span><span class="o">.</span><span class="n">Bottleneck</span><span class="p">)):</span>
+                <span class="n">cvtr</span> <span class="o">=</span> <span class="n">dim_converter</span><span class="o">.</span><span class="n">DimConverter</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">SE1d</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="n">blk</span><span class="o">.</span><span class="n">ch_out</span> <span class="o">*</span> <span class="n">blk</span><span class="o">.</span><span class="n">expansion</span><span class="p">))</span>
+                <span class="n">se_module</span> <span class="o">=</span> <span class="n">cvtr</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1d -&gt; 2d&quot;</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">blk</span><span class="p">,</span> <span class="n">se_module</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbam_injection">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbam_injection">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inject CBAM modules into the given ResNet model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : cnn.CNNBase</span>
+<span class="sd">        The ResNet model to inject CBAM modules into.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        The ResNet model with SE modules injected.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">body</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">blk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blk</span><span class="p">,</span> <span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">BasicBlock</span><span class="p">,</span> <span class="n">blocks</span><span class="o">.</span><span class="n">Bottleneck</span><span class="p">)):</span>
+                <span class="n">cvtr</span> <span class="o">=</span> <span class="n">dim_converter</span><span class="o">.</span><span class="n">DimConverter</span><span class="p">(</span><span class="n">blocks</span><span class="o">.</span><span class="n">CBAM1d</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="n">blk</span><span class="o">.</span><span class="n">ch_out</span> <span class="o">*</span> <span class="n">blk</span><span class="o">.</span><span class="n">expansion</span><span class="p">))</span>
+                <span class="n">cbam_module</span> <span class="o">=</span> <span class="n">cvtr</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;1d -&gt; 2d&quot;</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">blk</span><span class="p">,</span> <span class="n">cbam_module</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="seresnet18">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.seresnet18">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">seresnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an SE-ResNet-18 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for SE modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the SE-ResNet-18 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018).</span>
+<span class="sd">    Squeeze-and-excitation networks.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for SE module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">se_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="seresnet34">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.seresnet34">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">seresnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an SE-ResNet-34 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for SE modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the SE-ResNet-34 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018).</span>
+<span class="sd">    Squeeze-and-excitation networks.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for SE module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">se_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="seresnet50">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.seresnet50">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">seresnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an SE-ResNet-50 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for SE modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the SE-ResNet-50 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018).</span>
+<span class="sd">    Squeeze-and-excitation networks.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for SE module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">se_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="seresnet101">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.seresnet101">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">seresnet101</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an SE-ResNet-101 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for SE modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the SE-ResNet-101 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018).</span>
+<span class="sd">    Squeeze-and-excitation networks.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet101</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for SE module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">se_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="seresnet152">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.seresnet152">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">seresnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an SE-ResNet-152 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for SE modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the SE-ResNet-152 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Hu, J., Shen, L., &amp; Sun, G. (2018).</span>
+<span class="sd">    Squeeze-and-excitation networks.</span>
+<span class="sd">    In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for SE module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">se_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbamresnet18">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbamresnet18">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cbamresnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a CBAM-ResNet-18 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the CBAM-ResNet-18 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).</span>
+<span class="sd">           CBAM: Convolutional Block Attention Module.</span>
+<span class="sd">           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).</span>
+<span class="sd">           https://arxiv.org/abs/1807.06521</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for CBAM module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbamresnet34">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbamresnet34">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cbamresnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a CBAM-ResNet-34 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the CBAM-ResNet-34 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).</span>
+<span class="sd">           CBAM: Convolutional Block Attention Module.</span>
+<span class="sd">           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).</span>
+<span class="sd">           https://arxiv.org/abs/1807.06521</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet34</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for CBAM module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbamresnet50">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbamresnet50">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cbamresnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a CBAM-ResNet-50 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the CBAM-ResNet-50 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).</span>
+<span class="sd">           CBAM: Convolutional Block Attention Module.</span>
+<span class="sd">           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).</span>
+<span class="sd">           https://arxiv.org/abs/1807.06521</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for CBAM module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbamresnet101">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbamresnet101">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cbamresnet101</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a CBAM-ResNet-101 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the CBAM-ResNet-101 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).</span>
+<span class="sd">           CBAM: Convolutional Block Attention Module.</span>
+<span class="sd">           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).</span>
+<span class="sd">           https://arxiv.org/abs/1807.06521</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet101</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for CBAM module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="cbamresnet152">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.resnet.cbamresnet152">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cbamresnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">cnn</span><span class="o">.</span><span class="n">CNNBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a CBAM-ResNet-152 model with the option to load pre-trained weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pretrained : bool, optional</span>
+<span class="sd">        If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cnn.CNNBase</span>
+<span class="sd">        An instance of the CBAM-ResNet-152 model.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).</span>
+<span class="sd">           CBAM: Convolutional Block Attention Module.</span>
+<span class="sd">           In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).</span>
+<span class="sd">           https://arxiv.org/abs/1807.06521</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet152</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No pretrained weight for CBAM module.&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">cbam_injection</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

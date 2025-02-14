@@ -1,0 +1,53 @@
+zae\_engine.trainer.addons package
+==================================
+
+Submodules
+----------
+
+zae\_engine.trainer.addons.core module
+--------------------------------------
+
+.. automodule:: zae_engine.trainer.addons.core
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.trainer.addons.mix\_precision module
+------------------------------------------------
+
+.. automodule:: zae_engine.trainer.addons.mix_precision
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.trainer.addons.mpu module
+-------------------------------------
+
+.. automodule:: zae_engine.trainer.addons.mpu
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.trainer.addons.state\_manager module
+------------------------------------------------
+
+.. automodule:: zae_engine.trainer.addons.state_manager
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.trainer.addons.web\_logger module
+---------------------------------------------
+
+.. automodule:: zae_engine.trainer.addons.web_logger
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: zae_engine.trainer.addons
+   :members:
+   :undoc-members:
+   :show-inheritance:

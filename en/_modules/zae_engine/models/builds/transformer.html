@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.models.builds.transformer &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../builds.html">zae_engine.models.builds</a></li>
+      <li class="breadcrumb-item active">zae_engine.models.builds.transformer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.models.builds.transformer</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+
+
+<span class="c1"># TODO: implement Scaled-Dot Product Attention (SDPA).</span>
+<span class="c1"># ref: https://magentino.tistory.com/176</span>
+<span class="c1"># ref: https://tutorials.pytorch.kr/intermediate/scaled_dot_product_attention_tutorial.html</span>
+<span class="c1"># from transformers.modeling_attn_mask_utils import _prepare_4d_attention_mask_for_sdpa</span>
+
+
+<div class="viewcode-block" id="TransformerBase">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.TransformerBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TransformerBase</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A flexible Transformer model that supports both encoder-only and encoder-decoder architectures.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    encoder_embedding : nn.Module</span>
+<span class="sd">        The embedding layer for the encoder input.</span>
+<span class="sd">    decoder_embedding : nn.Module, optional</span>
+<span class="sd">        The embedding layer for the decoder input. If not provided, encoder_embedding is used for both encoder and decoder.</span>
+<span class="sd">    encoder : nn.Module, optional</span>
+<span class="sd">        The encoder module. Defaults to nn.Identity(), which can be replaced with any custom encoder (e.g., TransformerEncoder).</span>
+<span class="sd">    decoder : nn.Module, optional</span>
+<span class="sd">        The decoder module. If None, the model operates as an encoder-only model (e.g., BERT). Otherwise, uses a decoder (e.g., for translation models).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - If `decoder` is None, the model acts as an encoder-only transformer (similar to BERT).</span>
+<span class="sd">    - If `decoder` is provided, the model functions as an encoder-decoder transformer (e.g., for translation tasks).</span>
+<span class="sd">    - The forward pass adjusts based on the presence of the decoder.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    forward(src, tgt=None, src_mask=None, tgt_mask=None, src_key_padding_mask=None, tgt_key_padding_mask=None)</span>
+<span class="sd">        Forward pass through the model. If `tgt` and `decoder` are provided, both encoder and decoder are used. Otherwise, only the encoder is applied.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">encoder_embedding</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">decoder_embedding</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">encoder</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">(),</span>
+        <span class="n">decoder</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># Set decoder to None by default</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder_embedding</span> <span class="o">=</span> <span class="n">encoder_embedding</span>
+        <span class="c1"># If no decoder_embedding is provided, use encoder_embedding for both</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_embedding</span> <span class="o">=</span> <span class="n">decoder_embedding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">encoder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">decoder</span>
+
+<div class="viewcode-block" id="TransformerBase.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.TransformerBase.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tgt_key_padding_mask</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass through the Transformer model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        src : torch.Tensor</span>
+<span class="sd">            The input tensor representing the source sequence (e.g., for BERT-style models). Shape: (batch_size, seq_len).</span>
+<span class="sd">        tgt : torch.Tensor, optional</span>
+<span class="sd">            The input tensor representing the target sequence (for models with a decoder). Shape: (batch_size, seq_len).</span>
+<span class="sd">        src_mask : torch.Tensor, optional</span>
+<span class="sd">            Source mask for masking certain positions in the encoder input.</span>
+<span class="sd">        tgt_mask : torch.Tensor, optional</span>
+<span class="sd">            Target mask for masking certain positions in the decoder input.</span>
+<span class="sd">        src_key_padding_mask : torch.Tensor, optional</span>
+<span class="sd">            Mask for padding tokens in the source sequence.</span>
+<span class="sd">        tgt_key_padding_mask : torch.Tensor, optional</span>
+<span class="sd">            Mask for padding tokens in the target sequence.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            If a decoder is provided, returns the output of the decoder. Otherwise, returns the output of the encoder.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Apply embeddings to source and target sequences</span>
+        <span class="n">src_embed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_embedding</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+
+        <span class="c1"># If a decoder exists, apply decoder embedding and pass through the decoder</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tgt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder_embedding</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tgt_embed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder_embedding</span><span class="p">(</span><span class="n">tgt</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tgt_embed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_embedding</span><span class="p">(</span><span class="n">tgt</span><span class="p">)</span>
+            <span class="n">encoded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">src_embed</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="n">src_mask</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="n">src_key_padding_mask</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span>
+                <span class="n">tgt_embed</span><span class="p">,</span>
+                <span class="n">encoded</span><span class="p">,</span>
+                <span class="n">tgt_mask</span><span class="o">=</span><span class="n">tgt_mask</span><span class="p">,</span>
+                <span class="n">memory_mask</span><span class="o">=</span><span class="n">src_mask</span><span class="p">,</span>
+                <span class="n">tgt_key_padding_mask</span><span class="o">=</span><span class="n">tgt_key_padding_mask</span><span class="p">,</span>
+                <span class="n">memory_key_padding_mask</span><span class="o">=</span><span class="n">src_key_padding_mask</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">out</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If no decoder, only pass through the encoder</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">src_embed</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="n">src_mask</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="n">src_key_padding_mask</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BertBase">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.BertBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BertBase</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    BertBase is a specialized version of TransformerBase, including a pooler for processing the [CLS] token.</span>
+
+<span class="sd">    This class adds a pooler layer that processes the first token ([CLS]) from the encoder output, similar to the</span>
+<span class="sd">    original BERT architecture. If a hidden dimension is provided during initialization, the pooler will be applied.</span>
+<span class="sd">    Otherwise, only the encoder output is returned.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    encoder_embedding : nn.Module</span>
+<span class="sd">        The embedding layer for the encoder input.</span>
+<span class="sd">    encoder : nn.Module</span>
+<span class="sd">        The encoder module responsible for transforming the input sequence.</span>
+<span class="sd">    dim_hidden : int, optional</span>
+<span class="sd">        The hidden dimension used by the pooler layer. If provided, a pooler layer will be applied to the [CLS] token</span>
+<span class="sd">        (first token) of the encoder output. Otherwise, only the encoder output is returned.</span>
+<span class="sd">    sep_token_id : int, optional</span>
+<span class="sd">        The ID representing the [SEP] token, used to identify sentence boundaries. The default value is 102, which</span>
+<span class="sd">        is the standard for Hugging Face&#39;s BERT tokenizer. In BERT, the [SEP] token separates different sentences</span>
+<span class="sd">        or segments, and is expected to be present once or twice in the input. An error will be raised if more than</span>
+<span class="sd">        two [SEP] tokens are found in the input.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The default value for `sep_token_id` is 102, which corresponds to the [SEP] token in Hugging Face&#39;s pre-trained</span>
+<span class="sd">      BERT models. This token is used to separate sentences or indicate the end of a sentence. If you are using a different</span>
+<span class="sd">      tokenizer or model, you may need to adjust this value accordingly.</span>
+<span class="sd">    - If `input_sequence` is precomputed embeddings (dtype is float), the embedding layer is skipped, and</span>
+<span class="sd">      `position_ids` and `token_type_ids` are not generated, as these are already embedded.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    forward(input_sequence, src_mask=None, src_key_padding_mask=None)</span>
+<span class="sd">        Performs the forward pass. If a hidden dimension (dim_hidden) is provided, the pooler is applied to the</span>
+<span class="sd">        [CLS] token. Otherwise, it returns the encoder output as-is.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoder_embedding</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">encoder</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">sep_token_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">102</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder_embedding</span> <span class="o">=</span> <span class="n">encoder_embedding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">encoder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sep_token_id</span> <span class="o">=</span> <span class="n">sep_token_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim_hidden</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dim_hidden&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_hidden</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pool_dense</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim_hidden</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_hidden</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pool_activation</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">()</span>
+
+<div class="viewcode-block" id="BertBase.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.BertBase.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_sequence</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass through the BERT model with an optional pooler.</span>
+
+<span class="sd">        If a hidden dimension is provided, the pooler is applied to the first token of the encoder output.</span>
+<span class="sd">        Otherwise, the encoder output is returned as-is.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_sequence : torch.Tensor</span>
+<span class="sd">            The input tensor representing either input_ids (token IDs) or input embeddings.</span>
+<span class="sd">            If dtype is int, it is assumed to be token IDs (input_ids).</span>
+<span class="sd">            If dtype is float, it is assumed to be precomputed embeddings (inputs_embeds), and the embedding layer</span>
+<span class="sd">            is skipped. In this case, `position_ids` and `token_type_ids` are not generated.</span>
+<span class="sd">        src_mask : torch.Tensor, optional</span>
+<span class="sd">            Source mask for masking certain positions in the encoder input. Shape: (batch_size, seq_len).</span>
+<span class="sd">        src_key_padding_mask : torch.Tensor, optional</span>
+<span class="sd">            Mask for padding tokens in the source sequence. Shape: (batch_size, seq_len).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            If dim_hidden is provided, returns the pooled output from the [CLS] token. Otherwise, returns the</span>
+<span class="sd">            encoder output for the entire sequence. Shape: (batch_size, dim_hidden) if pooled, or</span>
+<span class="sd">            (batch_size, seq_len, dim_hidden) if not.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">is_floating_point</span><span class="p">(</span><span class="n">input_sequence</span><span class="p">):</span>
+            <span class="c1"># input_sequence is precomputed embeddings (inputs_embeds), skip embedding layer</span>
+            <span class="n">input_embeds</span> <span class="o">=</span> <span class="n">input_sequence</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># input_sequence is token IDs (input_ids), generate position_ids and token_type_ids</span>
+            <span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_len</span> <span class="o">=</span> <span class="n">input_sequence</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+
+            <span class="c1"># Generate position_ids: [batch_size, seq_len]</span>
+            <span class="n">position_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># Generate token_type_ids: [batch_size, seq_len]</span>
+            <span class="n">token_type_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_token_type_ids</span><span class="p">(</span><span class="n">input_sequence</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+            <span class="c1"># Pass input_ids, position_ids, and token_type_ids to embedding layer</span>
+            <span class="n">input_embeds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_embedding</span><span class="p">(</span><span class="n">input_sequence</span><span class="p">,</span> <span class="n">position_ids</span><span class="p">,</span> <span class="n">token_type_ids</span><span class="p">)</span>
+
+        <span class="c1"># Pass through the encoder</span>
+        <span class="n">encoded_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">input_embeds</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="n">src_mask</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="n">src_key_padding_mask</span><span class="p">)</span>
+
+        <span class="c1"># Apply pooling if a hidden dimension is specified</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_hidden</span><span class="p">:</span>
+            <span class="n">cls_tkn</span> <span class="o">=</span> <span class="n">encoded_output</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># Extract the first token ([CLS] token)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_activation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pool_dense</span><span class="p">(</span><span class="n">cls_tkn</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">encoded_output</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_generate_token_type_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_sequences</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate token_type_ids for each sequence in the batch based on the presence of [SEP] tokens.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_sequences : list[list[int]]</span>
+<span class="sd">            The list of token ID sequences (batch of sequences) from which token_type_ids are generated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            A tensor of token_type_ids where 0 represents the first sentence, and 1 represents the second sentence.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If more than two [SEP] tokens are present in any sequence.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">token_type_ids_batch</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">input_sequence</span> <span class="ow">in</span> <span class="n">input_sequences</span><span class="p">:</span>
+            <span class="n">token_type_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_sequence</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+
+            <span class="n">sep_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">token_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">input_sequence</span><span class="p">)</span> <span class="k">if</span> <span class="n">token_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep_token_id</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sep_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input sequence contains more than two [SEP] tokens: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sep_indices</span><span class="p">)</span><span class="si">}</span><span class="s2"> found.&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sep_indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># First sentence is before the first [SEP], second sentence is after the first [SEP]</span>
+                <span class="n">token_type_ids</span><span class="p">[</span><span class="n">sep_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">sep_indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># Second sentence starts after the [SEP]</span>
+                <span class="n">token_type_ids</span><span class="p">[</span><span class="n">sep_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="n">token_type_ids_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token_type_ids</span><span class="p">)</span>
+
+        <span class="c1"># Stack the token_type_ids for each sequence in the batch to form a tensor of shape [batch_size, seq_len]</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">token_type_ids_batch</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="CoderBase">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.CoderBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CoderBase</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for both Encoder and Decoder that defines the core structure of the transformer layers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    d_model : int</span>
+<span class="sd">        The dimension of the embedding space (output size of each layer).</span>
+<span class="sd">    num_layers : int</span>
+<span class="sd">        The number of layers in the encoder/decoder.</span>
+<span class="sd">    layer_factory : nn.Module, optional</span>
+<span class="sd">        Custom layer module. Defaults to `nn.TransformerEncoderLayer` for encoders and `nn.TransformerDecoderLayer` for decoders.</span>
+<span class="sd">    # norm_layer : str or nn.Module, optional</span>
+<span class="sd">    #     The normalization layer to apply. Can be a string or custom `nn.Module`. Default is &#39;LayerNorm&#39;.</span>
+<span class="sd">    dim_feedforward : int, optional</span>
+<span class="sd">        The dimension of the feedforward network. Default is 2048.</span>
+<span class="sd">    dropout : float, optional</span>
+<span class="sd">        Dropout rate for regularization. Default is 0.1.</span>
+<span class="sd">    num_heads : int, optional</span>
+<span class="sd">        Number of attention heads in multi-head attention. Default is 8.</span>
+<span class="sd">    factory_kwargs : dict, optional</span>
+<span class="sd">        Additional arguments to pass to `layer_factory` when creating layers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">d_model</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">layer_factory</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">TransformerEncoderLayer</span><span class="p">,</span>
+        <span class="c1"># norm_layer: Union[str, nn.Module] = &quot;LayerNorm&quot;,</span>
+        <span class="n">dim_feedforward</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2048</span><span class="p">,</span>
+        <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">num_heads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CoderBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d_model</span> <span class="o">=</span> <span class="n">d_model</span>
+
+        <span class="c1"># Create layers using the provided layer factory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">layer_factory</span><span class="p">(</span>
+                    <span class="n">d_model</span><span class="o">=</span><span class="n">d_model</span><span class="p">,</span> <span class="n">nhead</span><span class="o">=</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">dim_feedforward</span><span class="o">=</span><span class="n">dim_feedforward</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_norm_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">norm_type</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the appropriate normalization layer based on user input.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">norm_type</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">norm_type</span>
+        <span class="k">elif</span> <span class="n">norm_type</span> <span class="o">==</span> <span class="s2">&quot;LayerNorm&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d_model</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">norm_type</span> <span class="o">==</span> <span class="s2">&quot;BatchNorm1d&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d_model</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">norm_type</span> <span class="o">==</span> <span class="s2">&quot;InstanceNorm1d&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">InstanceNorm1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d_model</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">norm_type</span> <span class="o">==</span> <span class="s2">&quot;GroupNorm&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">GroupNorm</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_model</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported norm layer type: </span><span class="si">{</span><span class="n">norm_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="EncoderBase">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.EncoderBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EncoderBase</span><span class="p">(</span><span class="n">CoderBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encoder class that builds on CoderBase for encoding the input sequences.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    d_model : int</span>
+<span class="sd">        The dimension of the embedding space (output size of each layer).</span>
+<span class="sd">    num_layers : int</span>
+<span class="sd">        The number of layers in the encoder.</span>
+<span class="sd">    layer_factory : nn.Module, optional</span>
+<span class="sd">        Custom layer module. Defaults to `nn.TransformerEncoderLayer`.</span>
+<span class="sd">    # norm_layer : str or nn.Module, optional</span>
+<span class="sd">    #     The normalization layer to apply. Can be a string or custom `nn.Module`. Default is &#39;LayerNorm&#39;.</span>
+<span class="sd">    dim_feedforward : int, optional</span>
+<span class="sd">        The dimension of the feedforward network. Default is 2048.</span>
+<span class="sd">    dropout : float, optional</span>
+<span class="sd">        Dropout rate for regularization. Default is 0.1.</span>
+<span class="sd">    num_heads : int, optional</span>
+<span class="sd">        Number of attention heads in multi-head attention. Default is 8.</span>
+<span class="sd">    factory_kwargs : dict, optional</span>
+<span class="sd">        Additional arguments to pass to `layer_factory` when creating layers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">d_model</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">layer_factory</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">TransformerEncoderLayer</span><span class="p">,</span>
+        <span class="c1"># norm_layer: Union[str, nn.Module] = &quot;LayerNorm&quot;,</span>
+        <span class="n">dim_feedforward</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2048</span><span class="p">,</span>
+        <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">num_heads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EncoderBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">d_model</span><span class="p">,</span> <span class="n">num_layers</span><span class="p">,</span> <span class="n">layer_factory</span><span class="p">,</span> <span class="n">dim_feedforward</span><span class="p">,</span> <span class="n">dropout</span><span class="p">,</span> <span class="n">num_heads</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="EncoderBase.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.EncoderBase.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass through the encoder.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        src : torch.Tensor</span>
+<span class="sd">            The input tensor representing the source sequence. Shape: (batch_size, seq_len, d_model).</span>
+<span class="sd">        src_mask : torch.Tensor, optional</span>
+<span class="sd">            A mask tensor to prevent attention to certain positions in the source sequence.</span>
+<span class="sd">        src_key_padding_mask : torch.Tensor, optional</span>
+<span class="sd">            A mask tensor to prevent attention to padding tokens in the source sequence.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            The encoded output of the source sequence. Shape: (batch_size, seq_len, d_model).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Pass the source sequence through each encoder layer</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+            <span class="n">src</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="o">=</span><span class="n">src_mask</span><span class="p">,</span> <span class="n">src_key_padding_mask</span><span class="o">=</span><span class="n">src_key_padding_mask</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">src</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DecoderBase">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.DecoderBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DecoderBase</span><span class="p">(</span><span class="n">CoderBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decoder class that builds on CoderBase for decoding sequences based on the encoder&#39;s memory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    d_model : int</span>
+<span class="sd">        The dimension of the embedding space (output size of each layer).</span>
+<span class="sd">    num_layers : int</span>
+<span class="sd">        The number of layers in the decoder.</span>
+<span class="sd">    layer_factory : nn.Module, optional</span>
+<span class="sd">        Custom layer module. Defaults to `nn.TransformerDecoderLayer`.</span>
+<span class="sd">    norm_layer : str or nn.Module, optional</span>
+<span class="sd">        The normalization layer to apply. Can be a string or custom `nn.Module`. Default is &#39;LayerNorm&#39;.</span>
+<span class="sd">    dim_feedforward : int, optional</span>
+<span class="sd">        The dimension of the feedforward network. Default is 2048.</span>
+<span class="sd">    dropout : float, optional</span>
+<span class="sd">        Dropout rate for regularization. Default is 0.1.</span>
+<span class="sd">    num_heads : int, optional</span>
+<span class="sd">        Number of attention heads in multi-head attention. Default is 8.</span>
+<span class="sd">    factory_kwargs : dict, optional</span>
+<span class="sd">        Additional arguments to pass to `layer_factory` when creating layers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">d_model</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">layer_factory</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">TransformerDecoderLayer</span><span class="p">,</span>
+        <span class="c1"># norm_layer: Union[str, nn.Module] = &quot;LayerNorm&quot;,</span>
+        <span class="n">dim_feedforward</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2048</span><span class="p">,</span>
+        <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">num_heads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">factory_kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DecoderBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">d_model</span><span class="p">,</span> <span class="n">num_layers</span><span class="p">,</span> <span class="n">layer_factory</span><span class="p">,</span> <span class="n">dim_feedforward</span><span class="p">,</span> <span class="n">dropout</span><span class="p">,</span> <span class="n">num_heads</span><span class="p">,</span> <span class="o">**</span><span class="n">factory_kwargs</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="DecoderBase.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.transformer.DecoderBase.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tgt</span><span class="p">,</span>
+        <span class="n">memory</span><span class="p">,</span>
+        <span class="n">tgt_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">memory_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tgt_key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">memory_key_padding_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass through the decoder.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tgt : torch.Tensor</span>
+<span class="sd">            The input tensor representing the target sequence. Shape: (batch_size, seq_len, d_model).</span>
+<span class="sd">        memory : torch.Tensor</span>
+<span class="sd">            The encoded memory output from the encoder. Shape: (batch_size, seq_len_src, d_model).</span>
+<span class="sd">        tgt_mask : torch.Tensor, optional</span>
+<span class="sd">            A mask tensor to prevent attention to certain positions in the target sequence.</span>
+<span class="sd">        memory_mask : torch.Tensor, optional</span>
+<span class="sd">            A mask tensor to prevent attention to certain positions in the memory sequence (from the encoder).</span>
+<span class="sd">        tgt_key_padding_mask : torch.Tensor, optional</span>
+<span class="sd">            A mask tensor to prevent attention to padding tokens in the target sequence.</span>
+<span class="sd">        memory_key_padding_mask : torch.Tensor, optional</span>
+<span class="sd">            A mask tensor to prevent attention to padding tokens in the memory sequence.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            The decoded output of the target sequence. Shape: (batch_size, seq_len_tgt, d_model).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Pass the target sequence through each decoder layer</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+            <span class="n">tgt</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span>
+                <span class="n">tgt</span><span class="p">,</span>
+                <span class="n">memory</span><span class="p">,</span>
+                <span class="n">tgt_mask</span><span class="o">=</span><span class="n">tgt_mask</span><span class="p">,</span>
+                <span class="n">memory_mask</span><span class="o">=</span><span class="n">memory_mask</span><span class="p">,</span>
+                <span class="n">tgt_key_padding_mask</span><span class="o">=</span><span class="n">tgt_key_padding_mask</span><span class="p">,</span>
+                <span class="n">memory_key_padding_mask</span><span class="o">=</span><span class="n">memory_key_padding_mask</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tgt</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

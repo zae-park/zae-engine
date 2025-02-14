@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.operation.run_length &mdash; zae-engine  문서</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/documentation_options.js?v=8e72191d"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../_static/translations.js?v=e33e7ba0"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="../../../genindex.html" />
+    <link rel="search" title="검색" href="../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">모듈 코드</a></li>
+      <li class="breadcrumb-item active">zae_engine.operation.run_length</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>zae_engine.operation.run_length의 소스 코드</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">groupby</span>
+
+
+<div class="viewcode-block" id="Run">
+<a class="viewcode-back" href="../../../zae_engine.operation.html#zae_engine.operation.run_length.Run">[문서]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Run</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a run in Run-Length Encoding (RLE).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    start_index : int</span>
+<span class="sd">        The starting index of the run.</span>
+<span class="sd">    end_index : int</span>
+<span class="sd">        The ending index of the run.</span>
+<span class="sd">    value : int</span>
+<span class="sd">        The value of the run.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">start_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">end_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide a string representation of the Run object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Run(start_index=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start_index</span><span class="si">}</span><span class="s2">, end_index=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">end_index</span><span class="si">}</span><span class="s2">, value=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="RunList">
+<a class="viewcode-back" href="../../../zae_engine.operation.html#zae_engine.operation.run_length.RunList">[문서]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RunList</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores the results of Run-Length Encoding (RLE) and provides methods</span>
+<span class="sd">    to access raw and filtered runs.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    all_runs : List[Run]</span>
+<span class="sd">        A list of all runs without any filtering.</span>
+<span class="sd">    sense : int</span>
+<span class="sd">        The minimum length of runs to be considered in filtering.</span>
+<span class="sd">    original_length : int</span>
+<span class="sd">        The length of the original list that was encoded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_runs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Run</span><span class="p">],</span> <span class="n">sense</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">original_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the RunList object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        all_runs : List[Run]</span>
+<span class="sd">            A list of all runs obtained from encoding.</span>
+<span class="sd">        sense : int</span>
+<span class="sd">            The minimum length of runs to be considered in filtering.</span>
+<span class="sd">        original_length : int</span>
+<span class="sd">            The length of the original list that was encoded.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span> <span class="o">=</span> <span class="n">all_runs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sense</span> <span class="o">=</span> <span class="n">sense</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_length</span> <span class="o">=</span> <span class="n">original_length</span>
+
+<div class="viewcode-block" id="RunList.raw">
+<a class="viewcode-back" href="../../../zae_engine.operation.html#zae_engine.operation.run_length.RunList.raw">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">raw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Run</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns all runs without any filtering.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[Run]</span>
+<span class="sd">            A list of all runs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span></div>
+
+
+<div class="viewcode-block" id="RunList.filtered">
+<a class="viewcode-back" href="../../../zae_engine.operation.html#zae_engine.operation.run_length.RunList.filtered">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filtered</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Run</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns runs that meet or exceed the specified sense value.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[Run]</span>
+<span class="sd">            A list of filtered runs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">run</span> <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span> <span class="k">if</span> <span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">end_index</span> <span class="o">-</span> <span class="n">run</span><span class="o">.</span><span class="n">start_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sense</span><span class="p">]</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide a string representation of the RunList object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;RunList(all_runs=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">all_runs</span><span class="si">}</span><span class="s2">, sense=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sense</span><span class="si">}</span><span class="s2">, original_length=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">original_length</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="RunLengthCodec">
+<a class="viewcode-back" href="../../../zae_engine.operation.html#zae_engine.operation.run_length.RunLengthCodec">[문서]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RunLengthCodec</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A codec class for Run-Length Encoding (RLE) and decoding.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tol_merge : int, optional</span>
+<span class="sd">        The tolerance value to merge close runs. Default is 20.</span>
+<span class="sd">    remove_incomplete : bool, optional</span>
+<span class="sd">        Whether to remove incomplete runs during sanitization. Default is False.</span>
+<span class="sd">    merge_closed : bool, optional</span>
+<span class="sd">        Whether to merge close runs during sanitization. Default is False.</span>
+<span class="sd">    base_class : int, optional</span>
+<span class="sd">        The base class value to be excluded from runs. Default is 0.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    encode(x: List[int], sense: int) -&gt; RunList:</span>
+<span class="sd">        Encodes a list of integers into RLE runs.</span>
+<span class="sd">    decode(encoded_runs: RunList) -&gt; List[int]:</span>
+<span class="sd">        Decodes RLE runs back into the original list of integers.</span>
+<span class="sd">    sanitize(run_list: RunList) -&gt; RunList:</span>
+<span class="sd">        Cleans and merges runs based on the codec&#39;s parameters.</span>
+<span class="sd">    __call__(data: Union[List[int], List[List[int]], RunList, List[RunList]], sense: Optional[int] = None) -&gt; Union[RunList, List[RunList], List[int], List[List[int]]]:</span>
+<span class="sd">        Encodes or decodes data based on the input type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">tol_merge</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">remove_incomplete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">merge_closed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">base_class</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the RunLengthCodec with specified parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tol_merge : int, optional</span>
+<span class="sd">            The tolerance value to merge close runs. Default is 20.</span>
+<span class="sd">        remove_incomplete : bool, optional</span>
+<span class="sd">            Whether to remove runs that start at index 0 or end at the last index. Default is False.</span>
+<span class="sd">        merge_closed : bool, optional</span>
+<span class="sd">            Whether to merge runs that are close to each other. Default is False.</span>
+<span class="sd">        base_class : int, optional</span>
+<span class="sd">            The base class value to exclude from runs. Runs with this value will not be encoded. Default is 0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol_merge</span> <span class="o">=</span> <span class="n">tol_merge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_incomplete</span> <span class="o">=</span> <span class="n">remove_incomplete</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">merge_closed</span> <span class="o">=</span> <span class="n">merge_closed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_class</span> <span class="o">=</span> <span class="n">base_class</span>
+
+<div class="viewcode-block" id="RunLengthCodec.encode">
+<a class="viewcode-back" href="../../../zae_engine.operation.html#zae_engine.operation.run_length.RunLengthCodec.encode">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">sense</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunList</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Encode a list of integers using Run-Length Encoding (RLE).</span>
+
+<span class="sd">        This method converts a sequence of integers into a list of runs.</span>
+<span class="sd">        Each run is represented as a `Run` object containing the start index,</span>
+<span class="sd">        end index, and the value of the run. Runs with a length smaller than</span>
+<span class="sd">        the specified `sense` are ignored in the `filtered()` method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : List[int]</span>
+<span class="sd">            The input list of integers to be encoded.</span>
+<span class="sd">        sense : int</span>
+<span class="sd">            The minimum length of runs to be considered. Runs shorter than this</span>
+<span class="sd">            value are excluded from the output when calling `filtered()`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        RunList</span>
+<span class="sd">            A `RunList` object containing all runs, the sense value, and the original list length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">original_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="p">:</span>
+            <span class="n">all_runs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">all_runs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">current_index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">value</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groupby</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+                <span class="n">group_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+                <span class="n">run_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">group_list</span><span class="p">)</span>
+                <span class="n">start_index</span> <span class="o">=</span> <span class="n">current_index</span>
+                <span class="n">end_index</span> <span class="o">=</span> <span class="n">current_index</span> <span class="o">+</span> <span class="n">run_length</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_class</span><span class="p">:</span>
+                    <span class="n">all_runs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Run</span><span class="p">(</span><span class="n">start_index</span><span class="o">=</span><span class="n">start_index</span><span class="p">,</span> <span class="n">end_index</span><span class="o">=</span><span class="n">end_index</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">))</span>
+                <span class="n">current_index</span> <span class="o">+=</span> <span class="n">run_length</span>
+        <span class="n">run_list</span> <span class="o">=</span> <span class="n">RunList</span><span class="p">(</span><span class="n">all_runs</span><span class="o">=</span><span class="n">all_runs</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="n">sense</span><span class="p">,</span> <span class="n">original_length</span><span class="o">=</span><span class="n">original_length</span><span class="p">)</span>
+        <span class="n">sanitized_run_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitize</span><span class="p">(</span><span class="n">run_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sanitized_run_list</span></div>
+
+
+<div class="viewcode-block" id="RunLengthCodec.decode">
+<a class="viewcode-back" href="../../../zae_engine.operation.html#zae_engine.operation.run_length.RunLengthCodec.decode">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoded_runs</span><span class="p">:</span> <span class="n">RunList</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decode a list of RLE runs back to the original list of integers.</span>
+
+<span class="sd">        This method reconstructs the original sequence of integers from a `RunList` object.</span>
+<span class="sd">        Each `Run` specifies the start index, end index, and the value to be filled in that range.</span>
+<span class="sd">        The length of the output list is determined by the `original_length` stored in `RunList`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        encoded_runs : RunList</span>
+<span class="sd">            A `RunList` object containing runs to be decoded.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[int]</span>
+<span class="sd">            The decoded list of integers reconstructed from the runs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">encoded_runs</span><span class="o">.</span><span class="n">all_runs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_class</span><span class="p">]</span> <span class="o">*</span> <span class="n">encoded_runs</span><span class="o">.</span><span class="n">original_length</span>  <span class="c1"># Return background if no runs</span>
+
+        <span class="n">decoded</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_class</span><span class="p">]</span> <span class="o">*</span> <span class="n">encoded_runs</span><span class="o">.</span><span class="n">original_length</span>  <span class="c1"># Initialize with background label 0</span>
+
+        <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="n">encoded_runs</span><span class="o">.</span><span class="n">all_runs</span><span class="p">:</span>
+            <span class="n">on</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">start_index</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># Ensure non-negative start index</span>
+            <span class="n">off</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">end_index</span><span class="p">,</span> <span class="n">encoded_runs</span><span class="o">.</span><span class="n">original_length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Clamp to maximum index</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="n">run</span><span class="o">.</span><span class="n">value</span>
+
+            <span class="c1"># Assign the class label to the specified range</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">decoded</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
+
+        <span class="k">return</span> <span class="n">decoded</span></div>
+
+
+<div class="viewcode-block" id="RunLengthCodec.sanitize">
+<a class="viewcode-back" href="../../../zae_engine.operation.html#zae_engine.operation.run_length.RunLengthCodec.sanitize">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sanitize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_list</span><span class="p">:</span> <span class="n">RunList</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunList</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clean and merge runs based on the codec&#39;s parameters.</span>
+
+<span class="sd">        This function processes the RunList by:</span>
+<span class="sd">            1. Removing incomplete runs (if remove_incomplete is True).</span>
+<span class="sd">            2. Merging close runs (if merge_closed is True), while respecting the base_class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        run_list : RunList</span>
+<span class="sd">            The RunList object to be sanitized.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        RunList</span>
+<span class="sd">            The sanitized RunList object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_runs</span> <span class="o">=</span> <span class="n">run_list</span><span class="o">.</span><span class="n">all_runs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># 1. Remove incomplete runs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_incomplete</span><span class="p">:</span>
+            <span class="c1"># Incomplete runs are those that start at 0 or end at original_length -1</span>
+            <span class="n">sanitized_runs</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">run</span> <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="n">all_runs</span> <span class="k">if</span> <span class="n">run</span><span class="o">.</span><span class="n">start_index</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">run</span><span class="o">.</span><span class="n">end_index</span> <span class="o">!=</span> <span class="n">run_list</span><span class="o">.</span><span class="n">original_length</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sanitized_runs</span> <span class="o">=</span> <span class="n">all_runs</span>
+
+        <span class="c1"># 2. Merge close runs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_closed</span> <span class="ow">and</span> <span class="n">sanitized_runs</span><span class="p">:</span>
+            <span class="c1"># Sort runs by start_index to ensure order</span>
+            <span class="n">sanitized_runs</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">run</span><span class="p">:</span> <span class="n">run</span><span class="o">.</span><span class="n">start_index</span><span class="p">)</span>
+
+            <span class="n">merged_runs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">current_run</span> <span class="o">=</span> <span class="n">sanitized_runs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">next_run</span> <span class="ow">in</span> <span class="n">sanitized_runs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">gap</span> <span class="o">=</span> <span class="n">next_run</span><span class="o">.</span><span class="n">start_index</span> <span class="o">-</span> <span class="n">current_run</span><span class="o">.</span><span class="n">end_index</span> <span class="o">-</span> <span class="mi">1</span>
+
+                <span class="k">if</span> <span class="n">gap</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol_merge</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">current_run</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">next_run</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                        <span class="c1"># Same value runs, merge them</span>
+                        <span class="n">current_run</span><span class="o">.</span><span class="n">end_index</span> <span class="o">=</span> <span class="n">next_run</span><span class="o">.</span><span class="n">end_index</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Different value runs, decide which one to merge based on class</span>
+                        <span class="c1"># Base class should not be involved in merging</span>
+                        <span class="k">if</span> <span class="n">current_run</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_class</span> <span class="ow">or</span> <span class="n">next_run</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_class</span><span class="p">:</span>
+                            <span class="c1"># Do not merge with base class</span>
+                            <span class="n">merged_runs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_run</span><span class="p">)</span>
+                            <span class="n">current_run</span> <span class="o">=</span> <span class="n">next_run</span>
+                        <span class="k">elif</span> <span class="n">next_run</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="n">current_run</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                            <span class="c1"># Merge current_run into next_run (retain next_run&#39;s value)</span>
+                            <span class="n">current_run</span><span class="o">.</span><span class="n">end_index</span> <span class="o">=</span> <span class="n">next_run</span><span class="o">.</span><span class="n">end_index</span>
+                            <span class="n">current_run</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">next_run</span><span class="o">.</span><span class="n">value</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># Merge next_run into current_run (retain current_run&#39;s value)</span>
+                            <span class="n">current_run</span><span class="o">.</span><span class="n">end_index</span> <span class="o">=</span> <span class="n">next_run</span><span class="o">.</span><span class="n">end_index</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">merged_runs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_run</span><span class="p">)</span>
+                    <span class="n">current_run</span> <span class="o">=</span> <span class="n">next_run</span>
+
+            <span class="n">merged_runs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_run</span><span class="p">)</span>
+            <span class="n">sanitized_runs</span> <span class="o">=</span> <span class="n">merged_runs</span>
+
+        <span class="k">return</span> <span class="n">RunList</span><span class="p">(</span><span class="n">all_runs</span><span class="o">=</span><span class="n">sanitized_runs</span><span class="p">,</span> <span class="n">sense</span><span class="o">=</span><span class="n">run_list</span><span class="o">.</span><span class="n">sense</span><span class="p">,</span> <span class="n">original_length</span><span class="o">=</span><span class="n">run_list</span><span class="o">.</span><span class="n">original_length</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RunLengthCodec.__call__">
+<a class="viewcode-back" href="../../../zae_engine.operation.html#zae_engine.operation.run_length.RunLengthCodec.__call__">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">RunList</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">RunList</span><span class="p">]],</span> <span class="n">sense</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">RunList</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">RunList</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Encode or decode data based on its type.</span>
+
+<span class="sd">        If the input `data` is a list of integers, it encodes the list using RLE.</span>
+<span class="sd">        If the input `data` is a list of lists of integers (batch), it encodes each list.</span>
+<span class="sd">        If the input `data` is a `RunList`, it decodes it back to the original list of integers.</span>
+<span class="sd">        If the input `data` is a list of `RunList` (batch), it decodes each `RunList`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : Union[List[int], List[List[int]], RunList, List[RunList]]</span>
+<span class="sd">            The data to be encoded or decoded.</span>
+<span class="sd">            - If `List[int]`, the data will be encoded.</span>
+<span class="sd">            - If `List[List[int]]`, the data will be batch encoded.</span>
+<span class="sd">            - If `RunList`, the data will be decoded.</span>
+<span class="sd">            - If `List[RunList]`, the data will be batch decoded.</span>
+<span class="sd">        sense : Optional[int], optional</span>
+<span class="sd">            The minimum length of runs to be considered during encoding.</span>
+<span class="sd">            Required if `data` is a `List[int]` or `List[List[int]]`.</span>
+<span class="sd">            Ignored if `data` is a `RunList` or `List[RunList]`.</span>
+<span class="sd">            Default is None.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[RunList, List[RunList], List[int], List[List[int]]]</span>
+<span class="sd">            - Returns a `RunList` object if encoding a single list.</span>
+<span class="sd">            - Returns a list of `RunList` objects if encoding a batch of lists.</span>
+<span class="sd">            - Returns a list of integers if decoding a single `RunList`.</span>
+<span class="sd">            - Returns a list of lists of integers if decoding a batch of `RunList`s.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If `sense` is not provided when encoding.</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If `data` is neither a list of integers, list of lists of integers, `RunList`, nor a list of `RunList`s.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">):</span>
+                <span class="c1"># Batch encoding</span>
+                <span class="k">if</span> <span class="n">sense</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter &#39;sense&#39; must be provided for encoding.&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">sense</span><span class="p">)</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">):</span>
+                <span class="c1"># Single encoding</span>
+                <span class="k">if</span> <span class="n">sense</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter &#39;sense&#39; must be provided for encoding.&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sense</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input list must be a list of integers or a list of lists of integers.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">RunList</span><span class="p">):</span>
+            <span class="c1"># Single decoding</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">RunList</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">):</span>
+            <span class="c1"># Batch decoding</span>
+            <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">run_list</span><span class="p">)</span> <span class="k">for</span> <span class="n">run_list</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Input data must be a list of integers, list of lists of integers, RunList, or list of RunList objects.&quot;</span>
+            <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

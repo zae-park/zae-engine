@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.models.foundations.bert &mdash; zae-engine  문서</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=8e72191d"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../../_static/translations.js?v=e33e7ba0"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="../../../../genindex.html" />
+    <link rel="search" title="검색" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">모듈 코드</a></li>
+      <li class="breadcrumb-item active">zae_engine.models.foundations.bert</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>zae_engine.models.foundations.bert의 소스 코드</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModel</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..builds</span><span class="w"> </span><span class="kn">import</span> <span class="n">BertBase</span><span class="p">,</span> <span class="n">EncoderBase</span>
+
+<span class="c1"># implementation: # https://github.com/huggingface/transformers/blob/main/src/transformers/models/bert/modeling_bert.py</span>
+<span class="n">checkpoint_map</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;bert&quot;</span><span class="p">:</span> <span class="s2">&quot;bert-base-uncased&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bert-small&quot;</span><span class="p">:</span> <span class="s2">&quot;bert-base-uncased&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bert-large&quot;</span><span class="p">:</span> <span class="s2">&quot;bert-base-uncased&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">__model_weight_mapper</span><span class="p">(</span><span class="n">src_weight</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OrderedDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">dst_weight</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">OrderedDict</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Map source weights to destination model weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    src_weight : OrderedDict or dict</span>
+<span class="sd">        Source model weights.</span>
+<span class="sd">    dst_weight : OrderedDict or dict</span>
+<span class="sd">        Destination model weights.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    OrderedDict or dict</span>
+<span class="sd">        Updated destination model weights.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">buff_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">src_weight</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;embeddings&quot;</span><span class="p">):</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;word_embeddings&quot;</span><span class="p">,</span> <span class="s2">&quot;word&quot;</span><span class="p">)</span>  <span class="c1"># word</span>
+                <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;position_embeddings&quot;</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">)</span>  <span class="c1"># position</span>
+                <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;token_type_embeddings&quot;</span><span class="p">,</span> <span class="s2">&quot;token_type&quot;</span><span class="p">)</span>  <span class="c1"># type</span>
+            <span class="p">)</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;embeddings&quot;</span><span class="p">,</span> <span class="s2">&quot;encoder_embedding&quot;</span><span class="p">)</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;LayerNorm&quot;</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">)</span>  <span class="c1"># norm</span>
+        <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;encoder.layer&quot;</span><span class="p">):</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.layer.&quot;</span><span class="p">,</span> <span class="s2">&quot;.layers.&quot;</span><span class="p">)</span>
+            <span class="c1"># Save QKV weight &amp; bias to buffer</span>
+            <span class="k">if</span> <span class="s2">&quot;attention.self&quot;</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
+                <span class="n">tkn</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+                <span class="n">n_layer</span> <span class="o">=</span> <span class="n">tkn</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">para_name</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tkn</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+                <span class="n">buff_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_layer</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">para_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">continue</span>
+
+            <span class="k">elif</span> <span class="s2">&quot;attention.output&quot;</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
+                <span class="n">k</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;attention.output&quot;</span><span class="p">,</span> <span class="s2">&quot;self_attn&quot;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;self_attn.LayerNorm&quot;</span><span class="p">,</span> <span class="s2">&quot;norm1&quot;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;self_attn.dense&quot;</span><span class="p">,</span> <span class="s2">&quot;self_attn.out_proj&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">k</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;intermediate.dense&quot;</span><span class="p">,</span> <span class="s2">&quot;linear1&quot;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;output.dense&quot;</span><span class="p">,</span> <span class="s2">&quot;linear2&quot;</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;output.LayerNorm&quot;</span><span class="p">,</span> <span class="s2">&quot;norm2&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;pooler&quot;</span><span class="p">):</span>
+            <span class="c1"># Ignore Pooler layer</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="n">dst_weight</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="c1"># Generate in_proj weight &amp; bias using theirs of QKV in buffer</span>
+    <span class="n">total_layer</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">buff_dict</span><span class="p">)</span> <span class="o">//</span> <span class="mi">6</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_layer</span><span class="p">):</span>
+        <span class="n">qkv_w</span> <span class="o">=</span> <span class="p">[</span><span class="n">buff_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">_weight&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span>
+        <span class="n">qkv_b</span> <span class="o">=</span> <span class="p">[</span><span class="n">buff_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">_bias&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span>
+        <span class="n">dst_weight</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;encoder.layers.</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">.self_attn.in_proj_weight&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">qkv_w</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">dst_weight</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;encoder.layers.</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">.self_attn.in_proj_bias&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">qkv_b</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># From : encoder.layer.0.attention.self.query.weight</span>
+        <span class="c1"># To : encoder.layers.0.self_attn.in_proj_weight</span>
+
+    <span class="k">return</span> <span class="n">dst_weight</span>
+
+
+<div class="viewcode-block" id="BertEmbedding">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.bert.BertEmbedding">[문서]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BertEmbedding</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">max_len</span><span class="p">,</span> <span class="n">dim_embedding</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BertEmbedding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">dim_embedding</span><span class="p">,</span> <span class="n">padding_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">max_len</span><span class="p">,</span> <span class="n">dim_embedding</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token_type</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim_embedding</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim_embedding</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BertEmbedding.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.bert.BertEmbedding.forward">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">input_args</span><span class="p">):</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">input_args</span>
+        <span class="n">emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_type</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">emb</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="bert_base">
+<a class="viewcode-back" href="../../../../zae_engine.models.foundations.html#zae_engine.models.foundations.bert.bert_base">[문서]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">bert_base</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="n">model_name</span> <span class="o">=</span> <span class="n">checkpoint_map</span><span class="p">[</span><span class="s2">&quot;bert&quot;</span><span class="p">]</span>
+
+    <span class="n">dim_model</span> <span class="o">=</span> <span class="mi">768</span>
+    <span class="n">dim_ff</span> <span class="o">=</span> <span class="mi">3072</span>
+    <span class="n">sep_token_id</span> <span class="o">=</span> <span class="mi">102</span>
+    <span class="n">src_vocab_size</span> <span class="o">=</span> <span class="mi">30522</span>
+    <span class="n">max_len</span> <span class="o">=</span> <span class="mi">512</span>
+    <span class="n">layer_factory</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">TransformerEncoderLayer</span>
+
+    <span class="c1"># Embedding = word + positional + type</span>
+    <span class="n">zae_emb</span> <span class="o">=</span> <span class="n">BertEmbedding</span><span class="p">(</span><span class="n">vocab_size</span><span class="o">=</span><span class="n">src_vocab_size</span><span class="p">,</span> <span class="n">max_len</span><span class="o">=</span><span class="n">max_len</span><span class="p">,</span> <span class="n">dim_embedding</span><span class="o">=</span><span class="n">dim_model</span><span class="p">)</span>
+    <span class="n">zae_enc</span> <span class="o">=</span> <span class="n">EncoderBase</span><span class="p">(</span><span class="n">d_model</span><span class="o">=</span><span class="n">dim_model</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">layer_factory</span><span class="o">=</span><span class="n">layer_factory</span><span class="p">,</span> <span class="n">dim_feedforward</span><span class="o">=</span><span class="n">dim_ff</span><span class="p">)</span>
+    <span class="n">zae_bert</span> <span class="o">=</span> <span class="n">BertBase</span><span class="p">(</span><span class="n">encoder_embedding</span><span class="o">=</span><span class="n">zae_emb</span><span class="p">,</span> <span class="n">encoder</span><span class="o">=</span><span class="n">zae_enc</span><span class="p">,</span> <span class="n">dim_hidden</span><span class="o">=</span><span class="n">dim_model</span><span class="p">,</span> <span class="n">sep_token_id</span><span class="o">=</span><span class="n">sep_token_id</span><span class="p">)</span>
+
+    <span class="n">tokenizer_name</span> <span class="o">=</span> <span class="n">model_name</span>
+    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">tokenizer_name</span><span class="p">,</span> <span class="n">clean_up_tokenization_spaces</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">pretrained</span><span class="p">:</span>
+        <span class="n">pre_model</span> <span class="o">=</span> <span class="n">AutoModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+        <span class="n">new_weight</span> <span class="o">=</span> <span class="n">__model_weight_mapper</span><span class="p">(</span><span class="n">pre_model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">zae_bert</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+        <span class="n">zae_bert</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">new_weight</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">zae_bert</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

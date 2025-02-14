@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.loss package &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">zae_engine.loss package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-zae_engine.loss.angular">zae_engine.loss.angular module</a><ul>
+<li><a class="reference internal" href="#zae_engine.loss.angular.ArcFaceLoss"><code class="docutils literal notranslate"><span class="pre">ArcFaceLoss</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.loss.angular.ArcFaceLoss.forward"><code class="docutils literal notranslate"><span class="pre">ArcFaceLoss.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.loss.iou">zae_engine.loss.iou module</a><ul>
+<li><a class="reference internal" href="#zae_engine.loss.iou.GIoU"><code class="docutils literal notranslate"><span class="pre">GIoU()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.loss.iou.IoU"><code class="docutils literal notranslate"><span class="pre">IoU()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.loss.iou.mIoU"><code class="docutils literal notranslate"><span class="pre">mIoU()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.loss.norm">zae_engine.loss.norm module</a><ul>
+<li><a class="reference internal" href="#zae_engine.loss.norm.mse"><code class="docutils literal notranslate"><span class="pre">mse()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.loss">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">zae_engine.loss package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/zae_engine.loss.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zae-engine-loss-package">
+<h1>zae_engine.loss package<a class="headerlink" href="#zae-engine-loss-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-zae_engine.loss.angular">
+<span id="zae-engine-loss-angular-module"></span><h2>zae_engine.loss.angular module<a class="headerlink" href="#module-zae_engine.loss.angular" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.loss.angular.ArcFaceLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.loss.angular.</span></span><span class="sig-name descname"><span class="pre">ArcFaceLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/loss/angular.html#ArcFaceLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.loss.angular.ArcFaceLoss" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>ArcFace loss for classification with angular margin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_features</strong> (<em>int</em>) – Size of each input sample.</p></li>
+<li><p><strong>out_features</strong> (<em>int</em>) – Number of classes.</p></li>
+<li><p><strong>s</strong> (<em>float</em><em>, </em><em>optional</em>) – Norm of input feature (default is 30.0).</p></li>
+<li><p><strong>m</strong> (<em>float</em><em>, </em><em>optional</em>) – Margin (default is 0.50).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">forward(features,</span> <span class="pre">labels):</span></span></dt>
+<dd><p>Forward pass to compute the ArcFace loss.</p>
+</dd></dl>
+
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Deng, Jiankang, et al. “ArcFace: Additive Angular Margin Loss for Deep Face Recognition.”
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. 2019.
+<a class="reference external" href="https://arxiv.org/abs/1801.07698">https://arxiv.org/abs/1801.07698</a></p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.loss.angular.ArcFaceLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/loss/angular.html#ArcFaceLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.loss.angular.ArcFaceLoss.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass to compute the ArcFace loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>features</strong> (<em>torch.Tensor</em>) – Input features of shape (batch_size, in_features).</p></li>
+<li><p><strong>labels</strong> (<em>torch.Tensor</em>) – Ground truth labels of shape (batch_size).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Computed ArcFace logits of shape (batch_size, out_features).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.loss.iou">
+<span id="zae-engine-loss-iou-module"></span><h2>zae_engine.loss.iou module<a class="headerlink" href="#module-zae_engine.loss.iou" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.loss.iou.GIoU">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.loss.iou.</span></span><span class="sig-name descname"><span class="pre">GIoU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">true_onoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_onoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/loss/iou.html#GIoU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.loss.iou.GIoU" title="Link to this definition">¶</a></dt>
+<dd><p>Compute mean Generalized Intersection over Union (GIoU) using the given true and predicted labels.</p>
+<p>The true and predicted labels must be 2-D tensors with elements of integer type.
+See <a class="reference external" href="https://arxiv.org/abs/1902.09630v2">https://arxiv.org/abs/1902.09630v2</a> for details on GIoU.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>true_onoff</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>torch.Tensor</em><em>]</em>) – True labels tensor. Elements must be of type int.</p></li>
+<li><p><strong>pred_onoff</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>torch.Tensor</em><em>]</em>) – Predicted labels tensor. Elements must be of type int.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The mean GIoU score.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If the elements of true_onoff or pred_onoff are not of integer type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.loss.iou.IoU">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.loss.iou.</span></span><span class="sig-name descname"><span class="pre">IoU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/loss/iou.html#IoU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.loss.iou.IoU" title="Link to this definition">¶</a></dt>
+<dd><p>Compute mean Intersection over Union (IoU) using the given true and predicted labels.</p>
+<p>The true and predicted labels must be 2-D tensors with elements of integer type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>torch.Tensor</em><em>]</em>) – Predicted labels tensor. Elements must be of type int.</p></li>
+<li><p><strong>true</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>torch.Tensor</em><em>]</em>) – True labels tensor. Elements must be of type int.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The mean IoU score.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.loss.iou.mIoU">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.loss.iou.</span></span><span class="sig-name descname"><span class="pre">mIoU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/loss/iou.html#mIoU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.loss.iou.mIoU" title="Link to this definition">¶</a></dt>
+<dd><p>Compute mean Intersection over Union (mIoU) using the given predicted and true labels.</p>
+<p>The outputs and labels must be 1-D or 2-D tensors with elements of integer or boolean type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<em>torch.Tensor</em>) – Predicted labels tensor. Elements must be of type int or bool.</p></li>
+<li><p><strong>true</strong> (<em>torch.Tensor</em>) – True labels tensor. Elements must be of type int or bool.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The mean IoU score.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.loss.norm">
+<span id="zae-engine-loss-norm-module"></span><h2>zae_engine.loss.norm module<a class="headerlink" href="#module-zae_engine.loss.norm" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.loss.norm.mse">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.loss.norm.</span></span><span class="sig-name descname"><span class="pre">mse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/loss/norm.html#mse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.loss.norm.mse" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the mean squared error (MSE) between the true and predicted values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>true</strong> (<em>torch.Tensor</em>) – The ground truth values.</p></li>
+<li><p><strong>predict</strong> (<em>torch.Tensor</em>) – The predicted values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The computed mean squared error.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.loss">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.loss" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

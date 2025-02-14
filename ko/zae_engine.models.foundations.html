@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.models.foundations package &mdash; zae-engine  문서</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=8e72191d"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/translations.js?v=e33e7ba0"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">zae_engine.models.foundations package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-zae_engine.models.foundations.benchmark">zae_engine.models.foundations.benchmark module</a><ul>
+<li><a class="reference internal" href="#zae_engine.models.foundations.benchmark.TimeSeriesBert"><code class="docutils literal notranslate"><span class="pre">TimeSeriesBert</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.models.foundations.benchmark.TimeSeriesBert.forward"><code class="docutils literal notranslate"><span class="pre">TimeSeriesBert.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.models.foundations.bert">zae_engine.models.foundations.bert module</a><ul>
+<li><a class="reference internal" href="#zae_engine.models.foundations.bert.BertEmbedding"><code class="docutils literal notranslate"><span class="pre">BertEmbedding</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.models.foundations.bert.BertEmbedding.forward"><code class="docutils literal notranslate"><span class="pre">BertEmbedding.forward()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.bert.bert_base"><code class="docutils literal notranslate"><span class="pre">bert_base()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.models.foundations.resnet">zae_engine.models.foundations.resnet module</a><ul>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.cbam_injection"><code class="docutils literal notranslate"><span class="pre">cbam_injection()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.cbamresnet101"><code class="docutils literal notranslate"><span class="pre">cbamresnet101()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.cbamresnet152"><code class="docutils literal notranslate"><span class="pre">cbamresnet152()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.cbamresnet18"><code class="docutils literal notranslate"><span class="pre">cbamresnet18()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.cbamresnet34"><code class="docutils literal notranslate"><span class="pre">cbamresnet34()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.cbamresnet50"><code class="docutils literal notranslate"><span class="pre">cbamresnet50()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.resnet101"><code class="docutils literal notranslate"><span class="pre">resnet101()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.resnet152"><code class="docutils literal notranslate"><span class="pre">resnet152()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.resnet18"><code class="docutils literal notranslate"><span class="pre">resnet18()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.resnet34"><code class="docutils literal notranslate"><span class="pre">resnet34()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.resnet50"><code class="docutils literal notranslate"><span class="pre">resnet50()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.resnet_deco"><code class="docutils literal notranslate"><span class="pre">resnet_deco()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.se_injection"><code class="docutils literal notranslate"><span class="pre">se_injection()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.seresnet101"><code class="docutils literal notranslate"><span class="pre">seresnet101()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.seresnet152"><code class="docutils literal notranslate"><span class="pre">seresnet152()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.seresnet18"><code class="docutils literal notranslate"><span class="pre">seresnet18()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.seresnet34"><code class="docutils literal notranslate"><span class="pre">seresnet34()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.resnet.seresnet50"><code class="docutils literal notranslate"><span class="pre">seresnet50()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.models.foundations.unet">zae_engine.models.foundations.unet module</a><ul>
+<li><a class="reference internal" href="#zae_engine.models.foundations.unet.unet_brain"><code class="docutils literal notranslate"><span class="pre">unet_brain()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.models.foundations.word_embedding">zae_engine.models.foundations.word_embedding module</a><ul>
+<li><a class="reference internal" href="#zae_engine.models.foundations.word_embedding.FastTextEmbedding"><code class="docutils literal notranslate"><span class="pre">FastTextEmbedding</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.models.foundations.word_embedding.FastTextEmbedding.embedding"><code class="docutils literal notranslate"><span class="pre">FastTextEmbedding.embedding</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.word_embedding.FastTextEmbedding.forward"><code class="docutils literal notranslate"><span class="pre">FastTextEmbedding.forward()</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">FastTextEmbedding.forward()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.word_embedding.Word2VecEmbedding"><code class="docutils literal notranslate"><span class="pre">Word2VecEmbedding</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.models.foundations.word_embedding.Word2VecEmbedding.embedding"><code class="docutils literal notranslate"><span class="pre">Word2VecEmbedding.embedding</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.models.foundations.word_embedding.Word2VecEmbedding.forward"><code class="docutils literal notranslate"><span class="pre">Word2VecEmbedding.forward()</span></code></a></li>
+<li><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">Word2VecEmbedding.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.models.foundations">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">zae_engine.models.foundations package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/zae_engine.models.foundations.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zae-engine-models-foundations-package">
+<h1>zae_engine.models.foundations package<a class="headerlink" href="#zae-engine-models-foundations-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-zae_engine.models.foundations.benchmark">
+<span id="zae-engine-models-foundations-benchmark-module"></span><h2>zae_engine.models.foundations.benchmark module<a class="headerlink" href="#module-zae_engine.models.foundations.benchmark" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.benchmark.TimeSeriesBert">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.benchmark.</span></span><span class="sig-name descname"><span class="pre">TimeSeriesBert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vocab_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_feedforward</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_pool</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep_token_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">102</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">factory_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/benchmark.html#TimeSeriesBert"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.benchmark.TimeSeriesBert" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Encoder-only Transformer model based on BertBase with integrated embedding and positional encoding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vocab_size</strong> (<em>int</em>) – The size of the vocabulary.</p></li>
+<li><p><strong>d_model</strong> (<em>int</em>) – The dimension of the embedding space.</p></li>
+<li><p><strong>max_len</strong> (<em>int</em>) – The maximum sequence length.</p></li>
+<li><p><strong>num_layers</strong> (<em>int</em>) – The number of layers in the Transformer encoder.</p></li>
+<li><p><strong>num_heads</strong> (<em>int</em>) – The number of attention heads in the Transformer encoder.</p></li>
+<li><p><strong>dim_feedforward</strong> (<em>int</em>) – The dimension of the feedforward network in the Transformer encoder.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – The dropout rate for regularization. Default is 0.1.</p></li>
+<li><p><strong>dim_pool</strong> (<em>int</em><em>, </em><em>optional</em>) – The hidden dimension for the pooler. If provided, a pooler is applied to the [CLS] token.</p></li>
+<li><p><strong>sep_token_id</strong> (<em>int</em><em>, </em><em>optional</em>) – The token ID for [SEP]. Default is 102.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.benchmark.TimeSeriesBert.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_key_padding_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/benchmark.html#TimeSeriesBert.forward"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.benchmark.TimeSeriesBert.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the encoder-only Transformer model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_ids</strong> (<em>torch.Tensor</em>) – Tensor of input token IDs with shape (batch_size, seq_len).</p></li>
+<li><p><strong>positions</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Tensor of positions (timestamps) with shape (batch_size, seq_len).</p></li>
+<li><p><strong>src_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Source mask for masking certain positions in the input. Shape: (seq_len, seq_len).</p></li>
+<li><p><strong>src_key_padding_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Mask for padding tokens in the input sequence. Shape: (batch_size, seq_len).</p></li>
+</ul>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output from the encoder or pooled output if dim_pool is set.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.models.foundations.bert">
+<span id="zae-engine-models-foundations-bert-module"></span><h2>zae_engine.models.foundations.bert module<a class="headerlink" href="#module-zae_engine.models.foundations.bert" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.bert.BertEmbedding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.bert.</span></span><span class="sig-name descname"><span class="pre">BertEmbedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vocab_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_embedding</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/bert.html#BertEmbedding"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.bert.BertEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.bert.BertEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">input_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/bert.html#BertEmbedding.forward"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.bert.BertEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">참고</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.bert.bert_base">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.bert.</span></span><span class="sig-name descname"><span class="pre">bert_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/bert.html#bert_base"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.bert.bert_base" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-zae_engine.models.foundations.resnet">
+<span id="zae-engine-models-foundations-resnet-module"></span><h2>zae_engine.models.foundations.resnet module<a class="headerlink" href="#module-zae_engine.models.foundations.resnet" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbam_injection">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbam_injection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbam_injection"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbam_injection" title="Link to this definition">¶</a></dt>
+<dd><p>Inject CBAM modules into the given ResNet model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><em>cnn.CNNBase</em></a>) – The ResNet model to inject CBAM modules into.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>The ResNet model with SE modules injected.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbamresnet101">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbamresnet101</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbamresnet101"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbamresnet101" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CBAM-ResNet-101 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the CBAM-ResNet-101 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).
+CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbamresnet152">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbamresnet152</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbamresnet152"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbamresnet152" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CBAM-ResNet-152 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the CBAM-ResNet-152 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).
+CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbamresnet18">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbamresnet18</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbamresnet18"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbamresnet18" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CBAM-ResNet-18 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the CBAM-ResNet-18 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).
+CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbamresnet34">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbamresnet34</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbamresnet34"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbamresnet34" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CBAM-ResNet-34 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the CBAM-ResNet-34 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).
+CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.cbamresnet50">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">cbamresnet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#cbamresnet50"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.cbamresnet50" title="Link to this definition">¶</a></dt>
+<dd><p>Create a CBAM-ResNet-50 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for CBAM modules. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the CBAM-ResNet-50 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018).
+CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.resnet101">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">resnet101</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#resnet101"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.resnet101" title="Link to this definition">¶</a></dt>
+<dd><p>Create a ResNet-101 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, loads pre-trained weights from a specified checkpoint. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the ResNet-50 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<p>He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).
+Deep residual learning for image recognition.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.resnet152">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">resnet152</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#resnet152"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.resnet152" title="Link to this definition">¶</a></dt>
+<dd><p>Create a ResNet-152 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, loads pre-trained weights from a specified checkpoint. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the ResNet-50 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<p>He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).
+Deep residual learning for image recognition.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.resnet18">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">resnet18</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#resnet18"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.resnet18" title="Link to this definition">¶</a></dt>
+<dd><p>Create a ResNet-18 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, loads pre-trained weights from a specified checkpoint. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the ResNet-18 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<p>He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).
+Deep residual learning for image recognition.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.resnet34">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">resnet34</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#resnet34"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.resnet34" title="Link to this definition">¶</a></dt>
+<dd><p>Create a ResNet-34 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, loads pre-trained weights from a specified checkpoint. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the ResNet-34 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<p>He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).
+Deep residual learning for image recognition.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.resnet50">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">resnet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#resnet50"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.resnet50" title="Link to this definition">¶</a></dt>
+<dd><p>Create a ResNet-50 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, loads pre-trained weights from a specified checkpoint. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the ResNet-50 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<p>He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).
+Deep residual learning for image recognition.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.resnet_deco">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">resnet_deco</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#resnet_deco"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.resnet_deco" title="Link to this definition">¶</a></dt>
+<dd><p>Decorator to wrap ResNet model creation functions with predefined configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – The number of layers for the ResNet model.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped function with ResNet configurations.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p>function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.se_injection">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">se_injection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#se_injection"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.se_injection" title="Link to this definition">¶</a></dt>
+<dd><p>Inject SE modules into the given ResNet model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><em>cnn.CNNBase</em></a>) – The ResNet model to inject SE modules into.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>The ResNet model with SE modules injected.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.seresnet101">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">seresnet101</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#seresnet101"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.seresnet101" title="Link to this definition">¶</a></dt>
+<dd><p>Create an SE-ResNet-101 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for SE modules. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the SE-ResNet-101 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<p>Hu, J., Shen, L., &amp; Sun, G. (2018).
+Squeeze-and-excitation networks.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.seresnet152">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">seresnet152</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#seresnet152"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.seresnet152" title="Link to this definition">¶</a></dt>
+<dd><p>Create an SE-ResNet-152 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for SE modules. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the SE-ResNet-152 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<p>Hu, J., Shen, L., &amp; Sun, G. (2018).
+Squeeze-and-excitation networks.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.seresnet18">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">seresnet18</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#seresnet18"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.seresnet18" title="Link to this definition">¶</a></dt>
+<dd><p>Create an SE-ResNet-18 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for SE modules. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the SE-ResNet-18 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<p>Hu, J., Shen, L., &amp; Sun, G. (2018).
+Squeeze-and-excitation networks.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.seresnet34">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">seresnet34</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#seresnet34"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.seresnet34" title="Link to this definition">¶</a></dt>
+<dd><p>Create an SE-ResNet-34 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for SE modules. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the SE-ResNet-34 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<p>Hu, J., Shen, L., &amp; Sun, G. (2018).
+Squeeze-and-excitation networks.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.resnet.seresnet50">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.resnet.</span></span><span class="sig-name descname"><span class="pre">seresnet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase"><span class="pre">CNNBase</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/resnet.html#seresnet50"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.resnet.seresnet50" title="Link to this definition">¶</a></dt>
+<dd><p>Create an SE-ResNet-50 model with the option to load pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, prints a message indicating no pre-trained weights for SE modules. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the SE-ResNet-50 model.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.cnn.CNNBase" title="zae_engine.models.builds.cnn.CNNBase">cnn.CNNBase</a></p>
+</dd>
+</dl>
+<p class="rubric">참조</p>
+<p>Hu, J., Shen, L., &amp; Sun, G. (2018).
+Squeeze-and-excitation networks.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).</p>
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.models.foundations.unet">
+<span id="zae-engine-models-foundations-unet-module"></span><h2>zae_engine.models.foundations.unet module<a class="headerlink" href="#module-zae_engine.models.foundations.unet" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.unet.unet_brain">
+<span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.unet.</span></span><span class="sig-name descname"><span class="pre">unet_brain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="zae_engine.models.builds.html#zae_engine.models.builds.autoencoder.AutoEncoder" title="zae_engine.models.builds.autoencoder.AutoEncoder"><span class="pre">AutoEncoder</span></a></span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/unet.html#unet_brain"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.unet.unet_brain" title="Link to this definition">¶</a></dt>
+<dd><p>Create a U-Net model with the option to load pre-trained weights.</p>
+<p>The U-Net model is a type of convolutional neural network developed for biomedical image segmentation.</p>
+<p class="rubric">참조</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Olaf Ronneberger, Philipp Fischer, and Thomas Brox, “U-Net: Convolutional Networks for Biomedical Image Segmentation,”
+in MICCAI 2015. (<a class="reference external" href="https://arxiv.org/abs/1505.04597">https://arxiv.org/abs/1505.04597</a>)</p>
+</aside>
+</aside>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, loads pre-trained weights from a specified checkpoint. Default is False.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the AutoEncoder model with U-Net architecture.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p>zae_engine.models.autoencoder.AutoEncoder</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.models.foundations.word_embedding">
+<span id="zae-engine-models-foundations-word-embedding-module"></span><h2>zae_engine.models.foundations.word_embedding module<a class="headerlink" href="#module-zae_engine.models.foundations.word_embedding" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.FastTextEmbedding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.word_embedding.</span></span><span class="sig-name descname"><span class="pre">FastTextEmbedding</span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#FastTextEmbedding"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.FastTextEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A PyTorch module that uses pre-trained FastText embeddings from gensim.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.FastTextEmbedding.embedding">
+<span class="sig-name descname"><span class="pre">embedding</span></span><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.FastTextEmbedding.embedding" title="Link to this definition">¶</a></dt>
+<dd><p>PyTorch embedding layer initialized with FastText pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Embedding</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.FastTextEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#FastTextEmbedding.forward"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.FastTextEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Passes input tensor through the embedding layer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#FastTextEmbedding.forward"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Passes the input tensor through the embedding layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor containing indices of words.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor with embeddings for the input indices.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.Word2VecEmbedding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.models.foundations.word_embedding.</span></span><span class="sig-name descname"><span class="pre">Word2VecEmbedding</span></span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#Word2VecEmbedding"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.Word2VecEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A PyTorch module that uses pre-trained Word2Vec embeddings from gensim.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.Word2VecEmbedding.embedding">
+<span class="sig-name descname"><span class="pre">embedding</span></span><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.Word2VecEmbedding.embedding" title="Link to this definition">¶</a></dt>
+<dd><p>PyTorch embedding layer initialized with Word2Vec pre-trained weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Embedding</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.models.foundations.word_embedding.Word2VecEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#Word2VecEmbedding.forward"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.models.foundations.word_embedding.Word2VecEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Passes input tensor through the embedding layer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/models/foundations/word_embedding.html#Word2VecEmbedding.forward"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#id7" title="Link to this definition">¶</a></dt>
+<dd><p>Passes the input tensor through the embedding layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – The input tensor containing indices of words.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>The output tensor with embeddings for the input indices.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.models.foundations">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.models.foundations" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

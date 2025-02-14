@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.nn_night.layers package &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">zae_engine.nn_night.layers package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.layers.additional">zae_engine.nn_night.layers.additional module</a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.additional.Additional"><code class="docutils literal notranslate"><span class="pre">Additional</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.additional.Additional.forward"><code class="docutils literal notranslate"><span class="pre">Additional.forward()</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">Additional.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.layers.dynamic_pool">zae_engine.nn_night.layers.dynamic_pool module</a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool"><code class="docutils literal notranslate"><span class="pre">DynOPool</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.ratio"><code class="docutils literal notranslate"><span class="pre">DynOPool.ratio</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.trick"><code class="docutils literal notranslate"><span class="pre">DynOPool.trick</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.bilinear_interpolation"><code class="docutils literal notranslate"><span class="pre">DynOPool.bilinear_interpolation()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.forward"><code class="docutils literal notranslate"><span class="pre">DynOPool.forward()</span></code></a></li>
+<li><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">DynOPool.bilinear_interpolation()</span></code></a></li>
+<li><a class="reference internal" href="#id2"><code class="docutils literal notranslate"><span class="pre">DynOPool.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.layers.involution">zae_engine.nn_night.layers.involution module</a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.involution.Inv1d"><code class="docutils literal notranslate"><span class="pre">Inv1d</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.involution.Inv1d.forward"><code class="docutils literal notranslate"><span class="pre">Inv1d.forward()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.involution.Inv1d.kernel_generator"><code class="docutils literal notranslate"><span class="pre">Inv1d.kernel_generator()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.layers.position_encoding">zae_engine.nn_night.layers.position_encoding module</a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.position_encoding.AdaptivePositionalEncoding"><code class="docutils literal notranslate"><span class="pre">AdaptivePositionalEncoding</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.position_encoding.AdaptivePositionalEncoding.forward"><code class="docutils literal notranslate"><span class="pre">AdaptivePositionalEncoding.forward()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.position_encoding.LearnablePositionalEncoding"><code class="docutils literal notranslate"><span class="pre">LearnablePositionalEncoding</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.position_encoding.LearnablePositionalEncoding.forward"><code class="docutils literal notranslate"><span class="pre">LearnablePositionalEncoding.forward()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.position_encoding.RelativePositionalEncoding"><code class="docutils literal notranslate"><span class="pre">RelativePositionalEncoding</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.position_encoding.RelativePositionalEncoding.forward"><code class="docutils literal notranslate"><span class="pre">RelativePositionalEncoding.forward()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.position_encoding.RotaryPositionalEncoding"><code class="docutils literal notranslate"><span class="pre">RotaryPositionalEncoding</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.position_encoding.RotaryPositionalEncoding.forward"><code class="docutils literal notranslate"><span class="pre">RotaryPositionalEncoding.forward()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.position_encoding.SinusoidalPositionalEncoding"><code class="docutils literal notranslate"><span class="pre">SinusoidalPositionalEncoding</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.position_encoding.SinusoidalPositionalEncoding.forward"><code class="docutils literal notranslate"><span class="pre">SinusoidalPositionalEncoding.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.layers.residual_connection">zae_engine.nn_night.layers.residual_connection module</a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.residual_connection.Residual"><code class="docutils literal notranslate"><span class="pre">Residual</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.residual_connection.Residual.forward"><code class="docutils literal notranslate"><span class="pre">Residual.forward()</span></code></a></li>
+<li><a class="reference internal" href="#id10"><code class="docutils literal notranslate"><span class="pre">Residual.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.layers.selective_kernel_conv">zae_engine.nn_night.layers.selective_kernel_conv module</a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D"><code class="docutils literal notranslate"><span class="pre">SKConv1D</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.forward"><code class="docutils literal notranslate"><span class="pre">SKConv1D.forward()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.fuse"><code class="docutils literal notranslate"><span class="pre">SKConv1D.fuse()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.kernel_valid"><code class="docutils literal notranslate"><span class="pre">SKConv1D.kernel_valid()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.layers">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">zae_engine.nn_night.layers package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/zae_engine.nn_night.layers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zae-engine-nn-night-layers-package">
+<h1>zae_engine.nn_night.layers package<a class="headerlink" href="#zae-engine-nn-night-layers-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-zae_engine.nn_night.layers.additional">
+<span id="zae-engine-nn-night-layers-additional-module"></span><h2>zae_engine.nn_night.layers.additional module<a class="headerlink" href="#module-zae_engine.nn_night.layers.additional" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.additional.Additional">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.additional.</span></span><span class="sig-name descname"><span class="pre">Additional</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/additional.html#Additional"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.additional.Additional" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ModuleList</span></code></p>
+<p>Additional connection module.</p>
+<p>This module extends nn.ModuleList to implement an additional connection.
+Each input tensor is passed through its corresponding module,
+and the output tensors are summed. If the shapes of the output tensors
+do not match, an error is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*args</strong> (<em>nn.Module</em>) – Sequence of PyTorch modules. Each module will be applied to
+a corresponding input tensor in the forward pass.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.additional.Additional.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/additional.html#Additional.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.additional.Additional.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Applies each module to its corresponding input tensor and returns
+the sum of the output tensors. If the shapes of the output tensors
+do not match, an error is raised.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/additional.html#Additional.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the additional block.</p>
+<p>Applies each module to its corresponding input tensor and returns
+the sum of the output tensors. If the shapes of the output tensors
+do not match, an error is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*inputs</strong> (<em>torch.Tensor</em>) – Sequence of input tensors. Each tensor is passed through its corresponding module.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sum of the output tensors of each module.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the output tensors have mismatched shapes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.nn_night.layers.dynamic_pool">
+<span id="zae-engine-nn-night-layers-dynamic-pool-module"></span><h2>zae_engine.nn_night.layers.dynamic_pool module<a class="headerlink" href="#module-zae_engine.nn_night.layers.dynamic_pool" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.dynamic_pool.</span></span><span class="sig-name descname"><span class="pre">DynOPool</span></span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Dynamic Pooling Layer using Gumbel Softmax trick for discrete pooling ratios.</p>
+<p>This layer dynamically adjusts the pooling ratio using a learnable parameter,
+allowing for adaptive pooling during training. The Gumbel Softmax trick is
+applied to ensure the ratio remains discrete.</p>
+<dl class="simple">
+<dt>Reference:</dt><dd><ul class="simple">
+<li><p>DynOPool: Dynamic Optimization Pooling, <a class="reference external" href="https://arxiv.org/abs/2205.15254">https://arxiv.org/abs/2205.15254</a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool.ratio">
+<span class="sig-name descname"><span class="pre">ratio</span></span><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.ratio" title="Link to this definition">¶</a></dt>
+<dd><p>Learnable parameter representing the pooling ratio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool.trick">
+<span class="sig-name descname"><span class="pre">trick</span></span><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.trick" title="Link to this definition">¶</a></dt>
+<dd><p>Function to apply the Gumbel Softmax trick.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool.bilinear_interpolation">
+<span class="sig-name descname"><span class="pre">bilinear_interpolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_dim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool.bilinear_interpolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.bilinear_interpolation" title="Link to this definition">¶</a></dt>
+<dd><p>Performs bilinear interpolation on the input tensor to the specified dimension.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.dynamic_pool.DynOPool.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.dynamic_pool.DynOPool.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for the DynOPool layer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">bilinear_interpolation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_dim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool.bilinear_interpolation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
+<dd><p>Perform bilinear interpolation on the input tensor to the specified dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, channels, depth).</p></li>
+<li><p><strong>to_dim</strong> (<em>torch.Tensor</em>) – Target dimension after interpolation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Interpolated tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/dynamic_pool.html#DynOPool.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for the DynOPool layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, channels, depth).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pooled tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.nn_night.layers.involution">
+<span id="zae-engine-nn-night-layers-involution-module"></span><h2>zae_engine.nn_night.layers.involution module<a class="headerlink" href="#module-zae_engine.nn_night.layers.involution" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.involution.Inv1d">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.involution.</span></span><span class="sig-name descname"><span class="pre">Inv1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/involution.html#Inv1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.involution.Inv1d" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>The involution layer for 1D input <a href="#id12"><span class="problematic" id="id3">[1]_</span></a>.</p>
+<p>…
+:param ch: Number of channels in the input tensor (signal or 1D arr)
+:type ch: int
+:param num_groups: Number of channels produced by the convolution
+:type num_groups: int
+:param kernel_size: Size of the convolving kernel
+:type kernel_size: int
+:param stride: Stride of the convolution. Default: 1
+:type stride: int
+:param reduction_ratio: Ratio of channel reduction. This value must be divisor of ch.
+:type reduction_ratio: int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tensor</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tensor</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Li, Duo, et al.
+“Involution: Inverting the inherence of convolution for visual recognition.”
+Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 2021.</p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.involution.Inv1d.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/involution.html#Inv1d.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.involution.Inv1d.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.involution.Inv1d.kernel_generator">
+<span class="sig-name descname"><span class="pre">kernel_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/involution.html#Inv1d.kernel_generator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.involution.Inv1d.kernel_generator" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.nn_night.layers.position_encoding">
+<span id="zae-engine-nn-night-layers-position-encoding-module"></span><h2>zae_engine.nn_night.layers.position_encoding module<a class="headerlink" href="#module-zae_engine.nn_night.layers.position_encoding" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.position_encoding.AdaptivePositionalEncoding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.position_encoding.</span></span><span class="sig-name descname"><span class="pre">AdaptivePositionalEncoding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/position_encoding.html#AdaptivePositionalEncoding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.position_encoding.AdaptivePositionalEncoding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Implements adaptive positional encoding that adjusts position encoding based on input sequence length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d_model</strong> (<em>int</em>) – Dimension of the embedding space.</p></li>
+<li><p><strong>max_len</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum sequence length. Default is 512.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This method adjusts the position encoding dynamically based on sequence length.</p></li>
+<li><p>Benefits: Flexible for handling sequences of varying lengths.</p></li>
+<li><p>Drawbacks: Requires additional handling for sequences with different lengths.</p></li>
+</ul>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><p>No specific reference, this approach is inspired by the need for adaptive positional encodings in models handling variable-length sequences.</p></li>
+</ul>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.position_encoding.AdaptivePositionalEncoding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/position_encoding.html#AdaptivePositionalEncoding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.position_encoding.AdaptivePositionalEncoding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Apply adaptive positional encoding to input tensor based on sequence length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, seq_len, d_model).</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional keyword arguments, such as ‘seq_lengths’ for handling variable-length sequences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor with added positional encoding.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.position_encoding.LearnablePositionalEncoding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.position_encoding.</span></span><span class="sig-name descname"><span class="pre">LearnablePositionalEncoding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/position_encoding.html#LearnablePositionalEncoding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.position_encoding.LearnablePositionalEncoding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Implements learnable positional encoding where positional embeddings are learned during training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d_model</strong> (<em>int</em>) – Dimension of the embedding space.</p></li>
+<li><p><strong>max_len</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum sequence length. Default is 512.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This method allows the model to learn optimal positional encodings during training.</p></li>
+<li><p>Benefits: Can adapt the positional encoding to the specific task.</p></li>
+<li><p>Drawbacks: Requires additional parameters and training time.</p></li>
+</ul>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><p>No specific reference, this approach is commonly used in various models including BERT and GPT.</p></li>
+</ul>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.position_encoding.LearnablePositionalEncoding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/position_encoding.html#LearnablePositionalEncoding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.position_encoding.LearnablePositionalEncoding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Apply learnable positional encoding to input tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, seq_len, d_model).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor with added positional encoding.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.position_encoding.RelativePositionalEncoding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.position_encoding.</span></span><span class="sig-name descname"><span class="pre">RelativePositionalEncoding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/position_encoding.html#RelativePositionalEncoding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.position_encoding.RelativePositionalEncoding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Implements relative positional encoding that captures relative distances between tokens.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d_model</strong> (<em>int</em>) – Dimension of the embedding space.</p></li>
+<li><p><strong>max_len</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum sequence length. Default is 512.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This method is used in models like Transformer-XL and T5 [2]_[3]_.</p></li>
+<li><p>Benefits: Handles long sequences and captures relative positions.</p></li>
+<li><p>Drawbacks: May increase computational complexity.</p></li>
+</ul>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>Dai, Z., Yang, Z., Yang, Y., Carbonell, J. G., Salakhutdinov, R., &amp; Liu, T.-Y. (2019). Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context.
+In Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics (ACL 2019).
+Available at: <a class="reference external" href="https://arxiv.org/abs/1901.02860">https://arxiv.org/abs/1901.02860</a>
+DOI: 10.48550/arXiv.1901.02860</p>
+</aside>
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<p>Raffel, C., Shinn, C., Gauthier, J., &amp; others (2020). Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer.
+Journal of Machine Learning Research, 21, 1-67.
+Available at: <a class="reference external" href="https://arxiv.org/abs/1910.10683">https://arxiv.org/abs/1910.10683</a>
+DOI: 10.48550/arXiv.1910.10683</p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.position_encoding.RelativePositionalEncoding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/position_encoding.html#RelativePositionalEncoding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.position_encoding.RelativePositionalEncoding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Apply relative positional encoding to input tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, seq_len, d_model).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor with added positional encoding.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.position_encoding.RotaryPositionalEncoding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.position_encoding.</span></span><span class="sig-name descname"><span class="pre">RotaryPositionalEncoding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/position_encoding.html#RotaryPositionalEncoding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.position_encoding.RotaryPositionalEncoding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Implements Rotary Positional Encoding as described in “RoFormer: Enhanced Transformer with Rotary Position Embedding”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>d_model</strong> (<em>int</em>) – Dimension of the embedding space. Must be divisible by 2 for rotary encoding.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.position_encoding.RotaryPositionalEncoding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/position_encoding.html#RotaryPositionalEncoding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.position_encoding.RotaryPositionalEncoding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Apply rotary positional encoding to input tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, seq_len, d_model).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor with added rotary positional encoding.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.position_encoding.SinusoidalPositionalEncoding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.position_encoding.</span></span><span class="sig-name descname"><span class="pre">SinusoidalPositionalEncoding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/position_encoding.html#SinusoidalPositionalEncoding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.position_encoding.SinusoidalPositionalEncoding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Computes sinusoidal positional encoding as described in the Transformer paper <a href="#id13"><span class="problematic" id="id7">[1]_</span></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d_model</strong> (<em>int</em>) – Dimension of the embedding space. Must be an even number.</p></li>
+<li><p><strong>max_len</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum sequence length. Default is 512.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This method was introduced in the original Transformer paper (Vaswani et al., 2017) <a href="#id14"><span class="problematic" id="id8">[1]_</span></a>.</p></li>
+<li><p>Uses fixed sine and cosine functions of different frequencies to encode token positions.</p></li>
+<li><p>Benefits: Simple and efficient to compute, and captures positional information effectively.</p></li>
+<li><p>Drawbacks: Does not capture relative positional information.</p></li>
+</ul>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id9" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.Õ., Kaiser, Ł., Polosukhin, I.
+(2017). Attention is All You Need. In Proceedings of the 31st International Conference on Neural Information Processing Systems (NeurIPS 2017).
+Available at: <a class="reference external" href="https://arxiv.org/abs/1706.03762">https://arxiv.org/abs/1706.03762</a>
+DOI: 10.48550/arXiv.1706.03762</p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.position_encoding.SinusoidalPositionalEncoding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/position_encoding.html#SinusoidalPositionalEncoding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.position_encoding.SinusoidalPositionalEncoding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Apply sinusoidal positional encoding to the input tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, seq_len, d_model).</p></li>
+<li><p><strong>positions</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Optional tensor of shape (batch_size, seq_len) specifying the positions (e.g., timestamps) for each element in the sequence.
+If not provided, the default positions (0 to seq_len - 1) are used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor with added positional encoding.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.nn_night.layers.residual_connection">
+<span id="zae-engine-nn-night-layers-residual-connection-module"></span><h2>zae_engine.nn_night.layers.residual_connection module<a class="headerlink" href="#module-zae_engine.nn_night.layers.residual_connection" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.residual_connection.Residual">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.residual_connection.</span></span><span class="sig-name descname"><span class="pre">Residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/residual_connection.html#Residual"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.residual_connection.Residual" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequential</span></code></p>
+<p>Residual connection module.</p>
+<p>This module extends nn.Sequential to implement a residual connection. The input tensor is added
+to the output tensor of the sequence of modules provided during initialization, similar to a
+residual block in ResNet architectures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*args</strong> (<em>nn.Module</em>) – Sequence of PyTorch modules to be applied to the input tensor.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.residual_connection.Residual.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/residual_connection.html#Residual.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.residual_connection.Residual.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Applies the sequence of modules to the input tensor and returns the sum of the input tensor
+and the output tensor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/residual_connection.html#Residual.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id10" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the residual block.</p>
+<p>Applies the sequence of modules to the input tensor and returns the sum of the input tensor
+and the output tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sum of the input tensor and the output of the sequence of modules.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.nn_night.layers.selective_kernel_conv">
+<span id="zae-engine-nn-night-layers-selective-kernel-conv-module"></span><h2>zae_engine.nn_night.layers.selective_kernel_conv module<a class="headerlink" href="#module-zae_engine.nn_night.layers.selective_kernel_conv" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.layers.selective_kernel_conv.</span></span><span class="sig-name descname"><span class="pre">SKConv1D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(3,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Selective Kernel Convolution for 1D inputs.</p>
+<p>This module performs selective kernel convolutions with different kernel sizes,
+followed by a selection mechanism to fuse the features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_in</strong> (<em>int</em>) – Number of input channels.</p></li>
+<li><p><strong>ch_out</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of output channels. If None, it will be set to the same as <cite>ch_in</cite>.</p></li>
+<li><p><strong>kernels</strong> (<em>list</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – List of kernel sizes to be used in the convolution layers. Default is (3, 5).</p></li>
+<li><p><strong>out_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Output size for adaptive average pooling. If None, no pooling is applied.</p></li>
+<li><p><strong>ch_ratio</strong> (<em>int</em><em>, </em><em>optional</em>) – Reduction ratio for the intermediate channels in the fuse layer. Default is 2.</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em>, </em><em>optional</em>) – Stride size for the convolution layers. Default is 1.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id11" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Li, X., Wang, W., Hu, X., &amp; Yang, J. (2019). Selective kernel networks.
+In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (pp. 510-519).
+Available at: <a class="reference external" href="https://arxiv.org/abs/1903.06586">https://arxiv.org/abs/1903.06586</a></p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.fuse">
+<span class="sig-name descname"><span class="pre">fuse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Sequential</span></span></span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D.fuse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.fuse" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.kernel_valid">
+<span class="sig-name descname"><span class="pre">kernel_valid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/layers/selective_kernel_conv.html#SKConv1D.kernel_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.layers.selective_kernel_conv.SKConv1D.kernel_valid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.nn_night.layers">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.nn_night.layers" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

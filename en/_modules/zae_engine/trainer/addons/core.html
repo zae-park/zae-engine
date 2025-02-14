@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.trainer.addons.core &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">zae_engine.trainer.addons.core</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.trainer.addons.core</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._trainer</span><span class="w"> </span><span class="kn">import</span> <span class="n">T</span>
+
+
+<div class="viewcode-block" id="AddOnBase">
+<a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.core.AddOnBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AddOnBase</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for defining add-ons for the Trainer class.</span>
+
+<span class="sd">    Add-ons allow you to extend the functionality of the Trainer class dynamically.</span>
+<span class="sd">    By inheriting from `AddOnBase`, subclasses can implement custom functionality</span>
+<span class="sd">    that can be integrated into the Trainer workflow.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    apply(cls, base_cls)</span>
+<span class="sd">        Apply the add-on to the specified base class, modifying its behavior or adding</span>
+<span class="sd">        new features. This method must be implemented by subclasses.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - Add-ons are designed to be composable, meaning you can apply multiple add-ons</span>
+<span class="sd">      to a single Trainer class.</span>
+<span class="sd">    - Subclasses must override the `apply` method to specify how the add-on modifies</span>
+<span class="sd">      the behavior of the Trainer class.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Creating a custom add-on:</span>
+
+<span class="sd">    &gt;&gt;&gt; from zae_engine.trainer.addons import AddOnBase</span>
+
+<span class="sd">    &gt;&gt;&gt; class CustomLoggerAddon(AddOnBase):</span>
+<span class="sd">    &gt;&gt;&gt;     @classmethod</span>
+<span class="sd">    &gt;&gt;&gt;     def apply(cls, base_cls):</span>
+<span class="sd">    &gt;&gt;&gt;         class TrainerWithCustomLogger(base_cls):</span>
+<span class="sd">    &gt;&gt;&gt;             def __init__(self, *args, custom_param=None, **kwargs):</span>
+<span class="sd">    &gt;&gt;&gt;                 super().__init__(*args, **kwargs)</span>
+<span class="sd">    &gt;&gt;&gt;                 self.custom_param = custom_param</span>
+<span class="sd">    &gt;&gt;&gt;             def logging(self, step_dict):</span>
+<span class="sd">    &gt;&gt;&gt;                 super().logging(step_dict)</span>
+<span class="sd">    &gt;&gt;&gt;                 print(f&quot;Custom logging: {step_dict}&quot;)</span>
+<span class="sd">    &gt;&gt;&gt;         return TrainerWithCustomLogger</span>
+
+<span class="sd">    Applying the custom add-on to a Trainer:</span>
+
+<span class="sd">    &gt;&gt;&gt; from zae_engine.trainer import Trainer</span>
+<span class="sd">    &gt;&gt;&gt; MyTrainer = Trainer.add_on(CustomLoggerAddon)</span>
+<span class="sd">    &gt;&gt;&gt; trainer = MyTrainer(</span>
+<span class="sd">    &gt;&gt;&gt;     model=my_model,</span>
+<span class="sd">    &gt;&gt;&gt;     device=&#39;cuda&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;     optimizer=my_optimizer,</span>
+<span class="sd">    &gt;&gt;&gt;     scheduler=my_scheduler,</span>
+<span class="sd">    &gt;&gt;&gt;     custom_param=&quot;Log everything&quot;</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+<span class="sd">    &gt;&gt;&gt; trainer.run(n_epoch=10, loader=train_loader)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AddOnBase.apply">
+<a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.core.AddOnBase.apply">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">base_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply the add-on modifications to a base class.</span>
+
+<span class="sd">        This method is used to inject additional functionality or modify the behavior of the</span>
+<span class="sd">        `Trainer` class. It returns a new class that combines the original `Trainer` with</span>
+<span class="sd">        the behavior defined in the add-on.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        base_cls : Type[T]</span>
+<span class="sd">            The base class to which the add-on modifications will be applied. This is typically</span>
+<span class="sd">            the `Trainer` class or a subclass of it.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Type[T]</span>
+<span class="sd">            A new class that includes the functionality of the base class along with the</span>
+<span class="sd">            additional behavior defined by the add-on.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - Subclasses of `AddOnBase` must implement this method to define how the add-on modifies</span>
+<span class="sd">          the base class.</span>
+<span class="sd">        - This method is typically called indirectly through the `Trainer.add_on` method.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        Custom implementation in an add-on:</span>
+
+<span class="sd">        &gt;&gt;&gt; class CustomAddon(AddOnBase):</span>
+<span class="sd">        &gt;&gt;&gt;     @classmethod</span>
+<span class="sd">        &gt;&gt;&gt;     def apply(cls, base_cls):</span>
+<span class="sd">        &gt;&gt;&gt;         class TrainerWithCustomAddon(base_cls):</span>
+<span class="sd">        &gt;&gt;&gt;             def custom_method(self):</span>
+<span class="sd">        &gt;&gt;&gt;                 print(&quot;Custom method called&quot;)</span>
+<span class="sd">        &gt;&gt;&gt;         return TrainerWithCustomAddon</span>
+
+<span class="sd">        Adding the custom add-on to a Trainer:</span>
+
+<span class="sd">        &gt;&gt;&gt; from zae_engine.trainer import Trainer</span>
+<span class="sd">        &gt;&gt;&gt; MyTrainer = Trainer.add_on(CustomAddon)</span>
+<span class="sd">        &gt;&gt;&gt; trainer = MyTrainer(model=my_model, device=&#39;cuda&#39;, optimizer=my_optimizer)</span>
+<span class="sd">        &gt;&gt;&gt; trainer.custom_method()  # Output: Custom method called</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Add-on must implement the apply method.&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

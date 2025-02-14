@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.models.converter.dim_converter &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">zae_engine.models.converter.dim_converter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.models.converter.dim_converter</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+
+
+<div class="viewcode-block" id="DimConverter">
+<a class="viewcode-back" href="../../../../zae_engine.models.converter.html#zae_engine.models.converter.dim_converter.DimConverter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DimConverter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to convert the dimensionality of layers in a given PyTorch model from 1D to 2D, 2D to 3D, or vice versa.</span>
+
+<span class="sd">    This class identifies layers in a model that can be converted to different dimensions, such as Conv1d to Conv2d,</span>
+<span class="sd">    and adapts their weights and parameters accordingly.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : nn.Module</span>
+<span class="sd">        The original PyTorch model to be converted.</span>
+<span class="sd">    module_dict : dict</span>
+<span class="sd">        A dictionary storing the original layers of the model.</span>
+<span class="sd">    new_module_dict : dict</span>
+<span class="sd">        A dictionary storing the converted layers of the model.</span>
+<span class="sd">    layer_dict : dict</span>
+<span class="sd">        A dictionary mapping layer names to their respective modules.</span>
+<span class="sd">    param_dict : dict</span>
+<span class="sd">        A dictionary mapping parameter names to their respective tensors.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    find_convertable(model: nn.Module) -&gt; tuple[dict, dict]:</span>
+<span class="sd">        Finds and returns layers and parameters in the model that can be converted.</span>
+<span class="sd">    dim_correction(reduce: bool):</span>
+<span class="sd">        Corrects the dimensionality of the layers identified for conversion.</span>
+<span class="sd">    const_getter(conv_module: nn.Module, reduce: bool) -&gt; dict:</span>
+<span class="sd">        Retrieves and adjusts the constants of a given convolutional module.</span>
+<span class="sd">    apply_new_dict(base_module: nn.Module, name: str, module: nn.Module):</span>
+<span class="sd">        Applies the converted layers to a new model structure.</span>
+<span class="sd">    convert(pattern: str, *args, **kwargs) -&gt; nn.Module:</span>
+<span class="sd">        Converts the dimensionality of the model based on the specified pattern.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">__convertable</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">_ConvNd</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">_ConvTransposeNd</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">pooling</span><span class="o">.</span><span class="n">_LPPoolNd</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">pooling</span><span class="o">.</span><span class="n">_MaxPoolNd</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">pooling</span><span class="o">.</span><span class="n">_AvgPoolNd</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">pooling</span><span class="o">.</span><span class="n">_AdaptiveAvgPoolNd</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">pooling</span><span class="o">.</span><span class="n">_AdaptiveMaxPoolNd</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">pooling</span><span class="o">.</span><span class="n">_MaxUnpoolNd</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">batchnorm</span><span class="o">.</span><span class="n">_BatchNorm</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">correction_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose1d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose3d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">LazyConvTranspose1d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">LazyConvTranspose2d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">LazyConvTranspose2d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">LazyConvTranspose3d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool1d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool3d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveMaxPool1d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveMaxPool2d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveMaxPool2d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveMaxPool3d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool1d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool3d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">,</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm3d</span><span class="p">,</span>
+    <span class="p">}</span>  <span class="c1"># default is expand mode</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the DimConverter with the given model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : nn.Module</span>
+<span class="sd">            The PyTorch model to be converted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_module_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_convertable</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DimConverter.find_convertable">
+<a class="viewcode-back" href="../../../../zae_engine.models.converter.html#zae_engine.models.converter.dim_converter.DimConverter.find_convertable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">find_convertable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find dimension-convertable layers in the given model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : nn.Module</span>
+<span class="sd">            The PyTorch model to be analyzed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple[dict, dict]</span>
+<span class="sd">            A tuple containing two dictionaries: layer_dict and param_dict.</span>
+<span class="sd">            layer_dict maps layer names to modules.</span>
+<span class="sd">            param_dict maps parameter names to tensors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">layer_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">param_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">module_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__convertable</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">module_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
+            <span class="n">param_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">param</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="s2">&quot;bias&quot;</span><span class="p">)):</span>
+                <span class="n">root</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">module</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_submodule</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__convertable</span><span class="p">):</span>
+                    <span class="n">layer_dict</span><span class="p">[</span><span class="n">root</span><span class="p">]</span> <span class="o">=</span> <span class="n">module</span>
+
+        <span class="k">return</span> <span class="n">layer_dict</span><span class="p">,</span> <span class="n">param_dict</span></div>
+
+
+<div class="viewcode-block" id="DimConverter.dim_correction">
+<a class="viewcode-back" href="../../../../zae_engine.models.converter.html#zae_engine.models.converter.dim_converter.DimConverter.dim_correction">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dim_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reduce</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Correct the dimensionality of the layers identified for conversion.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reduce : bool</span>
+<span class="sd">            Whether to reduce the dimensionality (e.g., 2D to 1D) or expand it (e.g., 1D to 2D).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">correction_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">correction_map</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">if</span> <span class="n">reduce</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">correction_map</span>
+        <span class="n">correction_keys</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">correction_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">correction_keys</span><span class="p">):</span>
+                <span class="n">corrected_layer</span> <span class="o">=</span> <span class="n">correction_map</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">module</span><span class="p">)]</span>
+                <span class="n">needs</span> <span class="o">=</span> <span class="n">corrected_layer</span><span class="o">.</span><span class="fm">__init__</span><span class="o">.</span><span class="vm">__annotations__</span>
+                <span class="n">ready</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">const_getter</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">reduce</span><span class="o">=</span><span class="n">reduce</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">needs</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">new_module_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">corrected_layer</span><span class="p">(</span><span class="o">**</span><span class="n">ready</span><span class="p">)</span></div>
+
+
+                <span class="c1"># TODO: add weight correction</span>
+                <span class="c1"># weight = module.weight</span>
+                <span class="c1"># bias = module.bias</span>
+
+<div class="viewcode-block" id="DimConverter.const_getter">
+<a class="viewcode-back" href="../../../../zae_engine.models.converter.html#zae_engine.models.converter.dim_converter.DimConverter.const_getter">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">const_getter</span><span class="p">(</span><span class="n">conv_module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">reduce</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve and adjust the constants of a given convolutional module.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        conv_module : nn.Module</span>
+<span class="sd">            The convolutional module to be adjusted.</span>
+<span class="sd">        reduce : bool (default: None)</span>
+<span class="sd">            Whether to reduce the dimensionality (e.g., 2D to 1D) or expand it (e.g., 1D to 2D).</span>
+<span class="sd">            If None(default), the dimensionality is preserved.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            A dictionary of adjusted constants.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">module_dict</span> <span class="o">=</span> <span class="n">conv_module</span><span class="o">.</span><span class="vm">__dict__</span>
+        <span class="n">const</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">conv_module</span><span class="o">.</span><span class="n">__constants__</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">module_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">reduce</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">reduce</span> <span class="k">else</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+            <span class="n">const</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">return</span> <span class="n">const</span></div>
+
+
+<div class="viewcode-block" id="DimConverter.apply_new_dict">
+<a class="viewcode-back" href="../../../../zae_engine.models.converter.html#zae_engine.models.converter.dim_converter.DimConverter.apply_new_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_new_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply the converted layers to a new model structure.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        base_module : nn.Module</span>
+<span class="sd">            The base module to which the converted layers will be applied.</span>
+<span class="sd">        name : str</span>
+<span class="sd">            The name of the layer to be applied.</span>
+<span class="sd">        module : nn.Module</span>
+<span class="sd">            The converted module to be applied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">base_module</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">apply_new_dict</span><span class="p">(</span><span class="n">base_module</span><span class="o">=</span><span class="n">base_module</span><span class="o">.</span><span class="n">get_submodule</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DimConverter.convert">
+<a class="viewcode-back" href="../../../../zae_engine.models.converter.html#zae_engine.models.converter.dim_converter.DimConverter.convert">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert the dimensionality of the model based on the specified pattern.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pattern : str</span>
+<span class="sd">            The conversion pattern (e.g., &quot;1d -&gt; 2d&quot;, &quot;2d -&gt; 3d&quot;).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        nn.Module</span>
+<span class="sd">            The converted PyTorch model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&gt;&quot;</span><span class="p">)</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">left</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">right</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="n">new_model</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">left</span> <span class="o">==</span> <span class="n">right</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">new_model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim_correction</span><span class="p">(</span><span class="n">reduce</span><span class="o">=</span><span class="n">left</span> <span class="o">&gt;</span> <span class="n">right</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_module_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">apply_new_dict</span><span class="p">(</span><span class="n">new_model</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+        <span class="c1"># TODO 2. apply them to new model</span>
+        <span class="c1"># new_model.load_state_dict(self.param_dict)</span>
+
+        <span class="k">return</span> <span class="n">new_model</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

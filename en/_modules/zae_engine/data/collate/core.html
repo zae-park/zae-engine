@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.data.collate.core &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">zae_engine.data.collate.core</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for zae_engine.data.collate.core</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CollateBase">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CollateBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for collating and processing batches of data using a sequence of functions.</span>
+
+<span class="sd">    This class allows you to define a sequence of preprocessing functions that will be applied</span>
+<span class="sd">    to data batches in the specified order. It supports initialization with either an OrderedDict</span>
+<span class="sd">    or a list of functions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x_key : Sequence[str], default=[&quot;x&quot;]</span>
+<span class="sd">        The key(s) in the batch dictionary that represent the input data.</span>
+<span class="sd">    y_key : Sequence[str], default=[&quot;y&quot;]</span>
+<span class="sd">        The key(s) in the batch dictionary that represent the labels.</span>
+<span class="sd">    aux_key : Sequence[str], default=[&quot;aux&quot;]</span>
+<span class="sd">        The key(s) in the batch dictionary that represent the auxiliary data.</span>
+<span class="sd">    functions : Union[List[Callable], OrderedDict[str, Callable]], optional</span>
+<span class="sd">        The preprocessing functions to apply to the batches in sequence.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    __len__():</span>
+<span class="sd">        Returns the number of functions in the collator.</span>
+<span class="sd">    __iter__():</span>
+<span class="sd">        Returns an iterator over the functions in the collator.</span>
+<span class="sd">    io_check(sample_data: Union[dict, OrderedDict], check_all: bool = False) -&gt; None:</span>
+<span class="sd">        Checks if the registered functions maintain the structure of the sample data.</span>
+<span class="sd">    set_batch(batch: Union[dict, OrderedDict]) -&gt; None:</span>
+<span class="sd">        Sets the sample batch for structure checking.</span>
+<span class="sd">    add_fn(name: str, fn: Callable) -&gt; None:</span>
+<span class="sd">        Adds a function to the collator with the given name.</span>
+<span class="sd">    __call__(batch: List[Union[dict, OrderedDict]]) -&gt; Union[dict, OrderedDict]:</span>
+<span class="sd">        Applies the registered functions to the input batch in sequence.</span>
+<span class="sd">    accumulate(batches: Union[Tuple, List]) -&gt; Dict:</span>
+<span class="sd">        Convert a list of dictionaries per data to a batch dictionary with list-type values.</span>
+
+<span class="sd">    Usage</span>
+<span class="sd">    -----</span>
+<span class="sd">    Example 1: Initialization with a list of functions</span>
+<span class="sd">    &gt;&gt;&gt; def fn1(batch):</span>
+<span class="sd">    &gt;&gt;&gt;     # Function to process batch</span>
+<span class="sd">    &gt;&gt;&gt;     return batch</span>
+<span class="sd">    &gt;&gt;&gt; def fn2(batch):</span>
+<span class="sd">    &gt;&gt;&gt;     # Another function to process batch</span>
+<span class="sd">    &gt;&gt;&gt;     return batch</span>
+<span class="sd">    &gt;&gt;&gt; collator = CollateBase(x_key=[&#39;x&#39;], y_key=[&#39;y&#39;], aux_key=[&#39;aux&#39;], functions=[fn1, fn2])</span>
+<span class="sd">    &gt;&gt;&gt; batch = {&#39;x&#39;: [1, 2, 3], &#39;y&#39;: [1], &#39;aux&#39;: [0.5], &#39;filename&#39;: &#39;sample.txt&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; processed_batch = collator([batch, batch])</span>
+
+<span class="sd">    Example 2: Initialization with an OrderedDict</span>
+<span class="sd">    &gt;&gt;&gt; from collections import OrderedDict</span>
+<span class="sd">    &gt;&gt;&gt; functions = OrderedDict([(&#39;fn1&#39;, fn1), (&#39;fn2&#39;, fn2)])</span>
+<span class="sd">    &gt;&gt;&gt; collator = CollateBase(x_key=[&#39;x&#39;], y_key=[&#39;y&#39;], aux_key=[&#39;aux&#39;], functions=functions)</span>
+<span class="sd">    &gt;&gt;&gt; processed_batch = collator([batch, batch])</span>
+
+<span class="sd">    Example 3: Checking input-output consistency</span>
+<span class="sd">    &gt;&gt;&gt; sample_data = {&#39;x&#39;: [1, 2, 3], &#39;y&#39;: [1], &#39;aux&#39;: [0.5], &#39;filename&#39;: &#39;sample.txt&#39;}</span>
+<span class="sd">    &gt;&gt;&gt; collator.set_batch(sample_data)</span>
+<span class="sd">    &gt;&gt;&gt; collator.add_fn(&#39;fn3&#39;, fn3)  # This will check if fn3 maintains the structure of sample_data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_fn</span><span class="p">:</span> <span class="n">OrderedDict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">x_key</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,),</span>
+        <span class="n">y_key</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,),</span>
+        <span class="n">aux_key</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;aux&quot;</span><span class="p">,),</span>
+        <span class="n">functions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">],</span> <span class="n">OrderedDict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux_key</span> <span class="o">=</span> <span class="n">x_key</span><span class="p">,</span> <span class="n">y_key</span><span class="p">,</span> <span class="n">aux_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_batch</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>  <span class="c1"># Initialize the ordered dictionary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn_checked</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>  <span class="c1"># Track which functions have passed io_check</span>
+
+        <span class="k">if</span> <span class="n">functions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">functions</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">functions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_fn</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">functions</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">functions</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_fn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="n">module</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;functions must be a list or an OrderedDict of callables.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+<div class="viewcode-block" id="CollateBase.io_check">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.io_check">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">io_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">],</span> <span class="n">check_all</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the registered functions maintain the structure of the sample batch.</span>
+<span class="sd">        Only checks the newly added function if check_all is False.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sample_data : Union[dict, OrderedDict]</span>
+<span class="sd">            The sample data to test the functions with.</span>
+<span class="sd">        check_all : bool</span>
+<span class="sd">            If True, checks all registered functions. Otherwise, checks only the newly added function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="n">updated_sample_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">],</span> <span class="n">fn_list</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Internal function to check the sample data against the provided functions.</span>
+
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            updated_sample_data : Union[dict, OrderedDict]</span>
+<span class="sd">                The sample data to be processed.</span>
+<span class="sd">            fn_list : list</span>
+<span class="sd">                List of functions to apply to the sample data.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">updated_sample_data</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sample data cannot be empty for io_check.&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Make a deep copy to avoid modifying the original sample_data</span>
+            <span class="n">updated_sample_data</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">updated_sample_data</span><span class="p">)</span>
+
+            <span class="c1"># Ensure the function list is iterated correctly</span>
+            <span class="k">for</span> <span class="n">fn_name</span><span class="p">,</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">fn_list</span><span class="p">:</span>
+                <span class="n">updated_sample_data</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">updated_sample_data</span><span class="p">)</span>
+                <span class="c1"># Mark function as checked</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fn_checked</span><span class="p">[</span><span class="n">fn_name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="c1"># Check structure integrity</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">updated_sample_data</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">sample_data</span><span class="p">)),</span> <span class="s2">&quot;The functions changed the type of the batch.&quot;</span>
+            <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">sample_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span>
+                <span class="n">updated_sample_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="p">),</span> <span class="s2">&quot;The functions changed the keys of the batch.&quot;</span>
+
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">sample_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">updated_sample_data</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">type</span><span class="p">(</span><span class="n">sample_data</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;The type of value for key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; has changed.&quot;</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">updated_sample_data</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+                    <span class="k">assert</span> <span class="p">(</span>
+                        <span class="n">updated_sample_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">sample_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
+                    <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;The dtype of value for key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; has changed.&quot;</span>
+
+        <span class="c1"># Choose functions to check</span>
+        <span class="k">if</span> <span class="n">check_all</span><span class="p">:</span>
+            <span class="n">functions_to_check</span> <span class="o">=</span> <span class="p">[(</span><span class="n">name</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Only check functions that haven&#39;t been checked yet</span>
+            <span class="n">functions_to_check</span> <span class="o">=</span> <span class="p">[(</span><span class="n">name</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn_checked</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span>
+
+        <span class="c1"># Perform the check</span>
+        <span class="n">check</span><span class="p">(</span><span class="n">sample_data</span><span class="p">,</span> <span class="n">functions_to_check</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CollateBase.add_fn">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.add_fn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a new preprocessing function to the pipeline after validation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            The name of the function.</span>
+<span class="sd">        fn : Callable</span>
+<span class="sd">            The preprocessing function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Function with name &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; already exists.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn_checked</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Mark as unchecked</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_batch</span><span class="p">:</span>
+            <span class="c1"># Check only the newly added function</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">io_check</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_batch</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CollateBase.set_batch">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.set_batch">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the sample batch to be used for input-output structure validation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        batch : Union[dict, OrderedDict]</span>
+<span class="sd">            The sample batch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_batch</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="c1"># Reset all functions to unchecked</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn_checked</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fn_checked</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="CollateBase.accumulate">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.accumulate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">accumulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batches</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert a list of dictionaries per data to a batch dictionary with list-type values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        batches : Union[Tuple, List]</span>
+<span class="sd">            A list of dictionaries, where each dictionary represents a data batch.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Dict</span>
+<span class="sd">            A dictionary where keys are batch attributes and values are lists or concatenated tensors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">accumulate_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">batches</span><span class="p">):</span>
+            <span class="c1"># Check for missing keys</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_key</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_key</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux_key</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">b</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Batch at index </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> is missing required key: &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">b</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">accumulate_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">accumulate_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_key</span><span class="p">:</span>
+                    <span class="n">accumulate_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="k">else</span> <span class="p">[]</span>
+                <span class="k">elif</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_key</span><span class="p">:</span>
+                    <span class="n">accumulate_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">accumulate_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error accumulating key &#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)(</span><span class="sa">f</span><span class="s2">&quot;Error accumulating key &#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>  <span class="c1"># Raise with additional context</span>
+
+        <span class="k">return</span> <span class="n">accumulate_dict</span></div>
+
+
+<div class="viewcode-block" id="CollateBase.__call__">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies the preprocessing functions to the input batch in sequence.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        batch : List[Union[dict, OrderedDict]]</span>
+<span class="sd">            The input batch to be processed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[dict, OrderedDict]</span>
+<span class="sd">            The processed and accumulated batch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">processed_batches</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+            <span class="n">processed_batches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="n">accumulated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accumulate</span><span class="p">(</span><span class="n">processed_batches</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">accumulated</span></div>
+
+
+<div class="viewcode-block" id="CollateBase.wrap">
+<a class="viewcode-back" href="../../../../zae_engine.data.collate.html#zae_engine.data.collate.core.CollateBase.wrap">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span>
+
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wrapped_func</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

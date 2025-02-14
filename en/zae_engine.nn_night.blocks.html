@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.nn_night.blocks package &mdash; zae-engine  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">zae_engine.nn_night.blocks package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.blocks.conv_block">zae_engine.nn_night.blocks.conv_block module</a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.conv_block.ConvBlock"><code class="docutils literal notranslate"><span class="pre">ConvBlock</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.conv_block.ConvBlock.forward"><code class="docutils literal notranslate"><span class="pre">ConvBlock.forward()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.conv_block.ConvBlock.kernel_type"><code class="docutils literal notranslate"><span class="pre">ConvBlock.kernel_type</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.blocks.resblock">zae_engine.nn_night.blocks.resblock module</a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.resblock.BasicBlock"><code class="docutils literal notranslate"><span class="pre">BasicBlock</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.resblock.BasicBlock.expansion"><code class="docutils literal notranslate"><span class="pre">BasicBlock.expansion</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.resblock.BasicBlock.forward"><code class="docutils literal notranslate"><span class="pre">BasicBlock.forward()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.resblock.Bottleneck"><code class="docutils literal notranslate"><span class="pre">Bottleneck</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.resblock.Bottleneck.expansion"><code class="docutils literal notranslate"><span class="pre">Bottleneck.expansion</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.resblock.Bottleneck.forward"><code class="docutils literal notranslate"><span class="pre">Bottleneck.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.blocks.spatial_attention">zae_engine.nn_night.blocks.spatial_attention module</a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.spatial_attention.CBAM1d"><code class="docutils literal notranslate"><span class="pre">CBAM1d</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.spatial_attention.CBAM1d.forward"><code class="docutils literal notranslate"><span class="pre">CBAM1d.forward()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.spatial_attention.CBAM1d.spatial_wise"><code class="docutils literal notranslate"><span class="pre">CBAM1d.spatial_wise()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.spatial_attention.SE1d"><code class="docutils literal notranslate"><span class="pre">SE1d</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.spatial_attention.SE1d.channel_wise"><code class="docutils literal notranslate"><span class="pre">SE1d.channel_wise()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.spatial_attention.SE1d.forward"><code class="docutils literal notranslate"><span class="pre">SE1d.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.blocks.unet_block">zae_engine.nn_night.blocks.unet_block module</a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.unet_block.RSUBlock"><code class="docutils literal notranslate"><span class="pre">RSUBlock</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.unet_block.RSUBlock.down_layer"><code class="docutils literal notranslate"><span class="pre">RSUBlock.down_layer()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.unet_block.RSUBlock.forward"><code class="docutils literal notranslate"><span class="pre">RSUBlock.forward()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.unet_block.RSUBlock.up_layer"><code class="docutils literal notranslate"><span class="pre">RSUBlock.up_layer()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.unet_block.UNetBlock"><code class="docutils literal notranslate"><span class="pre">UNetBlock</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.unet_block.UNetBlock.expansion"><code class="docutils literal notranslate"><span class="pre">UNetBlock.expansion</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">UNetBlock.expansion</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.nn_night.blocks.unet_block.UNetBlock.forward"><code class="docutils literal notranslate"><span class="pre">UNetBlock.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.nn_night.blocks">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">zae_engine.nn_night.blocks package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/zae_engine.nn_night.blocks.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zae-engine-nn-night-blocks-package">
+<h1>zae_engine.nn_night.blocks package<a class="headerlink" href="#zae-engine-nn-night-blocks-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-zae_engine.nn_night.blocks.conv_block">
+<span id="zae-engine-nn-night-blocks-conv-block-module"></span><h2>zae_engine.nn_night.blocks.conv_block module<a class="headerlink" href="#module-zae_engine.nn_night.blocks.conv_block" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.conv_block.ConvBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.blocks.conv_block.</span></span><span class="sig-name descname"><span class="pre">ConvBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">~typing.Tuple[int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int]</span> <span class="pre">=</span> <span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilate:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_norm:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_layer:</span> <span class="pre">~torch.nn.modules.module.Module</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.conv.Conv2d'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_layer:</span> <span class="pre">~torch.nn.modules.module.Module</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.batchnorm.BatchNorm2d'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_layer:</span> <span class="pre">~torch.nn.modules.module.Module</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.activation.ReLU'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/conv_block.html#ConvBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.conv_block.ConvBlock" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.conv_block.ConvBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/conv_block.html#ConvBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.conv_block.ConvBlock.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the ConvBlock block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, channel_in, height, width).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor of shape (batch_size, channel_out, height, width).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.conv_block.ConvBlock.kernel_type">
+<span class="sig-name descname"><span class="pre">kernel_type</span></span><a class="headerlink" href="#zae_engine.nn_night.blocks.conv_block.ConvBlock.kernel_type" title="Link to this definition">¶</a></dt>
+<dd><p>Residual Block with Convolution, Batch Normalization, and ReLU Activation.</p>
+<p>This module performs a convolution followed by batch normalization and ReLU activation.
+It serves as a fundamental building block in the RSU (Residual U-block) structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_in</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of input channels. Default is 3.</p></li>
+<li><p><strong>ch_out</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of output channels. Default is 3.</p></li>
+<li><p><strong>dilate</strong> (<em>int</em><em>, </em><em>optional</em>) – Dilation rate for the convolution. Default is 1.</p></li>
+</ul>
+</dd>
+</dl>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.nn_night.blocks.resblock">
+<span id="zae-engine-nn-night-blocks-resblock-module"></span><h2>zae_engine.nn_night.blocks.resblock module<a class="headerlink" href="#module-zae_engine.nn_night.blocks.resblock" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.resblock.BasicBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.blocks.resblock.</span></span><span class="sig-name descname"><span class="pre">BasicBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">ch_in:</span> <span class="pre">int,</span> <span class="pre">ch_out:</span> <span class="pre">int,</span> <span class="pre">stride:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">groups:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">dilation:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">norm_layer:</span> <span class="pre">~typing.Callable[[...],</span> <span class="pre">~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.batchnorm.BatchNorm2d'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/resblock.html#BasicBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.resblock.BasicBlock" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Basic residual block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_in</strong> (<em>int</em>) – Number of input channels.</p></li>
+<li><p><strong>ch_out</strong> (<em>int</em>) – Number of output channels.</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em>, </em><em>optional</em>) – Stride of the convolution. Default is 1.</p></li>
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of groups for the convolution. Default is 1.</p></li>
+<li><p><strong>dilation</strong> (<em>int</em><em>, </em><em>optional</em>) – Dilation for the convolution. Default is 1.</p></li>
+<li><p><strong>norm_layer</strong> (<em>Callable</em><em>[</em><em>...</em><em>, </em><em>nn.Module</em><em>]</em><em>, </em><em>optional</em>) – Normalization layer to use. Default is nn.BatchNorm2d.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).
+Deep residual learning for image recognition.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.resblock.BasicBlock.expansion">
+<span class="sig-name descname"><span class="pre">expansion</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#zae_engine.nn_night.blocks.resblock.BasicBlock.expansion" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.resblock.BasicBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/resblock.html#BasicBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.resblock.BasicBlock.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.resblock.Bottleneck">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.blocks.resblock.</span></span><span class="sig-name descname"><span class="pre">Bottleneck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">ch_in:</span> <span class="pre">int,</span> <span class="pre">ch_out:</span> <span class="pre">int,</span> <span class="pre">stride:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">groups:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">dilation:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">norm_layer:</span> <span class="pre">~typing.Callable[[...],</span> <span class="pre">~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.batchnorm.BatchNorm2d'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/resblock.html#Bottleneck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.resblock.Bottleneck" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Bottleneck residual block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_in</strong> (<em>int</em>) – Number of input channels.</p></li>
+<li><p><strong>ch_out</strong> (<em>int</em>) – Number of output channels.</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em>, </em><em>optional</em>) – Stride of the convolution. Default is 1.</p></li>
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of groups for the convolution. Default is 1.</p></li>
+<li><p><strong>dilation</strong> (<em>int</em><em>, </em><em>optional</em>) – Dilation for the convolution. Default is 1.</p></li>
+<li><p><strong>norm_layer</strong> (<em>Callable</em><em>[</em><em>...</em><em>, </em><em>nn.Module</em><em>]</em><em>, </em><em>optional</em>) – Normalization layer to use. Default is nn.BatchNorm2d.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016).
+Deep residual learning for image recognition.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.resblock.Bottleneck.expansion">
+<span class="sig-name descname"><span class="pre">expansion</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#zae_engine.nn_night.blocks.resblock.Bottleneck.expansion" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.resblock.Bottleneck.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/resblock.html#Bottleneck.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.resblock.Bottleneck.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.nn_night.blocks.spatial_attention">
+<span id="zae-engine-nn-night-blocks-spatial-attention-module"></span><h2>zae_engine.nn_night.blocks.spatial_attention module<a class="headerlink" href="#module-zae_engine.nn_night.blocks.spatial_attention" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.spatial_attention.CBAM1d">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.blocks.spatial_attention.</span></span><span class="sig-name descname"><span class="pre">CBAM1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_pool</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/spatial_attention.html#CBAM1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.spatial_attention.CBAM1d" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Convolutional Block Attention Module for 1D inputs.</p>
+<p>This module implements the Convolutional Block Attention Module (CBAM).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_in</strong> (<em>int</em>) – The channel-wise dimension of the input tensor.</p></li>
+<li><p><strong>kernel_size</strong> (<em>_size_1_t</em><em>, </em><em>optional</em>) – The kernel size for the convolutional layer. Default is 7.</p></li>
+<li><p><strong>reduction</strong> (<em>int</em><em>, </em><em>optional</em>) – The reduction ratio for the SE block. Default is 8. Must be a divisor of ch_in.</p></li>
+<li><p><strong>bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use bias in the convolutional and fully connected layers. Default is False.</p></li>
+<li><p><strong>conv_pool</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, use convolutional pooling for the spatial attention mechanism. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Woo, S., Park, J., Lee, J.-Y., &amp; Kweon, I. S. (2018). CBAM: Convolutional Block Attention Module.
+In Proceedings of the European Conference on Computer Vision (ECCV) (pp. 3-19).
+<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a></p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.spatial_attention.CBAM1d.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/spatial_attention.html#CBAM1d.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.spatial_attention.CBAM1d.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.spatial_attention.CBAM1d.spatial_wise">
+<span class="sig-name descname"><span class="pre">spatial_wise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/spatial_attention.html#CBAM1d.spatial_wise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.spatial_attention.CBAM1d.spatial_wise" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.spatial_attention.SE1d">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.blocks.spatial_attention.</span></span><span class="sig-name descname"><span class="pre">SE1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/spatial_attention.html#SE1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.spatial_attention.SE1d" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Squeeze and Excitation module for 1D inputs.</p>
+<p>This module implements the Squeeze and Excitation (SE) block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_in</strong> (<em>int</em>) – The channel-wise dimension of the input tensor.</p></li>
+<li><p><strong>reduction</strong> (<em>int</em><em>, </em><em>optional</em>) – The reduction ratio for the SE block. Default is 8. Must be a divisor of ch_in.</p></li>
+<li><p><strong>bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use bias in the fully connected layers. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Hu, J., Shen, L., &amp; Sun, G. (2018). Squeeze-and-Excitation Networks.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 7132-7141).
+<a class="reference external" href="https://arxiv.org/abs/1709.01507">https://arxiv.org/abs/1709.01507</a></p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.spatial_attention.SE1d.channel_wise">
+<span class="sig-name descname"><span class="pre">channel_wise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/spatial_attention.html#SE1d.channel_wise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.spatial_attention.SE1d.channel_wise" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.spatial_attention.SE1d.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/spatial_attention.html#SE1d.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.spatial_attention.SE1d.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.nn_night.blocks.unet_block">
+<span id="zae-engine-nn-night-blocks-unet-block-module"></span><h2>zae_engine.nn_night.blocks.unet_block module<a class="headerlink" href="#module-zae_engine.nn_night.blocks.unet_block" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.unet_block.RSUBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.blocks.unet_block.</span></span><span class="sig-name descname"><span class="pre">RSUBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_mid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pool_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/unet_block.html#RSUBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.unet_block.RSUBlock" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Recurrent Residual U-block (RSU) implementation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_in</strong> (<em>int</em>) – Number of input channels.</p></li>
+<li><p><strong>ch_mid</strong> (<em>int</em>) – Number of middle channels.</p></li>
+<li><p><strong>ch_out</strong> (<em>int</em>) – Number of output channels.</p></li>
+<li><p><strong>height</strong> (<em>int</em>) – Number of layers in the RSU block (e.g., RSU4 has height=4, RSU7 has height=7).</p></li>
+<li><p><strong>dilation_height</strong> (<em>int</em>) – Dilation rate for convolutions within the block.</p></li>
+<li><p><strong>pool_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Pooling kernel size. Default is 2.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Qin, X., Zhang, Z., Huang, C., Dehghan, M., Zaiane, O. R., &amp; Jagersand, M. (2020).
+U2-Net: Going deeper with nested U-structure for salient object detection. Pattern recognition, 106, 107404.
+(<a class="reference external" href="https://arxiv.org/pdf/2005.09007">https://arxiv.org/pdf/2005.09007</a>)</p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.unet_block.RSUBlock.down_layer">
+<span class="sig-name descname"><span class="pre">down_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">at_first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/unet_block.html#RSUBlock.down_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.unet_block.RSUBlock.down_layer" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a downsampling layer or identity based on the position.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.unet_block.RSUBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/unet_block.html#RSUBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.unet_block.RSUBlock.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass through the RSUBlock.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, channels, height, width).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor of shape (batch_size, out_ch, height, width).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.unet_block.RSUBlock.up_layer">
+<span class="sig-name descname"><span class="pre">up_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">at_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/unet_block.html#RSUBlock.up_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.unet_block.RSUBlock.up_layer" title="Link to this definition">¶</a></dt>
+<dd><p>Returns an upsampling layer or identity based on the position.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.unet_block.UNetBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.nn_night.blocks.unet_block.</span></span><span class="sig-name descname"><span class="pre">UNetBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">ch_in:</span> <span class="pre">int,</span> <span class="pre">ch_out:</span> <span class="pre">int,</span> <span class="pre">stride:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">groups:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1,</span> <span class="pre">norm_layer:</span> <span class="pre">~typing.Callable[[...],</span> <span class="pre">~torch.nn.modules.module.Module]</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.batchnorm.BatchNorm2d'&gt;,</span> <span class="pre">*args,</span> <span class="pre">**kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/unet_block.html#UNetBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.unet_block.UNetBlock" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zae_engine.nn_night.blocks.resblock.BasicBlock" title="zae_engine.nn_night.blocks.resblock.BasicBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasicBlock</span></code></a></p>
+<p>Two times of [Conv-normalization-activation] block for UNet architecture.</p>
+<p>This module is a modified version of the BasicBlock used in ResNet, adapted for the UNet architecture.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ch_in</strong> (<em>int</em>) – The number of input channels.</p></li>
+<li><p><strong>ch_out</strong> (<em>int</em>) – The number of output channels.</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em>, </em><em>optional</em>) – The stride of the convolution. Default is 1.</p></li>
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of groups for the convolution. Default is 1.</p></li>
+<li><p><strong>norm_layer</strong> (<em>Callable</em><em>[</em><em>...</em><em>, </em><em>nn.Module</em><em>]</em><em>, </em><em>optional</em>) – The normalization layer to use. Default is <cite>nn.BatchNorm2d</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.unet_block.UNetBlock.expansion">
+<span class="sig-name descname"><span class="pre">expansion</span></span><a class="headerlink" href="#zae_engine.nn_night.blocks.unet_block.UNetBlock.expansion" title="Link to this definition">¶</a></dt>
+<dd><p>The expansion factor of the block, set to 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016). Deep Residual Learning for Image Recognition.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (CVPR) (pp. 770-778).
+<a class="reference external" href="https://arxiv.org/abs/1512.03385">https://arxiv.org/abs/1512.03385</a></p>
+</aside>
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>Ronneberger, O., Fischer, P., &amp; Brox, T. (2015). U-Net: Convolutional Networks for Biomedical Image Segmentation.
+In International Conference on Medical image computing and computer-assisted intervention (pp. 234-241).
+<a class="reference external" href="https://arxiv.org/abs/1505.04597">https://arxiv.org/abs/1505.04597</a></p>
+</aside>
+</aside>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">expansion</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.nn_night.blocks.unet_block.UNetBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/zae_engine/nn_night/blocks/unet_block.html#UNetBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#zae_engine.nn_night.blocks.unet_block.UNetBlock.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for the UNetBlock.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Tensor</em>) – Input tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor after applying the block operations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.nn_night.blocks">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.nn_night.blocks" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

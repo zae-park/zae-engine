@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.schedulers package &mdash; zae-engine  문서</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=8e72191d"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/translations.js?v=e33e7ba0"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">zae_engine.schedulers package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-zae_engine.schedulers.core">zae_engine.schedulers.core module</a><ul>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase"><code class="docutils literal notranslate"><span class="pre">SchedulerBase</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase.optimizer"><code class="docutils literal notranslate"><span class="pre">SchedulerBase.optimizer</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase.total_iters"><code class="docutils literal notranslate"><span class="pre">SchedulerBase.total_iters</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase.eta_min"><code class="docutils literal notranslate"><span class="pre">SchedulerBase.eta_min</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase.last_epoch"><code class="docutils literal notranslate"><span class="pre">SchedulerBase.last_epoch</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase._step_count"><code class="docutils literal notranslate"><span class="pre">SchedulerBase._step_count</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase.get_lr"><code class="docutils literal notranslate"><span class="pre">SchedulerBase.get_lr()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerChain"><code class="docutils literal notranslate"><span class="pre">SchedulerChain</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerChain.schedulers"><code class="docutils literal notranslate"><span class="pre">SchedulerChain.schedulers</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerChain.optimizer"><code class="docutils literal notranslate"><span class="pre">SchedulerChain.optimizer</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerChain.next_iters"><code class="docutils literal notranslate"><span class="pre">SchedulerChain.next_iters</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerChain.total_iters"><code class="docutils literal notranslate"><span class="pre">SchedulerChain.total_iters</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerChain.i_scheduler"><code class="docutils literal notranslate"><span class="pre">SchedulerChain.i_scheduler</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerChain.get_lr"><code class="docutils literal notranslate"><span class="pre">SchedulerChain.get_lr()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerChain.sanity_check"><code class="docutils literal notranslate"><span class="pre">SchedulerChain.sanity_check()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerChain.step"><code class="docutils literal notranslate"><span class="pre">SchedulerChain.step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.schedulers.scheduler">zae_engine.schedulers.scheduler module</a><ul>
+<li><a class="reference internal" href="#zae_engine.schedulers.scheduler.CosineAnnealingScheduler"><code class="docutils literal notranslate"><span class="pre">CosineAnnealingScheduler</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.schedulers.scheduler.CosineAnnealingScheduler.get_lr"><code class="docutils literal notranslate"><span class="pre">CosineAnnealingScheduler.get_lr()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.schedulers.scheduler.WarmUpScheduler"><code class="docutils literal notranslate"><span class="pre">WarmUpScheduler</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.schedulers.scheduler.WarmUpScheduler.get_lr"><code class="docutils literal notranslate"><span class="pre">WarmUpScheduler.get_lr()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.schedulers">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">zae_engine.schedulers package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/zae_engine.schedulers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zae-engine-schedulers-package">
+<h1>zae_engine.schedulers package<a class="headerlink" href="#zae-engine-schedulers-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-zae_engine.schedulers.core">
+<span id="zae-engine-schedulers-core-module"></span><h2>zae_engine.schedulers.core module<a class="headerlink" href="#module-zae_engine.schedulers.core" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.schedulers.core.</span></span><span class="sig-name descname"><span class="pre">SchedulerBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_iters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/schedulers/core.html#SchedulerBase"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerBase" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <code class="xref py py-class docutils literal notranslate"><span class="pre">LRScheduler</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Base class for learning rate schedulers.</p>
+<p>This class extends PyTorch’s LRScheduler and adds additional functionality
+for custom learning rate scheduling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>Optimizer</em>) – The optimizer for which to schedule the learning rate.</p></li>
+<li><p><strong>total_iters</strong> (<em>int</em>) – The total number of iterations for the scheduler.</p></li>
+<li><p><strong>eta_min</strong> (<em>float</em>) – The minimum learning rate.</p></li>
+<li><p><strong>last_epoch</strong> (<em>int</em><em>, </em><em>optional</em>) – The index of the last epoch. Default is -1.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerBase.optimizer">
+<span class="sig-name descname"><span class="pre">optimizer</span></span><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerBase.optimizer" title="Link to this definition">¶</a></dt>
+<dd><p>The optimizer being used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optimizer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerBase.total_iters">
+<span class="sig-name descname"><span class="pre">total_iters</span></span><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerBase.total_iters" title="Link to this definition">¶</a></dt>
+<dd><p>The total number of iterations for the scheduler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerBase.eta_min">
+<span class="sig-name descname"><span class="pre">eta_min</span></span><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerBase.eta_min" title="Link to this definition">¶</a></dt>
+<dd><p>The minimum learning rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerBase.last_epoch">
+<span class="sig-name descname"><span class="pre">last_epoch</span></span><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerBase.last_epoch" title="Link to this definition">¶</a></dt>
+<dd><p>The index of the last epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerBase._step_count">
+<span class="sig-name descname"><span class="pre">_step_count</span></span><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerBase._step_count" title="Link to this definition">¶</a></dt>
+<dd><p>The step count for the scheduler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerBase.get_lr">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_lr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/schedulers/core.html#SchedulerBase.get_lr"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerBase.get_lr" title="Link to this definition">¶</a></dt>
+<dd><p>Get the learning rate for the current epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The learning rate for the current epoch.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerChain">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.schedulers.core.</span></span><span class="sig-name descname"><span class="pre">SchedulerChain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">schedulers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase" title="zae_engine.schedulers.core.SchedulerBase"><span class="pre">SchedulerBase</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/schedulers/core.html#SchedulerChain"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerChain" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase" title="zae_engine.schedulers.core.SchedulerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">SchedulerBase</span></code></a></p>
+<p>Chain multiple learning rate schedulers together.</p>
+<p>This class allows you to chain multiple learning rate schedulers so that
+they are applied sequentially.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*schedulers</strong> (<a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase" title="zae_engine.schedulers.core.SchedulerBase"><em>SchedulerBase</em></a>) – The schedulers to chain together.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerChain.schedulers">
+<span class="sig-name descname"><span class="pre">schedulers</span></span><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerChain.schedulers" title="Link to this definition">¶</a></dt>
+<dd><p>The list of chained schedulers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of <a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase" title="zae_engine.schedulers.core.SchedulerBase">SchedulerBase</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerChain.optimizer">
+<span class="sig-name descname"><span class="pre">optimizer</span></span><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerChain.optimizer" title="Link to this definition">¶</a></dt>
+<dd><p>The optimizer being used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optimizer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerChain.next_iters">
+<span class="sig-name descname"><span class="pre">next_iters</span></span><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerChain.next_iters" title="Link to this definition">¶</a></dt>
+<dd><p>The iteration counts at which to switch to the next scheduler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerChain.total_iters">
+<span class="sig-name descname"><span class="pre">total_iters</span></span><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerChain.total_iters" title="Link to this definition">¶</a></dt>
+<dd><p>The total number of iterations for the entire chain of schedulers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerChain.i_scheduler">
+<span class="sig-name descname"><span class="pre">i_scheduler</span></span><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerChain.i_scheduler" title="Link to this definition">¶</a></dt>
+<dd><p>The index of the current scheduler in the chain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerChain.get_lr">
+<span class="sig-name descname"><span class="pre">get_lr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/schedulers/core.html#SchedulerChain.get_lr"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerChain.get_lr" title="Link to this definition">¶</a></dt>
+<dd><p>Get the learning rate for the current epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The learning rate for the current epoch.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerChain.sanity_check">
+<span class="sig-name descname"><span class="pre">sanity_check</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/schedulers/core.html#SchedulerChain.sanity_check"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerChain.sanity_check" title="Link to this definition">¶</a></dt>
+<dd><p>Check that all schedulers use the same optimizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The common optimizer used by all schedulers.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optimizer</p>
+</dd>
+<dt class="field-odd">예외 발생<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>AssertionError</strong> – If multiple optimizers are detected.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.schedulers.core.SchedulerChain.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/schedulers/core.html#SchedulerChain.step"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.schedulers.core.SchedulerChain.step" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a step of the scheduler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em><em>, </em><em>optional</em>) – The current epoch. If None, use the internal step count.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.schedulers.scheduler">
+<span id="zae-engine-schedulers-scheduler-module"></span><h2>zae_engine.schedulers.scheduler module<a class="headerlink" href="#module-zae_engine.schedulers.scheduler" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.schedulers.scheduler.CosineAnnealingScheduler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.schedulers.scheduler.</span></span><span class="sig-name descname"><span class="pre">CosineAnnealingScheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/schedulers/scheduler.html#CosineAnnealingScheduler"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.schedulers.scheduler.CosineAnnealingScheduler" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase" title="zae_engine.schedulers.core.SchedulerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">SchedulerBase</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.schedulers.scheduler.CosineAnnealingScheduler.get_lr">
+<span class="sig-name descname"><span class="pre">get_lr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/schedulers/scheduler.html#CosineAnnealingScheduler.get_lr"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.schedulers.scheduler.CosineAnnealingScheduler.get_lr" title="Link to this definition">¶</a></dt>
+<dd><p>Get the learning rate for the current epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The learning rate for the current epoch.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.schedulers.scheduler.WarmUpScheduler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.schedulers.scheduler.</span></span><span class="sig-name descname"><span class="pre">WarmUpScheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/schedulers/scheduler.html#WarmUpScheduler"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.schedulers.scheduler.WarmUpScheduler" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <a class="reference internal" href="#zae_engine.schedulers.core.SchedulerBase" title="zae_engine.schedulers.core.SchedulerBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">SchedulerBase</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.schedulers.scheduler.WarmUpScheduler.get_lr">
+<span class="sig-name descname"><span class="pre">get_lr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/schedulers/scheduler.html#WarmUpScheduler.get_lr"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.schedulers.scheduler.WarmUpScheduler.get_lr" title="Link to this definition">¶</a></dt>
+<dd><p>Get the learning rate for the current epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The learning rate for the current epoch.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.schedulers">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.schedulers" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

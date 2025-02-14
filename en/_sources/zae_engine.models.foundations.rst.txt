@@ -1,0 +1,53 @@
+zae\_engine.models.foundations package
+======================================
+
+Submodules
+----------
+
+zae\_engine.models.foundations.benchmark module
+-----------------------------------------------
+
+.. automodule:: zae_engine.models.foundations.benchmark
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.models.foundations.bert module
+------------------------------------------
+
+.. automodule:: zae_engine.models.foundations.bert
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.models.foundations.resnet module
+--------------------------------------------
+
+.. automodule:: zae_engine.models.foundations.resnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.models.foundations.unet module
+------------------------------------------
+
+.. automodule:: zae_engine.models.foundations.unet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+zae\_engine.models.foundations.word\_embedding module
+-----------------------------------------------------
+
+.. automodule:: zae_engine.models.foundations.word_embedding
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: zae_engine.models.foundations
+   :members:
+   :undoc-members:
+   :show-inheritance:

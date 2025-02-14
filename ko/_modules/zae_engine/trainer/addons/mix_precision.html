@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.trainer.addons.mix_precision &mdash; zae-engine  문서</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=8e72191d"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../../_static/translations.js?v=e33e7ba0"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="../../../../genindex.html" />
+    <link rel="search" title="검색" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">모듈 코드</a></li>
+      <li class="breadcrumb-item active">zae_engine.trainer.addons.mix_precision</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>zae_engine.trainer.addons.mix_precision의 소스 코드</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.cuda.amp</span><span class="w"> </span><span class="kn">import</span> <span class="n">autocast</span><span class="p">,</span> <span class="n">GradScaler</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AddOnBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.._trainer</span><span class="w"> </span><span class="kn">import</span> <span class="n">T</span>
+
+
+<div class="viewcode-block" id="PrecisionMixerAddon">
+<a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.mix_precision.PrecisionMixerAddon">[문서]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PrecisionMixerAddon</span><span class="p">(</span><span class="n">AddOnBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add-on for mixed precision training.</span>
+
+<span class="sd">    This add-on enables mixed precision training to improve computational efficiency and reduce memory usage.</span>
+<span class="sd">    It supports automatic precision selection or user-defined precision settings (e.g., &#39;fp32&#39;, &#39;fp16&#39;, &#39;bf16&#39;).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    precision : Union[str, list], optional</span>
+<span class="sd">        The precision setting for training. Default is &quot;auto&quot;.</span>
+<span class="sd">        - &quot;auto&quot;: Automatically selects the best precision based on hardware capabilities.</span>
+<span class="sd">        - &quot;fp32&quot;: Uses full precision (default in PyTorch).</span>
+<span class="sd">        - &quot;fp16&quot;: Uses half precision for accelerated computation.</span>
+<span class="sd">        - &quot;bf16&quot;: Uses Brain Float 16 precision for supported hardware.</span>
+<span class="sd">        - List: Specifies a priority order for precision (e.g., [&quot;bf16&quot;, &quot;fp16&quot;]).</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    run_batch(batch, **kwargs)</span>
+<span class="sd">        Override the batch processing method to apply mixed precision.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - Mixed precision improves training speed and reduces memory usage by performing certain operations</span>
+<span class="sd">      in lower precision (e.g., FP16) while maintaining stability in others (e.g., FP32 for loss calculation).</span>
+<span class="sd">    - Automatically handles loss scaling via `torch.cuda.amp.GradScaler` to prevent overflow issues</span>
+<span class="sd">      when using FP16.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Using PrecisionMixerAddon with auto precision:</span>
+
+<span class="sd">    &gt;&gt;&gt; from zae_engine.trainer import Trainer</span>
+<span class="sd">    &gt;&gt;&gt; from zae_engine.trainer.addons import PrecisionMixerAddon</span>
+
+<span class="sd">    &gt;&gt;&gt; MyTrainer = Trainer.add_on(PrecisionMixerAddon)</span>
+<span class="sd">    &gt;&gt;&gt; trainer = MyTrainer(</span>
+<span class="sd">    &gt;&gt;&gt;     model=my_model,</span>
+<span class="sd">    &gt;&gt;&gt;     device=&#39;cuda&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;     optimizer=my_optimizer,</span>
+<span class="sd">    &gt;&gt;&gt;     scheduler=my_scheduler,</span>
+<span class="sd">    &gt;&gt;&gt;     precision=&#39;auto&#39;  # Automatically selects best precision</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+<span class="sd">    &gt;&gt;&gt; trainer.run(n_epoch=10, loader=train_loader, valid_loader=valid_loader)</span>
+
+<span class="sd">    Using a priority list for precision:</span>
+
+<span class="sd">    &gt;&gt;&gt; trainer = MyTrainer(</span>
+<span class="sd">    &gt;&gt;&gt;     model=my_model,</span>
+<span class="sd">    &gt;&gt;&gt;     device=&#39;cuda&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;     optimizer=my_optimizer,</span>
+<span class="sd">    &gt;&gt;&gt;     scheduler=my_scheduler,</span>
+<span class="sd">    &gt;&gt;&gt;     precision=[&quot;bf16&quot;, &quot;fp16&quot;]  # Tries bf16 first, falls back to fp16</span>
+<span class="sd">    &gt;&gt;&gt; )</span>
+<span class="sd">    &gt;&gt;&gt; trainer.run(n_epoch=10, loader=train_loader)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PrecisionMixerAddon.apply">
+<a class="viewcode-back" href="../../../../zae_engine.trainer.addons.html#zae_engine.trainer.addons.mix_precision.PrecisionMixerAddon.apply">[문서]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">base_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">PrecisionTrainer</span><span class="p">(</span><span class="n">base_cls</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">precision</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+                <span class="c1"># Check if all devices are CPU</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;PrecisionMixerAddon requires at least one GPU device to function.&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Determine precision settings</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_determine_precision</span><span class="p">(</span><span class="n">precision</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">GradScaler</span><span class="p">()</span> <span class="k">if</span> <span class="s2">&quot;fp16&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="k">else</span> <span class="kc">None</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">_determine_precision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">precision</span><span class="p">):</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Determine the appropriate precision settings based on user input or hardware capabilities.</span>
+
+<span class="sd">                Parameters</span>
+<span class="sd">                ----------</span>
+<span class="sd">                precision : Union[str, list]</span>
+<span class="sd">                    The user-specified precision setting.</span>
+<span class="sd">                    - &quot;auto&quot;: Automatically selects the best precision based on the GPU&#39;s hardware capabilities.</span>
+<span class="sd">                    - str: A single precision mode (e.g., &quot;fp32&quot;, &quot;fp16&quot;, &quot;bf16&quot;).</span>
+<span class="sd">                    - list: A priority order for precision modes (e.g., [&quot;bf16&quot;, &quot;fp16&quot;]).</span>
+
+<span class="sd">                Returns</span>
+<span class="sd">                -------</span>
+<span class="sd">                list</span>
+<span class="sd">                    A list of supported precision modes, ordered by priority.</span>
+
+<span class="sd">                Raises</span>
+<span class="sd">                ------</span>
+<span class="sd">                ValueError</span>
+<span class="sd">                    If the `precision` argument is not a valid string or list.</span>
+
+<span class="sd">                Notes</span>
+<span class="sd">                -----</span>
+<span class="sd">                - When &quot;auto&quot; is specified, the method checks the hardware&#39;s compute capability to determine</span>
+<span class="sd">                  the best available precision (e.g., &quot;bf16&quot; on NVIDIA Ampere GPUs, otherwise &quot;fp16&quot;).</span>
+<span class="sd">                - If multiple precision modes are specified in a list, the method validates their compatibility</span>
+<span class="sd">                  with the hardware and prioritizes them as given.</span>
+
+<span class="sd">                Examples</span>
+<span class="sd">                --------</span>
+<span class="sd">                Automatically select the best precision:</span>
+
+<span class="sd">                &gt;&gt;&gt; addon._determine_precision(&quot;auto&quot;)</span>
+<span class="sd">                [&#39;bf16&#39;, &#39;fp16&#39;]</span>
+
+<span class="sd">                Use a specific precision:</span>
+
+<span class="sd">                &gt;&gt;&gt; addon._determine_precision(&quot;fp32&quot;)</span>
+<span class="sd">                [&#39;fp32&#39;]</span>
+
+<span class="sd">                Provide a priority list:</span>
+
+<span class="sd">                &gt;&gt;&gt; addon._determine_precision([&quot;bf16&quot;, &quot;fp16&quot;])</span>
+<span class="sd">                [&#39;bf16&#39;, &#39;fp16&#39;]</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="k">if</span> <span class="n">precision</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">get_device_capability</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">8</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;bf16&quot;</span><span class="p">,</span> <span class="s2">&quot;fp16&quot;</span><span class="p">]</span>  <span class="c1"># Take BF16 first @ over `Ampere`</span>
+                    <span class="k">elif</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+                        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;fp16&quot;</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;fp32&quot;</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">precision</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="p">[</span><span class="n">precision</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">precision</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">precision</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid precision setting.&quot;</span><span class="p">)</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">run_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Override the batch processing method to enable mixed precision training.</span>
+
+<span class="sd">                Parameters</span>
+<span class="sd">                ----------</span>
+<span class="sd">                batch : Union[tuple, dict]</span>
+<span class="sd">                    The batch of data to process.</span>
+<span class="sd">                kwargs : dict</span>
+<span class="sd">                    Additional arguments for batch processing.</span>
+
+<span class="sd">                Notes</span>
+<span class="sd">                -----</span>
+<span class="sd">                - If precision is set to &quot;fp16&quot; or &quot;bf16&quot;, this method uses `torch.cuda.amp.autocast`</span>
+<span class="sd">                  to enable mixed precision operations for the forward pass.</span>
+<span class="sd">                - Loss scaling is automatically applied when using FP16 to prevent overflow issues.</span>
+<span class="sd">                - The precision setting does not affect the input data&#39;s original precision; it only</span>
+<span class="sd">                  applies during model computations and optimizer steps.</span>
+
+<span class="sd">                Examples</span>
+<span class="sd">                --------</span>
+<span class="sd">                Forward pass and gradient scaling with mixed precision:</span>
+
+<span class="sd">                &gt;&gt;&gt; trainer.run_batch(batch)</span>
+<span class="sd">                &gt;&gt;&gt; # AutoCast ensures model operations are performed in fp16 or bf16</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_device</span><span class="p">(</span><span class="o">**</span><span class="n">batch</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_device</span><span class="p">(</span><span class="o">*</span><span class="n">batch</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+
+                    <span class="k">with</span> <span class="n">autocast</span><span class="p">(</span><span class="n">enabled</span><span class="o">=</span><span class="s2">&quot;fp16&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="ow">or</span> <span class="s2">&quot;bf16&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">):</span>
+                        <span class="n">step_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_step</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+                        <span class="n">loss</span> <span class="o">=</span> <span class="n">step_dict</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">]</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_step_on_batch</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;test&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+                    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                        <span class="k">with</span> <span class="n">autocast</span><span class="p">(</span>
+                            <span class="n">enabled</span><span class="o">=</span><span class="s2">&quot;fp16&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="ow">or</span> <span class="s2">&quot;bf16&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span>
+                        <span class="p">):</span>
+                            <span class="n">step_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_step</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected mode </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+                <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">(</span><span class="n">step_dict</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">progress_checker</span><span class="o">.</span><span class="n">update_step</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">PrecisionTrainer</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.models.builds.nested_autoencoder &mdash; zae-engine  문서</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/documentation_options.js?v=8e72191d"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../../_static/translations.js?v=e33e7ba0"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="../../../../genindex.html" />
+    <link rel="search" title="검색" href="../../../../search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">모듈 코드</a></li>
+          <li class="breadcrumb-item"><a href="../builds.html">zae_engine.models.builds</a></li>
+      <li class="breadcrumb-item active">zae_engine.models.builds.nested_autoencoder</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>zae_engine.models.builds.nested_autoencoder의 소스 코드</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">...nn_night.blocks.unet_block</span><span class="w"> </span><span class="kn">import</span> <span class="n">RSUBlock</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;NestedUNet&quot;</span><span class="p">]</span>
+<span class="c1"># https://arxiv.org/pdf/2005.09007</span>
+
+
+<div class="viewcode-block" id="NestedUNet">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.nested_autoencoder.NestedUNet">[문서]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NestedUNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of the U²-Net architecture.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    in_ch : int, optional</span>
+<span class="sd">        Number of input channels. Default is 3.</span>
+<span class="sd">    out_ch : int, optional</span>
+<span class="sd">        Number of output channels. Default is 1.</span>
+<span class="sd">    width : Union[int, Sequence], optional</span>
+<span class="sd">        Initial number of middle channels. Default is 32.</span>
+<span class="sd">    heights : Sequence[int], optional</span>
+<span class="sd">        List of RSU block heights for each encoder layer. Default is (7, 6, 5, 4, 4).</span>
+<span class="sd">    dilation_heights : Sequence[int], optional</span>
+<span class="sd">        List of dilation heights for each encoder layer. Default is (2, 2, 2, 2, 4).</span>
+<span class="sd">    middle_width : Union[int, Sequence], optional</span>
+<span class="sd">        List of middle channels for each RSU block. Default is (32, 32, 64, 128, 256).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Qin, X., Zhang, Z., Huang, C., Dehghan, M., Zaiane, O. R., &amp; Jagersand, M. (2020).</span>
+<span class="sd">            U2-Net: Going deeper with nested U-structure for salient object detection. Pattern recognition, 106, 107404.</span>
+<span class="sd">            (https://arxiv.org/pdf/2005.09007)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_ch</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">out_ch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">]</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="n">heights</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="n">dilation_heights</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="n">middle_width</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NestedUNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">dilation_heights</span><span class="p">),</span> <span class="s2">&quot;heights and dilation_heights must have the same length.&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_resolution</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">heights</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span>
+
+        <span class="c1"># Encoder configuration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder_channels</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Verify input width</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">width_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">width</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">heights</span><span class="p">))]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">width</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span>
+            <span class="n">width_list</span> <span class="o">=</span> <span class="n">width</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">dh</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">mw</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">heights</span><span class="p">,</span> <span class="n">dilation_heights</span><span class="p">,</span> <span class="n">width_list</span><span class="p">,</span> <span class="n">middle_width</span><span class="p">)):</span>
+
+            <span class="n">enc_ch_in</span> <span class="o">=</span> <span class="n">w</span> <span class="k">if</span> <span class="n">i</span> <span class="k">else</span> <span class="n">in_ch</span>
+            <span class="n">enc_ch_out</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">w</span>  <span class="c1"># Double the channels</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RSUBlock</span><span class="p">(</span><span class="n">ch_in</span><span class="o">=</span><span class="n">enc_ch_in</span><span class="p">,</span> <span class="n">ch_mid</span><span class="o">=</span><span class="n">mw</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="n">enc_ch_out</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">h</span><span class="p">,</span> <span class="n">dilation_height</span><span class="o">=</span><span class="n">dh</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pool_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+            <span class="c1"># print(f&quot;\tEnc_{i}\tch_in: {enc_ch_in}\tch_mid: {mw}\tch_out: {enc_ch_out}\th: {h}\tdh: {dh}&quot;)</span>
+
+        <span class="c1"># Bottleneck</span>
+        <span class="n">bottleneck_height</span> <span class="o">=</span> <span class="n">heights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Use the same height as the last encoder layer</span>
+        <span class="n">bottleneck_dil</span> <span class="o">=</span> <span class="n">dilation_heights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span> <span class="o">=</span> <span class="n">RSUBlock</span><span class="p">(</span>
+            <span class="n">ch_in</span><span class="o">=</span><span class="n">enc_ch_out</span><span class="p">,</span>
+            <span class="n">ch_mid</span><span class="o">=</span><span class="n">mw</span><span class="p">,</span>
+            <span class="n">ch_out</span><span class="o">=</span><span class="n">enc_ch_out</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="n">bottleneck_height</span><span class="p">,</span>
+            <span class="n">dilation_height</span><span class="o">=</span><span class="n">bottleneck_dil</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># print(</span>
+        <span class="c1">#     f&quot;\tBottle\tch_in: {enc_ch_out}\tch_mid: {mw}\tch_out: {enc_ch_out}\th: {bottleneck_height}\tdh: {bottleneck_dil}&quot;</span>
+        <span class="c1"># )</span>
+
+        <span class="c1"># Decoder configuration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">up_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_channels</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">dec_ch_</span> <span class="o">=</span> <span class="n">enc_ch_out</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">dh</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">mw</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="nb">zip</span><span class="p">(</span><span class="n">heights</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dilation_heights</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">width_list</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">middle_width</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="p">):</span>
+            <span class="n">dec_ch_out</span> <span class="o">=</span> <span class="n">w</span>  <span class="c1"># Set output channels</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">up_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">RSUBlock</span><span class="p">(</span>
+                    <span class="n">ch_in</span><span class="o">=</span><span class="n">dec_ch_</span><span class="p">,</span>  <span class="c1"># Concatenated channels from skip connection</span>
+                    <span class="n">ch_mid</span><span class="o">=</span><span class="n">mw</span><span class="p">,</span>
+                    <span class="n">ch_out</span><span class="o">=</span><span class="n">dec_ch_out</span><span class="p">,</span>
+                    <span class="n">height</span><span class="o">=</span><span class="n">h</span><span class="p">,</span>
+                    <span class="n">dilation_height</span><span class="o">=</span><span class="n">dh</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="c1"># print(f&quot;\tDec_{i}\tch_in: {dec_ch_}\tch_mid: {mw}\tch_out: {dec_ch_out}\th: {h}\tdh: {dh}&quot;)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decoder_channels</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dec_ch_</span><span class="p">,</span> <span class="n">mw</span><span class="p">,</span> <span class="n">dec_ch_out</span><span class="p">))</span>
+            <span class="n">dec_ch_</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dec_ch_out</span>
+
+        <span class="c1"># Output layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dec_ch_out</span><span class="p">,</span> <span class="n">out_ch</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Side outputs for deep supervision</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">side_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span><span class="p">):</span>
+            <span class="c1"># Create side outputs for each decoder stage</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">side_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decoder_channels</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="n">out_ch</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+<div class="viewcode-block" id="NestedUNet.forward">
+<a class="viewcode-back" href="../../../../zae_engine.models.builds.html#zae_engine.models.builds.nested_autoencoder.NestedUNet.forward">[문서]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">encoder_features</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Encoder path</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">encoder_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_layers</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Bottleneck</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">side_outputs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Decoder path</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_layers</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">enc_feat</span> <span class="o">=</span> <span class="n">encoder_features</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">num_layers</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># Resize if necessary</span>
+            <span class="c1"># if x.shape[2:] != enc_feat.shape[2:]:</span>
+            <span class="c1">#     x = F.interpolate(x, size=enc_feat.shape[2:], mode=&quot;bilinear&quot;, align_corners=True)</span>
+
+            <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">enc_feat</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+
+            <span class="c1"># Generate side output</span>
+            <span class="n">side_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">side_layers</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">side_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">side_output</span><span class="p">)</span>
+
+        <span class="c1"># Final output</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="o">*</span><span class="n">side_outputs</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

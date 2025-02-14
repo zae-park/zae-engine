@@ -1,0 +1,19 @@
+zae\_engine.data package
+========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   zae_engine.data.collate
+   zae_engine.data.dataset
+
+Module contents
+---------------
+
+.. automodule:: zae_engine.data
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="ko" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zae_engine.operation package &mdash; zae-engine  문서</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/zaevicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=8e72191d"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/translations.js?v=e33e7ba0"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" />
+   
+  
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-324PGHPRLJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-324PGHPRLJ');
+    </script>
+    <!-- End Google Analytics -->
+  
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            zae-engine
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">zae_engine.operation package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-zae_engine.operation.run_length">zae_engine.operation.run_length module</a><ul>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.Run"><code class="docutils literal notranslate"><span class="pre">Run</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.Run.start_index"><code class="docutils literal notranslate"><span class="pre">Run.start_index</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.Run.end_index"><code class="docutils literal notranslate"><span class="pre">Run.end_index</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.Run.value"><code class="docutils literal notranslate"><span class="pre">Run.value</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">Run.end_index</span></code></a></li>
+<li><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">Run.start_index</span></code></a></li>
+<li><a class="reference internal" href="#id2"><code class="docutils literal notranslate"><span class="pre">Run.value</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunLengthCodec"><code class="docutils literal notranslate"><span class="pre">RunLengthCodec</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunLengthCodec.encode"><code class="docutils literal notranslate"><span class="pre">RunLengthCodec.encode()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunLengthCodec.decode"><code class="docutils literal notranslate"><span class="pre">RunLengthCodec.decode()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunLengthCodec.sanitize"><code class="docutils literal notranslate"><span class="pre">RunLengthCodec.sanitize()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunLengthCodec.__call__"><code class="docutils literal notranslate"><span class="pre">RunLengthCodec.__call__()</span></code></a></li>
+<li><a class="reference internal" href="#id3"><code class="docutils literal notranslate"><span class="pre">RunLengthCodec.decode()</span></code></a></li>
+<li><a class="reference internal" href="#id4"><code class="docutils literal notranslate"><span class="pre">RunLengthCodec.encode()</span></code></a></li>
+<li><a class="reference internal" href="#id5"><code class="docutils literal notranslate"><span class="pre">RunLengthCodec.sanitize()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunList"><code class="docutils literal notranslate"><span class="pre">RunList</span></code></a><ul>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunList.all_runs"><code class="docutils literal notranslate"><span class="pre">RunList.all_runs</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunList.sense"><code class="docutils literal notranslate"><span class="pre">RunList.sense</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunList.original_length"><code class="docutils literal notranslate"><span class="pre">RunList.original_length</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunList.filtered"><code class="docutils literal notranslate"><span class="pre">RunList.filtered()</span></code></a></li>
+<li><a class="reference internal" href="#zae_engine.operation.run_length.RunList.raw"><code class="docutils literal notranslate"><span class="pre">RunList.raw()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-zae_engine.operation">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">zae-engine</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">zae_engine.operation package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/zae_engine.operation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zae-engine-operation-package">
+<h1>zae_engine.operation package<a class="headerlink" href="#zae-engine-operation-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-zae_engine.operation.run_length">
+<span id="zae-engine-operation-run-length-module"></span><h2>zae_engine.operation.run_length module<a class="headerlink" href="#module-zae_engine.operation.run_length" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.Run">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.operation.run_length.</span></span><span class="sig-name descname"><span class="pre">Run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#Run"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.operation.run_length.Run" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a run in Run-Length Encoding (RLE).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.Run.start_index">
+<span class="sig-name descname"><span class="pre">start_index</span></span><a class="headerlink" href="#zae_engine.operation.run_length.Run.start_index" title="Link to this definition">¶</a></dt>
+<dd><p>The starting index of the run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.Run.end_index">
+<span class="sig-name descname"><span class="pre">end_index</span></span><a class="headerlink" href="#zae_engine.operation.run_length.Run.end_index" title="Link to this definition">¶</a></dt>
+<dd><p>The ending index of the run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.Run.value">
+<span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#zae_engine.operation.run_length.Run.value" title="Link to this definition">¶</a></dt>
+<dd><p>The value of the run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">end_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">start_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#id1" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#id2" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunLengthCodec">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.operation.run_length.</span></span><span class="sig-name descname"><span class="pre">RunLengthCodec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tol_merge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_incomplete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_closed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunLengthCodec"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.operation.run_length.RunLengthCodec" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A codec class for Run-Length Encoding (RLE) and decoding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tol_merge</strong> (<em>int</em><em>, </em><em>optional</em>) – The tolerance value to merge close runs. Default is 20.</p></li>
+<li><p><strong>remove_incomplete</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to remove incomplete runs during sanitization. Default is False.</p></li>
+<li><p><strong>merge_closed</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to merge close runs during sanitization. Default is False.</p></li>
+<li><p><strong>base_class</strong> (<em>int</em><em>, </em><em>optional</em>) – The base class value to be excluded from runs. Default is 0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunLengthCodec.encode">
+<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sense</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RunList:</span></span></span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunLengthCodec.encode"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.operation.run_length.RunLengthCodec.encode" title="Link to this definition">¶</a></dt>
+<dd><p>Encodes a list of integers into RLE runs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunLengthCodec.decode">
+<span class="sig-name descname"><span class="pre">decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoded_runs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList"><span class="pre">RunList</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List[int]:</span></span></span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunLengthCodec.decode"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.operation.run_length.RunLengthCodec.decode" title="Link to this definition">¶</a></dt>
+<dd><p>Decodes RLE runs back into the original list of integers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunLengthCodec.sanitize">
+<span class="sig-name descname"><span class="pre">sanitize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList"><span class="pre">RunList</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RunList:</span></span></span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunLengthCodec.sanitize"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.operation.run_length.RunLengthCodec.sanitize" title="Link to this definition">¶</a></dt>
+<dd><p>Cleans and merges runs based on the codec’s parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunLengthCodec.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList"><span class="pre">RunList</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList"><span class="pre">RunList</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sense</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union[RunList,</span> <span class="pre">List[RunList],</span> <span class="pre">List[int],</span> <span class="pre">List[List[int]]]:</span></span></span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunLengthCodec.__call__"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.operation.run_length.RunLengthCodec.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Encodes or decodes data based on the input type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoded_runs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList"><span class="pre">RunList</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunLengthCodec.decode"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition">¶</a></dt>
+<dd><p>Decode a list of RLE runs back to the original list of integers.</p>
+<p>This method reconstructs the original sequence of integers from a <cite>RunList</cite> object.
+Each <cite>Run</cite> specifies the start index, end index, and the value to be filled in that range.
+The length of the output list is determined by the <cite>original_length</cite> stored in <cite>RunList</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>encoded_runs</strong> (<a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList"><em>RunList</em></a>) – A <cite>RunList</cite> object containing runs to be decoded.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>The decoded list of integers reconstructed from the runs.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sense</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList"><span class="pre">RunList</span></a></span></span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunLengthCodec.encode"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition">¶</a></dt>
+<dd><p>Encode a list of integers using Run-Length Encoding (RLE).</p>
+<p>This method converts a sequence of integers into a list of runs.
+Each run is represented as a <cite>Run</cite> object containing the start index,
+end index, and the value of the run. Runs with a length smaller than
+the specified <cite>sense</cite> are ignored in the <cite>filtered()</cite> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – The input list of integers to be encoded.</p></li>
+<li><p><strong>sense</strong> (<em>int</em>) – The minimum length of runs to be considered. Runs shorter than this
+value are excluded from the output when calling <cite>filtered()</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <cite>RunList</cite> object containing all runs, the sense value, and the original list length.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList">RunList</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">sanitize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList"><span class="pre">RunList</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList"><span class="pre">RunList</span></a></span></span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunLengthCodec.sanitize"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#id5" title="Link to this definition">¶</a></dt>
+<dd><p>Clean and merge runs based on the codec’s parameters.</p>
+<dl class="simple">
+<dt>This function processes the RunList by:</dt><dd><ol class="arabic simple">
+<li><p>Removing incomplete runs (if remove_incomplete is True).</p></li>
+<li><p>Merging close runs (if merge_closed is True), while respecting the base_class.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">매개변수<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>run_list</strong> (<a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList"><em>RunList</em></a>) – The RunList object to be sanitized.</p>
+</dd>
+<dt class="field-even">반환<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sanitized RunList object.</p>
+</dd>
+<dt class="field-odd">반환 형식<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#zae_engine.operation.run_length.RunList" title="zae_engine.operation.run_length.RunList">RunList</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zae_engine.operation.run_length.</span></span><span class="sig-name descname"><span class="pre">RunList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_runs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#zae_engine.operation.run_length.Run" title="zae_engine.operation.run_length.Run"><span class="pre">Run</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sense</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunList"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.operation.run_length.RunList" title="Link to this definition">¶</a></dt>
+<dd><p>기반 클래스: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Stores the results of Run-Length Encoding (RLE) and provides methods
+to access raw and filtered runs.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunList.all_runs">
+<span class="sig-name descname"><span class="pre">all_runs</span></span><a class="headerlink" href="#zae_engine.operation.run_length.RunList.all_runs" title="Link to this definition">¶</a></dt>
+<dd><p>A list of all runs without any filtering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="#zae_engine.operation.run_length.Run" title="zae_engine.operation.run_length.Run">Run</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunList.sense">
+<span class="sig-name descname"><span class="pre">sense</span></span><a class="headerlink" href="#zae_engine.operation.run_length.RunList.sense" title="Link to this definition">¶</a></dt>
+<dd><p>The minimum length of runs to be considered in filtering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunList.original_length">
+<span class="sig-name descname"><span class="pre">original_length</span></span><a class="headerlink" href="#zae_engine.operation.run_length.RunList.original_length" title="Link to this definition">¶</a></dt>
+<dd><p>The length of the original list that was encoded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunList.filtered">
+<span class="sig-name descname"><span class="pre">filtered</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#zae_engine.operation.run_length.Run" title="zae_engine.operation.run_length.Run"><span class="pre">Run</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunList.filtered"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.operation.run_length.RunList.filtered" title="Link to this definition">¶</a></dt>
+<dd><p>Returns runs that meet or exceed the specified sense value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of filtered runs.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[<a class="reference internal" href="#zae_engine.operation.run_length.Run" title="zae_engine.operation.run_length.Run">Run</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zae_engine.operation.run_length.RunList.raw">
+<span class="sig-name descname"><span class="pre">raw</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#zae_engine.operation.run_length.Run" title="zae_engine.operation.run_length.Run"><span class="pre">Run</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/zae_engine/operation/run_length.html#RunList.raw"><span class="viewcode-link"><span class="pre">[소스]</span></span></a><a class="headerlink" href="#zae_engine.operation.run_length.RunList.raw" title="Link to this definition">¶</a></dt>
+<dd><p>Returns all runs without any filtering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">반환<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of all runs.</p>
+</dd>
+<dt class="field-even">반환 형식<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[<a class="reference internal" href="#zae_engine.operation.run_length.Run" title="zae_engine.operation.run_length.Run">Run</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-zae_engine.operation">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-zae_engine.operation" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, zae-park.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
