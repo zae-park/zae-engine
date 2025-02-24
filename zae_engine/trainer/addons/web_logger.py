@@ -7,9 +7,11 @@ import wandb
 import neptune as neptune
 
 from .core import AddOnBase, T
+from ..addons import ADDON_CASE_DEPENDENT
 
 
 class WandBLoggerAddon(AddOnBase):
+    addon_case = ADDON_CASE_DEPENDENT  # Needs data of previous Add-on
     """
     Add-on for real-time logging with Weights & Biases (WandB).
 
@@ -76,6 +78,7 @@ class WandBLoggerAddon(AddOnBase):
 
 
 class NeptuneLoggerAddon(AddOnBase):
+    addon_case = ADDON_CASE_DEPENDENT  # Needs data of previous Add-on
     """
     Add-on for real-time logging with Neptune.
 

@@ -5,9 +5,11 @@ import safetensors.torch
 from typing import Type, Union, Optional, Dict
 
 from .core import AddOnBase, T
+from ..addons import ADDON_CASE_INDEPENDENT
 
 
 class StateManagerAddon(AddOnBase):
+    addon_case = ADDON_CASE_INDEPENDENT  # Work Independently
     """
     Add-on to manage model, optimizer, and scheduler state.
 

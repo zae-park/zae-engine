@@ -10,9 +10,11 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 from .core import AddOnBase
 from .._trainer import T
+from ..addons import ADDON_CASE_CORE
 
 
 class MultiGPUAddon(AddOnBase):
+    addon_case = ADDON_CASE_CORE  # Change `core` method of Trainer
     """
     Add-on for distributed multi-GPU training.
 
