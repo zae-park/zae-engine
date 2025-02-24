@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Optional, Dict, Tuple
 from abc import ABC, abstractmethod
 
 from .._trainer import T
@@ -12,11 +12,19 @@ class AddOnBase(ABC):
     By inheriting from `AddOnBase`, subclasses can implement custom functionality
     that can be integrated into the Trainer workflow.
 
+    Attributes
+    ----------
+    addon_case : int
+        Defines the type of Add-on (0-3).
+
     Methods
     -------
     apply(cls, base_cls)
         Apply the add-on to the specified base class, modifying its behavior or adding
         new features. This method must be implemented by subclasses.
+
+    core(self, data: Optional[dict]) -> Tuple[int, Optional[dict]]
+        Execute the add-on logic during the Trainer workflow.
 
     Notes
     -----
@@ -24,6 +32,8 @@ class AddOnBase(ABC):
       to a single Trainer class.
     - Subclasses must override the `apply` method to specify how the add-on modifies
       the behavior of the Trainer class.
+    - The `core()` method is responsible for executing the main functionality of an add-on
+      and returning a status code along with optional output data.
 
     Examples
     --------
@@ -32,16 +42,10 @@ class AddOnBase(ABC):
     >>> from zae_engine.trainer.addons import AddOnBase
 
     >>> class CustomLoggerAddon(AddOnBase):
-    >>>     @classmethod
-    >>>     def apply(cls, base_cls):
-    >>>         class TrainerWithCustomLogger(base_cls):
-    >>>             def __init__(self, *args, custom_param=None, **kwargs):
-    >>>                 super().__init__(*args, **kwargs)
-    >>>                 self.custom_param = custom_param
-    >>>             def logging(self, step_dict):
-    >>>                 super().logging(step_dict)
-    >>>                 print(f"Custom logging: {step_dict}")
-    >>>         return TrainerWithCustomLogger
+    >>>     addon_case = 3  # This add-on requires input data
+    >>>     def core(self, data):
+    >>>         print(f"Custom logging: {data}")
+    >>>         return 0, None
 
     Applying the custom add-on to a Trainer:
 
@@ -52,10 +56,11 @@ class AddOnBase(ABC):
     >>>     device='cuda',
     >>>     optimizer=my_optimizer,
     >>>     scheduler=my_scheduler,
-    >>>     custom_param="Log everything"
     >>> )
     >>> trainer.run(n_epoch=10, loader=train_loader)
     """
+
+    addon_case: int = None  # This must be defined in subclasses
 
     @classmethod
     @abstractmethod
@@ -84,24 +89,31 @@ class AddOnBase(ABC):
         - Subclasses of `AddOnBase` must implement this method to define how the add-on modifies
           the base class.
         - This method is typically called indirectly through the `Trainer.add_on` method.
-
-        Examples
-        --------
-        Custom implementation in an add-on:
-
-        >>> class CustomAddon(AddOnBase):
-        >>>     @classmethod
-        >>>     def apply(cls, base_cls):
-        >>>         class TrainerWithCustomAddon(base_cls):
-        >>>             def custom_method(self):
-        >>>                 print("Custom method called")
-        >>>         return TrainerWithCustomAddon
-
-        Adding the custom add-on to a Trainer:
-
-        >>> from zae_engine.trainer import Trainer
-        >>> MyTrainer = Trainer.add_on(CustomAddon)
-        >>> trainer = MyTrainer(model=my_model, device='cuda', optimizer=my_optimizer)
-        >>> trainer.custom_method()  # Output: Custom method called
         """
         raise NotImplementedError("Add-on must implement the apply method.")
+
+    def core(self, data: Optional[Dict] = None) -> Tuple[int, Optional[Dict]]:
+        """
+        Core execution logic for the Add-on.
+
+        Parameters
+        ----------
+        data : dict, optional
+            Input data passed from the previous Add-on.
+
+        Returns
+        -------
+        status : int
+            -1: Failure, stops execution
+             0: Successful execution, no data transfer
+             1: Successful execution, with data transfer
+             2: Trigger event (next Add-on required)
+        output : dict, optional
+            The output data to be passed to the next Add-on, if applicable.
+
+        Notes
+        -----
+        - The default implementation does nothing and simply returns (0, None).
+        - Add-ons that require data must override this method and define their behavior.
+        """
+        return 0, None  # Default behavior: no effect, no data transfer
