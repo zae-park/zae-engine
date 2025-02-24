@@ -2,6 +2,7 @@ from typing import Type, Optional, Dict, Tuple
 from abc import ABC, abstractmethod
 
 from .._trainer import T
+from ..addons import ADDON_CASE_CORE, ADDON_CASE_INDEPENDENT, ADDON_CASE_TRIGGER, ADDON_CASE_DEPENDENT
 
 
 class AddOnBase(ABC):
@@ -15,7 +16,7 @@ class AddOnBase(ABC):
     Attributes
     ----------
     addon_case : int
-        Defines the type of Add-on (0-3).
+        Defines the type of Add-on (0-3), imported from `zae_engine.trainer.addons.__init__.py`.
 
     Methods
     -------
