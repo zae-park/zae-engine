@@ -6,9 +6,11 @@ from typing import Type, Optional
 
 from .core import AddOnBase
 from .._trainer import T
+from ..addons import ADDON_CASE_TRIGGER
 
 
 class SignalHandlerAddon(AddOnBase):
+    addon_case = ADDON_CASE_TRIGGER  # Role of event trigger
     """
     Add-on to handle external termination signals (e.g., SIGTERM, SIGINT) during training.
 
