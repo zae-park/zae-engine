@@ -2,7 +2,6 @@ from typing import Type, Optional, Dict, Tuple
 from abc import ABC, abstractmethod
 
 from .._trainer import T
-from ..addons import ADDON_CASE_CORE, ADDON_CASE_INDEPENDENT, ADDON_CASE_TRIGGER, ADDON_CASE_DEPENDENT
 
 
 class AddOnBase(ABC):
