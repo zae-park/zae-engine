@@ -59,6 +59,7 @@ class Trainer(ABC):
         log_bar: bool = True,
         scheduler_step_on_batch: bool = False,
         gradient_clip: float = 0.0,
+        **kwargs,
     ):
         self.primary_device_index = 0  # Default index is 0, will be adjusted in multi-GPU cases
         # Init with given args (positional params)
